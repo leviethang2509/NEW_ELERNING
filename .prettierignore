@@ -1,0 +1,8 @@
+node_modules
+dist
+.next
+.turbo
+coverage
+pnpm-lock.yaml
+# Tài liệu yêu cầu do người viết tự trình bày, không format tự động
+docs

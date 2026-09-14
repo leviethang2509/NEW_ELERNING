@@ -1,0 +1,658 @@
+# Requirement 1 – Kế hoạch implement
+
+> Nguồn: [req-1.md](req-1.md) và các câu trả lời trong [req-1-question.md](req-1-question.md) (vòng 1 + vòng 2).
+> Dự án tham chiếu: `/Users/vunguyen/Projects/lightc-general` (viết tắt **LC**). Đường dẫn `LC-FE/...` = `lightc-general/frontend/src/...`, `LC-BE/...` = `lightc-general/backend/src/...`.
+
+---
+
+## 1. Tóm tắt quyết định đã chốt
+
+### Kiến trúc & hạ tầng
+| Mục | Quyết định |
+|---|---|
+| Monorepo | pnpm 11 workspaces + Turborepo, **Node 24** (đổi từ Node 20 lúc làm Step 1: Node 20 đã EOL 4/2026 và pnpm 11 cần Node ≥ 22.13). `apps/lang-app` (Next.js), `apps/lang-api` (NestJS), `packages/exam-core`, `packages/shared`, `packages/tsconfig`, `packages/eslint-config` |
+| Stack | Giữ như LC: Next.js 14.2 App Router + React 18 + Tailwind 3 + Plate.js 53 (không shadcn); NestJS 10 + TypeORM 0.3 + PostgreSQL. TypeScript **5.9** (typescript-eslint chưa hỗ trợ TS 7), ESLint **10** (flat config; ESLint 9 đã hết hỗ trợ) |
+| Tooling | ESLint + Prettier; Jest cho `lang-api` và `exam-core` (chỉ test logic quan trọng) |
+| Git | `git init`, repo `vunguyenquangit/lang-simulator`, image `ghcr.io/vunguyenquangit/lang-simulator` |
+| Port | Local: app `3100`, api `3101`. VPS: host `3001` → container (Next 3000, Nest 3002 nội bộ) |
+| Database | Cùng Postgres server **và cùng database** với LC, **schema riêng `lang_simulator`** |
+| Migration | TypeORM migrations, `synchronize: false` mọi môi trường, chạy migration khi container khởi động |
+| Quy ước DB | PK uuid, snake_case, `created_at/updated_at`; soft delete `deleted_at` cho users/tenants/memberships/exams; `created_by/updated_by` cho bảng nội dung |
+| Upload | R2, **bucket riêng** (bạn tạo), dùng lại account/token R2 hiện có; upload qua server như LC; quota để sau |
+| GCP | Không mang sang |
+| Deploy | 1 image, 1 container riêng cho lang-simulator; GitHub Actions push `main`; truy cập `http://<ip>:3001`; chỉ dev + production |
+
+### Tài khoản, tenant, membership
+| Mục | Quyết định |
+|---|---|
+| Token | Access JWT 15 phút + refresh token httpOnly cookie (lưu DB, thu hồi được); JwtStrategy kiểm tra DB (`status`, `token_version`); `middleware.ts` ở Next |
+| Đăng ký | Công khai email + mật khẩu; đổi mật khẩu. Xác thực email, quên mật khẩu, OAuth để sau (chuẩn bị cột `email_verified_at`) |
+| User | Theo bảng D3; `date_of_birth` **bắt buộc**; email bắt buộc & unique |
+| Dưới 18 | Được tự đăng ký, không tuổi tối thiểu; **chỉ ≥ 18 tuổi mới được tạo tenant** |
+| System role | Nhiều Owner được; Owner đầu tiên tạo bằng seed; chỉ Owner quản lý Admin; Admin tạo/sửa/khoá user thường & tenant, xem được Owner nhưng không sửa |
+| System ↔ tenant | System Owner/Admin chỉ xem danh sách + chi tiết cơ bản tenant; không vào nội dung tenant (trừ khi là member) |
+| Tenant | Đăng ký → `pending` → System Admin duyệt `active` / từ chối `rejected` + lý do (sửa & gửi lại). `pending` chưa vào dashboard. Không giới hạn số tenant/user |
+| Gói dịch vụ | Bảng `service_plans` (seed 3 gói: 100/500/1000 thành viên), chọn khi đăng ký, System Admin duyệt & đổi được. Giới hạn tính **mọi membership active**; đạt giới hạn → chặn thêm. Thanh toán/thời hạn ngoài phạm vi |
+| URL tenant | Theo path `/t/{slug}/...`; dữ liệu dùng chung bảng, cột `tenant_id` |
+| Tenant Owner | Đúng 1; chuyển quyền để req sau; Tenant Admin quản lý mọi role (kể cả Tenant Admin) trừ Owner |
+| Thêm thành viên | (b) thêm theo email account có sẵn + (d) tạo account mới |
+| Membership | 1 membership / (tenant, user), nhiều role. Chưa có khoá học/lớp |
+| Parent | `student_guardians` nhiều–nhiều, **tuỳ chọn**; req-1 có bảng + UI gắn liên kết, trang xem kết quả con để sau |
+| Ngữ cảnh | Nhiều ngữ cảnh → trang "Không gian của tôi" (`/me`); 1 ngữ cảnh → vào thẳng; sidebar có switcher |
+
+### Đề thi
+| Mục | Quyết định |
+|---|---|
+| Category/Blueprint | Phạm vi (c): hệ thống (`tenant_id NULL`, System Owner/Admin quản lý) + riêng tenant (Tenant Owner/Admin quản lý, Teacher chỉ xem/dùng) |
+| Module | `reference_duration_minutes`: bội số 5, tối đa 180. Không thêm trường tham khảo. Quy đổi điểm để sau |
+| Exam ↔ blueprint | Section **snapshot** độc lập với blueprint/module. Cho **thêm/xoá/đổi tên/sắp xếp** section; cho **đổi blueprint** (giữ section, có nút "Thêm section từ module"). Duration section bội số 5, ≤ 180; ≥ 1 section |
+| Parse nội dung | `exam_sections.raw_data` (Plate nguyên văn) + `content_public` (đã bỏ đáp án) + `exam_parts` + `exam_questions` (có `answer_key`) |
+| Version | Cột `version` trên `exam_sections` + `exams.current_version`. Khôi phục version k = Save lại nội dung version k (theo quy tắc ghi đè/tạo mới). Không so sánh version |
+| Quy tắc Save | Version hiện tại **có bất kỳ attempt nào** (kể cả đang làm) → tạo version mới, version cũ `deactivated`. Ngược lại → xoá & import lại. Sửa metadata `exams` không tạo version; sửa section (nội dung, duration, thêm/xoá/sắp xếp) có |
+| Save/autosave | Autosave chỉ localStorage; nút Save lưu **toàn bộ tab trong 1 transaction**; cảnh báo "Sẽ tạo version mới" |
+| Publish | `draft → published → archived`; chỉ publish khi validate không lỗi; xoá đề có bài làm = soft delete. Teacher publish đề của mình, Owner/Admin mọi đề |
+| Quyền sửa | Teacher sửa đề mình tạo; Owner/Admin sửa tất cả |
+
+### Thi & chấm
+| Mục | Quyết định |
+|---|---|
+| Nơi thi | Khu vực chính (không phải dashboard): `/t/{slug}` → danh sách đề publish → thi. **Mọi thành viên tenant đều được thi** |
+| Preview | Teacher/Admin preview trong dashboard, chấm ở client, không tạo attempt |
+| Cấu trúc | Section (tab editor, timer) > Part (tab trong simulator, như LC) > Subpart > Question. **Đánh số lại từ 1 mỗi section** (mỗi editor độc lập) |
+| Luồng thi | Màn hình hướng dẫn (intro của section) → bấm bắt đầu tính giờ → các tab Part → nộp sớm hoặc hết giờ tự nộp → màn hình chờ section kế → ... Timer lưu ở server. Lưới câu hỏi chỉ của section hiện tại |
+| Chấm tự động | Phía server, dùng chung logic `exam-core`; API học viên không nhận đáp án |
+| Chấm tay | Writing/Speaking: điểm 0–10 + nhận xét; Teacher/Owner/Admin chấm bất kỳ bài nào; không sửa kết quả tự động; chưa chấm xong → "Chờ chấm" + phần tự động; trang "Chấm bài" |
+| Speaking | Ghi âm trên trình duyệt, `seconds` = thời gian ghi tối đa, cho ghi lại trong thời gian section, lưu R2 **private** (presigned URL) |
+| Kết quả học viên | Không xem đáp án, không đánh dấu câu sai; có số câu đúng theo từng section, lịch sử lượt làm, điểm & nhận xét phần chấm tay. Không giới hạn số lượt |
+| Thống kê | Lưu `exam_attempt_answers` gắn `exam_question_id` + `is_correct`; trang thống kê để sau |
+| Giao diện | Copy theme/layout/components LC; không copy tính năng không liên quan; tên tạm "Lang Simulator", tiếng Việt, gom chuỗi để i18n sau; layout chính dựa `LC/design/Home.html` |
+
+---
+
+## 2. Giả định kỹ thuật (bạn xem lại, nếu không đồng ý hãy ghi chú)
+
+1. **Cần 2 bucket R2.** R2 bật public access theo cả bucket, không theo prefix. Vì vậy dùng `lang-simulator-public` (ảnh/audio/video của đề, có public URL) và `lang-simulator-private` (ghi âm học viên, chỉ presigned URL).
+2. **Cookie refresh không bật `Secure`** vì VPS đang chạy HTTP (`http://<ip>:3001`); điều khiển bằng env `COOKIE_SECURE=false`. Khi có domain + SSL thì đổi thành `true`.
+3. Cookie refresh đặt `path=/`, `SameSite=Lax` để `middleware.ts` đọc được. FE gọi API cùng origin qua rewrite `/api` (cả local lẫn VPS), nên không cần CORS.
+4. Account do Tenant Admin tạo (F1-d) có cờ **`must_change_password = true`**: lần đăng nhập đầu bắt buộc đổi mật khẩu. Mật khẩu tạm do admin nhập hoặc hệ thống sinh và hiển thị 1 lần.
+5. Người chấm **không được chấm bài của chính mình**.
+6. Attempt bỏ dở (đang ở màn hình chờ, chưa bắt đầu section kế) giữ trạng thái `in_progress`, học viên vào lại làm tiếp được. Theo quy tắc H3, attempt này vẫn khiến lần Save sau tạo version mới.
+7. Autosave câu trả lời lên server: debounce 3 giây và khi chuyển tab Part. Sau `deadline` (+ 10 giây trễ mạng) server từ chối cập nhật.
+8. Hết giờ được xử lý ở 2 nơi: client tự gọi nộp; server tự chốt khi có request tới attempt (lazy) **và** cron mỗi phút (`@nestjs/schedule`) chốt các section quá hạn.
+9. Câu `ordering`/`polytomous` trong `content_public`: bỏ `num`, gán `key` = chỉ số gốc cho từng dòng, **xáo thứ tự ở server**. Câu trả lời gửi lên dùng `key`.
+10. File ghi âm: `audio/webm` (opus), ≤ 10MB/file, ghi lại thì xoá file cũ.
+11. Membership của Tenant Owner được tạo ngay khi đăng ký tenant và được tính vào giới hạn gói.
+12. Seed dữ liệu mẫu hệ thống (sửa được):
+    - Tiếng Anh:
+      - TOEIC: Listening 45 phút, Reading 75 phút.
+      - IELTS: Listening 30, Reading 60, Writing 60, Speaking 15.
+    - Tiếng Nhật:
+      - JLPT N2: Kiến thức ngôn ngữ & Đọc hiểu 105, Nghe 50.
+13. Tên 3 gói tạm: `Basic` (100), `Standard` (500), `Pro` (1000). Giá để trống.
+
+---
+
+## 3. Việc bạn cần chuẩn bị (không code được thay)
+
+| # | Việc | Cần trước step |
+|---|---|---|
+| P1 | Tạo 2 bucket R2 (`lang-simulator-public` bật public access / custom domain, `lang-simulator-private` tắt public). Gửi lại `R2_PUBLIC_BASE_URL` | Step 10 |
+| P2 | Trên Postgres VPS: tạo user `lang_simulator` có quyền `CREATE` trên database của LC (để tạo schema `lang_simulator`) — hoặc tự tạo schema và cấp quyền owner cho user này | Step 4 |
+| P3 | Tạo GitHub repo `vunguyenquangit/lang-simulator`; thêm secrets `VPS_HOST`, `VPS_USER`, `VPS_SSH_KEY`, `VPS_PORT`, `GHCR_TOKEN` (secrets GitHub theo từng repo nên phải thêm lại, cùng giá trị với LC) | Step 4 |
+| P4 | Trên VPS: tạo `/opt/lang-simulator/` chứa `docker-compose.yml` + `.env` (mẫu ở `deploy/`), mở port 3001 trên firewall | Step 4 |
+| P5 | Đổi mật khẩu DB/admin bên LC đang lộ trong `backend/.env.example` và `README.md` | Nên làm sớm |
+
+---
+
+## 4. Thiết kế dữ liệu (schema `lang_simulator`)
+
+> Mọi bảng có `id uuid PK`, `created_at`, `updated_at` trừ khi ghi khác. Enum lưu dạng Postgres enum hoặc `varchar` + check.
+
+### 4.1 Tài khoản & phiên
+```
+users
+  email citext UNIQUE (where deleted_at is null), password_hash, full_name, date_of_birth date NOT NULL,
+  gender NULL, phone NULL, avatar_url NULL, address NULL,
+  locale default 'vi', timezone default 'Asia/Ho_Chi_Minh',
+  system_role enum(SYSTEM_OWNER, SYSTEM_ADMIN, REGISTERED_USER) default REGISTERED_USER,
+  status enum(active, locked) default active,
+  must_change_password bool default false, token_version int default 0,
+  email_verified_at NULL, last_login_at NULL, deleted_at NULL
+
+refresh_tokens
+  user_id FK, token_hash (sha256), family_id uuid, expires_at, revoked_at NULL,
+  replaced_by_id NULL, user_agent, ip
+```
+
+### 4.2 Tenant & membership
+```
+service_plans
+  code UNIQUE, name, max_members int, price numeric NULL, description, is_active, sort_order
+
+tenants
+  name, slug UNIQUE (where deleted_at is null), logo_url, description, email, phone, address,
+  status enum(pending, active, rejected, suspended), rejection_reason NULL,
+  plan_id FK service_plans, owner_user_id FK users,
+  reviewed_by NULL, reviewed_at NULL, deleted_at NULL
+
+memberships
+  tenant_id FK, user_id FK, status enum(active, inactive), joined_at, created_by, deleted_at
+  UNIQUE(tenant_id, user_id) where deleted_at is null
+
+membership_roles
+  membership_id FK, role enum(TENANT_OWNER, TENANT_ADMIN, TEACHER, STUDENT, PARENT)
+  PK(membership_id, role)
+  -- partial unique: mỗi tenant đúng 1 TENANT_OWNER (enforce ở service + unique index qua bảng phụ/trigger)
+
+student_guardians
+  tenant_id FK, student_membership_id FK, parent_membership_id FK, relationship NULL
+  UNIQUE(student_membership_id, parent_membership_id)
+```
+
+### 4.3 Danh mục đề
+```
+exam_categories
+  tenant_id NULL (NULL = hệ thống), name, code, description, icon, color, sort_order, is_active,
+  created_by, updated_by
+  UNIQUE(code) where tenant_id is null; UNIQUE(tenant_id, code) where tenant_id is not null
+
+exam_blueprints
+  tenant_id NULL, category_id FK, name, code, description, is_active, created_by, updated_by
+  (unique code theo phạm vi như trên; blueprint tenant có thể thuộc category hệ thống)
+
+exam_modules
+  blueprint_id FK, name, code, sort_order, reference_duration_minutes (5..180, %5=0), description
+```
+
+### 4.4 Đề thi & version
+```
+exams
+  tenant_id FK, blueprint_id FK, title, description,
+  status enum(draft, published, archived), current_version int default 1,
+  published_at NULL, created_by, updated_by, deleted_at NULL
+
+exam_sections
+  exam_id FK, version int, status enum(active, deactivated),
+  module_id NULL (chỉ tham khảo, không ràng buộc), name, sort_order,
+  duration_minutes (5..180, %5=0), raw_data jsonb, content_public jsonb,
+  question_count int, created_by
+  INDEX(exam_id, version)
+
+exam_parts
+  section_id FK ON DELETE CASCADE, parent_part_id NULL, kind enum(part, subpart),
+  node_id (indicator id), sort_order, first_number NULL, last_number NULL
+
+exam_questions
+  section_id FK ON DELETE CASCADE, part_id NULL FK,
+  number int (đánh số trong section, từ 1), node_id (indicator id), sub_index int (vị trí blank/cặp/pick trong indicator),
+  qtype, grading enum(auto, manual), answer_key jsonb NULL, options jsonb NULL,
+  params jsonb (seconds / maxChars / maxPicks), max_score numeric (auto = 1, manual = 10)
+  UNIQUE(section_id, number)
+```
+
+### 4.5 Bài làm
+```
+exam_attempts
+  tenant_id, exam_id FK, exam_version int, user_id FK, membership_id FK,
+  status enum(in_progress, submitted, graded),
+  started_at, submitted_at NULL, graded_at NULL,
+  auto_correct int, auto_total int, manual_count int, manual_graded_count int
+  INDEX(exam_id, exam_version)
+
+exam_attempt_sections
+  attempt_id FK, section_id FK, sort_order,
+  status enum(not_started, in_progress, submitted),
+  started_at NULL, deadline_at NULL, submitted_at NULL, auto_submitted bool,
+  responses jsonb (định dạng Responses của exam-core), order_seed int,
+  correct int NULL, total int NULL
+
+exam_attempt_answers                  -- sinh khi nộp section, phục vụ chấm tay + thống kê
+  attempt_id FK, attempt_section_id FK, question_id FK exam_questions,
+  response jsonb NULL, is_correct bool NULL, score numeric NULL, comment text NULL,
+  recording_key NULL (R2 private), graded_by NULL, graded_at NULL
+  UNIQUE(attempt_id, question_id)
+```
+
+### 4.6 Thuật toán Save nội dung đề (`PUT /t/:slug/exams/:id/content`)
+```
+BEGIN
+  SELECT * FROM exams WHERE id = :id FOR UPDATE
+  kiểm tra quyền (Teacher = created_by, hoặc Owner/Admin)
+  validate payload bằng exam-core: ≥1 section, duration hợp lệ, không có data: URI, cấu trúc Plate hợp lệ
+  hasAttempts = EXISTS(attempts WHERE exam_id AND exam_version = current_version)
+  IF hasAttempts:
+     UPDATE exam_sections SET status='deactivated' WHERE exam_id AND version = current_version
+     v = current_version + 1; UPDATE exams SET current_version = v
+  ELSE:
+     DELETE exam_sections WHERE exam_id AND version = current_version   -- cascade parts/questions
+     v = current_version
+  FOR each section: extractStructure(raw_data) → INSERT exam_sections(version=v, status=active, content_public=stripAnswers(...)),
+                    INSERT exam_parts, exam_questions
+COMMIT
+```
+- Bắt đầu attempt cũng `SELECT exams ... FOR SHARE` và đọc `current_version` trong transaction, để tránh race với Save.
+- Khôi phục version k: đọc `raw_data` + metadata các section của version k, rồi gọi đúng thuật toán trên.
+
+---
+
+## 5. Phân quyền
+
+### 5.1 Hệ thống (`/api/admin/*`, `/admin`)
+| Hành động | System Owner | System Admin |
+|---|---|---|
+| Xem thống kê, danh sách user/tenant | ✔ | ✔ |
+| Tạo/sửa/khoá/reset mật khẩu user thường | ✔ | ✔ |
+| Sửa/khoá user SYSTEM_OWNER | ✔ (không tự hạ quyền nếu là Owner cuối cùng) | ✘ (chỉ xem) |
+| Đổi `system_role` (nâng/hạ Admin, Owner) | ✔ | ✘ |
+| Duyệt/từ chối/khoá tenant, đổi gói | ✔ | ✔ |
+| CRUD service plans | ✔ | ✔ |
+| CRUD category/blueprint hệ thống | ✔ | ✔ |
+
+### 5.2 Tenant (`/api/t/:slug/*`, `/t/{slug}/dashboard`)
+| Hành động | Owner | Admin | Teacher | Student | Parent |
+|---|---|---|---|---|---|
+| Dashboard tenant | ✔ | ✔ | ✔ (tổng quan rút gọn) | ✘ | ✘ |
+| Quản lý membership | ✔ | ✔ (không đụng Owner, không cấp TENANT_OWNER) | ✘ | ✘ | ✘ |
+| Gắn Parent ↔ Student | ✔ | ✔ | ✘ | ✘ | ✘ |
+| CRUD category/blueprint của tenant | ✔ | ✔ | xem | ✘ | ✘ |
+| Tạo đề | ✔ | ✔ | ✔ | ✘ | ✘ |
+| Sửa/publish/archive/xoá/khôi phục version | mọi đề | mọi đề | đề mình tạo | ✘ | ✘ |
+| Upload media đề | ✔ | ✔ | ✔ | ✘ | ✘ |
+| Chấm bài (trừ bài của mình) | ✔ | ✔ | ✔ | ✘ | ✘ |
+| Xem & thi đề đã publish | ✔ | ✔ | ✔ | ✔ | ✔ |
+
+Guard backend:
+- `JwtAuthGuard`: xác thực token và tải user từ DB, kiểm tra `status` và `token_version`.
+- `SystemRolesGuard` + `@SystemRoles()`.
+- `TenantGuard`: resolve `:slug` → tenant `active` → membership active + roles → gắn vào `req.tenantCtx`.
+- `@TenantRoles()`.
+- Kiểm tra quyền sở hữu đề nằm trong service.
+
+---
+
+## 6. Cấu trúc route
+
+### 6.1 Frontend (`apps/lang-app/src/app`)
+```
+(site)/                         layout chính (header/footer theo design/Home.html)
+  page.tsx                      /                     landing chung
+  login/, register/             /login, /register     (theo design/Auth.html + LC login)
+  me/page.tsx                   /me                   Không gian của tôi: thẻ "Quản trị hệ thống", danh sách tenant (trạng thái, role), nút Tạo trung tâm
+  me/account/                   /me/account           hồ sơ, đổi mật khẩu
+  me/tenants/new, [id]/edit     đăng ký / sửa & gửi lại tenant
+  t/[slug]/page.tsx             /t/{slug}             giới thiệu trung tâm; nếu là member: danh sách đề publish (lọc category/blueprint)
+  t/[slug]/exams/[examId]/      thông tin đề, nút Bắt đầu, lịch sử lượt làm
+  t/[slug]/attempts/[id]/result kết quả lượt làm
+(exam)/t/[slug]/attempts/[id]/  layout toàn màn hình cho giả lập thi
+(dashboard)/                    layout dashboard copy LC (sidebar 260px, header 68px)
+  admin/                        /admin            tổng quan hệ thống
+  admin/users, admin/tenants, admin/plans, admin/exam-categories, admin/exam-blueprints
+  t/[slug]/dashboard/           tổng quan tenant
+  t/[slug]/dashboard/members, exam-categories, exam-blueprints, exams, exams/[id]/edit, exams/[id]/versions, grading, grading/[attemptId]
+middleware.ts                   chặn /me, /admin, /t/*/dashboard, /t/*/attempts khi không có cookie refresh
+```
+Sau đăng nhập:
+- `must_change_password` → `/me/account`.
+- Nhiều ngữ cảnh, hoặc chưa có ngữ cảnh nào → `/me`.
+- Chỉ system → `/admin`.
+- Chỉ 1 tenant và có role quản trị/Teacher → `/t/{slug}/dashboard`, còn lại → `/t/{slug}`.
+
+### 6.2 Backend (`/api`)
+```
+auth:        POST register, login, refresh, logout · GET me · POST change-password
+me:          GET contexts · PATCH profile
+public:      GET plans · GET tenants/:slug
+tenants:     POST (đăng ký, ≥18) · GET mine · PUT :id (sửa & gửi lại khi rejected)
+admin:       GET stats · users CRUD + lock + reset-password + system-role · tenants list/detail/approve/reject/suspend/plan
+             plans CRUD · exam-categories CRUD · exam-blueprints CRUD (kèm modules)
+t/:slug:     GET dashboard/stats
+             memberships: list · add-by-email · create-account · PATCH roles/status · DELETE · guardians add/remove
+             exam-categories, exam-blueprints: list (hệ thống + tenant) · CRUD (tenant)
+             exams: list · POST (từ blueprint) · GET :id (kèm raw_data version hiện tại, hasAttempts) · PATCH metadata/blueprint
+                    PUT :id/content · GET :id/versions · GET :id/versions/:v · POST :id/versions/:v/restore
+                    POST :id/publish · POST :id/archive · DELETE :id
+             media: POST upload (bucket public)
+             learner: GET exams (published) · GET exams/:id (info + attempts của tôi)
+                      POST exams/:id/attempts · GET attempts/:id
+                      POST attempts/:id/sections/:sid/start · PUT .../responses · POST .../submit
+                      POST attempts/:id/recordings · GET attempts/:id/recordings/:answerId/url
+                      GET attempts/:id/result
+             grading: GET attempts (lọc exam/học viên/trạng thái) · GET attempts/:id · PUT answers/:answerId (score, comment)
+health:      GET /api/health
+```
+
+---
+
+## 7. Các step implement
+
+> Mỗi step kết thúc bằng: build/lint/test pass, và đạt **tiêu chí nghiệm thu**. Làm lần lượt; step 4 deploy sớm để phát hiện sớm vấn đề Docker/turbo.
+
+### Step 1 – Khởi tạo monorepo
+**Việc làm**
+- `git init`, `.gitignore`, `.editorconfig`, `.nvmrc` (24), `pnpm-workspace.yaml`, `turbo.json` (pipeline `build`, `dev`, `lint`, `test`, `typecheck`).
+- Root `package.json`: `dev` (turbo chạy song song app 3100 + api 3101), `build`, `lint`, `test`, `format`.
+- `packages/tsconfig` (base, nextjs, nestjs), `packages/eslint-config`, Prettier config.
+- `packages/shared`: enum `SystemRole`, `TenantRole`, `TenantStatus`, `ExamStatus`…, type DTO dùng chung, hằng số (duration 5..180).
+- `packages/exam-core`: khung rỗng, build bằng `tsup` (xuất CJS cho Nest + ESM cho Next).
+- `README.md` (cách chạy local), `CLAUDE.md` (quy ước dự án, trỏ tới `docs/requirements`).
+
+**Nghiệm thu:** `pnpm install && pnpm build && pnpm lint` chạy thành công ở root.
+
+### Step 2 – Khung `lang-api`
+**Việc làm**
+- NestJS 10: `main.ts` (prefix `api`, port env, `ValidationPipe` như LC, JSON limit 2mb, `cookie-parser`), `app.module.ts`.
+- Config: `@nestjs/config` + validate env khi khởi động. Thiếu `JWT_SECRET`, `DB_*`… thì dừng. Không có fallback kiểu `dev_secret`.
+- TypeORM: `data-source.ts` dùng chung cho app và CLI, `schema: 'lang_simulator'`, `migrationsTableName`, `synchronize: false`.
+- Script `migrate.ts`: `CREATE SCHEMA IF NOT EXISTS lang_simulator`, sau đó `runMigrations`. Scripts `migration:generate`, `migration:run`, `migration:revert`, `seed`.
+- Common: exception filter (format lỗi `{ statusCode, message }` như LC), pagination DTO/helper, `@CurrentUser()`, `Logger`.
+- `GET /api/health`, Jest config.
+- Env mẫu `.env.example` (không chứa giá trị thật).
+
+**Nghiệm thu:** `pnpm --filter lang-api dev` chạy ở 3101, `/api/health` trả 200, migrate tạo được schema trên DB local.
+
+### Step 3 – Khung `lang-app` (copy UI LC)
+**Việc làm**
+- Next 14.2 App Router.
+  - `next.config.mjs`: `output: 'standalone'`, `experimental.outputFileTracingRoot` = root monorepo, `transpilePackages: ['@lang/exam-core', '@lang/shared']`.
+  - Rewrite `/api/:path*` → `BACKEND_INTERNAL_URL` (local `http://127.0.0.1:3101`, cố định lúc build).
+- Copy & đổi tên:
+  - `LC-FE/app/globals.css` (bỏ các class không dùng, đổi `lc-*` → `ls-*`), `tailwind.config.ts`, fonts trong `LC-FE/app/layout.tsx`.
+  - `LC-FE/components/ui/*`, `LC-FE/components/GlobalLoadingBar.tsx`.
+  - `LC-FE/lib/api.ts`: sửa thành access token lưu **trong bộ nhớ**, tự gọi `/auth/refresh` khi gặp 401 rồi thử lại 1 lần, `credentials: 'include'`.
+- Layout dashboard từ `LC-FE/app/(dashboard)/layout.tsx`:
+  - Sidebar đọc **menu cấu hình** theo ngữ cảnh (`system` / `tenant` + roles), thay cho `GROUPS` hardcode.
+  - Thêm **context switcher** (System / các tenant).
+  - Header hiển thị tiêu đề trang động.
+- Khung các route group `(site)`, `(dashboard)`, `(exam)`; trang tạm; `middleware.ts`.
+- `src/i18n/vi.ts`: gom chuỗi UI.
+- Branding "Lang Simulator", icon lucide `Languages`.
+
+**Nghiệm thu:** `pnpm dev` mở được `http://localhost:3100`, layout dashboard hiển thị giống LC, `/api/health` gọi qua rewrite OK.
+
+### Step 4 – Docker & deploy sớm
+**Việc làm**
+- `Dockerfile` nhiều stage:
+  1. `turbo prune lang-api lang-app --docker`.
+  2. `pnpm install --frozen-lockfile` + `turbo build` với `BACKEND_INTERNAL_URL=http://127.0.0.1:3002` và `NEXT_PUBLIC_API_URL=/api`.
+  3. Runner (`node:24-bookworm-slim`): `pnpm deploy --filter lang-api --prod` + Next standalone + static. `TZ=Asia/Ho_Chi_Minh`, `USER node`, `EXPOSE 3000`, healthcheck gọi `/api/health` qua 3000.
+- `docker/entrypoint.sh`:
+  - **chạy migrate trước**, lỗi thì thoát;
+  - sau đó chạy api `:3002` và app `:3000`, dùng `wait -n` như LC.
+- `deploy/docker-compose.yml`:
+  - service `app`, container `lang-simulator-app`, image GHCR `:latest`, `env_file: .env`;
+  - ports `3001:3000`, network external `postgres_default`, logging giống LC.
+- `deploy/.env.example`.
+- `.github/workflows/deploy.yml`: copy từ LC, đổi `cd /opt/lang-simulator`.
+- `docs/setup/deploy.md`: các bước P2–P4, tạo schema/user, kiểm tra log, rollback bằng tag `sha-…`.
+
+**Nghiệm thu:**
+- `docker build` + `docker run` chạy ở local, trỏ vào Postgres local.
+- Push `main` thì `http://<ip>:3001` trả trang tạm và `/api/health` = 200.
+- LC ở port 3000 không bị ảnh hưởng.
+
+### Step 5 – Tài khoản & xác thực
+**Việc làm**
+- **Backend**
+  - Migration `users`, `refresh_tokens`.
+  - `AuthModule`:
+    - `register`: validate email, mật khẩu ≥ 8 ký tự, `full_name`, `date_of_birth` bắt buộc và không ở tương lai.
+    - `login`: bcrypt, chặn `locked`, cập nhật `last_login_at`.
+    - `refresh`: xoay token; phát hiện dùng lại token cũ thì thu hồi cả family.
+    - `logout`, `me`.
+    - `change-password`: tăng `token_version`, thu hồi các refresh token khác, xoá `must_change_password`.
+  - Access token payload `{ sub, tv }`, `JWT_ACCESS_EXPIRES_IN=15m`, `REFRESH_EXPIRES_IN=30d`. Cookie `ls_rt`: httpOnly, `SameSite=Lax`, `Secure=COOKIE_SECURE`.
+  - `JwtStrategy` load user và so `token_version`, `status`. `SystemRolesGuard`.
+  - Seed System Owner từ env `SEED_OWNER_EMAIL/PASSWORD/NAME/DOB` (idempotent).
+- **Frontend**
+  - Trang `/login` (copy LC login, bỏ nút OAuth giả, bỏ "remember me" giả).
+  - Trang `/register` và `/me/account` (hồ sơ + đổi mật khẩu). Bắt buộc đổi mật khẩu khi `must_change_password`.
+  - `AuthProvider` (context: user, contexts, logout).
+- Test: register/login/refresh rotation/reuse detection/lock user làm token cũ vô hiệu.
+
+**Nghiệm thu:**
+- Đăng ký, đăng nhập, đổi mật khẩu được.
+- Khoá user trong DB thì request kế tiếp bị 401.
+- Reload trang vẫn giữ phiên nhờ refresh cookie.
+
+### Step 6 – Tenant, gói dịch vụ, membership (backend)
+**Việc làm**
+- Migrations `service_plans`, `tenants`, `memberships`, `membership_roles`, `student_guardians`; seed 3 gói.
+- `TenantsModule`:
+  - Đăng ký tenant: kiểm tra tuổi ≥ 18 tính theo `timezone`, slug unique và sinh gợi ý từ tên.
+  - Tạo membership `TENANT_OWNER` cho người đăng ký.
+  - `GET mine`; sửa & gửi lại khi `rejected`.
+  - `GET public/tenants/:slug`.
+- `TenantGuard` + `@TenantRoles()` + decorator `@TenantCtx()`.
+- `MembershipsModule`:
+  - list (lọc role, tìm theo tên/email, phân trang);
+  - **add-by-email** và **create-account** (mật khẩu tạm, `must_change_password`);
+  - kiểm tra **giới hạn gói** (đếm membership active, 409 khi đầy);
+  - đổi roles/status, xoá (soft).
+  - Quy tắc bảo vệ Owner: không xoá, không đổi role Owner, Admin không cấp `TENANT_OWNER`.
+- Guardians: gắn/gỡ, kiểm tra 2 membership cùng tenant, một bên có role `STUDENT`, bên kia có role `PARENT`.
+- `GET me/contexts`: system role + danh sách membership (tenant, trạng thái tenant, roles).
+- Test phân quyền: Tenant Admin không sửa được Owner; tenant `pending` bị chặn ở `TenantGuard`; giới hạn gói; người < 18 tuổi không tạo được tenant.
+
+**Nghiệm thu:** toàn bộ API trên hoạt động, test phân quyền pass.
+
+### Step 7 – Dashboard hệ thống (`/admin`)
+**Việc làm**
+- **Backend** `AdminModule`:
+  - stats: tổng user, user mới 7 ngày, tenant theo trạng thái, số tenant chờ duyệt;
+  - users: CRUD, khoá/mở, reset mật khẩu, đổi system role (Owner only), áp quy tắc bảo vệ Owner;
+  - tenants: list/lọc trạng thái, chi tiết cơ bản (owner, gói, số thành viên/giới hạn), approve / reject (lý do) / suspend / đổi gói;
+  - plans: CRUD.
+- **Frontend**:
+  - Trang Tổng quan (thẻ số liệu).
+  - Trang Người dùng: bảng, tìm kiếm, `Pagination`, `Modal` tạo/sửa, `ConfirmDialog` khoá.
+  - Trang Tenant: tab theo trạng thái, dialog duyệt/từ chối.
+  - Trang Gói dịch vụ.
+
+**Nghiệm thu:**
+- System Admin không thao tác được trên tài khoản Owner (UI ẩn nút, API trả 403).
+- Duyệt tenant xong thì Owner vào được dashboard tenant.
+
+### Step 8 – Khu vực chính & dashboard tenant cơ bản
+**Việc làm**
+- **Layout `(site)`** theo `LC/design/Home.html`, trích phần cần thiết. File mockup nặng 1.1MB, **không nhúng nguyên**.
+- **Các trang khu vực chính:**
+  - `/`: landing chung giới thiệu nền tảng, CTA "Đăng ký trung tâm".
+  - `/me`: danh sách ngữ cảnh, trạng thái tenant (chờ duyệt / bị từ chối + lý do + nút sửa).
+  - `/me/tenants/new`: form đăng ký tenant, chọn gói.
+  - `/t/{slug}`: giới thiệu trung tâm. Người chưa là thành viên chỉ thấy phần giới thiệu. Danh sách đề để trống, làm ở step 12.
+  - Điều hướng sau đăng nhập theo mục 6.1.
+- **Dashboard tenant:**
+  - **Tổng quan:** số giáo viên, học viên, phụ huynh, số thành viên / giới hạn gói, số đề theo trạng thái, số lượt làm, số bài chờ chấm. Hai số liệu cuối trả 0 cho tới step 12–13.
+  - **Thành viên:**
+    - bảng lọc role, dialog thêm theo email, dialog tạo account (hiện mật khẩu tạm 1 lần), sửa roles (checkbox), khoá/xoá;
+    - badge "< 18 tuổi";
+    - panel gắn phụ huynh cho học viên.
+  - Menu sidebar theo role (mục 5.2).
+
+**Nghiệm thu:**
+- Một account vừa là System Admin, vừa là Owner tenant A, vừa là Student tenant B: sau đăng nhập thấy `/me`, chuyển qua lại được giữa 3 ngữ cảnh.
+- Student/Parent vào `/t/{slug}/dashboard` bị chặn.
+
+### Step 9 – `packages/exam-core`
+**Việc làm**
+- **Chuyển logic thuần** (không phụ thuộc React/Plate UI) từ LC vào package:
+  - types & meta indicator (`LC-FE/components/plate/exam/indicator.tsx`: phần type/meta/`isIndicator`), `isBlank`, `isPair`, `ORDERING_STYLE`, `scope.ts`, `migrate.ts`;
+  - `LC-FE/app/(dashboard)/labs/exam-editor/_lib/preview-plan.ts`, `grading.ts`, `validate.ts`, `outline.ts`.
+- **Thêm mới:**
+  - `extractStructure(value)` → `{ parts[], questions[] }`, với `answer_key` từng câu:
+
+    | qtype | `answer_key` |
+    |---|---|
+    | mc-single / mc-multi | `{ indexes }` |
+    | pick-n | `{ indexes, pickIndex }` |
+    | matching / tfng / ynng | `{ answer }` |
+    | fill-blank | `{ accepted[] }` |
+    | ordering | `{ order[] }` |
+    | polytomous | `{ weights[] }` |
+    | speaking / writing | `null`, `grading = manual` |
+
+    Đánh số từ 1 cho mỗi section.
+  - `stripAnswers(value, seed)` → `content_public`:
+    - bỏ `checked`;
+    - bỏ `pair.answer`;
+    - làm rỗng text trong `blank` (giữ số lượng blank);
+    - ordering/polytomous: bỏ `num`, gán `key`, xáo trộn theo seed.
+  - `gradeResponses(questions, responses)` → verdict từng câu + `{ correct, total, manual }`. Refactor `gradeExam` của LC dùng chung hàm này để preview và server chấm giống hệt nhau.
+  - `validateSection(value)`: lỗi cấu trúc (lấy từ `validate.ts`), không có `data:` URI, có ít nhất 1 câu hỏi (cảnh báo).
+- **Test Jest:**
+  - dùng mẫu `LC/docs/data/exam-draft-2.json`, `exam-editor-sample.json`;
+  - chấm bằng cách gọi trực tiếp `gradeResponses` và gọi qua `gradeExam` phải ra cùng kết quả;
+  - `content_public` không còn chứa đáp án (duyệt đệ quy tìm `checked`/`answer`/text blank/`num`).
+
+**Nghiệm thu:** test pass, package build được cho cả Next và Nest.
+
+### Step 10 – Upload media (R2)
+**Việc làm**
+- `StorageModule`: `R2Service` (copy `LC-BE/storage/r2.service.ts`), **export** service thay vì mỗi module khai báo lại như LC.
+  - Hỗ trợ 2 bucket (`R2_PUBLIC_BUCKET`, `R2_PRIVATE_BUCKET`), `putObject`, `deleteObject`, `getPresignedGetUrl(key, 600s)`.
+  - Env: `R2_ACCOUNT_ID`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`, `R2_PUBLIC_BUCKET`, `R2_PUBLIC_BASE_URL`, `R2_PRIVATE_BUCKET`.
+- `POST /t/:slug/media/upload` (Owner/Admin/Teacher):
+  - giới hạn và convert webp như `LC-BE/storage/media.controller.ts`;
+  - key `tenants/{tenantId}/exam-media/{uuid}.{ext}`;
+  - `GET media/status`.
+- Upload logo tenant: `tenants/{tenantId}/branding/...`.
+- Frontend: copy `LC-FE/lib/media-api.ts`, `MediaDialog.tsx`, `embedded-media.ts` (đổi endpoint theo slug).
+
+**Nghiệm thu:** upload ảnh/audio/video từ dashboard tenant, URL public mở được; thiếu cấu hình R2 trả 501 như LC.
+
+### Step 11 – Danh mục đề & Loại đề
+**Việc làm**
+- **Backend:**
+  - Migrations `exam_categories`, `exam_blueprints`, `exam_modules`.
+  - Service dùng chung cho 2 phạm vi (hệ thống / tenant). Tenant list trả **hệ thống + tenant**, kèm cờ `scope`.
+  - Không xoá khi đang được dùng, chỉ `is_active=false`.
+  - Blueprint lưu kèm modules trong 1 request (thêm/sửa/xoá/sắp xếp).
+  - Validate duration 5..180 và chia hết cho 5.
+  - Seed dữ liệu mẫu hệ thống (giả định 12).
+- **Frontend:**
+  - Trang Danh mục: bảng, modal, sắp xếp.
+  - Trang Loại đề: lọc theo danh mục, form có danh sách module kéo thả, `select` duration 5..180.
+  - Dùng cho cả `/admin/...` và `/t/{slug}/dashboard/...`. Ở tenant, mục hệ thống chỉ đọc (badge "Hệ thống"), Teacher chỉ xem.
+
+**Nghiệm thu:** CRUD 2 phạm vi đúng quyền (mục 5); tenant thấy cả loại đề hệ thống lẫn của mình.
+
+### Step 12 – Đề thi, trình soạn thảo & version
+**Việc làm**
+- **Backend** (migrations `exams`, `exam_sections`, `exam_parts`, `exam_questions`):
+  - `POST exams`: chọn blueprint → tạo exam `draft`, version 1, sections sinh từ modules (tên, thứ tự, `duration = reference_duration`, `raw_data` rỗng).
+  - `PATCH` metadata/`blueprint_id` (không tạo version).
+  - `PUT content`: thuật toán mục 4.6.
+  - `GET :id`: trả `raw_data` version hiện tại + `hasAttempts` (để FE cảnh báo).
+  - Versions: danh sách (version, ngày, người tạo, số attempt), xem, khôi phục.
+  - Publish: validate mọi section bằng `exam-core`, lỗi thì 422 kèm danh sách issue. Archive; soft delete.
+  - List đề: lọc theo category/blueprint/trạng thái/người tạo; Teacher thấy tất cả nhưng chỉ sửa được đề của mình.
+- **Frontend – trang danh sách đề:** bảng, tạo đề (chọn blueprint), badge trạng thái, hành động theo quyền.
+- **Frontend – trình soạn thảo `/exams/[id]/edit`** (copy từ LC `labs/exam-editor/_components/*` và `components/plate/*`):
+  - **Thanh tab section:** thêm (trống hoặc "từ module của blueprint"), đổi tên, xoá (confirm), kéo sắp xếp, `select` duration.
+  - **Mỗi tab** là 1 `ExamWorkspace` (Plate editor + toolbar + slash menu + minimap + issue panel), số câu đánh lại từ 1.
+  - **Autosave localStorage** theo `exam:{id}:draft`, lưu toàn bộ các tab. Khi mở lại, nếu nháp mới hơn bản server thì hỏi có khôi phục không.
+  - **Nút Save / Ctrl+S:** lưu tất cả, cảnh báo nếu `hasAttempts`, chặn rời trang khi chưa lưu.
+  - **Xử lý data URI:** upload trước khi lưu, như LC.
+  - **Bỏ autosave lên server** của LC.
+  - Import/Export JSON theo từng section.
+  - Form metadata: tiêu đề, mô tả, đổi blueprint.
+- **Frontend – Preview** (`PreviewDialog`): chọn section → `ExamSimulator` chấm ở client như LC.
+- **Frontend – trang Versions:** danh sách + khôi phục (confirm, nêu rõ sẽ ghi đè hay tạo version mới).
+- **Test backend:**
+  - Save khi chưa có attempt thì số version giữ nguyên và câu hỏi được thay mới.
+  - Có attempt (kể cả `in_progress`) thì tạo version mới và version cũ `deactivated`.
+  - Khôi phục version.
+  - Teacher sửa đề của người khác bị 403.
+  - Publish đề lỗi bị 422.
+
+**Nghiệm thu:**
+- Tạo đề IELTS sinh ra 4 tab.
+- Soạn và lưu xong, DB có đủ `exam_parts` / `exam_questions` với `answer_key` đúng.
+- Publish, rồi tạo 1 attempt, rồi sửa: sinh version 2.
+
+### Step 13 – Làm bài thi (giả lập) & chấm tự động
+**Việc làm**
+- **Backend** (migrations `exam_attempts`, `exam_attempt_sections`, `exam_attempt_answers`):
+  - **Học viên xem đề:**
+    - `learner/exams`: đề `published` của tenant (mọi member active).
+    - `learner/exams/:id`: thông tin + lịch sử lượt làm.
+  - **Làm bài:**
+    - `POST attempts`: khoá đọc exam, lấy `current_version`, tạo attempt + các attempt_section `not_started` (seed xáo trộn).
+    - `GET attempts/:id`: trạng thái, section hiện tại, `content_public` + `responses` của section đang làm. Chỉ trả intro khi section chưa bắt đầu. Có lazy finalize.
+    - `start`: `started_at`, `deadline_at = now + duration`. Chỉ được bắt đầu section kế tiếp khi section trước đã nộp.
+    - `PUT responses`: từ chối sau `deadline + 10s`.
+    - `submit`: chấm bằng `gradeResponses` với `exam_questions` → ghi `exam_attempt_answers` + `correct/total`. Nếu là section cuối thì chốt attempt: `graded` nếu không có câu tay, ngược lại `submitted`.
+  - **Ghi âm Speaking:** `POST recordings` (multer ≤10MB, `audio/webm`) lưu bucket private `tenants/{tenantId}/attempts/{attemptId}/{questionId}-{uuid}.webm`, ghi đè thì xoá file cũ. `GET url` trả presigned URL, chỉ cho chủ bài hoặc người chấm.
+  - **Cron** (`@nestjs/schedule`): mỗi phút chốt các section quá hạn (`auto_submitted = true`).
+  - **Kết quả:**
+    - `GET result`: số câu đúng theo section + tổng; phần chấm tay gồm trạng thái "Chờ chấm" hoặc điểm + nhận xét.
+    - **Không** trả đáp án hay verdict từng câu.
+- **Frontend:**
+  - `/t/{slug}`: danh sách đề publish (thẻ đề: tên, loại đề, số section, tổng thời gian).
+  - `/t/{slug}/exams/{id}`: thông tin, nút Bắt đầu / Làm tiếp, lịch sử lượt làm.
+  - **Trang thi** `(exam)/t/{slug}/attempts/{id}`, refactor `ExamSimulator.tsx` + `SimulatorState.tsx` của LC:
+    - lớp **Section**: màn hình hướng dẫn (intro), nút Bắt đầu, đồng hồ đếm ngược theo `deadline_at` của server, nộp sớm (confirm), hết giờ tự nộp, màn hình chờ section kế;
+    - bên trong giữ UI LC: tab Part, passage trái / câu hỏi phải, `AnswerNav` chỉ câu của section, flag;
+    - render từ `content_public` (ordering theo `key`);
+    - autosave responses (debounce 3s + khi đổi tab), báo trạng thái "Đã lưu";
+    - Speaking: component ghi âm (MediaRecorder, giới hạn `seconds`, nghe lại, ghi lại, upload);
+    - bỏ phần tô xanh/đỏ và "Làm lại" của LC ở chế độ thi thật.
+  - Trang kết quả: bảng section (x / y), trạng thái chấm tay, điểm & nhận xét.
+- **Test:**
+  - chấm server khớp exam-core;
+  - API học viên không lộ đáp án (snapshot kiểm tra key);
+  - quá hạn thì từ chối cập nhật, cron/lazy tự nộp;
+  - không bắt đầu được section khi section trước chưa nộp.
+
+**Nghiệm thu:**
+- Làm trọn 1 đề TOEIC 2 section.
+- Reload giữa chừng vẫn giữ câu trả lời và thời gian còn lại.
+- Hết giờ tự chuyển section.
+- Kết quả hiển thị theo section, không có đáp án.
+
+### Step 14 – Chấm bài thủ công
+**Việc làm**
+- **Backend:**
+  - `grading/attempts`: bài có câu manual, lọc exam / học viên / trạng thái (chờ chấm, đã chấm), loại bài của chính người chấm.
+  - Chi tiết bài: nội dung câu hỏi (từ `content_public` của đúng version), bài viết, link ghi âm presigned.
+  - `PUT answers/:id`: `score` 0–10 (bước 0.5), `comment`. Khi đủ câu thì attempt → `graded`, `graded_at`.
+- **Frontend:**
+  - Trang "Chấm bài": bảng + bộ lọc.
+  - Trang chi tiết: danh sách câu Writing/Speaking, player audio, ô điểm + nhận xét, lưu từng câu, điều hướng câu kế.
+  - Tổng quan tenant cập nhật "bài chờ chấm".
+- Trang kết quả học viên hiển thị điểm + nhận xét.
+
+**Nghiệm thu:**
+- Teacher chấm được bài của Student; không chấm được bài của chính mình.
+- Học viên thấy điểm và nhận xét sau khi chấm.
+
+### Step 15 – Hoàn thiện & nghiệm thu tổng
+**Việc làm**
+- Rà soát phân quyền toàn bộ API: bảng mục 5 → test e2e tối thiểu bằng supertest.
+- Empty state, loading, thông báo lỗi tiếng Việt; responsive cơ bản cho trang thi và landing.
+- Cập nhật `README.md`, `docs/setup/deploy.md`, `.env.example`.
+- Deploy production, chạy seed Owner + gói + dữ liệu mẫu, rồi đi hết checklist nghiệm thu bên dưới trên VPS.
+
+**Checklist nghiệm thu req-1**
+- [ ] Đăng ký / đăng nhập / đổi mật khẩu; khoá user có hiệu lực ngay.
+- [ ] System Owner/Admin: tổng quan, quản lý user (bảo vệ Owner), duyệt/từ chối tenant, gói dịch vụ, danh mục & loại đề hệ thống.
+- [ ] Registered User ≥ 18 đăng ký tenant; < 18 bị chặn; tenant `pending` chưa vào được dashboard.
+- [ ] Tenant Owner/Admin: tổng quan, quản lý membership (nhiều role, giới hạn gói, bảo vệ Owner, gắn phụ huynh).
+- [ ] Danh mục / loại đề / module theo 2 phạm vi.
+- [ ] Tạo đề từ blueprint → tab section → soạn Plate → Save → publish; version mới khi đã có bài làm; khôi phục version.
+- [ ] Thành viên thi tại khu vực chính: timer section, tự nộp, số câu đánh từ 1 mỗi section, ghi âm Speaking.
+- [ ] Chấm tự động phía server, không lộ đáp án; chấm tay Writing/Speaking.
+- [ ] Deploy `http://<ip>:3001`, LC ở 3000 không bị ảnh hưởng.
+
+---
+
+## 8. Ngoài phạm vi req-1 (ghi nhận cho req sau)
+- Xác thực email, quên mật khẩu, dịch vụ gửi mail, OAuth Google/Facebook.
+- Khoá học / lớp, giao đề theo lớp, role theo khoá học.
+- Chuyển quyền Tenant Owner.
+- Trang Parent xem kết quả học tập của con.
+- Thanh toán, thời hạn gói, quota dung lượng upload.
+- Thang điểm quy đổi (TOEIC 990, IELTS band), thống kê tỉ lệ đúng theo câu.
+- Giới hạn nghe audio 1 lần, thời gian chuẩn bị Speaking.
+- Đăng nhập bằng username (học viên không có email), i18n đa ngôn ngữ, domain + SSL.
+- Tuỳ chọn đánh số liên tục qua các section.
