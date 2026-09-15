@@ -12,7 +12,7 @@
 | 1 | Khởi tạo monorepo | ✅ | 2026-09-13 | Đã commit (`feat: first commit on git`) |
 | 2 | Khung `lang-api` | ✅ | 2026-09-14 | Chưa commit |
 | 3 | Khung `lang-app` (copy UI LC) | ✅ | 2026-09-14 | Chưa commit; chờ người dùng xem giao diện trên trình duyệt |
-| 4 | Docker & deploy sớm | ⬜ | | **Step tiếp theo** – DB VPS đã sẵn sàng; kiểm chứng image qua CI (không Docker local); P3, P4 kiểm khi làm |
+| 4 | Docker & deploy sớm | 🟡 | | Code xong, giả lập local đạt. Chờ: copy `deploy/.env` lên VPS, commit + push để CI build/deploy, kiểm `http://<ip>:3001` |
 | 5 | Tài khoản & xác thực | ⬜ | | Có thể làm trước Step 4 nếu Step 4 còn chờ |
 | 6 | Tenant, gói dịch vụ, membership (backend) | ⬜ | | |
 | 7 | Dashboard hệ thống `/admin` | ⬜ | | |
@@ -31,8 +31,8 @@
 |---|---|---|
 | P1 | 2 bucket R2 (public + private), gửi `R2_PUBLIC_BASE_URL` | 🟡 Người dùng báo đã chuẩn bị; tên bucket + URL gửi lúc làm Step 10 (biến R2 chưa thêm vào env) |
 | P2 | Database `lang-simulator` + user `lang_simulator` (quyền CREATE trên schema `public`); **Postgres VPS ≥ 13** | ✅ 2026-09-15: Postgres **16.15**; `lang_simulator` là owner database, không phải superuser, có CREATE trên `public`. Role ban đầu thiếu `LOGIN` → đã `ALTER ROLE … LOGIN PASSWORD` (mật khẩu ngẫu nhiên 64 ký tự, chỉ nằm trong `apps/lang-api/.env`) |
-| P3 | GitHub repo `vunguyenquangit/lang-simulator` + secrets VPS/GHCR | 🟡 Người dùng báo đã chuẩn bị, chưa kiểm |
-| P4 | `/opt/lang-simulator` trên VPS, mở port 3001 | 🟡 Người dùng báo đã chuẩn bị, chưa kiểm |
+| P3 | GitHub repo `vunguyenquangit/lang-simulator` + secrets VPS/GHCR | 🟡 Repo có, đã push `main`. Secrets chưa kiểm được (máy không có `gh`) – lần chạy workflow đầu sẽ lộ ra |
+| P4 | `/opt/lang-simulator` trên VPS, mở port 3001 | 🟡 Người dùng đã copy `.env` + `docker-compose.yml` lên (2026-09-15); port 3001 chưa kiểm |
 | P5 | Đổi mật khẩu đang lộ trong LC | ❓ Chưa xác nhận |
 
 ### Quyết định chốt ngày 2026-09-15 (đã cập nhật plan, README, CLAUDE.md)
@@ -51,7 +51,7 @@ Kiểm tra sau khi chuyển DB (2026-09-15):
 
 ### Đang chờ người dùng (tính đến 2026-09-15)
 
-1. Commit thay đổi của Step 2 + 3 (và thay đổi DB ngày 2026-09-15).
+1. **Step 4:** người dùng đã copy `.env` + `docker-compose.yml` lên `/opt/lang-simulator` (sau khi cấp quyền thư mục từ root). Code Step 4 push lên nhánh `step-4-docker` → người dùng mở PR vào `main` để CI build thử image → build đạt thì merge để deploy → kiểm tra theo `docs/setup/deploy.md` mục 3. Secrets GitHub chưa kiểm.
 2. Mở `http://localhost:3100/admin` trên trình duyệt để xác nhận layout dashboard giống LC (cách vượt middleware: xem README).
 3. Không bắt buộc: `REVOKE CONNECT ON DATABASE "lightc-general" FROM PUBLIC` (hiện `lang_simulator` vẫn CONNECT được DB của LC nhưng không có quyền trên bảng); giới hạn IP truy cập cổng 5432.
 
@@ -60,6 +60,33 @@ Kiểm tra sau khi chuyển DB (2026-09-15):
 ---
 
 ## Nhật ký
+
+### Step 4 – Docker & deploy sớm (🟡 2026-09-15)
+
+**Đã làm**
+- `Dockerfile` 4 stage: `base` (node:24-bookworm-slim, corepack) → `prune` (`pnpm dlx turbo@2.10.12 prune lang-api lang-app --docker`) → `build` (`pnpm install --frozen-lockfile` với cache mount, `turbo run build` với `BACKEND_INTERNAL_URL=http://127.0.0.1:3002`, `NEXT_PUBLIC_API_URL=/api`, rồi `pnpm --filter lang-api deploy --prod --legacy /out/api`) → `runner` (`TZ=Asia/Ho_Chi_Minh`, `USER node`, `EXPOSE 3000`, HEALTHCHECK `fetch http://127.0.0.1:3000/api/health`, start-period 60s).
+- `.dockerignore`; `docker/entrypoint.sh`: migrate (lỗi → thoát) → api `:3002` + app `:3000` (`HOSTNAME=0.0.0.0`), `wait -n` như LC.
+- `deploy/docker-compose.yml`: image `ghcr.io/vunguyenquangit/lang-simulator:${IMAGE_TAG:-latest}`, container `lang-simulator-app`, `3001:3000`, network external `${DB_NETWORK}`, logging như LC.
+- `deploy/.env.example` + `deploy/.env` trên máy dev (gitignored, chmod 600): `DB_HOST=postgres-docker`, `DB_NETWORK=postgres-docker_default`, mật khẩu `lang_simulator` như máy dev, `JWT_SECRET` mới riêng cho VPS.
+- `.github/workflows/deploy.yml`: PR → build không push; push `main`/chạy tay → build + push (`latest`, `sha-…`) → scp `deploy/docker-compose.yml` lên `/opt/lang-simulator` → ssh: kiểm có `.env`, login GHCR, `docker compose pull`, `up -d --wait`, `image prune`. Actions bản mới chạy node24: checkout@v7, setup-buildx@v4, login@v4, metadata@v6, build-push@v7, scp-action@v1.0.0, ssh-action@v1.2.5 (bỏ `script_stop` đã không còn, dùng `set -e`).
+- `docs/setup/deploy.md` (chuẩn bị, deploy, kiểm tra, rollback, sự cố); README mục Deploy; CLAUDE.md mục Docker & deploy.
+
+**Sai khác so với plan (đã cập nhật plan)**
+- Workflow tự copy `docker-compose.yml` (người dùng chọn); `.env` VPS soạn sẵn ở `deploy/.env` (người dùng chọn).
+- Không Docker local (người dùng chọn): giả lập bằng `turbo prune` + install/build/deploy trong scratchpad; thêm build image khi mở PR.
+- `pnpm deploy` cần `--legacy`. Rollback bằng `IMAGE_TAG` trong `.env`.
+- Network Postgres là `postgres-docker_default` (plan ghi `postgres_default`).
+
+**Kiểm tra đã chạy**
+- `turbo prune --docker` giữ nguyên `catalog`/`allowBuilds`; `pnpm install --frozen-lockfile` trên bản prune OK; build OK; rewrite trong `routes-manifest.json` trỏ `127.0.0.1:3002`; `pnpm deploy` ra `api` 119MB (có `@lang/shared`, resolve `@nestjs/core`, `pg` OK), `web` 52MB.
+- Chạy như entrypoint trên layout giả lập (`NODE_ENV=production`, DB VPS qua IP): migrate OK; `/` 200; `/api/health` qua 3000 → 200 `{"status":"ok","database":"up"}`; `/admin` không cookie → 307 `/login?next=%2Fadmin`; CSS `/_next/static/…` 200; lệnh HEALTHCHECK exit 0; log không có lỗi.
+- `bash -n docker/entrypoint.sh` OK; YAML workflow + compose parse OK.
+- `pnpm build`, `lint`, `typecheck`, `test` (29), `format:check` → OK.
+- **Chưa kiểm (cần CI/VPS):** `docker build` thật (`pnpm dlx turbo`, `COPY --chmod`, cache mount), `wait -n` (bash máy dev là 3.2), secrets GitHub, compose trên VPS, truy cập `:3001`, LC :3000 không bị ảnh hưởng.
+
+**Lưu ý**
+- Lỡ chạy `pnpm deploy --prod` từ repo đã ghi `"dev": false` vào `node_modules/.pnpm-workspace-state-v1.json` → `pnpm exec` đòi cài lại production. Khôi phục bằng `pnpm install --frozen-lockfile` (đã ghi vào CLAUDE.md).
+- `deploy/.env` chứa secret thật: không commit, không đưa vào image (`.dockerignore` loại `deploy`, `**/.env`).
 
 ### Step 3 – Khung `lang-app` (✅ 2026-09-14)
 

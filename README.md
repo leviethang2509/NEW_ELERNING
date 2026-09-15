@@ -46,6 +46,11 @@ packages/
   tsconfig/            @lang/tsconfig – preset base / library / nestjs / nextjs
   eslint-config/       @lang/eslint-config – ESLint flat config dùng chung
 docs/requirements/     yêu cầu, câu hỏi, kế hoạch, tiến độ
+docs/setup/            hướng dẫn deploy
+Dockerfile             image chứa cả lang-api + lang-app
+docker/entrypoint.sh   migrate → lang-api :3002 + lang-app :3000
+deploy/                docker-compose.yml + .env mẫu cho VPS
+.github/workflows/     build image (PR) / build + deploy (push main)
 ```
 
 ## Lệnh thường dùng
@@ -76,6 +81,10 @@ Production chạy `node dist/database/migrate.js` khi container khởi động.
 | ---------- | -------------------------- | ----------------------- |
 | Local      | 3100                       | 3101                    |
 | VPS        | host 3001 → container 3000 | 3002 (nội bộ container) |
+
+## Deploy
+
+Push `main` → GitHub Actions build image `ghcr.io/vunguyenquangit/lang-simulator` và deploy lên VPS (`http://<ip-vps>:3001`). Pull request chỉ build image để kiểm tra Dockerfile. Chuẩn bị VPS, kiểm tra log, rollback: [docs/setup/deploy.md](docs/setup/deploy.md).
 
 ## Quản lý phiên bản dependency
 
