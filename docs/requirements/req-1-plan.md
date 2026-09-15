@@ -15,12 +15,12 @@
 | Tooling | ESLint + Prettier; Jest cho `lang-api` và `exam-core` (chỉ test logic quan trọng) |
 | Git | `git init`, repo `vunguyenquangit/lang-simulator`, image `ghcr.io/vunguyenquangit/lang-simulator` |
 | Port | Local: app `3100`, api `3101`. VPS: host `3001` → container (Next 3000, Nest 3002 nội bộ) |
-| Database | Cùng Postgres server **và cùng database** với LC, **schema riêng `lang_simulator`** |
+| Database | **Database riêng `lang-simulator`**, schema **`public`**, trên Postgres của VPS (user `lang_simulator`). Máy dev và container trên VPS (:3001) **dùng chung** database này. Chưa có production; database production chốt sau (đổi ngày 2026-09-15, thay cho "chung database LC, schema `lang_simulator`" và "dev Postgres local `lang_simulator_dev`") |
 | Migration | TypeORM migrations, `synchronize: false` mọi môi trường, chạy migration khi container khởi động |
 | Quy ước DB | PK uuid, snake_case, `created_at/updated_at`; soft delete `deleted_at` cho users/tenants/memberships/exams; `created_by/updated_by` cho bảng nội dung |
 | Upload | R2, **bucket riêng** (bạn tạo), dùng lại account/token R2 hiện có; upload qua server như LC; quota để sau |
 | GCP | Không mang sang |
-| Deploy | 1 image, 1 container riêng cho lang-simulator; GitHub Actions push `main`; truy cập `http://<ip>:3001`; chỉ dev + production |
+| Deploy | 1 image, 1 container riêng cho lang-simulator; GitHub Actions push `main`; truy cập `http://<ip>:3001`; hiện VPS chỉ là môi trường dev (chưa có production) |
 
 ### Tài khoản, tenant, membership
 | Mục | Quyết định |
@@ -97,14 +97,14 @@
 | # | Việc | Cần trước step |
 |---|---|---|
 | P1 | Tạo 2 bucket R2 (`lang-simulator-public` bật public access / custom domain, `lang-simulator-private` tắt public). Gửi lại `R2_PUBLIC_BASE_URL` | Step 10 |
-| P2 | Trên Postgres VPS: tạo user `lang_simulator` có quyền `CREATE` trên database của LC (để tạo schema `lang_simulator`) — hoặc tự tạo schema và cấp quyền owner cho user này | Step 4 |
+| P2 | Trên Postgres VPS (cần **Postgres ≥ 13**): database `lang-simulator` + user `lang_simulator` có quyền `CREATE` trên schema `public` (PG ≥ 15 mặc định không cấp cho user khác owner) | Step 4 |
 | P3 | Tạo GitHub repo `vunguyenquangit/lang-simulator`; thêm secrets `VPS_HOST`, `VPS_USER`, `VPS_SSH_KEY`, `VPS_PORT`, `GHCR_TOKEN` (secrets GitHub theo từng repo nên phải thêm lại, cùng giá trị với LC) | Step 4 |
 | P4 | Trên VPS: tạo `/opt/lang-simulator/` chứa `docker-compose.yml` + `.env` (mẫu ở `deploy/`), mở port 3001 trên firewall | Step 4 |
 | P5 | Đổi mật khẩu DB/admin bên LC đang lộ trong `backend/.env.example` và `README.md` | Nên làm sớm |
 
 ---
 
-## 4. Thiết kế dữ liệu (schema `lang_simulator`)
+## 4. Thiết kế dữ liệu (database `lang-simulator`, schema `public`)
 
 > Mọi bảng có `id uuid PK`, `created_at`, `updated_at` trừ khi ghi khác. Enum lưu dạng Postgres enum hoặc `varchar` + check.
 
@@ -350,6 +350,8 @@ health:      GET /api/health
 
 **Nghiệm thu:** `pnpm --filter lang-api dev` chạy ở 3101, `/api/health` trả 200, migrate tạo được schema trên DB local.
 
+> Cập nhật 2026-09-15: schema lấy từ env `DB_SCHEMA` (mặc định `public`); `migrate.ts` chỉ `CREATE SCHEMA` khi schema chưa tồn tại (tránh đòi quyền `CREATE` trên database). Dev nối database `lang-simulator` trên VPS.
+
 ### Step 3 – Khung `lang-app` (copy UI LC)
 **Việc làm**
 - Next 14.2 App Router.
@@ -369,6 +371,8 @@ health:      GET /api/health
 
 **Nghiệm thu:** `pnpm dev` mở được `http://localhost:3100`, layout dashboard hiển thị giống LC, `/api/health` gọi qua rewrite OK.
 
+> Cập nhật khi làm Step 3: chỉ copy các component `ui/*` đã theo theme Solarized (`Modal`, `ConfirmDialog`, `PromptDialog`, `Pagination`, `TagMultiSelect` – id đổi sang `string`). Các component kiểu cũ màu indigo/gray của LC (`button`, `input`, `label`, `textarea`, `badge`, `table`, `select`, `dialog`, `checkbox`) **không copy**; khi cần sẽ viết lại theo theme.
+
 ### Step 4 – Docker & deploy sớm
 **Việc làm**
 - `Dockerfile` nhiều stage:
@@ -383,10 +387,11 @@ health:      GET /api/health
   - ports `3001:3000`, network external `postgres_default`, logging giống LC.
 - `deploy/.env.example`.
 - `.github/workflows/deploy.yml`: copy từ LC, đổi `cd /opt/lang-simulator`.
-- `docs/setup/deploy.md`: các bước P2–P4, tạo schema/user, kiểm tra log, rollback bằng tag `sha-…`.
+- `docs/setup/deploy.md`: các bước P2–P4, quyền user DB, kiểm tra log, rollback bằng tag `sha-…`.
+- Container dùng chung database `lang-simulator` / schema `public` với máy dev.
 
 **Nghiệm thu:**
-- `docker build` + `docker run` chạy ở local, trỏ vào Postgres local.
+- Máy local không có Docker (người dùng chọn): image được build và kiểm chứng trên GitHub Actions.
 - Push `main` thì `http://<ip>:3001` trả trang tạm và `/api/health` = 200.
 - LC ở port 3000 không bị ảnh hưởng.
 

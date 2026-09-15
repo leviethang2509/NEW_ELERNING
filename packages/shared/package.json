@@ -27,13 +27,34 @@
     "dev": "tsup --watch",
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
-    "clean": "rm -rf dist .turbo"
+    "test": "jest",
+    "clean": "rm -rf dist .turbo coverage"
+  },
+  "jest": {
+    "testEnvironment": "node",
+    "roots": [
+      "<rootDir>/src"
+    ],
+    "transform": {
+      "^.+\\.ts$": [
+        "ts-jest",
+        {
+          "tsconfig": {
+            "module": "CommonJS",
+            "moduleResolution": "Node10"
+          }
+        }
+      ]
+    }
   },
   "devDependencies": {
     "@lang/eslint-config": "workspace:*",
     "@lang/tsconfig": "workspace:*",
+    "@types/jest": "catalog:",
     "@types/node": "catalog:",
     "eslint": "catalog:",
+    "jest": "catalog:",
+    "ts-jest": "catalog:",
     "tsup": "catalog:",
     "typescript": "catalog:"
   }

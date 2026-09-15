@@ -8,10 +8,9 @@
     "experimentalDecorators": true,
     "emitDecoratorMetadata": true,
     "strictPropertyInitialization": false,
+    "useDefineForClassFields": false,
     "isolatedModules": false,
     "declaration": false,
-    "sourceMap": true,
-    "incremental": true,
-    "outDir": "./dist"
+    "sourceMap": true
   }
 }
