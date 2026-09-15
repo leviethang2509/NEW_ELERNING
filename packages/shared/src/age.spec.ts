@@ -1,4 +1,4 @@
-import { ageOn, isAdultOn, todayInTimeZone } from './age';
+import { ageOn, isAdultOn, isValidDateOfBirth, todayInTimeZone } from './age';
 
 describe('ageOn', () => {
   it('tăng tuổi đúng ngày sinh nhật', () => {
@@ -33,5 +33,22 @@ describe('todayInTimeZone', () => {
   it('lấy ngày theo múi giờ được chỉ định', () => {
     expect(todayInTimeZone('Asia/Ho_Chi_Minh', instant)).toBe('2026-09-14');
     expect(todayInTimeZone('UTC', instant)).toBe('2026-09-13');
+  });
+});
+
+describe('isValidDateOfBirth', () => {
+  const today = '2026-09-15';
+
+  it('chấp nhận ngày đúng lịch, kể cả hôm nay', () => {
+    expect(isValidDateOfBirth('2008-02-29', today)).toBe(true);
+    expect(isValidDateOfBirth(today, today)).toBe(true);
+  });
+
+  it('từ chối ngày tương lai, ngày không có thật hoặc sai định dạng', () => {
+    expect(isValidDateOfBirth('2026-09-16', today)).toBe(false);
+    expect(isValidDateOfBirth('2025-02-29', today)).toBe(false);
+    expect(isValidDateOfBirth('2000-13-01', today)).toBe(false);
+    expect(isValidDateOfBirth('1899-12-31', today)).toBe(false);
+    expect(isValidDateOfBirth('15/09/2000', today)).toBe(false);
   });
 });

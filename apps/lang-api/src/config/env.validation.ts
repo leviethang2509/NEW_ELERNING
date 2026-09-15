@@ -14,6 +14,7 @@ import {
   MinLength,
   validateSync,
 } from 'class-validator';
+import { DURATION_PATTERN } from '../common/duration';
 
 export const NODE_ENVS = ['development', 'production', 'test'] as const;
 export type NodeEnv = (typeof NODE_ENVS)[number];
@@ -63,6 +64,19 @@ export class EnvironmentVariables {
   @IsString()
   @MinLength(32)
   JWT_SECRET: string;
+
+  /** Thời hạn access token, dạng `<số><s|m|h|d>`. */
+  @Matches(DURATION_PATTERN)
+  JWT_ACCESS_EXPIRES_IN = '15m';
+
+  /** Thời hạn refresh token (cookie), gia hạn lại mỗi lần refresh. */
+  @Matches(DURATION_PATTERN)
+  REFRESH_EXPIRES_IN = '30d';
+
+  /** Cookie refresh chỉ gửi qua HTTPS. VPS hiện chạy HTTP nên mặc định `false`. */
+  @Transform(({ value }) => value === true || value === 'true')
+  @IsBoolean()
+  COOKIE_SECURE = false;
 }
 
 export function validateEnv(

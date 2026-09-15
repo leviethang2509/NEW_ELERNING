@@ -12,9 +12,9 @@
 | 1 | Khởi tạo monorepo | ✅ | 2026-09-13 | Đã commit (`feat: first commit on git`) |
 | 2 | Khung `lang-api` | ✅ | 2026-09-14 | Chưa commit |
 | 3 | Khung `lang-app` (copy UI LC) | ✅ | 2026-09-14 | Chưa commit; chờ người dùng xem giao diện trên trình duyệt |
-| 4 | Docker & deploy sớm | 🟡 | | Code xong, giả lập local đạt. Chờ: copy `deploy/.env` lên VPS, commit + push để CI build/deploy, kiểm `http://<ip>:3001` |
-| 5 | Tài khoản & xác thực | ⬜ | | Có thể làm trước Step 4 nếu Step 4 còn chờ |
-| 6 | Tenant, gói dịch vụ, membership (backend) | ⬜ | | |
+| 4 | Docker & deploy sớm | ✅ | 2026-09-15 | PR #1 đã merge; `http://160.25.166.163:3001` chạy, `/api/health` 200 |
+| 5 | Tài khoản & xác thực | ✅ | 2026-09-15 | Chưa commit; migration đã chạy trên DB dùng chung; chờ người dùng seed System Owner |
+| 6 | Tenant, gói dịch vụ, membership (backend) | ⬜ | | **Step tiếp theo** |
 | 7 | Dashboard hệ thống `/admin` | ⬜ | | |
 | 8 | Khu vực chính & dashboard tenant cơ bản | ⬜ | | |
 | 9 | `packages/exam-core` | ⬜ | | |
@@ -31,8 +31,8 @@
 |---|---|---|
 | P1 | 2 bucket R2 (public + private), gửi `R2_PUBLIC_BASE_URL` | 🟡 Người dùng báo đã chuẩn bị; tên bucket + URL gửi lúc làm Step 10 (biến R2 chưa thêm vào env) |
 | P2 | Database `lang-simulator` + user `lang_simulator` (quyền CREATE trên schema `public`); **Postgres VPS ≥ 13** | ✅ 2026-09-15: Postgres **16.15**; `lang_simulator` là owner database, không phải superuser, có CREATE trên `public`. Role ban đầu thiếu `LOGIN` → đã `ALTER ROLE … LOGIN PASSWORD` (mật khẩu ngẫu nhiên 64 ký tự, chỉ nằm trong `apps/lang-api/.env`) |
-| P3 | GitHub repo `vunguyenquangit/lang-simulator` + secrets VPS/GHCR | 🟡 Repo có, đã push `main`. Secrets chưa kiểm được (máy không có `gh`) – lần chạy workflow đầu sẽ lộ ra |
-| P4 | `/opt/lang-simulator` trên VPS, mở port 3001 | 🟡 Người dùng đã copy `.env` + `docker-compose.yml` lên (2026-09-15); port 3001 chưa kiểm |
+| P3 | GitHub repo `vunguyenquangit/lang-simulator` + secrets VPS/GHCR | ✅ 2026-09-15: workflow build, push GHCR, scp và ssh deploy đều chạy được (repo private, máy dev không có `gh`) |
+| P4 | `/opt/lang-simulator` trên VPS, mở port 3001 | ✅ 2026-09-15: thư mục thuộc user `vunq` (cấp từ root), có `.env`; truy cập `:3001` từ ngoài OK |
 | P5 | Đổi mật khẩu đang lộ trong LC | ❓ Chưa xác nhận |
 
 ### Quyết định chốt ngày 2026-09-15 (đã cập nhật plan, README, CLAUDE.md)
@@ -51,9 +51,11 @@ Kiểm tra sau khi chuyển DB (2026-09-15):
 
 ### Đang chờ người dùng (tính đến 2026-09-15)
 
-1. **Step 4:** người dùng đã copy `.env` + `docker-compose.yml` lên `/opt/lang-simulator` (sau khi cấp quyền thư mục từ root). Code Step 4 push lên nhánh `step-4-docker` → người dùng mở PR vào `main` để CI build thử image → build đạt thì merge để deploy → kiểm tra theo `docs/setup/deploy.md` mục 3. Secrets GitHub chưa kiểm.
-2. Mở `http://localhost:3100/admin` trên trình duyệt để xác nhận layout dashboard giống LC (cách vượt middleware: xem README).
-3. Không bắt buộc: `REVOKE CONNECT ON DATABASE "lightc-general" FROM PUBLIC` (hiện `lang_simulator` vẫn CONNECT được DB của LC nhưng không có quyền trên bảng); giới hạn IP truy cập cổng 5432.
+1. Step 5 **chưa commit**, gồm cả các sửa tài liệu sau lần deploy đầu (`DB_HOST=postgres_db`, người dùng chọn gộp vào commit Step 5). Migration `CreateUsersAndRefreshTokens` đã chạy trên database dùng chung (chỉ thêm bảng, container :3001 bản cũ không bị ảnh hưởng); khi deploy, entrypoint sẽ báo đã mới nhất.
+2. Seed System Owner đầu tiên: điền `SEED_OWNER_EMAIL/PASSWORD/NAME/DOB` trong `apps/lang-api/.env` (đã thêm dòng trống) rồi chạy `pnpm --filter lang-api seed:owner` (hoặc báo mình chạy). Seed xong xoá `SEED_OWNER_PASSWORD`.
+3. Xem giao diện bằng mắt: `/login`, `/register`, `/me`, `/me/account`, `/admin` (sau khi seed Owner) – thay cho việc xem layout dashboard của Step 3. Mình mới kiểm bằng ảnh chụp Chrome headless.
+4. VPS `/opt/lang-simulator/.env`: **không bắt buộc** thêm `JWT_ACCESS_EXPIRES_IN`, `REFRESH_EXPIRES_IN`, `COOKIE_SECURE` (đều có mặc định); `deploy/.env` trên máy dev đã thêm.
+5. Không bắt buộc: `REVOKE CONNECT ON DATABASE "lightc-general" FROM PUBLIC` (hiện `lang_simulator` vẫn CONNECT được DB của LC nhưng không có quyền trên bảng); giới hạn IP truy cập cổng 5432.
 
 Đã xong ngày 2026-09-15: người dùng đổi mật khẩu superuser `admin` và cập nhật `lightc-general/backend/.env` (kết nối lại OK); `pnpm dev` đã khởi động lại với user `lang_simulator`.
 
@@ -61,13 +63,74 @@ Kiểm tra sau khi chuyển DB (2026-09-15):
 
 ## Nhật ký
 
-### Step 4 – Docker & deploy sớm (🟡 2026-09-15)
+### Step 5 – Tài khoản & xác thực (✅ 2026-09-15)
+
+**Quyết định (người dùng chọn, đã cập nhật plan mục 1, 4.1, Step 5)**
+- Email: `varchar` luôn chữ thường + unique index `lower(email)` where `deleted_at is null`, không citext (Postgres VPS có citext trusted nhưng giữ quy tắc không tạo extension).
+- Seed System Owner: người dùng tự điền `SEED_OWNER_*`, chạy `seed:owner` một lần từ máy dev, không chạy trong container.
+- Giới tính `male` / `female` / `other`.
+- Refresh token dùng lại trong 30 giây sau khi xoay vẫn được cấp token mới (nhiều tab), quá 30 giây thu hồi cả family.
+
+**Đã làm**
+- `@lang/shared`: `Gender`, `DEFAULT_LOCALE`/`DEFAULT_TIMEZONE`, `PASSWORD_MIN_LENGTH` (8) / `PASSWORD_MAX_LENGTH` (72, giới hạn bcrypt), `normalizeEmail`, `AuthUser`/`AuthResponse`, `isValidDateOfBirth` + `MIN_DATE_OF_BIRTH` (1900-01-01).
+- lang-api:
+  - Entity `User`, `RefreshToken`; migration `1789482175602-CreateUsersAndRefreshTokens` sinh bằng `migration:generate`, thêm tay unique index `UQ_users_email` (`@Index(..., { synchronize: false })` trên entity). Enum lưu varchar + CHECK; `refresh_tokens.user_id` FK cascade; index `token_hash` (unique), `user_id`, `family_id`.
+  - `AuthModule`:
+    - `POST /auth/register` (tự đăng nhập), `login`, `refresh`, `logout` (204), `GET /auth/me`, `POST /auth/change-password`.
+    - Cookie `ls_rt`: httpOnly, SameSite=Lax, Path=/, Secure theo `COOKIE_SECURE`, Max-Age theo `REFRESH_EXPIRES_IN`; refresh lỗi 401 thì xoá cookie.
+    - Refresh token 32 byte ngẫu nhiên, DB lưu sha256 + `family_id`, xoay mỗi lần refresh (gia hạn 30 ngày). Thu hồi token cũ bằng update có điều kiện `revoked_at IS NULL` để hai request xoay cùng lúc không ghi đè nhau. Ân hạn chỉ áp cho token bị thu hồi do xoay (`replaced_by_id` có giá trị) và family còn token hoạt động.
+    - Login so bcrypt với hash giả khi email không tồn tại; tài khoản khoá → 403; dọn refresh token hết hạn của user.
+    - Đổi mật khẩu: tăng `token_version`, bỏ `must_change_password`, thu hồi family khác, giữ phiên hiện tại, trả access token mới.
+  - `JwtAuthGuard` (APP_GUARD): mặc định mọi route cần đăng nhập trừ `@Public()`; tải user mỗi request, so `status` + `token_version`; còn `must_change_password` → 403 trừ route `@AllowPendingPasswordChange()`. `SystemRolesGuard` + `@SystemRoles()`. `/api/health` gắn `@Public()`.
+  - `UsersModule`: `PATCH /me/profile` (họ tên, ngày sinh, giới tính, SĐT, địa chỉ; chuỗi rỗng → null), `toAuthUser` (không trả `password_hash`).
+  - Validator `@IsDateOfBirth()`; message validation tiếng Việt. `app.set('trust proxy', 'loopback')` để lấy IP client qua rewrite của Next.
+  - Env mới (có mặc định): `JWT_ACCESS_EXPIRES_IN=15m`, `REFRESH_EXPIRES_IN=30d`, `COOKIE_SECURE=false` + `durationToSeconds`. Đã thêm vào `.env.example`, `deploy/.env.example`, `apps/lang-api/.env`, `deploy/.env`.
+  - Script `seed:owner`: đọc `SEED_OWNER_*`, idempotent (Owner đã có → bỏ qua, không đổi mật khẩu), không nâng quyền tài khoản có sẵn, không in mật khẩu.
+  - Test mới: `auth.service.spec` (13), `jwt-auth.guard.spec` (6), `system-roles.guard.spec` (3), `duration.spec` (2), env (+2); repository giả `src/testing/in-memory-repository.ts` (loại khỏi `tsconfig.build.json`).
+- lang-app:
+  - `AuthProvider` trong root layout: server truyền `hasSession` (có cookie `ls_rt`) để khỏi gọi refresh khi chắc chắn chưa đăng nhập; tải trang gọi `/auth/refresh` (nay trả cả `user`); `login`, `register`, `logout` (tải lại `/login`), `applySession`, `setUser`; `contexts` hiện chỉ có thẻ "Quản trị hệ thống" cho Owner/Admin.
+  - `RequireAuth`: chưa đăng nhập → `/login?next=`; còn `must_change_password` → `/me/account`; `/admin` chỉ Owner/Admin, người khác → `/me`. `AuthedDashboardShell` cho `/admin` và dashboard tenant (roles tenant vẫn tạm); `(exam)` bọc `RequireAuth`.
+  - Trang `/login`, `/register` theo design/Auth.html (tab chuyển trang, giữ `?next=`, bỏ OAuth/"ghi nhớ"/cột giới thiệu; đăng ký có thanh độ mạnh mật khẩu). `/me` tạm (thẻ quản trị hệ thống + tài khoản, "chưa là thành viên trung tâm nào"). `/me/account`: hồ sơ + đổi mật khẩu; đang bị bắt đổi mật khẩu thì chỉ hiện form đổi.
+  - Header khu vực chính đổi theo trạng thái đăng nhập (`SiteHeaderNav`); `Brand` ẩn chữ trên mobile, không xuống dòng.
+  - Dùng chung: `components/ui/form-styles.ts`, `PasswordInput`, `FormAlert`; `lib/auth-redirect.ts` (`safeNextPath` chặn open redirect, `destinationAfterLogin`), `lib/password-strength.ts`, `lib/initials.ts`.
+- Tài liệu: README (mục Tài khoản, bỏ mẹo cookie), CLAUDE.md (quy ước migration/email/guard/test, AuthProvider/RequireAuth/form), `docs/setup/deploy.md` (env mới, không đặt `SEED_OWNER_*` trên VPS).
+
+**Sai khác so với plan (đã cập nhật plan)**
+- Các quyết định người dùng chọn ở trên (lower(email), seed, gender, ân hạn 30 giây).
+- `bcryptjs` thay `bcrypt` native (khỏi build native trong image, không cần `allowBuilds`); `@nestjs/jwt` 11 (bản 12 vừa ra, không cần); guard tự viết bằng `@nestjs/jwt` thay passport `JwtStrategy`.
+- Làm luôn `PATCH /me/profile` (plan mục 6.2) vì `/me/account` cần; `GET me/contexts` vẫn để Step 6.
+- Chưa có giới hạn số lần đăng nhập sai (plan không yêu cầu) – cân nhắc ở Step 15.
+
+**Kiểm tra đã chạy**
+- `pnpm build`, `lint`, `typecheck`, `test` (57: 20 shared + 37 api), `format:check` → OK.
+- `pnpm --filter lang-api migrate` trên database dùng chung → đã chạy migration; `migration:generate` lại → "No changes in database schema".
+- Chạy bản build (api `:3101`, `next start :3100`), script Node gọi qua rewrite `/api` (31/31 đạt):
+  - cookie đủ thuộc tính; email trùng khác hoa thường 409; ngày sinh tương lai, mật khẩu ngắn, field lạ (`systemRole`) → 400;
+  - refresh xoay token; dùng lại cookie cũ trong 30 giây → 200; lùi `revoked_at` quá 30 giây rồi dùng lại → 401 và token mới nhất của family cũng 401;
+  - đổi mật khẩu: access token cũ 401, token mới 200, phiên thiết bị khác 401 (cookie bị xoá), phiên hiện tại vẫn refresh, mật khẩu cũ không đăng nhập được;
+  - **khoá user trong DB → request kế tiếp 401**, refresh 401, login 403; mở khoá không hồi sinh phiên đã thu hồi;
+  - DB chỉ lưu sha256, có `ip`/`user_agent`.
+- Chrome headless (puppeteer-core cài trong scratchpad, 14/14 đạt): middleware đưa `/admin` về `/login?next=%2Fadmin`; đăng ký → `/me`; **reload vẫn giữ phiên**; 2 tab tải cùng lúc đều giữ phiên; user thường vào `/admin` → `/me`; sửa hồ sơ, reload vẫn còn; đổi mật khẩu; đăng xuất rồi vào `/me` bị chặn; đăng nhập sai hiện lỗi, đúng thì theo `?next=`; System Admin thấy dashboard có tên + email; cờ `must_change_password` bắt đổi mật khẩu rồi vào `/admin`; khoá user → reload về `/login`; mobile 390px không tràn, header cao 68px.
+- User test (`step5-test-…@example.com`) tạo trong DB đã xoá hết sau mỗi lần chạy (còn 0).
+- Console chỉ có lỗi mong đợi: 401 khi sai mật khẩu/khoá user; 404 `favicon.ico`; 404 prefetch các mục menu `/admin/*` chưa có trang.
+
+**Lưu ý cho các step sau**
+- Guard toàn cục: route công khai mới (vd. `GET public/plans`, `public/tenants/:slug`) **phải** gắn `@Public()`.
+- Step 6: `GET me/contexts` → thay `contexts` trong `AuthProvider` và bổ sung `destinationAfterLogin`; tạo account (F1-d) dùng `hashPassword` + `must_change_password = true` (guard và `RequireAuth` đã xử lý luồng bắt đổi mật khẩu).
+- Step 7: khoá user có hiệu lực ngay nhờ guard kiểm `status`; reset mật khẩu nên tăng `token_version` + thu hồi refresh token. Link sidebar `/admin/*` còn 404 prefetch tới khi có trang.
+- Step 8: `/me` đang là bản tạm; chưa có `favicon`.
+- bcryptjs cost 12 mất khoảng 0,4 giây mỗi lần hash trên máy dev (bất đồng bộ, không chặn event loop).
+- Root layout đọc cookie nên mọi route của lang-app là dynamic (ƒ).
+- Script kiểm thử E2E nằm ở scratchpad phiên này (không commit); cần lâu dài thì đưa vào repo ở Step 15.
+
+### Step 4 – Docker & deploy sớm (✅ 2026-09-15)
 
 **Đã làm**
 - `Dockerfile` 4 stage: `base` (node:24-bookworm-slim, corepack) → `prune` (`pnpm dlx turbo@2.10.12 prune lang-api lang-app --docker`) → `build` (`pnpm install --frozen-lockfile` với cache mount, `turbo run build` với `BACKEND_INTERNAL_URL=http://127.0.0.1:3002`, `NEXT_PUBLIC_API_URL=/api`, rồi `pnpm --filter lang-api deploy --prod --legacy /out/api`) → `runner` (`TZ=Asia/Ho_Chi_Minh`, `USER node`, `EXPOSE 3000`, HEALTHCHECK `fetch http://127.0.0.1:3000/api/health`, start-period 60s).
 - `.dockerignore`; `docker/entrypoint.sh`: migrate (lỗi → thoát) → api `:3002` + app `:3000` (`HOSTNAME=0.0.0.0`), `wait -n` như LC.
 - `deploy/docker-compose.yml`: image `ghcr.io/vunguyenquangit/lang-simulator:${IMAGE_TAG:-latest}`, container `lang-simulator-app`, `3001:3000`, network external `${DB_NETWORK}`, logging như LC.
-- `deploy/.env.example` + `deploy/.env` trên máy dev (gitignored, chmod 600): `DB_HOST=postgres-docker`, `DB_NETWORK=postgres-docker_default`, mật khẩu `lang_simulator` như máy dev, `JWT_SECRET` mới riêng cho VPS.
+- `deploy/.env.example` + `deploy/.env` trên máy dev (gitignored, chmod 600): `DB_HOST=postgres_db`, `DB_NETWORK=postgres-docker_default` (giống `/opt/lightc/.env`), mật khẩu `lang_simulator` như máy dev, `JWT_SECRET` mới riêng cho VPS.
+- Lần deploy đầu (merge PR) lỗi `container is unhealthy`: log `Migration thất bại … getaddrinfo ENOTFOUND postgres-docker` – `DB_HOST` điền sai (đã hỏi người dùng nhưng đáp án là lựa chọn mình đưa ra, chưa kiểm trên VPS). Tên thật lấy từ `.env` của LC: container `postgres_db`. Bài học: giá trị hạ tầng VPS nên đối chiếu `/opt/lightc/.env` hoặc `docker ps` thay vì đưa lựa chọn đoán.
 - `.github/workflows/deploy.yml`: PR → build không push; push `main`/chạy tay → build + push (`latest`, `sha-…`) → scp `deploy/docker-compose.yml` lên `/opt/lang-simulator` → ssh: kiểm có `.env`, login GHCR, `docker compose pull`, `up -d --wait`, `image prune`. Actions bản mới chạy node24: checkout@v7, setup-buildx@v4, login@v4, metadata@v6, build-push@v7, scp-action@v1.0.0, ssh-action@v1.2.5 (bỏ `script_stop` đã không còn, dùng `set -e`).
 - `docs/setup/deploy.md` (chuẩn bị, deploy, kiểm tra, rollback, sự cố); README mục Deploy; CLAUDE.md mục Docker & deploy.
 
@@ -82,7 +145,8 @@ Kiểm tra sau khi chuyển DB (2026-09-15):
 - Chạy như entrypoint trên layout giả lập (`NODE_ENV=production`, DB VPS qua IP): migrate OK; `/` 200; `/api/health` qua 3000 → 200 `{"status":"ok","database":"up"}`; `/admin` không cookie → 307 `/login?next=%2Fadmin`; CSS `/_next/static/…` 200; lệnh HEALTHCHECK exit 0; log không có lỗi.
 - `bash -n docker/entrypoint.sh` OK; YAML workflow + compose parse OK.
 - `pnpm build`, `lint`, `typecheck`, `test` (29), `format:check` → OK.
-- **Chưa kiểm (cần CI/VPS):** `docker build` thật (`pnpm dlx turbo`, `COPY --chmod`, cache mount), `wait -n` (bash máy dev là 3.2), secrets GitHub, compose trên VPS, truy cập `:3001`, LC :3000 không bị ảnh hưởng.
+- Trên CI/VPS (PR #1 → merge `main`, 2026-09-15): image build + push GHCR OK (gồm `pnpm dlx turbo`, `COPY --chmod`, cache mount). Deploy lần 1 unhealthy do `DB_HOST` sai; sửa `/opt/lang-simulator/.env` + `docker compose up -d --force-recreate --wait` → healthy (entrypoint, `wait -n` chạy đúng).
+- Từ ngoài: `:3001/` 200; `/api/health` 200 `{"status":"ok","database":"up"}`; `/admin` → 307 `/login?next=%2Fadmin`; `/api/xyz` 404; CSS tĩnh 200; LC `:3000/` vẫn 200.
 
 **Lưu ý**
 - Lỡ chạy `pnpm deploy --prod` từ repo đã ghi `"dev": false` vào `node_modules/.pnpm-workspace-state-v1.json` → `pnpm exec` đòi cài lại production. Khôi phục bằng `pnpm install --frozen-lockfile` (đã ghi vào CLAUDE.md).

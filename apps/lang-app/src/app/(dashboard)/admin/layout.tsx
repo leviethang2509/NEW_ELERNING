@@ -1,20 +1,17 @@
-import { DashboardShell } from '@/components/dashboard/DashboardShell';
+import { AuthedDashboardShell } from '@/components/dashboard/AuthedDashboardShell';
 
-// Dashboard System Owner/Admin. User và danh sách không gian lấy từ
-// AuthProvider ở Step 5.
+// Dashboard System Owner/Admin; user khác bị chuyển về /me.
 export default function AdminLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
   return (
-    <DashboardShell
+    <AuthedDashboardShell
       scope={{ kind: 'system' }}
-      user={null}
-      workspaces={[]}
       currentWorkspaceKey="system"
     >
       {children}
-    </DashboardShell>
+    </AuthedDashboardShell>
   );
 }

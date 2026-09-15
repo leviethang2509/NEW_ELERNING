@@ -1,7 +1,17 @@
-import { ComingSoon } from '@/components/ComingSoon';
+import { Suspense } from 'react';
+import type { Metadata } from 'next';
 import { vi } from '@/i18n/vi';
+import { RegisterForm } from './RegisterForm';
 
-// Trang đăng ký thật làm ở Step 5.
+export const metadata: Metadata = {
+  title: `${vi.auth.register} · ${vi.app.name}`,
+};
+
+// RegisterForm đọc `?next=` bằng useSearchParams nên cần Suspense.
 export default function RegisterPage() {
-  return <ComingSoon title={vi.auth.register} backHref="/" />;
+  return (
+    <Suspense>
+      <RegisterForm />
+    </Suspense>
+  );
 }

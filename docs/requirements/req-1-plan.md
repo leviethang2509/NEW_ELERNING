@@ -25,7 +25,7 @@
 ### Tài khoản, tenant, membership
 | Mục | Quyết định |
 |---|---|
-| Token | Access JWT 15 phút + refresh token httpOnly cookie (lưu DB, thu hồi được); JwtStrategy kiểm tra DB (`status`, `token_version`); `middleware.ts` ở Next |
+| Token | Access JWT 15 phút + refresh token httpOnly cookie (lưu DB, thu hồi được); guard kiểm tra DB (`status`, `token_version`); `middleware.ts` ở Next. Xoay refresh token: token cũ bị dùng lại trong **30 giây** (nhiều tab) vẫn được cấp token mới, quá 30 giây thì thu hồi cả family (chốt 2026-09-15) |
 | Đăng ký | Công khai email + mật khẩu; đổi mật khẩu. Xác thực email, quên mật khẩu, OAuth để sau (chuẩn bị cột `email_verified_at`) |
 | User | Theo bảng D3; `date_of_birth` **bắt buộc**; email bắt buộc & unique |
 | Dưới 18 | Được tự đăng ký, không tuổi tối thiểu; **chỉ ≥ 18 tuổi mới được tạo tenant** |
@@ -111,8 +111,8 @@
 ### 4.1 Tài khoản & phiên
 ```
 users
-  email citext UNIQUE (where deleted_at is null), password_hash, full_name, date_of_birth date NOT NULL,
-  gender NULL, phone NULL, avatar_url NULL, address NULL,
+  email varchar(254) luôn chữ thường, UNIQUE lower(email) (where deleted_at is null), password_hash, full_name, date_of_birth date NOT NULL,
+  gender (male, female, other) NULL, phone NULL, avatar_url NULL, address NULL,
   locale default 'vi', timezone default 'Asia/Ho_Chi_Minh',
   system_role enum(SYSTEM_OWNER, SYSTEM_ADMIN, REGISTERED_USER) default REGISTERED_USER,
   status enum(active, locked) default active,
@@ -399,7 +399,7 @@ health:      GET /api/health
 > - Workflow **tự copy** `deploy/docker-compose.yml` lên `/opt/lang-simulator` (appleboy/scp-action) trước khi `docker compose pull && up -d --wait`; `.env` VPS soạn sẵn ở `deploy/.env` (gitignored) để người dùng scp lên.
 > - Pull request vào `main` chỉ build image (không push/deploy) để kiểm Dockerfile, vì máy dev không có Docker.
 > - `pnpm deploy` cần `--legacy` (pnpm ≥ 10). Compose dùng `image: …:${IMAGE_TAG:-latest}` để rollback bằng tag `sha-…`.
-> - Postgres trên VPS: container `postgres-docker`, network `postgres-docker_default` (không phải `postgres_default`).
+> - Postgres trên VPS: container `postgres_db` (image `postgres:16-alpine`), network `postgres-docker_default` (không phải `postgres_default`); giống `/opt/lightc/.env`.
 
 ### Step 5 – Tài khoản & xác thực
 **Việc làm**
@@ -424,6 +424,13 @@ health:      GET /api/health
 - Đăng ký, đăng nhập, đổi mật khẩu được.
 - Khoá user trong DB thì request kế tiếp bị 401.
 - Reload trang vẫn giữ phiên nhờ refresh cookie.
+
+> Cập nhật khi làm Step 5 (2026-09-15, người dùng chọn):
+> - Email: `varchar` luôn lưu chữ thường + unique index `lower(email)` where `deleted_at is null`, **không dùng citext** (không tạo extension).
+> - Seed System Owner: script `pnpm --filter lang-api seed:owner` đọc `SEED_OWNER_*` do người dùng tự điền trong `apps/lang-api/.env`; chỉ chạy từ máy dev (database dùng chung), không chạy trong container.
+> - Giới tính: `male` / `female` / `other` (Nam / Nữ / Khác), để trống được.
+> - Refresh token dùng lại trong 30 giây sau khi xoay vẫn được cấp token mới (nhiều tab), quá 30 giây thu hồi cả family.
+> - Kỹ thuật: `bcryptjs` (thuần JS, khỏi build native trong Docker), guard tự viết bằng `@nestjs/jwt` thay cho passport (`JwtAuthGuard` toàn cục + `@Public()`), `PATCH /me/profile` làm luôn ở step này, `/me` tạm có thẻ quản trị hệ thống + tài khoản (danh sách tenant ở Step 8).
 
 ### Step 6 – Tenant, gói dịch vụ, membership (backend)
 **Việc làm**

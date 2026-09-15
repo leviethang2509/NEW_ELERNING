@@ -28,11 +28,21 @@ pnpm --filter lang-api migrate
 pnpm dev
 ```
 
+### Tài khoản
+
+- Người dùng thường tự đăng ký tại http://localhost:3100/register.
+- System Owner đầu tiên tạo bằng seed. Database dùng chung nên **chỉ cần chạy một lần** từ máy dev; chạy lại không tạo trùng, không đổi mật khẩu:
+  ```bash
+  # Điền SEED_OWNER_EMAIL, SEED_OWNER_PASSWORD, SEED_OWNER_NAME, SEED_OWNER_DOB (YYYY-MM-DD) trong apps/lang-api/.env
+  pnpm --filter lang-api seed:owner
+  ```
+  Seed xong nên xoá `SEED_OWNER_PASSWORD` khỏi `.env`.
+- Phiên: access token 15 phút (trong bộ nhớ trình duyệt) + refresh token 30 ngày (cookie httpOnly `ls_rt`). Đổi thời hạn bằng `JWT_ACCESS_EXPIRES_IN`, `REFRESH_EXPIRES_IN`; khi có HTTPS đặt `COOKIE_SECURE=true`.
+
 - Khu vực chính: http://localhost:3100
 - API: http://localhost:3101/api/health (hoặc qua rewrite http://localhost:3100/api/health)
 - `lang-app` không cần file `.env` khi dev (mặc định rewrite `/api` tới `127.0.0.1:3101`, xem `apps/lang-app/.env.example`).
-
-> Trước khi có trang đăng nhập (Step 5), middleware chuyển `/admin`, `/t/{slug}/dashboard`… về `/login`. Muốn xem thử layout dashboard, mở DevTools console chạy `document.cookie = 'ls_rt=dev; path=/'` rồi tải lại trang.
+- `/me`, `/admin`, `/t/{slug}/dashboard`… cần đăng nhập; `/admin` chỉ dành cho System Owner/Admin.
 
 ## Cấu trúc
 

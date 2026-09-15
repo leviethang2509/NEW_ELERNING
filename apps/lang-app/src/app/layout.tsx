@@ -1,6 +1,9 @@
+import { REFRESH_TOKEN_COOKIE } from '@lang/shared';
 import type { Metadata } from 'next';
 import { Noto_Sans, Noto_Sans_JP, Roboto, Roboto_Mono } from 'next/font/google';
+import { cookies } from 'next/headers';
 import './globals.css';
+import { AuthProvider } from '@/components/auth/AuthProvider';
 import { GlobalLoadingBar } from '@/components/GlobalLoadingBar';
 import { vi } from '@/i18n/vi';
 
@@ -54,7 +57,11 @@ export default function RootLayout({
     >
       <body className="min-h-screen bg-[var(--bg)] text-[var(--fg)] antialiased">
         <GlobalLoadingBar />
-        {children}
+        {/* Chỉ báo có cookie refresh (httpOnly, JS không đọc được) để client
+            biết có nên gọi /auth/refresh khi tải trang. */}
+        <AuthProvider hasSession={cookies().has(REFRESH_TOKEN_COOKIE)}>
+          {children}
+        </AuthProvider>
       </body>
     </html>
   );

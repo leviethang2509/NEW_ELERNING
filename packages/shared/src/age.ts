@@ -4,6 +4,9 @@
 /** Chỉ người đủ tuổi này mới được đăng ký tenant. */
 export const ADULT_AGE = 18;
 
+/** Ngày sinh sớm nhất được chấp nhận. */
+export const MIN_DATE_OF_BIRTH = '1900-01-01';
+
 const ISO_DATE = /^(\d{4})-(\d{2})-(\d{2})$/;
 
 function parseIsoDate(value: string): [number, number, number] {
@@ -40,4 +43,22 @@ export function ageOn(dateOfBirth: string, onDate: string): number {
 
 export function isAdultOn(dateOfBirth: string, onDate: string): boolean {
   return ageOn(dateOfBirth, onDate) >= ADULT_AGE;
+}
+
+/** Ngày sinh `YYYY-MM-DD` đúng lịch, trong khoảng `MIN_DATE_OF_BIRTH` đến `today`. */
+export function isValidDateOfBirth(value: string, today: string): boolean {
+  const match = ISO_DATE.exec(value);
+  if (!match) return false;
+  const [year, month, day] = [
+    Number(match[1]),
+    Number(match[2]),
+    Number(match[3]),
+  ];
+  const date = new Date(Date.UTC(year, month - 1, day));
+  const sameDay =
+    date.getUTCFullYear() === year &&
+    date.getUTCMonth() === month - 1 &&
+    date.getUTCDate() === day;
+  // Chuỗi cùng định dạng YYYY-MM-DD so sánh được theo thứ tự từ điển.
+  return sameDay && value >= MIN_DATE_OF_BIRTH && value <= today;
 }

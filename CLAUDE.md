@@ -31,6 +31,10 @@
 
 - Env mới: thêm vào `src/config/env.validation.ts` (kiểm tra lúc khởi động, không có giá trị dự phòng cho secret) **và** `.env.example`.
 - DB: schema theo env `DB_SCHEMA` (`public`), PK uuid (`gen_random_uuid`, không tự tạo extension), snake_case, entity đặt tên `*.entity.ts`, **chỉ dùng migrations** (không `synchronize`); không sửa migration đã chạy. DB dùng chung với bản trên VPS: migration phải tương thích ngược với code đang chạy trên :3001 (thêm cột/bảng trước, xoá sau).
+- Migration: `migration:generate` rồi đọc lại; index/constraint entity không khai báo được (vd. unique `lower(email)`) thì thêm tay và gắn `@Index(name, { synchronize: false })` trên entity. Chạy migration xong, `migration:generate` lần nữa phải báo "No changes". Enum lưu `varchar` + `@Check` (tương thích ngược hơn Postgres enum).
+- Email: luôn qua `normalizeEmail` (`@lang/shared`), unique theo `lower(email)` bỏ qua user đã xoá mềm (không dùng citext).
+- Xác thực: `JwtAuthGuard` + `SystemRolesGuard` là **guard toàn cục**, route mặc định cần đăng nhập. Route công khai gắn `@Public()`; route vẫn gọi được khi user còn `must_change_password` gắn `@AllowPendingPasswordChange()`; giới hạn role hệ thống bằng `@SystemRoles(...)`. Không trả entity `User` ra client, dùng `toAuthUser`.
+- Unit test service dùng `src/testing/in-memory-repository.ts` (không kết nối DB dùng chung); `jest.mock('./password')` để khỏi chạy bcrypt thật. Fake timers chỉ giả `Date` (jsonwebtoken cần `nextTick`/`setImmediate` thật).
 - File dùng decorator class-transformer/class-validator mà có thể chạy ngoài Nest (script, CLI, test) phải `import 'reflect-metadata'`.
 - **Không bật `incremental`** trong tsconfig của Nest: cùng `deleteOutDir` sẽ làm `dist` thiếu file. Nếu `dist` thiếu file: xoá `*.tsbuildinfo` và `pnpm build --force`.
 - Lỗi trả về dạng `{ statusCode, message }` qua `AllExceptionsFilter`; không lộ chi tiết lỗi 500.
@@ -41,6 +45,8 @@
 - Server component chỉ truyền dữ liệu thuần sang client component (vd. `NavScope`); menu/icon dựng trong client từ `src/config/navigation.ts`.
 - Chuỗi UI đặt trong `src/i18n/vi.ts`. Màu dùng CSS variables Solarized trong `globals.css` (class tiền tố `ls-`).
 - API gọi qua `src/lib/api.ts` (cùng origin `/api`, access token trong bộ nhớ, tự refresh khi 401).
+- Phiên đăng nhập: `useAuth()` từ `AuthProvider` (root layout). Trang cần đăng nhập bọc `RequireAuth` (`/me/*`, `(exam)`), dashboard dùng `AuthedDashboardShell`. Trang đích sau đăng nhập: `destinationAfterLogin` trong `src/lib/auth-redirect.ts`.
+- Form: `inputClass`/`labelClass`/`primaryButtonClass`, `PasswordInput`, `FormAlert` trong `src/components/ui`.
 - ESLint: plugin `@next/next` bản 14 phải bọc `fixupPluginRules` (ESLint 10); lint bằng `eslint .`, không dùng `next lint`.
 
 ## Docker & deploy

@@ -1,3 +1,5 @@
+import type { AuthResponse } from '@lang/shared';
+
 // Gọi API cùng origin qua rewrite `/api` của Next.js (xem next.config.mjs).
 const API_URL = process.env.NEXT_PUBLIC_API_URL || '/api';
 
@@ -27,9 +29,10 @@ export function onAuthFailure(listener: AuthFailureListener): () => void {
 }
 
 // Nhiều request cùng gặp 401 thì chỉ gọi refresh một lần.
-let refreshing: Promise<boolean> | null = null;
+let refreshing: Promise<AuthResponse | null> | null = null;
 
-export function refreshAccessToken(): Promise<boolean> {
+/** Đổi refresh cookie lấy phiên mới; `null` khi phiên đã hết hạn hẳn. */
+export function refreshAccessToken(): Promise<AuthResponse | null> {
   if (!refreshing) {
     refreshing = (async () => {
       try {
@@ -37,12 +40,12 @@ export function refreshAccessToken(): Promise<boolean> {
           method: 'POST',
           credentials: 'include',
         });
-        if (!res.ok) return false;
-        const data = (await res.json()) as { accessToken?: string };
-        accessToken = data.accessToken ?? null;
-        return accessToken !== null;
+        if (!res.ok) return null;
+        const session = (await res.json()) as AuthResponse;
+        accessToken = session.accessToken;
+        return session;
       } catch {
-        return false;
+        return null;
       } finally {
         refreshing = null;
       }

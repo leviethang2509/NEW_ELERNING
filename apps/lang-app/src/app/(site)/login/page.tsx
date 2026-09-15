@@ -1,7 +1,17 @@
-import { ComingSoon } from '@/components/ComingSoon';
+import { Suspense } from 'react';
+import type { Metadata } from 'next';
 import { vi } from '@/i18n/vi';
+import { LoginForm } from './LoginForm';
 
-// Trang đăng nhập thật làm ở Step 5; middleware đã chuyển hướng về đây.
+export const metadata: Metadata = {
+  title: `${vi.auth.login} · ${vi.app.name}`,
+};
+
+// LoginForm đọc `?next=` bằng useSearchParams nên cần Suspense.
 export default function LoginPage() {
-  return <ComingSoon title={vi.auth.login} backHref="/" />;
+  return (
+    <Suspense>
+      <LoginForm />
+    </Suspense>
+  );
 }

@@ -13,8 +13,11 @@ async function bootstrap() {
 
   // Mặc định body JSON chỉ 100KB — đề thi nhiều câu dễ vượt. Upload file đi multer, không bị ảnh hưởng.
   app.useBodyParser('json', { limit: '2mb' });
-  // Refresh token nằm trong cookie httpOnly (Step 5).
+  // Refresh token nằm trong cookie httpOnly.
   app.use(cookieParser());
+  // Request tới qua rewrite của Next.js trên cùng máy: lấy IP client từ
+  // X-Forwarded-For khi proxy là loopback (lưu vào refresh_tokens.ip).
+  app.set('trust proxy', 'loopback');
   app.setGlobalPrefix('api');
   // Không bật CORS: lang-app gọi API cùng origin qua rewrite /api của Next.js.
   app.useGlobalPipes(

@@ -49,13 +49,15 @@ scp deploy/.env <user>@<ip-vps>:/opt/lang-simulator/.env
 ssh <user>@<ip-vps> chmod 600 /opt/lang-simulator/.env
 ```
 
-- `DB_NETWORK`, `DB_HOST`: network và tên container Postgres.
+- `DB_NETWORK`, `DB_HOST`: network và tên container Postgres – **giống LC** (`grep -E '^(DB_HOST|DB_NETWORK)=' /opt/lightc/.env`). Hiện tại: `DB_HOST=postgres_db`, `DB_NETWORK=postgres-docker_default`.
   ```bash
   docker ps --format '{{.Names}}' | grep -i postgres
   docker inspect -f '{{range $k, $v := .NetworkSettings.Networks}}{{$k}} {{end}}' <ten-container-postgres>
   ```
   Network `bridge` mặc định không phân giải tên container; khi đó cần network do người dùng tạo (vd. của docker compose).
 - `JWT_SECRET`: khác giá trị ở máy dev (`openssl rand -base64 48`).
+- `JWT_ACCESS_EXPIRES_IN`, `REFRESH_EXPIRES_IN`, `COOKIE_SECURE` (từ Step 5): không bắt buộc, mặc định `15m`, `30d`, `false`. Chỉ đặt `COOKIE_SECURE=true` khi truy cập qua HTTPS, nếu không trình duyệt sẽ không gửi cookie đăng nhập.
+- **Không** đặt `SEED_OWNER_*` trên VPS: System Owner được seed một lần từ máy dev (database dùng chung).
 
 Mở cổng 3001 trên firewall nếu có (vd. `ufw allow 3001/tcp`).
 

@@ -18,6 +18,22 @@ describe('validateEnv', () => {
     expect(env.NODE_ENV).toBe('development');
   });
 
+  it('thời hạn token và cookie có giá trị mặc định', () => {
+    const env = validateEnv(base);
+    expect(env.JWT_ACCESS_EXPIRES_IN).toBe('15m');
+    expect(env.REFRESH_EXPIRES_IN).toBe('30d');
+    expect(env.COOKIE_SECURE).toBe(false);
+    expect(validateEnv({ ...base, COOKIE_SECURE: 'true' }).COOKIE_SECURE).toBe(
+      true,
+    );
+  });
+
+  it('thời hạn token sai định dạng thì dừng', () => {
+    expect(() =>
+      validateEnv({ ...base, JWT_ACCESS_EXPIRES_IN: '15 phút' }),
+    ).toThrow(/JWT_ACCESS_EXPIRES_IN/);
+  });
+
   it('đọc DB_LOGGING dạng chuỗi', () => {
     expect(validateEnv({ ...base, DB_LOGGING: 'true' }).DB_LOGGING).toBe(true);
   });

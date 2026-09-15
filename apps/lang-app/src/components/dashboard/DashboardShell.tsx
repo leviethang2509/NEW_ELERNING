@@ -11,6 +11,7 @@ import {
   type NavScope,
 } from '@/config/navigation';
 import { vi } from '@/i18n/vi';
+import { initials } from '@/lib/initials';
 import { WorkspaceSwitcher, type WorkspaceOption } from './WorkspaceSwitcher';
 
 export interface ShellUser {
@@ -20,23 +21,12 @@ export interface ShellUser {
 
 interface DashboardShellProps {
   scope: NavScope;
-  /** `null` cho tới khi có AuthProvider (Step 5). */
+  /** Lấy từ AuthProvider qua `AuthedDashboardShell`. */
   user: ShellUser | null;
   workspaces: WorkspaceOption[];
   currentWorkspaceKey: string;
   onLogout?: () => void;
   children: React.ReactNode;
-}
-
-function initials(name?: string) {
-  if (!name) return 'LS';
-  return name
-    .trim()
-    .split(/\s+/)
-    .map((word) => word[0])
-    .slice(0, 2)
-    .join('')
-    .toUpperCase();
 }
 
 const navItemBase =
