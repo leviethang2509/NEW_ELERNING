@@ -10,12 +10,12 @@
 | Step | Nội dung | Trạng thái | Ngày xong | Ghi chú |
 |---|---|---|---|---|
 | 1 | Khởi tạo monorepo | ✅ | 2026-09-13 | Đã commit (`feat: first commit on git`) |
-| 2 | Khung `lang-api` | ✅ | 2026-09-14 | Chưa commit |
-| 3 | Khung `lang-app` (copy UI LC) | ✅ | 2026-09-14 | Chưa commit; chờ người dùng xem giao diện trên trình duyệt |
+| 2 | Khung `lang-api` | ✅ | 2026-09-14 | Đã commit (`feat: init project`) |
+| 3 | Khung `lang-app` (copy UI LC) | ✅ | 2026-09-14 | Đã commit (`feat: init project`); xem giao diện gộp vào việc chờ số 3 bên dưới |
 | 4 | Docker & deploy sớm | ✅ | 2026-09-15 | PR #1 đã merge; `http://160.25.166.163:3001` chạy, `/api/health` 200 |
-| 5 | Tài khoản & xác thực | ✅ | 2026-09-15 | Chưa commit; migration đã chạy trên DB dùng chung; chờ người dùng seed System Owner |
-| 6 | Tenant, gói dịch vụ, membership (backend) | ⬜ | | **Step tiếp theo** |
-| 7 | Dashboard hệ thống `/admin` | ⬜ | | |
+| 5 | Tài khoản & xác thực | ✅ | 2026-09-15 | Đã commit + push (`3868d15 feat: auth`), :3001 chạy code mới; đã seed 1 System Owner |
+| 6 | Tenant, gói dịch vụ, membership (backend) | ✅ | 2026-09-15 | **Chưa commit**; 2 migration đã chạy trên DB dùng chung (3 gói đã seed) |
+| 7 | Dashboard hệ thống `/admin` | ⬜ | | **Step tiếp theo** |
 | 8 | Khu vực chính & dashboard tenant cơ bản | ⬜ | | |
 | 9 | `packages/exam-core` | ⬜ | | |
 | 10 | Upload media (R2) | ⬜ | | Cần P1 |
@@ -24,6 +24,22 @@
 | 13 | Làm bài thi & chấm tự động | ⬜ | | |
 | 14 | Chấm bài thủ công | ⬜ | | |
 | 15 | Hoàn thiện & nghiệm thu tổng | ⬜ | | |
+
+### Bàn giao cho phiên tiếp theo (cuối phiên 2026-09-15)
+
+**Trạng thái repo**
+- Nhánh `main` tại `3868d15 feat: auth`, đã push. **Step 6 chưa commit** (toàn bộ code Step 6, plan, CLAUDE.md, file này).
+- Container :3001 vẫn chạy code Step 5; migration Step 6 chỉ thêm bảng nên không ảnh hưởng. Khi deploy, entrypoint sẽ báo migration đã mới nhất.
+- Không có server nào đang chạy (server kiểm thử :3100/:3101 đã tắt).
+
+**Database dùng chung (`lang-simulator` / `public` trên VPS)**
+- Migration đã chạy: `CreateUsersAndRefreshTokens1789482175602`, `CreateTenantsAndMemberships1789486401727`, `SeedServicePlans1789486401728`.
+- `service_plans`: 3 gói `basic`/`standard`/`pro`. `tenants`, `memberships`: trống. `users`: 1 `SYSTEM_OWNER`, không còn dữ liệu test.
+
+**Bắt đầu Step 7**
+1. Đọc plan mục 5.1, 6.2 (`admin`), Step 7; nhật ký Step 6 bên dưới (mục "Lưu ý cho các step sau").
+2. Hỏi người dùng **trước khi code**, ví dụ: đổi gói xuống thấp hơn số thành viên đang active có được không; reset mật khẩu user do admin nhập hay hệ thống sinh (như create-account); System Admin tạo user có bắt đổi mật khẩu không; xoá user (mềm) khi user đang là Tenant Owner; tạm khoá (`suspended`) tenant rồi mở lại về trạng thái nào.
+3. Kiểm thử thật như Step 5–6: bản build (api `PORT=3101 node dist/main.js` trong `apps/lang-api`, app `pnpm exec next start -p 3100` trong `apps/lang-app`), gọi qua `http://127.0.0.1:3100/api`. Dữ liệu test tiền tố `step7-test-` và xoá sau khi chạy (xoá `tenants` trước `users` vì FK owner RESTRICT). Script E2E Step 6 nằm trong scratchpad phiên cũ (sẽ mất); puppeteer-core cài bằng `npm` trong scratchpad, Chrome tại `/Applications/Google Chrome.app`. Chờ server bằng vòng lặp `fetch` trong Node (lệnh `sleep` bị chặn).
 
 ### Việc người dùng chuẩn bị (plan mục 3)
 
@@ -51,8 +67,8 @@ Kiểm tra sau khi chuyển DB (2026-09-15):
 
 ### Đang chờ người dùng (tính đến 2026-09-15)
 
-1. Step 5 **chưa commit**, gồm cả các sửa tài liệu sau lần deploy đầu (`DB_HOST=postgres_db`, người dùng chọn gộp vào commit Step 5). Migration `CreateUsersAndRefreshTokens` đã chạy trên database dùng chung (chỉ thêm bảng, container :3001 bản cũ không bị ảnh hưởng); khi deploy, entrypoint sẽ báo đã mới nhất.
-2. Seed System Owner đầu tiên: điền `SEED_OWNER_EMAIL/PASSWORD/NAME/DOB` trong `apps/lang-api/.env` (đã thêm dòng trống) rồi chạy `pnpm --filter lang-api seed:owner` (hoặc báo mình chạy). Seed xong xoá `SEED_OWNER_PASSWORD`.
+1. Commit Step 6 (gộp cả ghi chú bàn giao cuối phiên Step 5). Không có env mới.
+2. Đã seed System Owner, nhưng `SEED_OWNER_PASSWORD` **vẫn còn** trong `apps/lang-api/.env` (kiểm lúc cuối phiên, không đọc giá trị) → nên xoá.
 3. Xem giao diện bằng mắt: `/login`, `/register`, `/me`, `/me/account`, `/admin` (sau khi seed Owner) – thay cho việc xem layout dashboard của Step 3. Mình mới kiểm bằng ảnh chụp Chrome headless.
 4. VPS `/opt/lang-simulator/.env`: **không bắt buộc** thêm `JWT_ACCESS_EXPIRES_IN`, `REFRESH_EXPIRES_IN`, `COOKIE_SECURE` (đều có mặc định); `deploy/.env` trên máy dev đã thêm.
 5. Không bắt buộc: `REVOKE CONNECT ON DATABASE "lightc-general" FROM PUBLIC` (hiện `lang_simulator` vẫn CONNECT được DB của LC nhưng không có quyền trên bảng); giới hạn IP truy cập cổng 5432.
@@ -62,6 +78,75 @@ Kiểm tra sau khi chuyển DB (2026-09-15):
 ---
 
 ## Nhật ký
+
+### Step 6 – Tenant, gói dịch vụ, membership (✅ 2026-09-15)
+
+**Quyết định (người dùng chọn, đã cập nhật plan Step 6)**
+- Slug: 3–40 ký tự `a-z`, `0-9`, gạch nối đơn ở giữa; chặn từ dành riêng; gợi ý từ tên (bỏ dấu, trùng thêm `-2`, `-3`…); không gửi slug thì dùng gợi ý; đổi được khi sửa & gửi lại.
+- 3 gói seed trong migration.
+- Mật khẩu tạm khi tạo account: admin nhập, hoặc để trống để hệ thống sinh 12 ký tự và trả về một lần.
+
+**Đã làm**
+- `@lang/shared`:
+  - `tenant.ts`: `TENANT_SLUG_*`, `RESERVED_TENANT_SLUGS`, `validateTenantSlug`, `slugifyTenantName`;
+  - kiểu `ServicePlanSummary`, `PublicTenant`, `OwnedTenant`, `MeContexts`, `MembershipListItem`, `MembershipDetail`, `GuardianLink`, `CreateMemberAccountResult`;
+  - `ASSIGNABLE_TENANT_ROLES` (mọi role trừ Owner).
+- lang-api – DB:
+  - Entity `ServicePlan`, `Tenant`, `Membership`, `MembershipRole`, `StudentGuardian`.
+  - Migration `1789486401727-CreateTenantsAndMemberships` (sinh bằng `migration:generate`, định dạng lại như Step 5) và `1789486401728-SeedServicePlans` (`ON CONFLICT (code) DO NOTHING`).
+  - Ràng buộc: slug unique where `deleted_at is null` + CHECK định dạng; membership unique `(tenant_id, user_id)` where `deleted_at is null`; `tenants.plan_id`/`owner_user_id` FK RESTRICT.
+  - `membership_roles` có thêm `tenant_id` + FK kép `(membership_id, tenant_id)` → `memberships(id, tenant_id)`, nhờ vậy có unique index "mỗi tenant một `TENANT_OWNER`". `student_guardians` dùng FK kép cho cả hai phía (DB bắt cùng tenant) + CHECK hai membership khác nhau.
+- lang-api – API:
+  - `GET public/plans` (gói `is_active`).
+  - `POST tenants` (tuổi ≥ 18 theo `users.timezone`, gói active, slug), `GET tenants/mine`, `GET tenants/slug-suggestion?name=`, `PUT tenants/:id` (chỉ chủ tenant, chỉ khi `rejected`, update có điều kiện `status = rejected`, về `pending`, xoá lý do + người duyệt), `GET public/tenants/:slug` (chỉ `active`, không phân biệt hoa thường).
+  - `TenantGuard` + `@TenantRoles()` + `@TenantCtx()`: tenant không tồn tại, hoặc chưa active mà user không là thành viên → 404; không là thành viên → 403; tenant `pending`/`rejected`/`suspended` → 403 kèm thông báo riêng; membership `inactive` coi như không là thành viên.
+  - `/t/:slug/memberships` (Owner/Admin): list (lọc `role`, `status`, `q` ILIKE họ tên/email có escape, phân trang), `GET :id` (kèm phụ huynh `guardians` / con `wards`), `POST add-by-email`, `POST create-account`, `PATCH :id` (roles/status), `DELETE :id` (xoá mềm), `POST :id/guardians`, `DELETE :id/guardians/:parentMembershipId`.
+  - `GET me/contexts`: system role + membership active (mọi trạng thái tenant, kèm lý do từ chối).
+  - Giới hạn gói: trong transaction khoá dòng tenant (`pessimistic_write`), đếm membership active chưa xoá; áp cho add-by-email, create-account và mở lại membership `inactive`.
+  - Bảo vệ Owner: không ai xoá/khoá được Owner; Tenant Admin không sửa được membership của Owner; Owner sửa role phụ của chính mình (luôn giữ `TENANT_OWNER`); DTO và service đều chặn cấp `TENANT_OWNER`. Bỏ role Học viên/Phụ huynh hoặc xoá membership thì gỡ liên kết phụ huynh tương ứng.
+  - Create-account: hash mật khẩu trước transaction, user `must_change_password = true`; email đã có account → 409 gợi ý thêm theo email.
+- lang-api – dùng chung & test:
+  - Gom helper vào `common/`: `sqlInList`, `escapeLike`, `isUniqueViolation`, `ParseIdPipe` (id sai định dạng → 404), transform `trimToNull`/`emptyToUndefined`/`toEmail`, validator `NewPassword`. Thêm `generateTemporaryPassword` (bỏ ký tự dễ nhầm).
+  - `InMemoryDataSource` (transaction không rollback); `InMemoryRepository` thêm `findOne`/`findBy`/`find`/`countBy`/`insert`/`softDelete`, `In`/`Like`, khoá chính kép; `fakeDate()`.
+  - Spec mới: `tenants.service` (10), `tenant.guard` (5), `memberships.service` (13); shared `tenant.spec` (12).
+- lang-app: `AuthProvider` gọi `GET /me/contexts` (bỏ qua khi còn phải đổi mật khẩu); switcher liệt kê tenant `active` có role vào dashboard, mô tả là tên role (`vi.tenantRoles`).
+- Tài liệu: plan (quyết định Step 6), CLAUDE.md (TenantGuard, helper, test có transaction).
+
+**Sai khác so với plan**
+- `membership_roles.tenant_id` + FK kép thay cho "bảng phụ/trigger" để giữ đúng 1 Owner; `student_guardians` thêm `created_by`.
+- Thêm API ngoài plan 6.2: `GET tenants/slug-suggestion`, `GET t/:slug/memberships/:id`.
+- Frontend làm trước một phần (switcher dùng `me/contexts`). **`destinationAfterLogin` chưa đổi**: để Step 8 vì trang `/t/{slug}` và danh sách tenant trên `/me` chưa có. Switcher tạm chỉ hiện dashboard tenant.
+- Membership của user bị khoá vẫn tính vào giới hạn gói (plan: mọi membership active).
+
+**Kiểm tra đã chạy**
+- `pnpm build`, `lint`, `typecheck`, `test` (97: 32 shared + 65 api), `format:check` → OK.
+- `pnpm --filter lang-api migrate` trên DB dùng chung → chạy 2 migration; `migration:generate` lại → "No changes in database schema were found".
+- Bản build (api `:3101`, `next start :3100`), script Node gọi qua rewrite `/api`, **67/67 đạt**:
+  - gói công khai; đăng ký tenant: chưa đăng nhập 401, < 18 tuổi 403, slug dành riêng/ngắn/sai định dạng 400, slug trùng 409, slug in hoa được đổi thành chữ thường, email tenant chuẩn hoá;
+  - tenant pending: public 404, Owner vào `/t/:slug/*` 403 "chờ duyệt", người ngoài 404; gửi lại khi pending 409, người khác 404, khi rejected → pending;
+  - (duyệt giả lập bằng DB, gói tạm 3 thành viên) thêm theo email không phân biệt hoa thường, trùng 409, không có account 404, cấp Owner 400; tạo account sinh mật khẩu tạm, đầy gói 409 và không tạo user;
+  - học viên đăng nhập bằng mật khẩu tạm → bắt đổi, `me/contexts` 403 tới khi đổi; Student gọi API quản lý 403;
+  - Tenant Admin sửa/khoá/xoá Owner 403; membership inactive không tính giới hạn và biến mất khỏi `me/contexts`; mở lại khi đầy 409;
+  - phụ huynh: gắn, trùng 409, sai role 400, chi tiết có `guardians`/`wards`, bỏ role Học viên gỡ liên kết; xoá rồi thêm lại tạo membership mới;
+  - danh sách: phân trang, lọc role/status, tìm email, `%` được escape; uuid sai 404, field lạ 400;
+  - DB từ chối Owner thứ hai (23505) và role khác tenant với membership (23503).
+- Chrome headless (2/2): Owner và Tenant Admin đăng nhập với `?next=/t/{slug}/dashboard`, switcher hiện tên tenant + role.
+- Dữ liệu test (`step6-test-…`) đã xoá hết (còn 0 user/tenant/gói). Log API không có lỗi; app chỉ có cảnh báo DEP0060 đã biết.
+
+**Lưu ý cho các step sau**
+- Route `/t/:slug/*` mới làm theo quy ước `TenantGuard` trong CLAUDE.md; mọi truy vấn lọc `ctx.tenantId`.
+- Step 7:
+  - duyệt/từ chối/khoá tenant: ghi `reviewed_by`/`reviewed_at`, update có điều kiện trạng thái (resubmit đang dùng `status = rejected`);
+  - không xoá cứng gói đang có tenant dùng (FK RESTRICT), dùng `is_active`;
+  - chi tiết tenant: số thành viên = membership active chưa xoá.
+- Step 8:
+  - `destinationAfterLogin` theo `me/contexts` (plan mục 6.1);
+  - `/me` dùng `me/contexts` + `tenants/mine`;
+  - switcher thêm tenant không có role dashboard (→ `/t/{slug}`), `AuthProvider` cần hàm tải lại contexts sau khi đăng ký tenant;
+  - layout dashboard tenant lấy roles thật từ contexts thay `[TENANT_OWNER]`;
+  - form đăng ký dùng `slug-suggestion` + `validateTenantSlug`; dialog tạo account hiện `temporaryPassword` một lần.
+- Tìm thành viên bằng ILIKE không bỏ dấu (không có `unaccent`): "hoc vien" không khớp "Học viên".
+- `InMemoryDataSource` không rollback: test chỉ kiểm lỗi xảy ra trước khi ghi.
 
 ### Step 5 – Tài khoản & xác thực (✅ 2026-09-15)
 

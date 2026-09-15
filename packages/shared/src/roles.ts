@@ -16,6 +16,14 @@ export const TenantRole = {
 } as const;
 export type TenantRole = (typeof TenantRole)[keyof typeof TenantRole];
 
+/** Role cấp được qua quản lý thành viên. `TENANT_OWNER` chỉ có khi đăng ký tenant. */
+export const ASSIGNABLE_TENANT_ROLES: readonly TenantRole[] = [
+  TenantRole.TENANT_ADMIN,
+  TenantRole.TEACHER,
+  TenantRole.STUDENT,
+  TenantRole.PARENT,
+];
+
 /** Được vào dashboard `/admin`. */
 export const SYSTEM_MANAGER_ROLES: readonly SystemRole[] = [
   SystemRole.SYSTEM_OWNER,

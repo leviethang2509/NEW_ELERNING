@@ -15,20 +15,16 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
-
-const inList = (column: string, values: Record<string, string>) =>
-  `"${column}" IN (${Object.values(values)
-    .map((value) => `'${value}'`)
-    .join(', ')})`;
+import { sqlInList } from '../common/sql';
 
 @Entity('users')
 // Unique không phân biệt hoa thường, bỏ qua user đã xoá mềm. Index biểu thức
 // không khai báo được bằng entity nên tạo trong migration và bỏ qua khi generate.
 @Index('UQ_users_email', { synchronize: false })
 @Check('CHK_users_email_lowercase', '"email" = lower("email")')
-@Check('CHK_users_gender', `"gender" IS NULL OR ${inList('gender', Gender)}`)
-@Check('CHK_users_system_role', inList('system_role', SystemRole))
-@Check('CHK_users_status', inList('status', UserStatus))
+@Check('CHK_users_gender', `"gender" IS NULL OR ${sqlInList('gender', Gender)}`)
+@Check('CHK_users_system_role', sqlInList('system_role', SystemRole))
+@Check('CHK_users_status', sqlInList('status', UserStatus))
 export class User {
   @PrimaryGeneratedColumn('uuid', { primaryKeyConstraintName: 'PK_users' })
   id: string;

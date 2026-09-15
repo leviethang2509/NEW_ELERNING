@@ -453,6 +453,12 @@ health:      GET /api/health
 
 **Nghiệm thu:** toàn bộ API trên hoạt động, test phân quyền pass.
 
+> Cập nhật khi làm Step 6 (2026-09-15, người dùng chọn):
+> - Slug tenant: 3–40 ký tự, chỉ `a-z`, `0-9` và gạch nối đơn ở giữa; chặn từ dành riêng (`RESERVED_TENANT_SLUGS` trong `@lang/shared`: `admin`, `api`, `login`, `new`…). Gợi ý từ tên (bỏ dấu tiếng Việt, trùng thì thêm `-2`, `-3`…); không gửi slug thì tự dùng gợi ý; đổi được khi sửa & gửi lại.
+> - 3 gói `basic` / `standard` / `pro` seed **trong migration** (chỉ thêm khi `code` chưa có).
+> - Create-account: admin nhập mật khẩu tạm, hoặc để trống để hệ thống sinh 12 ký tự (không có ký tự dễ nhầm), chỉ trả về một lần trong response.
+> - Tuổi ≥ 18 tính theo `users.timezone` của người đăng ký.
+
 ### Step 7 – Dashboard hệ thống (`/admin`)
 **Việc làm**
 - **Backend** `AdminModule`:

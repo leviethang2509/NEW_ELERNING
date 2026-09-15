@@ -37,6 +37,7 @@ pnpm dev
   pnpm --filter lang-api seed:owner
   ```
   Seed xong nên xoá `SEED_OWNER_PASSWORD` khỏi `.env`.
+- Trung tâm (tenant): người đủ 18 tuổi đăng ký, chọn một trong 3 gói dịch vụ (`basic` 100 / `standard` 500 / `pro` 1000 thành viên, tạo sẵn bằng migration), chờ System Admin duyệt. Tenant Owner/Admin thêm thành viên theo email hoặc tạo account mới với mật khẩu tạm (bắt đổi ở lần đăng nhập đầu).
 - Phiên: access token 15 phút (trong bộ nhớ trình duyệt) + refresh token 30 ngày (cookie httpOnly `ls_rt`). Đổi thời hạn bằng `JWT_ACCESS_EXPIRES_IN`, `REFRESH_EXPIRES_IN`; khi có HTTPS đặt `COOKIE_SECURE=true`.
 
 - Khu vực chính: http://localhost:3100

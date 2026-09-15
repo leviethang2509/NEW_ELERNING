@@ -1,32 +1,8 @@
-import {
-  PASSWORD_MAX_LENGTH,
-  PASSWORD_MIN_LENGTH,
-  normalizeEmail,
-} from '@lang/shared';
 import { Transform } from 'class-transformer';
-import {
-  IsEmail,
-  IsNotEmpty,
-  IsString,
-  MaxLength,
-  MinLength,
-} from 'class-validator';
-import { trimString } from '../../common/transforms';
+import { IsEmail, IsNotEmpty, IsString, MaxLength } from 'class-validator';
+import { toEmail, trimString } from '../../common/transforms';
 import { IsDateOfBirth } from '../../common/validators/is-date-of-birth';
-
-const toEmail = ({ value }: { value: unknown }) =>
-  typeof value === 'string' ? normalizeEmail(value) : value;
-
-const passwordMessage = `Mật khẩu phải từ ${PASSWORD_MIN_LENGTH} đến ${PASSWORD_MAX_LENGTH} ký tự`;
-
-/** Mật khẩu mới (đăng ký, đổi mật khẩu). */
-function NewPassword(): PropertyDecorator {
-  return (target, key) => {
-    IsString({ message: passwordMessage })(target, key);
-    MinLength(PASSWORD_MIN_LENGTH, { message: passwordMessage })(target, key);
-    MaxLength(PASSWORD_MAX_LENGTH, { message: passwordMessage })(target, key);
-  };
-}
+import { NewPassword } from '../../common/validators/new-password';
 
 export class RegisterDto {
   @Transform(toEmail)

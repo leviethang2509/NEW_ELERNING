@@ -8,6 +8,7 @@ import type { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import { SystemRole, UserStatus } from '@lang/shared';
 import type { EnvironmentVariables } from '../config/env.validation';
+import { fakeDate } from '../testing/fake-clock';
 import { InMemoryRepository } from '../testing/in-memory-repository';
 import type { User } from '../users/user.entity';
 import {
@@ -62,22 +63,7 @@ function setup() {
   return { service, users, refreshTokens, jwt };
 }
 
-/** Chỉ giả `Date`: jsonwebtoken cần nextTick/setImmediate thật. */
-function useFakeClock() {
-  jest.useFakeTimers({
-    now: new Date('2026-09-15T08:00:00Z'),
-    doNotFake: [
-      'nextTick',
-      'setImmediate',
-      'clearImmediate',
-      'setTimeout',
-      'clearTimeout',
-      'setInterval',
-      'clearInterval',
-      'queueMicrotask',
-    ],
-  });
-}
+const useFakeClock = () => fakeDate('2026-09-15T08:00:00Z');
 
 describe('AuthService', () => {
   afterEach(() => {

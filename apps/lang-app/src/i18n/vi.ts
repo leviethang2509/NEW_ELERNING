@@ -72,6 +72,13 @@ export const vi = {
     female: 'Nữ',
     other: 'Khác',
   },
+  tenantRoles: {
+    TENANT_OWNER: 'Chủ sở hữu',
+    TENANT_ADMIN: 'Quản trị viên',
+    TEACHER: 'Giáo viên',
+    STUDENT: 'Học viên',
+    PARENT: 'Phụ huynh',
+  },
   me: {
     title: 'Không gian của tôi',
     greeting: (name: string) => `Xin chào, ${name}`,

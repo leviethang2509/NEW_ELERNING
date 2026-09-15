@@ -8,7 +8,15 @@ import {
   useMemo,
   useState,
 } from 'react';
-import type { AuthResponse, AuthUser } from '@lang/shared';
+import {
+  hasAnyRole,
+  TENANT_DASHBOARD_ROLES,
+  TenantStatus,
+  type AuthResponse,
+  type AuthUser,
+  type MeContexts,
+  type MeTenantContext,
+} from '@lang/shared';
 import type { WorkspaceOption } from '@/components/dashboard/WorkspaceSwitcher';
 import { vi } from '@/i18n/vi';
 import {
@@ -31,7 +39,10 @@ export interface RegisterInput {
 interface AuthContextValue {
   status: AuthStatus;
   user: AuthUser | null;
-  /** Không gian cho switcher: hệ thống (Owner/Admin); tenant thêm ở Step 6. */
+  /**
+   * Không gian cho switcher: hệ thống (Owner/Admin) và dashboard các tenant
+   * đang hoạt động mà user có role vào dashboard.
+   */
   contexts: WorkspaceOption[];
   login: (email: string, password: string) => Promise<AuthUser>;
   register: (input: RegisterInput) => Promise<AuthUser>;
@@ -62,6 +73,7 @@ export function AuthProvider({
   const [state, setState] = useState<AuthState>(
     hasSession ? { status: 'loading', user: null } : anonymous,
   );
+  const [tenantContexts, setTenantContexts] = useState<MeTenantContext[]>([]);
 
   const applySession = useCallback((session: AuthResponse) => {
     setAccessToken(session.accessToken);
@@ -83,6 +95,28 @@ export function AuthProvider({
   }, [hasSession]);
 
   useEffect(() => onAuthFailure(() => setState(anonymous)), []);
+
+  // Tenant của user cho switcher. Còn phải đổi mật khẩu thì API từ chối, bỏ qua.
+  const userId = state.user?.id;
+  const mustChangePassword = state.user?.mustChangePassword ?? false;
+  useEffect(() => {
+    if (!userId || mustChangePassword) {
+      setTenantContexts([]);
+      return;
+    }
+    let cancelled = false;
+    api
+      .get<MeContexts>('/me/contexts')
+      .then((data) => {
+        if (!cancelled) setTenantContexts(data.tenants);
+      })
+      .catch(() => {
+        if (!cancelled) setTenantContexts([]);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [userId, mustChangePassword]);
 
   const login = useCallback(
     async (email: string, password: string) => {
@@ -120,13 +154,28 @@ export function AuthProvider({
     setState({ status: 'authenticated', user });
   }, []);
 
-  const contexts = useMemo<WorkspaceOption[]>(
-    () =>
-      state.user && isSystemManager(state.user)
-        ? [{ key: 'system', label: vi.shell.systemWorkspace, href: '/admin' }]
-        : [],
-    [state.user],
-  );
+  const contexts = useMemo<WorkspaceOption[]>(() => {
+    if (!state.user) return [];
+    const options: WorkspaceOption[] = isSystemManager(state.user)
+      ? [{ key: 'system', label: vi.shell.systemWorkspace, href: '/admin' }]
+      : [];
+    // Trang `/t/{slug}` cho Student/Parent có ở Step 8; tới lúc đó chỉ liệt kê dashboard.
+    for (const { tenant, roles } of tenantContexts) {
+      if (
+        tenant.status !== TenantStatus.ACTIVE ||
+        !hasAnyRole(roles, TENANT_DASHBOARD_ROLES)
+      ) {
+        continue;
+      }
+      options.push({
+        key: `tenant:${tenant.slug}`,
+        label: tenant.name,
+        description: roles.map((role) => vi.tenantRoles[role]).join(', '),
+        href: `/t/${tenant.slug}/dashboard`,
+      });
+    }
+    return options;
+  }, [state.user, tenantContexts]);
 
   const value = useMemo<AuthContextValue>(
     () => ({

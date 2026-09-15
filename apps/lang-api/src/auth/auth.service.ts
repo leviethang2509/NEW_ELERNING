@@ -10,13 +10,8 @@ import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import { InjectRepository } from '@nestjs/typeorm';
 import { normalizeEmail, UserStatus, type AuthUser } from '@lang/shared';
-import {
-  IsNull,
-  LessThan,
-  Not,
-  QueryFailedError,
-  type Repository,
-} from 'typeorm';
+import { IsNull, LessThan, Not, type Repository } from 'typeorm';
+import { isUniqueViolation } from '../common/database-errors';
 import { durationToSeconds } from '../common/duration';
 import type { EnvironmentVariables } from '../config/env.validation';
 import { toAuthUser } from '../users/auth-user';
@@ -54,13 +49,6 @@ const EMAIL_TAKEN = 'Email đã được sử dụng';
 
 function hashToken(token: string): string {
   return createHash('sha256').update(token).digest('hex');
-}
-
-function isUniqueViolation(error: unknown): boolean {
-  return (
-    error instanceof QueryFailedError &&
-    (error.driverError as { code?: string }).code === '23505'
-  );
 }
 
 @Injectable()
