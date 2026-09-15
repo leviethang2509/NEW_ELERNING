@@ -1,0 +1,110 @@
+# Deploy lên VPS
+
+Một image `ghcr.io/vunguyenquangit/lang-simulator` chứa cả lang-api và lang-app. Container `lang-simulator-app` chạy trên VPS cùng máy với LC:
+
+| Thành phần | Cổng |
+|---|---|
+| lang-app (Next.js) | container 3000 → host **3001** |
+| lang-api (NestJS) | 3002, chỉ trong container (Next rewrite `/api` tới đây) |
+| LC | host 3000 (không liên quan) |
+
+Container nối Postgres qua Docker network của container Postgres, database `lang-simulator`, schema `public`. **Máy dev dùng chung database này** (chưa có production).
+
+Khi container khởi động ([docker/entrypoint.sh](../../docker/entrypoint.sh)): chạy migration → lỗi thì dừng → chạy lang-api và lang-app. Healthcheck gọi `http://127.0.0.1:3000/api/health` (Next → rewrite → api → database).
+
+## 1. Chuẩn bị (một lần)
+
+### GitHub (repo `vunguyenquangit/lang-simulator` → Settings → Secrets and variables → Actions)
+
+| Secret | Giá trị |
+|---|---|
+| `VPS_HOST` | IP VPS |
+| `VPS_USER` | user SSH (có quyền chạy `docker`) |
+| `VPS_SSH_KEY` | private key SSH (toàn bộ nội dung) |
+| `VPS_PORT` | cổng SSH (bỏ trống = 22) |
+| `GHCR_TOKEN` | Personal access token có quyền `read:packages` để VPS pull image |
+
+Image push lên GHCR bằng `GITHUB_TOKEN` có sẵn, không cần secret riêng.
+
+### Database
+
+User `lang_simulator` phải có `LOGIN`, là owner database `lang-simulator` (hoặc có quyền `CREATE` trên schema `public`). Kiểm tra:
+
+```sql
+select rolcanlogin from pg_roles where rolname = 'lang_simulator';
+select has_schema_privilege('lang_simulator', 'public', 'CREATE');
+```
+
+### VPS
+
+```bash
+sudo mkdir -p /opt/lang-simulator
+sudo chown "$USER" /opt/lang-simulator
+```
+
+Tạo `/opt/lang-simulator/.env` theo mẫu [deploy/.env.example](../../deploy/.env.example). Nếu đã có `deploy/.env` soạn sẵn trên máy dev (không nằm trong git):
+
+```bash
+scp deploy/.env <user>@<ip-vps>:/opt/lang-simulator/.env
+ssh <user>@<ip-vps> chmod 600 /opt/lang-simulator/.env
+```
+
+- `DB_NETWORK`, `DB_HOST`: network và tên container Postgres.
+  ```bash
+  docker ps --format '{{.Names}}' | grep -i postgres
+  docker inspect -f '{{range $k, $v := .NetworkSettings.Networks}}{{$k}} {{end}}' <ten-container-postgres>
+  ```
+  Network `bridge` mặc định không phân giải tên container; khi đó cần network do người dùng tạo (vd. của docker compose).
+- `JWT_SECRET`: khác giá trị ở máy dev (`openssl rand -base64 48`).
+
+Mở cổng 3001 trên firewall nếu có (vd. `ufw allow 3001/tcp`).
+
+`docker-compose.yml` **không cần tạo tay**: workflow copy [deploy/docker-compose.yml](../../deploy/docker-compose.yml) lên `/opt/lang-simulator` mỗi lần deploy.
+
+## 2. Deploy
+
+Workflow [.github/workflows/deploy.yml](../../.github/workflows/deploy.yml):
+
+| Sự kiện | Việc chạy |
+|---|---|
+| Pull request vào `main` | Chỉ build image (kiểm tra Dockerfile), không push, không deploy |
+| Push `main` / chạy tay (Actions → Build & Deploy → Run workflow) | Build + push image (`latest`, `sha-<commit>`) → copy `docker-compose.yml` → `docker compose pull` → `docker compose up -d --wait` |
+
+`--wait` chờ container `healthy`; migration lỗi hoặc `/api/health` không đạt thì job deploy báo đỏ.
+
+## 3. Kiểm tra trên VPS
+
+```bash
+cd /opt/lang-simulator
+docker compose ps                              # STATUS phải là healthy
+docker logs lang-simulator-app --tail 100      # [entrypoint] chạy migration … lang-api chạy tại …
+curl -s http://127.0.0.1:3001/api/health       # {"status":"ok","database":"up",...}
+```
+
+Truy cập: `http://<ip-vps>:3001`.
+
+Đổi `.env` xong phải tạo lại container: `docker compose up -d --force-recreate`.
+
+## 4. Rollback
+
+```bash
+cd /opt/lang-simulator
+# Lấy tag trong GitHub → Packages → lang-simulator, dạng sha-<commit đầy đủ>
+sed -i 's/^IMAGE_TAG=.*/IMAGE_TAG=sha-<commit>/' .env
+docker compose pull && docker compose up -d --wait
+```
+
+Quay lại bản mới nhất: đặt lại `IMAGE_TAG=` (trống) rồi chạy lại lệnh trên. Lần deploy tiếp theo từ workflow **vẫn dùng `IMAGE_TAG` trong `.env`**, nhớ xoá trước khi push.
+
+Rollback image **không hoàn tác migration**. Vì database dùng chung với máy dev, migration phải tương thích ngược (thêm cột/bảng trước, xoá sau).
+
+## 5. Sự cố thường gặp
+
+| Hiện tượng | Nguyên nhân / cách xử lý |
+|---|---|
+| Container restart liên tục, log `migration thất bại` | Sai `DB_*` trong `.env` hoặc user thiếu quyền. Log ngay phía trên có chi tiết |
+| `Cấu hình môi trường không hợp lệ` | Thiếu/sai biến (vd. `JWT_SECRET` < 32 ký tự) |
+| `network … not found` / `Thiếu DB_NETWORK` | Sai hoặc thiếu `DB_NETWORK` |
+| `getaddrinfo ENOTFOUND <DB_HOST>` | Container không cùng network với Postgres, hoặc sai tên container |
+| `denied` khi pull image | `GHCR_TOKEN` hết hạn hoặc thiếu quyền `read:packages` |
+| `/api/health` 503 | lang-api không kết nối được database |

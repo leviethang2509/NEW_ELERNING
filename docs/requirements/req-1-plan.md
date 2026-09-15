@@ -99,7 +99,7 @@
 | P1 | Tạo 2 bucket R2 (`lang-simulator-public` bật public access / custom domain, `lang-simulator-private` tắt public). Gửi lại `R2_PUBLIC_BASE_URL` | Step 10 |
 | P2 | Trên Postgres VPS (cần **Postgres ≥ 13**): database `lang-simulator` + user `lang_simulator` có quyền `CREATE` trên schema `public` (PG ≥ 15 mặc định không cấp cho user khác owner) | Step 4 |
 | P3 | Tạo GitHub repo `vunguyenquangit/lang-simulator`; thêm secrets `VPS_HOST`, `VPS_USER`, `VPS_SSH_KEY`, `VPS_PORT`, `GHCR_TOKEN` (secrets GitHub theo từng repo nên phải thêm lại, cùng giá trị với LC) | Step 4 |
-| P4 | Trên VPS: tạo `/opt/lang-simulator/` chứa `docker-compose.yml` + `.env` (mẫu ở `deploy/`), mở port 3001 trên firewall | Step 4 |
+| P4 | Trên VPS: tạo `/opt/lang-simulator/` chứa `.env` (soạn sẵn ở `deploy/.env` trên máy dev, copy lên bằng scp; `docker-compose.yml` do workflow tự copy), mở port 3001 trên firewall | Step 4 |
 | P5 | Đổi mật khẩu DB/admin bên LC đang lộ trong `backend/.env.example` và `README.md` | Nên làm sớm |
 
 ---
@@ -394,6 +394,12 @@ health:      GET /api/health
 - Máy local không có Docker (người dùng chọn): image được build và kiểm chứng trên GitHub Actions.
 - Push `main` thì `http://<ip>:3001` trả trang tạm và `/api/health` = 200.
 - LC ở port 3000 không bị ảnh hưởng.
+
+> Cập nhật khi làm Step 4 (2026-09-15):
+> - Workflow **tự copy** `deploy/docker-compose.yml` lên `/opt/lang-simulator` (appleboy/scp-action) trước khi `docker compose pull && up -d --wait`; `.env` VPS soạn sẵn ở `deploy/.env` (gitignored) để người dùng scp lên.
+> - Pull request vào `main` chỉ build image (không push/deploy) để kiểm Dockerfile, vì máy dev không có Docker.
+> - `pnpm deploy` cần `--legacy` (pnpm ≥ 10). Compose dùng `image: …:${IMAGE_TAG:-latest}` để rollback bằng tag `sha-…`.
+> - Postgres trên VPS: container `postgres-docker`, network `postgres-docker_default` (không phải `postgres_default`).
 
 ### Step 5 – Tài khoản & xác thực
 **Việc làm**

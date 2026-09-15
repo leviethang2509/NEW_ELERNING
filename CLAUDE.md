@@ -42,3 +42,11 @@
 - Chuỗi UI đặt trong `src/i18n/vi.ts`. Màu dùng CSS variables Solarized trong `globals.css` (class tiền tố `ls-`).
 - API gọi qua `src/lib/api.ts` (cùng origin `/api`, access token trong bộ nhớ, tự refresh khi 401).
 - ESLint: plugin `@next/next` bản 14 phải bọc `fixupPluginRules` (ESLint 10); lint bằng `eslint .`, không dùng `next lint`.
+
+## Docker & deploy
+
+- Hướng dẫn: [docs/setup/deploy.md](docs/setup/deploy.md). Image: `turbo prune` → `pnpm install --frozen-lockfile` → `turbo run build` (`BACKEND_INTERNAL_URL=http://127.0.0.1:3002`) → `pnpm --filter lang-api deploy --prod --legacy`; runner chạy `docker/entrypoint.sh` (migrate → api :3002 + app :3000).
+- Đổi phiên bản `turbo` trong catalog thì sửa cả `pnpm dlx turbo@…` trong `Dockerfile`.
+- Env mới cần ở production: thêm vào `deploy/.env.example` và nhắc người dùng cập nhật `/opt/lang-simulator/.env` trên VPS. `deploy/.env` trên máy dev chứa secret thật, gitignored, không commit.
+- Máy dev **không có Docker**: kiểm Dockerfile bằng PR (workflow chỉ build) hoặc giả lập trong scratchpad: `turbo prune --docker` → install/build/deploy trong `out` → chạy các lệnh như entrypoint với cổng 3000/3002. **Không chạy `pnpm deploy --prod` từ repo**: nó ghi `"dev": false` vào `node_modules/.pnpm-workspace-state-v1.json`, sau đó mọi `pnpm exec/run` đòi cài lại bản production (xoá devDependencies). Lỡ chạy thì `pnpm install --frozen-lockfile` để khôi phục.
+- Workflow tự copy `deploy/docker-compose.yml` lên `/opt/lang-simulator` mỗi lần deploy; push `main` = deploy, chỉ push khi người dùng yêu cầu.
