@@ -1,7 +1,7 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useState } from 'react';
+import { useSearchParams } from 'next/navigation';
 import {
   DEFAULT_TIMEZONE,
   MIN_DATE_OF_BIRTH,
@@ -12,6 +12,7 @@ import {
 } from '@lang/shared';
 import { AuthPanel } from '@/components/auth/AuthPanel';
 import { useAuth } from '@/components/auth/AuthProvider';
+import { useRedirectAfterLogin } from '@/components/auth/useRedirectAfterLogin';
 import {
   FormAlert,
   PasswordInput,
@@ -21,7 +22,7 @@ import {
   primaryButtonClass,
 } from '@/components/ui';
 import { vi } from '@/i18n/vi';
-import { destinationAfterLogin, safeNextPath } from '@/lib/auth-redirect';
+import { safeNextPath } from '@/lib/auth-redirect';
 import { passwordStrength } from '@/lib/password-strength';
 
 const strengthColors = ['var(--muted)', '#dc322f', '#b58900', '#859900'];
@@ -49,9 +50,8 @@ function PasswordStrengthMeter({ password }: { password: string }) {
 }
 
 export function RegisterForm() {
-  const router = useRouter();
   const nextPath = safeNextPath(useSearchParams().get('next'));
-  const { status, user, register } = useAuth();
+  const { status, register } = useAuth();
   const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -60,11 +60,7 @@ export function RegisterForm() {
   const [submitting, setSubmitting] = useState(false);
   const today = todayInTimeZone(DEFAULT_TIMEZONE);
 
-  useEffect(() => {
-    if (status === 'authenticated' && user) {
-      router.replace(destinationAfterLogin(user, nextPath));
-    }
-  }, [status, user, nextPath, router]);
+  useRedirectAfterLogin(nextPath);
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();

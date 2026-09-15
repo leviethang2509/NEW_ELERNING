@@ -10,5 +10,6 @@ import { StudentGuardian } from './student-guardian.entity';
   imports: [TenantsModule, TypeOrmModule.forFeature([StudentGuardian])],
   controllers: [MembershipsController, MeContextsController],
   providers: [MembershipsService],
+  exports: [MembershipsService],
 })
 export class MembershipsModule {}

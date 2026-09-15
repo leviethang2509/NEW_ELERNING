@@ -21,6 +21,7 @@ export function toOwnedTenant(tenant: Tenant, plan: ServicePlan): OwnedTenant {
     ...toPublicTenant(tenant),
     status: tenant.status,
     rejectionReason: tenant.rejectionReason,
+    suspensionReason: tenant.suspensionReason,
     plan: toPlanSummary(plan),
     createdAt: tenant.createdAt.toISOString(),
     reviewedAt: tenant.reviewedAt?.toISOString() ?? null,

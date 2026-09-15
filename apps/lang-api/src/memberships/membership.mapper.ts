@@ -25,5 +25,6 @@ export function toMembershipListItem(
     status: membership.status,
     roles: sortRoles(roles),
     joinedAt: membership.joinedAt.toISOString(),
+    lastActiveAt: membership.lastActiveAt?.toISOString() ?? null,
   };
 }

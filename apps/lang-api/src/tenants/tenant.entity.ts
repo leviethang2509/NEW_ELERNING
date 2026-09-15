@@ -61,6 +61,15 @@ export class Tenant {
   })
   rejectionReason: string | null;
 
+  /** Lý do System Admin tạm khoá; xoá khi mở khoá. */
+  @Column({
+    name: 'suspension_reason',
+    type: 'varchar',
+    length: 1000,
+    nullable: true,
+  })
+  suspensionReason: string | null;
+
   @Index('IDX_tenants_plan_id')
   @Column({ name: 'plan_id', type: 'uuid' })
   planId: string;

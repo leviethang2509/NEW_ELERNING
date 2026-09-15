@@ -37,13 +37,15 @@ pnpm dev
   pnpm --filter lang-api seed:owner
   ```
   Seed xong nên xoá `SEED_OWNER_PASSWORD` khỏi `.env`.
-- Trung tâm (tenant): người đủ 18 tuổi đăng ký, chọn một trong 3 gói dịch vụ (`basic` 100 / `standard` 500 / `pro` 1000 thành viên, tạo sẵn bằng migration), chờ System Admin duyệt. Tenant Owner/Admin thêm thành viên theo email hoặc tạo account mới với mật khẩu tạm (bắt đổi ở lần đăng nhập đầu).
+- Trung tâm (tenant): người đủ 18 tuổi đăng ký tại `/me/tenants/new`, chọn một trong 3 gói dịch vụ (`basic` 100 / `standard` 500 / `pro` 1000 thành viên, tạo sẵn bằng migration), chờ System Admin duyệt; bị từ chối thì sửa và gửi lại từ `/me`. Tenant Owner/Admin quản lý thành viên ở `/t/{slug}/dashboard/members`: thêm theo email hoặc tạo account mới với mật khẩu tạm (bắt đổi ở lần đăng nhập đầu), phân vai trò, ngừng kích hoạt, gắn phụ huynh. Trung tâm vượt giới hạn sau khi hạ gói được gợi ý Học viên/Phụ huynh lâu không vào để ngừng kích hoạt.
+- Sau đăng nhập: nhiều ngữ cảnh (quản trị hệ thống, các trung tâm) hoặc chưa có → `/me`; chỉ quản trị hệ thống → `/admin`; một trung tâm → dashboard (Owner/Admin/Giáo viên) hoặc trang trung tâm `/t/{slug}` (Học viên/Phụ huynh). Chuyển ngữ cảnh bằng switcher trên sidebar dashboard.
+- Quản trị hệ thống `/admin` (System Owner/Admin): thống kê; người dùng (tạo, sửa, khoá, reset mật khẩu – tài khoản quản trị và đổi vai trò chỉ System Owner thao tác); trung tâm (duyệt, từ chối, tạm khoá, đổi gói); gói dịch vụ.
 - Phiên: access token 15 phút (trong bộ nhớ trình duyệt) + refresh token 30 ngày (cookie httpOnly `ls_rt`). Đổi thời hạn bằng `JWT_ACCESS_EXPIRES_IN`, `REFRESH_EXPIRES_IN`; khi có HTTPS đặt `COOKIE_SECURE=true`.
 
 - Khu vực chính: http://localhost:3100
 - API: http://localhost:3101/api/health (hoặc qua rewrite http://localhost:3100/api/health)
 - `lang-app` không cần file `.env` khi dev (mặc định rewrite `/api` tới `127.0.0.1:3101`, xem `apps/lang-app/.env.example`).
-- `/me`, `/admin`, `/t/{slug}/dashboard`… cần đăng nhập; `/admin` chỉ dành cho System Owner/Admin.
+- `/me`, `/admin`, `/t/{slug}/dashboard`… cần đăng nhập; `/admin` chỉ dành cho System Owner/Admin; trang trung tâm `/t/{slug}` công khai phần giới thiệu.
 
 ## Cấu trúc
 

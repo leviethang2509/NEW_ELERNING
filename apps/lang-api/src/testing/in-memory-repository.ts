@@ -107,6 +107,11 @@ export class InMemoryRepository<T extends object> {
     return this.rows.filter((item) => matches(item, where)).length;
   }
 
+  /** Bỏ qua `withDeleted` vì không tự loại bản ghi đã xoá mềm. */
+  count(options: { where?: Where<T> } = {}): Promise<number> {
+    return this.countBy(options.where ?? {});
+  }
+
   async update(criteria: string | Where<T>, partial: Partial<T>) {
     const where = typeof criteria === 'string' ? { id: criteria } : criteria;
     const targets = this.rows.filter((row) => matches(row, where as Where<T>));

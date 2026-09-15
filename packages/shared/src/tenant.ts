@@ -1,3 +1,4 @@
+import type { ExamStatus } from './exam';
 import type { SystemRole, TenantRole } from './roles';
 import type { MembershipStatus, TenantStatus } from './status';
 
@@ -101,6 +102,8 @@ export interface PublicTenant {
 export interface OwnedTenant extends PublicTenant {
   status: TenantStatus;
   rejectionReason: string | null;
+  /** Chỉ chủ trung tâm thấy lý do tạm khoá. */
+  suspensionReason: string | null;
   plan: ServicePlanSummary;
   createdAt: string;
   reviewedAt: string | null;
@@ -138,6 +141,42 @@ export interface MembershipListItem {
   status: MembershipStatus;
   roles: TenantRole[];
   joinedAt: string;
+  /** Lần gần nhất vào tenant (cập nhật tối đa 1 lần/giờ); `null` là chưa từng vào. */
+  lastActiveAt: string | null;
+}
+
+/** `GET /t/:slug/me`: tenant đang hoạt động và membership của user hiện tại. */
+export interface TenantMembershipInfo {
+  tenant: PublicTenant;
+  membershipId: string;
+  roles: TenantRole[];
+}
+
+/** Số thành viên active so với giới hạn gói; `excess` > 0 khi đang vượt (sau hạ gói). */
+export interface MemberQuota {
+  planName: string;
+  maxMembers: number;
+  activeMembers: number;
+  excess: number;
+}
+
+/** `GET /t/:slug/memberships/deactivation-suggestions`. */
+export interface DeactivationSuggestions extends MemberQuota {
+  /** Tối đa `excess` thành viên, chưa từng vào trước rồi tới lần vào cũ nhất. */
+  items: MembershipListItem[];
+}
+
+/** `GET /t/:slug/dashboard/stats`. Teacher chỉ có bản rút gọn (`management = null`). */
+export interface TenantDashboardStats {
+  students: number;
+  exams: Record<ExamStatus, number>;
+  attempts: number;
+  pendingGrading: number;
+  management: {
+    teachers: number;
+    parents: number;
+    quota: MemberQuota;
+  } | null;
 }
 
 /** Liên kết Phụ huynh ↔ Học viên, nhìn từ một phía. */

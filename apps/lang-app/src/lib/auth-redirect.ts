@@ -1,4 +1,12 @@
-import { SYSTEM_MANAGER_ROLES, type AuthUser } from '@lang/shared';
+import {
+  SYSTEM_MANAGER_ROLES,
+  TENANT_DASHBOARD_ROLES,
+  TenantStatus,
+  hasAnyRole,
+  type AuthUser,
+  type MeTenantContext,
+  type TenantRole,
+} from '@lang/shared';
 
 export function isSystemManager(user: Pick<AuthUser, 'systemRole'>): boolean {
   return SYSTEM_MANAGER_ROLES.includes(user.systemRole);
@@ -14,14 +22,37 @@ export function safeNextPath(next: string | null | undefined): string | null {
   return next;
 }
 
+/** Vào tenant: dashboard khi có role quản trị/Teacher, còn lại trang trung tâm. */
+export function tenantEntryPath(
+  slug: string,
+  roles: readonly TenantRole[],
+): string {
+  return hasAnyRole(roles, TENANT_DASHBOARD_ROLES)
+    ? `/t/${slug}/dashboard`
+    : `/t/${slug}`;
+}
+
 /**
- * Trang đích sau đăng nhập (plan mục 6.1). Chưa có tenant nên chỉ phân biệt
- * quản trị hệ thống; điều hướng theo danh sách ngữ cảnh bổ sung ở Step 8.
+ * Trang đích sau đăng nhập (plan mục 6.1). Ngữ cảnh gồm quản trị hệ thống và
+ * mọi tenant user là thành viên; tenant chưa hoạt động vẫn tính để user thấy
+ * trạng thái trên `/me`.
  */
 export function destinationAfterLogin(
   user: AuthUser,
+  tenants: readonly MeTenantContext[],
   next?: string | null,
 ): string {
   if (user.mustChangePassword) return '/me/account';
-  return safeNextPath(next) ?? (isSystemManager(user) ? '/admin' : '/me');
+  const nextPath = safeNextPath(next);
+  if (nextPath) return nextPath;
+
+  const system = isSystemManager(user);
+  if (system && tenants.length === 0) return '/admin';
+  if (!system && tenants.length === 1) {
+    const { tenant, roles } = tenants[0];
+    if (tenant.status === TenantStatus.ACTIVE) {
+      return tenantEntryPath(tenant.slug, roles);
+    }
+  }
+  return '/me';
 }

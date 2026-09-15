@@ -14,10 +14,10 @@
 | 3 | Khung `lang-app` (copy UI LC) | ✅ | 2026-09-14 | Đã commit (`feat: init project`); xem giao diện gộp vào việc chờ số 3 bên dưới |
 | 4 | Docker & deploy sớm | ✅ | 2026-09-15 | PR #1 đã merge; `http://160.25.166.163:3001` chạy, `/api/health` 200 |
 | 5 | Tài khoản & xác thực | ✅ | 2026-09-15 | Đã commit + push (`3868d15 feat: auth`), :3001 chạy code mới; đã seed 1 System Owner |
-| 6 | Tenant, gói dịch vụ, membership (backend) | ✅ | 2026-09-15 | **Chưa commit**; 2 migration đã chạy trên DB dùng chung (3 gói đã seed) |
-| 7 | Dashboard hệ thống `/admin` | ⬜ | | **Step tiếp theo** |
-| 8 | Khu vực chính & dashboard tenant cơ bản | ⬜ | | |
-| 9 | `packages/exam-core` | ⬜ | | |
+| 6 | Tenant, gói dịch vụ, membership (backend) | ✅ | 2026-09-15 | Đã commit + push (`6c2083b feat: membership`); 3 gói đã seed |
+| 7 | Dashboard hệ thống `/admin` | ✅ | 2026-09-15 | **Chưa commit**; migration `AddTenantSuspensionReason` đã chạy trên DB dùng chung |
+| 8 | Khu vực chính & dashboard tenant cơ bản | ✅ | 2026-09-16 | **Chưa commit**; migration `AddMembershipLastActiveAt` đã chạy trên DB dùng chung |
+| 9 | `packages/exam-core` | ⬜ | | **Step tiếp theo** |
 | 10 | Upload media (R2) | ⬜ | | Cần P1 |
 | 11 | Danh mục đề & Loại đề | ⬜ | | |
 | 12 | Đề thi, trình soạn thảo & version | ⬜ | | |
@@ -25,21 +25,21 @@
 | 14 | Chấm bài thủ công | ⬜ | | |
 | 15 | Hoàn thiện & nghiệm thu tổng | ⬜ | | |
 
-### Bàn giao cho phiên tiếp theo (cuối phiên 2026-09-15)
+### Bàn giao cho phiên tiếp theo (cuối phiên 2026-09-16)
 
 **Trạng thái repo**
-- Nhánh `main` tại `3868d15 feat: auth`, đã push. **Step 6 chưa commit** (toàn bộ code Step 6, plan, CLAUDE.md, file này).
-- Container :3001 vẫn chạy code Step 5; migration Step 6 chỉ thêm bảng nên không ảnh hưởng. Khi deploy, entrypoint sẽ báo migration đã mới nhất.
+- Nhánh `main` tại `6c2083b feat: membership` (Step 6), đã push `origin/main`. **Step 7 và Step 8 chưa commit** (code, plan, CLAUDE.md, README, file này).
+- Migration `AddTenantSuspensionReason` (Step 7) và `AddMembershipLastActiveAt` (Step 8) đã chạy trên DB dùng chung; đều chỉ thêm cột cho phép null nên bản đang chạy trên :3001 không bị ảnh hưởng.
 - Không có server nào đang chạy (server kiểm thử :3100/:3101 đã tắt).
 
 **Database dùng chung (`lang-simulator` / `public` trên VPS)**
-- Migration đã chạy: `CreateUsersAndRefreshTokens1789482175602`, `CreateTenantsAndMemberships1789486401727`, `SeedServicePlans1789486401728`.
+- Migration đã chạy: `CreateUsersAndRefreshTokens1789482175602`, `CreateTenantsAndMemberships1789486401727`, `SeedServicePlans1789486401728`, `AddTenantSuspensionReason1789490128190`, `AddMembershipLastActiveAt1789491719211`.
 - `service_plans`: 3 gói `basic`/`standard`/`pro`. `tenants`, `memberships`: trống. `users`: 1 `SYSTEM_OWNER`, không còn dữ liệu test.
 
-**Bắt đầu Step 7**
-1. Đọc plan mục 5.1, 6.2 (`admin`), Step 7; nhật ký Step 6 bên dưới (mục "Lưu ý cho các step sau").
-2. Hỏi người dùng **trước khi code**, ví dụ: đổi gói xuống thấp hơn số thành viên đang active có được không; reset mật khẩu user do admin nhập hay hệ thống sinh (như create-account); System Admin tạo user có bắt đổi mật khẩu không; xoá user (mềm) khi user đang là Tenant Owner; tạm khoá (`suspended`) tenant rồi mở lại về trạng thái nào.
-3. Kiểm thử thật như Step 5–6: bản build (api `PORT=3101 node dist/main.js` trong `apps/lang-api`, app `pnpm exec next start -p 3100` trong `apps/lang-app`), gọi qua `http://127.0.0.1:3100/api`. Dữ liệu test tiền tố `step7-test-` và xoá sau khi chạy (xoá `tenants` trước `users` vì FK owner RESTRICT). Script E2E Step 6 nằm trong scratchpad phiên cũ (sẽ mất); puppeteer-core cài bằng `npm` trong scratchpad, Chrome tại `/Applications/Google Chrome.app`. Chờ server bằng vòng lặp `fetch` trong Node (lệnh `sleep` bị chặn).
+**Bắt đầu Step 9**
+1. Đọc plan Step 9 (exam-core) và mục 4.4; mở các file LC được liệt kê (`indicator.tsx`, `labs/exam-editor/_lib/*`, mẫu `LC/docs/data/exam-draft-2.json`, `exam-editor-sample.json`).
+2. Hỏi người dùng những điểm chưa rõ trước khi code (vd. định dạng `answer_key`, cách xáo `ordering/polytomous`).
+3. Step 9 là package thuần, nghiệm thu bằng Jest + build ESM/CJS; không cần server/E2E. Mẫu E2E Step 8 (script Node + puppeteer-core trong scratchpad, sẽ mất) mô tả trong nhật ký Step 8.
 
 ### Việc người dùng chuẩn bị (plan mục 3)
 
@@ -67,9 +67,9 @@ Kiểm tra sau khi chuyển DB (2026-09-15):
 
 ### Đang chờ người dùng (tính đến 2026-09-15)
 
-1. Commit Step 6 (gộp cả ghi chú bàn giao cuối phiên Step 5). Không có env mới.
+1. Commit Step 7 + Step 8. Không có env mới.
 2. Đã seed System Owner, nhưng `SEED_OWNER_PASSWORD` **vẫn còn** trong `apps/lang-api/.env` (kiểm lúc cuối phiên, không đọc giá trị) → nên xoá.
-3. Xem giao diện bằng mắt: `/login`, `/register`, `/me`, `/me/account`, `/admin` (sau khi seed Owner) – thay cho việc xem layout dashboard của Step 3. Mình mới kiểm bằng ảnh chụp Chrome headless.
+3. Xem giao diện bằng mắt: `/login`, `/register`, `/me`, `/me/account`, `/admin`, `/admin/users`, `/admin/tenants`, `/admin/plans` (Step 5–7) và `/`, `/me/tenants/new`, `/t/{slug}`, `/t/{slug}/dashboard`, `/t/{slug}/dashboard/members` (Step 8). Mình mới kiểm bằng ảnh chụp Chrome headless. Phần giao diện Step 8 do mình tự quyết (người dùng giao), xem plan Step 8 mục "Cập nhật khi làm Step 8".
 4. VPS `/opt/lang-simulator/.env`: **không bắt buộc** thêm `JWT_ACCESS_EXPIRES_IN`, `REFRESH_EXPIRES_IN`, `COOKIE_SECURE` (đều có mặc định); `deploy/.env` trên máy dev đã thêm.
 5. Không bắt buộc: `REVOKE CONNECT ON DATABASE "lightc-general" FROM PUBLIC` (hiện `lang_simulator` vẫn CONNECT được DB của LC nhưng không có quyền trên bảng); giới hạn IP truy cập cổng 5432.
 
@@ -78,6 +78,118 @@ Kiểm tra sau khi chuyển DB (2026-09-15):
 ---
 
 ## Nhật ký
+
+### Step 8 – Khu vực chính & dashboard tenant cơ bản (✅ 2026-09-16)
+
+**Quyết định (người dùng giao tự quyết phần giao diện; đã ghi vào plan Step 8)**
+- Landing theo `LC/design/Home.html` (hero + thẻ minh hoạ đề, tính năng, gói dịch vụ thật, footer tối), bỏ số liệu marketing của mockup.
+- Trang đích sau đăng nhập tính mọi tenant user là thành viên (kể cả chưa hoạt động).
+- Lý do tạm khoá chỉ chủ trung tâm thấy; thành viên tenant chưa hoạt động thấy thông báo trạng thái ở `/t/{slug}` và dashboard.
+- Teacher: tổng quan rút gọn (học viên, đề theo trạng thái, lượt làm, bài chờ chấm).
+
+**Đã làm**
+- `@lang/shared`: `DEACTIVATION_SUGGESTION_ROLES`; kiểu `TenantMembershipInfo`, `MemberQuota`, `DeactivationSuggestions`, `TenantDashboardStats`; `MembershipListItem.lastActiveAt`, `OwnedTenant.suspensionReason`.
+- lang-api:
+  - Migration `1789491719211-AddMembershipLastActiveAt` (cột `memberships.last_active_at`); `TenantGuard` ghi cột này tối đa 1 lần/giờ khi tenant active và là thành viên (trước bước kiểm role).
+  - `GET t/:slug/me` (mọi thành viên): tenant công khai + roles; trang `/t/{slug}` gọi để ghi lần vào tenant.
+  - `GET t/:slug/memberships/deactivation-suggestions` (Owner/Admin): quota (`planName`, `maxMembers`, `activeMembers`, `excess`) + tối đa `excess` membership chỉ có role Học viên/Phụ huynh, chưa từng vào trước rồi tới lần vào cũ nhất, rồi ngày tham gia. Khai báo trước `:id`.
+  - `GET t/:slug/dashboard/stats` (`TenantDashboardModule`, Owner/Admin/Teacher): số học viên, đề theo trạng thái / lượt làm / bài chờ chấm (tạm 0), `management` (giáo viên, phụ huynh, quota) chỉ cho Owner/Admin.
+  - `assertPlanHasRoom` tách `loadQuota` dùng chung với `getQuota`.
+  - Spec mới: guard ghi lần vào (1), gợi ý ngừng kích hoạt (3).
+- lang-app:
+  - `AuthProvider`: `tenantContexts`, `contextsReady`, `reloadContexts`; switcher gồm mọi tenant active (dashboard hoặc `/t/{slug}` tuỳ role) + lối về `/me`. `destinationAfterLogin(user, tenants, next)` theo plan 6.1; `useRedirectAfterLogin` cho login/register/đổi mật khẩu bắt buộc.
+  - Layout `(site)`: header dính mờ nền + link Tính năng/Gói dịch vụ, `SiteFooter` tối; landing `/` + `PlanCards`.
+  - `/me`: thẻ từng trung tâm (trạng thái, vai trò, gói nếu là chủ, gợi ý theo trạng thái, lý do từ chối/tạm khoá, nút Vào dashboard / Trang trung tâm / Sửa và gửi lại), nút Đăng ký trung tâm.
+  - `/me/tenants/new` (`?plan=` chọn sẵn) và `/me/tenants/[id]/edit`: `TenantForm` (slug tự gợi ý từ tên tới khi người dùng sửa, kiểm `validateTenantSlug`, chọn gói dạng thẻ, < 18 tuổi khoá form).
+  - `/t/{slug}`: `TenantHome` (khách / người ngoài / thành viên / tenant chưa hoạt động / không tồn tại).
+  - Dashboard tenant: `TenantDashboardShell` + `useTenantDashboard()`; tổng quan theo role + banner vượt gói; trang Thành viên (lọc, badge `< 18 tuổi`, lần vào gần nhất, quota, khoá nút thêm khi đầy, banner + modal gợi ý ngừng kích hoạt, dialog thêm theo email / tạo tài khoản / chi tiết: sửa vai trò, gắn/gỡ phụ huynh, học viên được giám hộ; ngừng kích hoạt / kích hoạt lại / xoá có xác nhận).
+  - Dùng chung: `components/tenant/*` (`TenantNotice`, `TenantAvatar`, `OverLimitBanner`, `tenant-status` chuyển từ admin), `SectionCard` (AccountSettings dùng lại), `Brand inverted`.
+  - Xử lý lưu ý Step 7: `Modal` chỉ modal trên cùng nhận Esc; header dashboard ẩn tên/email trên mobile.
+- Tài liệu: plan (quyết định Step 8), CLAUDE.md (contexts, dashboard tenant, prefetch, Modal, quota/last_active_at), README (trung tâm, trang đích).
+
+**Sai khác so với plan**
+- API ngoài plan 6.2: `GET t/:slug/me`. `deactivation-suggestions` trả kèm quota để trang Thành viên dùng luôn.
+- Gợi ý ngừng kích hoạt lọc/sắp xếp trong service (đọc mọi membership active của tenant, ≤ giới hạn gói lớn nhất) thay cho một câu SQL, để unit test bằng repository giả.
+- Sửa role dạng checkbox trong dialog chi tiết, không sửa trực tiếp trên bảng.
+- `TenantGuard` ghi `last_active_at` bằng `update()` nên `memberships.updated_at` cũng đổi theo.
+
+**Kiểm tra đã chạy**
+- `pnpm build`, `lint`, `typecheck`, `test` (116: 32 shared + 84 api), `format:check` → OK (chạy lại lint/typecheck/format sau lần sửa prefetch).
+- `pnpm --filter lang-api migrate` trên DB dùng chung → chạy `AddMembershipLastActiveAt`; `migration:generate` lại → "No changes".
+- Bản build (api `:3101`, `next start :3100`), script Node gọi qua rewrite `/api`, **45/45 đạt**: < 18 tuổi 403; gợi ý slug bỏ dấu; tenant pending: `t/:slug/me` 403 "chờ duyệt", không ghi `last_active_at`, không có trang công khai; public tenant không phân biệt hoa thường, không lộ trạng thái/gói; vào tenant ghi `last_active_at`, gọi lại trong giờ không ghi; tài khoản System Admin + Owner A + Học viên B có đủ contexts; Học viên gọi stats/gợi ý 403, người ngoài 403, khách 401; stats Owner đủ số, Teacher `management = null`, Teacher quản lý thành viên 403, Student stats 403; `lastActiveAt` trong danh sách; gắn phụ huynh; hạ gói 3 thành viên khi có 5 → gợi ý đúng [học viên chưa từng vào, phụ huynh vào lâu nhất] (không có Owner/Teacher), stats báo vượt, thêm 409; ngừng kích hoạt → còn vượt 1, kích hoạt lại 409; từ chối → lý do ở `tenants/mine`, gửi lại → pending; tạm khoá → chủ thấy lý do, `me/contexts` không lộ, thành viên 403 "tạm khoá"; mở khoá.
+- Chrome headless (puppeteer-core), **46/46 đạt**: landing (hero, gói thật, 390px không tràn); `/t/{slug}` khách và slug không tồn tại; khách mở đăng ký trung tâm → `/login?next=`; tài khoản 3 ngữ cảnh đăng nhập → `/me`, vào dashboard A, switcher qua tenant B (trang trung tâm), `/admin` ↔ dashboard A; Học viên vào dashboard B bị chặn; trang Thành viên (badge < 18, `4 / 3`, nút thêm bị khoá, cột lần vào, modal gợi ý, Esc chỉ đóng dialog xác nhận, chi tiết có phụ huynh), `/me` và trang Thành viên 390px không tràn; Owner B tạo tài khoản qua dialog → mật khẩu tạm; đăng nhập bằng mật khẩu tạm → `/me/account` → đổi xong vào `/t/{slug}` B; Teacher → dashboard rút gọn không có menu Thành viên; Học viên 1 ngữ cảnh → `/t/{slug}`; đăng ký tài khoản → `/me` trống → form (slug tự gợi ý, slug sai báo lỗi) → chờ duyệt → bị từ chối hiện lý do → sửa & gửi lại → chờ duyệt; < 18 tuổi form bị khoá; tenant tạm khoá: thành viên thấy thông báo, `/me` không lộ lý do, chủ thấy lý do; không có lỗi console ngoài 401/403/404/409 mong đợi.
+- Lần chạy trình duyệt đầu **thất bại**: đăng nhập xong bị đẩy về `/login?next=/me`. Nguyên nhân: footer/landing mới có link `/me`, `/me/tenants/new`; Next prefetch lúc chưa đăng nhập nhận redirect của middleware và router cache giữ lại. Sửa bằng `prefetch={false}` cho các link đó, build lại, chạy lại toàn bộ E2E như trên.
+- Đã xem ảnh chụp: landing (desktop/mobile), `/me`, `/me` bị từ chối, form đăng ký, trang trung tâm của thành viên, tổng quan Owner, trang Thành viên (desktop/mobile), dialog chi tiết, trang bị chặn.
+- Dữ liệu test (`step8-test-…`, gói `step8-test-mini`) đã xoá hết; DB còn 1 user, 0 tenant, 3 gói. Log API không có lỗi; app chỉ có DEP0060 và cảnh báo `next start` với `output: standalone` đã biết.
+
+**Lưu ý cho các step sau**
+- Step 12–14: thay số 0 tạm trong `TenantDashboardService` (đề theo trạng thái, lượt làm, bài chờ chấm); gắn `href` cho thẻ đề khi có trang. Step 13: khu "Đề thi" trên `/t/{slug}` (`TenantHome`, nhánh thành viên).
+- Step 10: logo tenant – `TenantAvatar` đang chỉ hiện chữ cái đầu.
+- Menu dashboard tenant vẫn có link tới trang chưa làm (`exam-categories`, `exam-blueprints`, `exams`, `grading`) → prefetch 404 như Step 7.
+- Link tới route cần đăng nhập ở chỗ khách nhìn thấy: `prefetch={false}` (đã ghi CLAUDE.md).
+- `last_active_at` chỉ ghi qua route có `TenantGuard`; trang học viên mới ở khu vực chính nên gọi API dưới `/t/:slug/*` để được tính là đã vào.
+- Chưa có unit test cho `TenantDashboardService` (QueryBuilder), chỉ E2E.
+
+### Step 7 – Dashboard hệ thống `/admin` (✅ 2026-09-15)
+
+**Quyết định (người dùng chọn, đã cập nhật plan mục 1, 6.2, Step 7, Step 8)**
+- Hạ gói: System Admin đổi, có hiệu lực ngay, không deactivate ai; tenant vượt giới hạn chỉ bị chặn thêm/mở lại thành viên. Cảnh báo và gợi ý deactivate Học viên/Phụ huynh lâu không vào tenant thuộc Step 8.
+- Tạo user / reset mật khẩu như create-account (admin nhập hoặc hệ thống sinh, hiển thị một lần, luôn bắt đổi mật khẩu).
+- Không xoá user trong req-1, chỉ khoá/mở khoá.
+- Tenant: duyệt / từ chối (bắt buộc lý do) chỉ từ `pending`; tạm khoá (bắt buộc lý do) chỉ từ `active`; mở khoá `suspended → active`.
+- Gói: `code` cố định sau khi tạo; xoá cứng chỉ khi chưa tenant nào dùng.
+
+**Đã làm**
+- `@lang/shared`: `admin.ts` (`canManageUser`, `SERVICE_PLAN_CODE_*`, kiểu `AdminStats`, `AdminUser`, `AdminUserPasswordResult`, `AdminTenant`, `AdminServicePlan`); `Paginated<T>` chuyển vào shared (API re-export).
+- lang-api:
+  - Migration `1789490128190-AddTenantSuspensionReason` (cột `tenants.suspension_reason`).
+  - `AdminModule`, controller gắn `@SystemRoles(...SYSTEM_MANAGER_ROLES)`:
+    - `GET admin/stats`: user (tổng, mới 7 ngày, bị khoá), tenant theo trạng thái.
+    - `admin/users`: list (`q`, `systemRole`, `status`, phân trang), `GET :id`, `POST` (luôn Registered User, mật khẩu tạm), `PATCH :id`, `POST :id/lock|unlock` (khoá thì thu hồi refresh token), `POST :id/reset-password` (tăng `token_version`, thu hồi refresh token, bắt đổi mật khẩu), `PATCH :id/system-role` (chỉ Owner; khoá các dòng Owner trong transaction, luôn còn ≥ 1 Owner active).
+    - Quyền trên tài khoản dùng `canManageUser`: System Admin chỉ thao tác Registered User. Không tự khoá (403), không tự reset mật khẩu (400); kiểm "chính mình" trước để có thông báo đúng.
+    - `admin/tenants`: list (`status`, `q` theo tên/slug/tên hoặc email chủ trung tâm, phân trang) và chi tiết (gói, owner, số membership active, người xử lý gần nhất); `POST :id/approve|reject|suspend|unsuspend` (update có điều kiện trạng thái cũ, ghi `reviewed_by/at`); `PATCH :id/plan` (chỉ gói đang áp dụng, hiệu lực ngay).
+    - `admin/plans`: list kèm `tenantCount`, `POST`, `PATCH` (không nhận `code`), `DELETE` (409 khi có tenant dùng kể cả tenant đã xoá mềm; bắt lỗi khoá ngoại khi có race).
+  - `common/validators/fields.ts`: `composeDecorators`, `isPresent`, `EmailField`, `FullNameField`, `GenderField`, `PhoneField`, `AddressField`, `ReasonField` (DTO thành viên chuyển sang dùng); `isForeignKeyViolation`; `InMemoryRepository.count`.
+  - Spec mới: `admin-users.service` (7), `admin-tenants.service` (5, gồm "duyệt xong thì Owner qua `TenantGuard`"), `admin-plans.service` (3).
+- lang-app:
+  - `/admin`: 6 thẻ thống kê; thẻ bấm được mở danh sách đã lọc (`StatCard` thêm `href`).
+  - `/admin/users`: tìm kiếm, lọc vai trò/trạng thái, phân trang; modal tạo/sửa, reset mật khẩu, đổi vai trò (chỉ Owner thấy nút), xác nhận khoá/mở khoá. Ẩn thao tác trên tài khoản không quản lý được, ẩn khoá/reset trên chính mình.
+  - `/admin/tenants`: tab theo trạng thái kèm số lượng (giữ trên URL `?status=`, mặc định "Chờ duyệt"), tìm kiếm, cột thành viên `x / giới hạn` + badge "Vượt giới hạn"; dialog chi tiết có Duyệt / Từ chối (lý do) / Tạm khoá (lý do) / Mở khoá / Đổi gói (cảnh báo khi gói mới nhỏ hơn số thành viên).
+  - `/admin/plans`: bảng + modal tạo/sửa; nút xoá bị vô hiệu khi đã có trung tâm dùng.
+  - Dùng chung: `Badge`, `DataTable` (lưới theo OxfordTable của LC, mobile xếp dọc kèm nhãn cột), `SearchInput`, `SelectFilter`, `TemporaryPasswordDialog`; class `compactPrimaryButtonClass`/`compactDangerButtonClass`/`secondaryButtonClass`/`iconButtonClass`; `lib/format.ts`, `lib/error-message.ts` (AccountSettings dùng lại), `lib/use-debounced-value.ts`; chuỗi `vi.admin`, `vi.systemRoles`, `vi.userStatus`, `vi.tenantStatus`.
+- Tài liệu: plan (quyết định Step 7), CLAUDE.md (quy ước admin, decorator trường, component danh sách), README (mục quản trị hệ thống).
+
+**Sai khác so với plan**
+- Không có xoá user (plan ghi "users CRUD"); thêm `unlock`, `unsuspend` và cột `suspension_reason`.
+- `reviewed_by/at` là người xử lý gần nhất (cả tạm khoá/mở khoá), không chỉ lần duyệt.
+- Page client đọc query bằng prop `searchParams` thay cho `useSearchParams` (khỏi bọc Suspense).
+
+**Kiểm tra đã chạy**
+- `pnpm build`, `lint`, `typecheck`, `test` (112: 32 shared + 80 api), `format:check` → OK.
+- `pnpm --filter lang-api migrate` trên DB dùng chung → chạy `AddTenantSuspensionReason`; `migration:generate` lại → "No changes".
+- Bản build (api `:3101`, `next start :3100`), script Node gọi qua rewrite `/api` + Chrome headless, **78/78 đạt**:
+  - chưa đăng nhập 401; Registered User vào `/admin/*` 403; thống kê đúng cấu trúc;
+  - user: tìm/lọc/phân trang, không lộ `passwordHash`; tạo user (mật khẩu tạm, đăng nhập bị bắt đổi; nhập tay không trả lại; trùng email 409; gửi `systemRole` 400);
+  - System Admin sửa/khoá/reset System Owner và System Admin khác → 403, đổi vai trò → 403, DB không đổi;
+  - khoá user: access token cũ 401, refresh cookie 401, đăng nhập 403; mở khoá đăng nhập lại được nhưng refresh cookie cũ vẫn 401; reset mật khẩu: token cũ 401, mật khẩu cũ 401, mật khẩu tạm 200;
+  - System Owner sửa/khoá System Admin; nâng user lên System Admin có hiệu lực ngay với access token đang có, hạ lại mất quyền ngay;
+  - gói: tạo (code thành chữ thường, giá 2 chữ số), trùng 409, sai định dạng 400, sửa code 400, gói ngừng áp dụng không có ở `public/plans`, xoá gói đang dùng 409 / chưa dùng 204;
+  - tenant: trước duyệt Owner vào `/t/:slug/memberships` 403, **duyệt xong 200**; duyệt lại/từ chối tenant active 409; tạm khoá thiếu lý do 400, tạm khoá chặn Owner 403 "tạm khoá", mở khoá; hạ gói xuống gói 1 thành viên khi đang có 2 → 200, không ai bị deactivate, thêm thành viên 409; từ chối (lý do hiện ở `tenants/mine`), tenant bị từ chối không duyệt/khoá được, gửi lại → pending;
+  - trình duyệt (System Admin): thẻ thống kê có số; bảng user chỉ có nút sửa ở Registered User, không có nút đổi vai trò; tạo user qua modal hiện mật khẩu tạm; 390px không tràn ngang; duyệt trung tâm qua dialog; trang gói; không có lỗi console ngoài 404 đã biết.
+- Chạy lại E2E Step 6 sau khi đổi DTO thành viên: 67/67.
+- Đã xem ảnh chụp: tổng quan, người dùng, dialog mật khẩu tạm, người dùng trên mobile, chi tiết trung tâm, gói dịch vụ.
+- Dữ liệu test (`step7-test-…`) đã xoá hết; DB vẫn 1 System Owner thật. Log API không lỗi; app chỉ có DEP0060 đã biết.
+
+**Lưu ý cho các step sau**
+- "Không hạ quyền System Owner hoạt động cuối cùng" chỉ có unit test: DB dùng chung có Owner thật nên E2E không tạo được tình huống này.
+- Menu dashboard có link tới trang chưa làm (`/admin/exam-*`, `/t/:slug/dashboard/*`): request prefetch 404 treo, trang không bao giờ `networkidle0` → puppeteer chờ `domcontentloaded` + nội dung cụ thể.
+- Step 8:
+  - trang thành viên dùng lại `DataTable`, `SearchInput`, `SelectFilter`, `Badge`, `Pagination`, `TemporaryPasswordDialog`;
+  - banner vượt giới hạn làm giống `TenantDetailModal`/`ChangePlanModal` (`vi.admin.tenants.overLimitWarning`);
+  - `/me` hiển thị `suspensionReason`? `MeContexts` hiện chỉ có `rejectionReason` → bổ sung nếu người dùng muốn.
+- Owner tự hạ vai trò của mình: `AuthProvider` giữ `user` cũ tới khi tải lại trang (API đã chặn đúng).
+- `Modal` nghe phím Esc riêng từng cái: Esc trong dialog con (xác nhận, đổi gói) đóng luôn dialog chi tiết tenant.
+- Header dashboard trên mobile: tiêu đề trang xuống 2 dòng vì khối tên/email bên phải (có từ Step 5) – cân nhắc ẩn email trên mobile.
 
 ### Step 6 – Tenant, gói dịch vụ, membership (✅ 2026-09-15)
 
@@ -138,13 +250,15 @@ Kiểm tra sau khi chuyển DB (2026-09-15):
 - Step 7:
   - duyệt/từ chối/khoá tenant: ghi `reviewed_by`/`reviewed_at`, update có điều kiện trạng thái (resubmit đang dùng `status = rejected`);
   - không xoá cứng gói đang có tenant dùng (FK RESTRICT), dùng `is_active`;
-  - chi tiết tenant: số thành viên = membership active chưa xoá.
+  - chi tiết tenant: số thành viên = membership active chưa xoá;
+  - đổi gói không kiểm tra chỗ trống. `assertPlanHasRoom` (so `>=`) đã chặn thêm/mở lại thành viên khi tenant vượt giới hạn, không cần sửa.
 - Step 8:
   - `destinationAfterLogin` theo `me/contexts` (plan mục 6.1);
   - `/me` dùng `me/contexts` + `tenants/mine`;
   - switcher thêm tenant không có role dashboard (→ `/t/{slug}`), `AuthProvider` cần hàm tải lại contexts sau khi đăng ký tenant;
   - layout dashboard tenant lấy roles thật từ contexts thay `[TENANT_OWNER]`;
-  - form đăng ký dùng `slug-suggestion` + `validateTenantSlug`; dialog tạo account hiện `temporaryPassword` một lần.
+  - form đăng ký dùng `slug-suggestion` + `validateTenantSlug`; dialog tạo account hiện `temporaryPassword` một lần;
+  - vượt giới hạn gói: banner cảnh báo + `GET t/:slug/memberships/deactivation-suggestions` (cột `memberships.last_active_at` do `TenantGuard` cập nhật ≤ 1 lần/giờ; chỉ membership chỉ có role Học viên/Phụ huynh), xem plan Step 8.
 - Tìm thành viên bằng ILIKE không bỏ dấu (không có `unaccent`): "hoc vien" không khớp "Học viên".
 - `InMemoryDataSource` không rollback: test chỉ kiểm lỗi xảy ra trước khi ghi.
 

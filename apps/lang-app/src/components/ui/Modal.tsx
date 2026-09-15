@@ -1,8 +1,11 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { X } from 'lucide-react';
 import { vi } from '@/i18n/vi';
+
+/** Modal đang mở theo thứ tự; chỉ modal trên cùng nhận phím Esc. */
+const openModals: symbol[] = [];
 
 interface ModalProps {
   open: boolean;
@@ -32,15 +35,27 @@ export function Modal({
   bodyClass = 'overflow-auto px-5 py-4',
   footer,
 }: ModalProps) {
+  // Giữ onClose mới nhất trong ref để effect không chạy lại (và không đổi thứ
+  // tự chồng modal) mỗi lần cha render.
+  const onCloseRef = useRef(onClose);
+  onCloseRef.current = onClose;
+
   useEffect(() => {
+    if (!open) return;
+    const id = Symbol('modal');
+    openModals.push(id);
     const onEsc = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') onClose();
+      // Esc trong dialog con (xác nhận…) không đóng luôn dialog cha.
+      if (event.key === 'Escape' && openModals.at(-1) === id) {
+        onCloseRef.current();
+      }
     };
-    if (open) {
-      document.addEventListener('keydown', onEsc);
-      return () => document.removeEventListener('keydown', onEsc);
-    }
-  }, [open, onClose]);
+    document.addEventListener('keydown', onEsc);
+    return () => {
+      document.removeEventListener('keydown', onEsc);
+      openModals.splice(openModals.indexOf(id), 1);
+    };
+  }, [open]);
 
   if (!open) return null;
 

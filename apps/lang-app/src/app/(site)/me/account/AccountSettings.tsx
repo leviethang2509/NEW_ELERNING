@@ -1,7 +1,6 @@
 'use client';
 
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
 import {
   DEFAULT_TIMEZONE,
   Gender,
@@ -14,9 +13,11 @@ import {
   type AuthUser,
 } from '@lang/shared';
 import { useAuth } from '@/components/auth/AuthProvider';
+import { useRedirectAfterLogin } from '@/components/auth/useRedirectAfterLogin';
 import {
   FormAlert,
   PasswordInput,
+  SectionCard,
   inputClass,
   labelClass,
   labelTextClass,
@@ -24,35 +25,9 @@ import {
 } from '@/components/ui';
 import { vi } from '@/i18n/vi';
 import { api } from '@/lib/api';
-import { destinationAfterLogin } from '@/lib/auth-redirect';
+import { errorMessage } from '@/lib/error-message';
 
 type Feedback = { tone: 'error' | 'success'; message: string } | null;
-
-function errorMessage(error: unknown, fallback: string) {
-  return error instanceof Error && error.message ? error.message : fallback;
-}
-
-function Card({
-  title,
-  description,
-  children,
-}: {
-  title: string;
-  description?: string;
-  children: React.ReactNode;
-}) {
-  return (
-    <section className="rounded-2xl border border-[var(--border)] bg-[var(--card)] p-5 sm:p-6">
-      <h2 className="text-[17px] font-semibold text-[var(--heading)]">
-        {title}
-      </h2>
-      {description && (
-        <p className="mt-1 text-[13.5px] text-[var(--body)]">{description}</p>
-      )}
-      <div className="mt-5">{children}</div>
-    </section>
-  );
-}
 
 function ProfileForm({ user }: { user: AuthUser }) {
   const { setUser } = useAuth();
@@ -187,13 +162,15 @@ function ProfileForm({ user }: { user: AuthUser }) {
 }
 
 function ChangePasswordForm({ forced }: { forced: boolean }) {
-  const router = useRouter();
   const { applySession } = useAuth();
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [feedback, setFeedback] = useState<Feedback>(null);
   const [saving, setSaving] = useState(false);
+  // Đổi xong mật khẩu bắt buộc thì vào trang đích như vừa đăng nhập.
+  const [redirectPending, setRedirectPending] = useState(false);
+  useRedirectAfterLogin(null, redirectPending);
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -213,8 +190,7 @@ function ChangePasswordForm({ forced }: { forced: boolean }) {
       setNewPassword('');
       setConfirmPassword('');
       setFeedback({ tone: 'success', message: vi.account.passwordChanged });
-      // Đổi xong mật khẩu bắt buộc thì vào trang đích như vừa đăng nhập.
-      if (forced) router.replace(destinationAfterLogin(session.user));
+      if (forced) setRedirectPending(true);
     } catch (error) {
       setFeedback({
         tone: 'error',
@@ -286,17 +262,17 @@ export function AccountSettings() {
 
       {/* Còn cờ bắt đổi mật khẩu thì API chặn sửa hồ sơ, nên ẩn form hồ sơ. */}
       {!forced && (
-        <Card title={vi.account.profile}>
+        <SectionCard title={vi.account.profile}>
           <ProfileForm user={user} />
-        </Card>
+        </SectionCard>
       )}
 
-      <Card
+      <SectionCard
         title={vi.account.changePassword}
         description={vi.account.changePasswordHint}
       >
         <ChangePasswordForm forced={forced} />
-      </Card>
+      </SectionCard>
     </div>
   );
 }

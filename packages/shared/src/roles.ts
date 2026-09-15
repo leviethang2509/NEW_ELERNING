@@ -49,6 +49,15 @@ export const GRADER_ROLES: readonly TenantRole[] = EXAM_AUTHOR_ROLES;
 /** Được vào dashboard tenant. Student/Parent chỉ dùng khu vực chính. */
 export const TENANT_DASHBOARD_ROLES: readonly TenantRole[] = EXAM_AUTHOR_ROLES;
 
+/**
+ * Chỉ gợi ý ngừng kích hoạt membership mà mọi role đều thuộc nhóm này (không
+ * gợi ý Owner, Tenant Admin, Teacher) khi tenant vượt giới hạn gói.
+ */
+export const DEACTIVATION_SUGGESTION_ROLES: readonly TenantRole[] = [
+  TenantRole.STUDENT,
+  TenantRole.PARENT,
+];
+
 export function hasAnyRole<T extends string>(
   roles: readonly T[],
   allowed: readonly T[],

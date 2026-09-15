@@ -5,6 +5,7 @@ import { Membership } from '../memberships/membership.entity';
 import { PlansModule } from '../plans/plans.module';
 import { UsersModule } from '../users/users.module';
 import { PublicTenantsController } from './public-tenants.controller';
+import { TenantMeController } from './tenant-me.controller';
 import { Tenant } from './tenant.entity';
 import { TenantsController } from './tenants.controller';
 import { TenantsService } from './tenants.service';
@@ -19,7 +20,7 @@ import { TenantsService } from './tenants.service';
     PlansModule,
     UsersModule,
   ],
-  controllers: [TenantsController, PublicTenantsController],
+  controllers: [TenantsController, PublicTenantsController, TenantMeController],
   providers: [TenantsService],
   exports: [TypeOrmModule, PlansModule, UsersModule],
 })

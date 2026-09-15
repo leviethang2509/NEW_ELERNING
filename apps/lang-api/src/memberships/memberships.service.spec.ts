@@ -46,6 +46,7 @@ function setup(maxMembers = 100) {
   const tenants = new InMemoryRepository<Tenant>();
   const memberships = new InMemoryRepository<Membership>(() => ({
     joinedAt: new Date(),
+    lastActiveAt: null,
     deletedAt: null,
   }));
   const membershipRoles = new InMemoryRepository<MembershipRole>(undefined, [
@@ -93,7 +94,10 @@ function setup(maxMembers = 100) {
   let counter = 0;
   async function addMember(
     roles: TenantRole[],
-    { tenantId = 't1', status = MembershipStatus.ACTIVE } = {},
+    {
+      tenantId = 't1',
+      status = MembershipStatus.ACTIVE,
+    }: { tenantId?: string; status?: MembershipStatus } = {},
   ) {
     counter += 1;
     const user = await users.save(
@@ -304,6 +308,65 @@ describe('MembershipsService', () => {
           status: MembershipStatus.ACTIVE,
         }),
       ).resolves.toMatchObject({ status: MembershipStatus.ACTIVE });
+    });
+  });
+
+  describe('gợi ý ngừng kích hoạt khi vượt gói', () => {
+    it('chưa vượt giới hạn thì không gợi ý', async () => {
+      const { service, ownerCtx } = await withOwnerAndAdmin(2);
+
+      await expect(service.deactivationSuggestions(ownerCtx)).resolves.toEqual({
+        planName: 'Basic',
+        maxMembers: 2,
+        activeMembers: 2,
+        excess: 0,
+        items: [],
+      });
+    });
+
+    it('chỉ gợi ý Học viên/Phụ huynh, chưa từng vào trước rồi tới lần vào cũ nhất', async () => {
+      const { service, ownerCtx, addMember, memberships } =
+        await withOwnerAndAdmin(2);
+      const setLastActive = (id: string, iso: string) =>
+        memberships.update(id, { lastActiveAt: new Date(iso) });
+
+      await addMember([TenantRole.TEACHER]);
+      await addMember([TenantRole.STUDENT, TenantRole.TEACHER]);
+      const recentParent = await addMember([TenantRole.PARENT]);
+      await setLastActive(recentParent.membership.id, '2026-09-10T00:00:00Z');
+      const oldStudent = await addMember([
+        TenantRole.STUDENT,
+        TenantRole.PARENT,
+      ]);
+      await setLastActive(oldStudent.membership.id, '2026-01-01T00:00:00Z');
+      const neverStudent = await addMember([TenantRole.STUDENT]);
+      await addMember([TenantRole.STUDENT], {
+        status: MembershipStatus.INACTIVE,
+      });
+
+      // 7 active, giới hạn 2 → cần bớt 5 nhưng chỉ 3 người thuộc diện gợi ý.
+      const result = await service.deactivationSuggestions(ownerCtx);
+      expect(result).toMatchObject({ activeMembers: 7, excess: 5 });
+      expect(result.items.map((item) => item.id)).toEqual([
+        neverStudent.membership.id,
+        oldStudent.membership.id,
+        recentParent.membership.id,
+      ]);
+      expect(result.items[0]).toMatchObject({
+        email: neverStudent.user.email,
+        lastActiveAt: null,
+      });
+    });
+
+    it('lấy đúng số cần bớt', async () => {
+      const { service, ownerCtx, addMember } = await withOwnerAndAdmin(3);
+      await addMember([TenantRole.STUDENT]);
+      await addMember([TenantRole.STUDENT]);
+      await addMember([TenantRole.PARENT]);
+
+      const result = await service.deactivationSuggestions(ownerCtx);
+      expect(result.excess).toBe(2);
+      expect(result.items).toHaveLength(2);
     });
   });
 

@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { APP_FILTER } from '@nestjs/core';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { AdminModule } from './admin/admin.module';
 import { AuthModule } from './auth/auth.module';
 import { AllExceptionsFilter } from './common/filters/all-exceptions.filter';
 import { EnvironmentVariables, validateEnv } from './config/env.validation';
@@ -9,6 +10,7 @@ import { buildDataSourceOptions } from './database/database.config';
 import { HealthModule } from './health/health.module';
 import { MembershipsModule } from './memberships/memberships.module';
 import { PlansModule } from './plans/plans.module';
+import { TenantDashboardModule } from './tenant-dashboard/tenant-dashboard.module';
 import { TenantsModule } from './tenants/tenants.module';
 import { UsersModule } from './users/users.module';
 
@@ -39,6 +41,8 @@ import { UsersModule } from './users/users.module';
     PlansModule,
     TenantsModule,
     MembershipsModule,
+    TenantDashboardModule,
+    AdminModule,
     // Đăng ký guard toàn cục: mọi route cần đăng nhập trừ route @Public().
     AuthModule,
   ],

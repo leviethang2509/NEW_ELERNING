@@ -17,12 +17,7 @@ export class PaginationQueryDto {
   pageSize = 20;
 }
 
-export interface Paginated<T> {
-  items: T[];
-  total: number;
-  page: number;
-  pageSize: number;
-}
+export type { Paginated } from '@lang/shared';
 
 /** Đổi page/pageSize sang skip/take của TypeORM. */
 export function toSkipTake({ page, pageSize }: PaginationQueryDto) {

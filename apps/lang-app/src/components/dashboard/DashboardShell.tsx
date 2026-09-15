@@ -160,8 +160,9 @@ export function DashboardShell({
             {activeItem?.label ?? vi.nav.overview}
           </div>
 
+          {/* Mobile đã có thẻ người dùng trong sidebar, ẩn để tiêu đề không xuống dòng. */}
           {user && (
-            <div className="ml-auto flex items-center gap-3 px-2 py-1.5">
+            <div className="ml-auto hidden items-center gap-3 px-2 py-1.5 sm:flex">
               <span className="text-right">
                 <span className="block text-[13.5px] font-semibold text-[var(--fg)]">
                   {user.fullName}

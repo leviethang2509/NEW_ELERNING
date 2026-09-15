@@ -1,58 +1,50 @@
 import {
   ASSIGNABLE_TENANT_ROLES,
-  Gender,
   MembershipStatus,
   TenantRole,
+  type Gender,
 } from '@lang/shared';
 import { Transform } from 'class-transformer';
 import {
   ArrayMinSize,
   ArrayUnique,
   IsArray,
-  IsEmail,
   IsIn,
-  IsNotEmpty,
   IsOptional,
   IsString,
   IsUUID,
-  Matches,
   MaxLength,
 } from 'class-validator';
 import { PaginationQueryDto } from '../../common/pagination';
+import { emptyToUndefined, trimToNull } from '../../common/transforms';
 import {
-  emptyToUndefined,
-  toEmail,
-  trimString,
-  trimToNull,
-} from '../../common/transforms';
+  EmailField,
+  FullNameField,
+  GenderField,
+  PhoneField,
+  composeDecorators,
+} from '../../common/validators/fields';
 import { IsDateOfBirth } from '../../common/validators/is-date-of-birth';
 import { NewPassword } from '../../common/validators/new-password';
 
 /** Danh sách role cấp cho thành viên; không nhận `TENANT_OWNER`. */
 function AssignableRoles(minSize: number): PropertyDecorator {
-  return (target, key) => {
-    IsArray({ message: 'Vai trò không hợp lệ' })(target, key);
-    if (minSize > 0) {
-      ArrayMinSize(minSize, { message: 'Vui lòng chọn ít nhất một vai trò' })(
-        target,
-        key,
-      );
-    }
-    ArrayUnique({ message: 'Vai trò bị trùng' })(target, key);
+  return composeDecorators(
+    IsArray({ message: 'Vai trò không hợp lệ' }),
+    ...(minSize > 0
+      ? [
+          ArrayMinSize(minSize, {
+            message: 'Vui lòng chọn ít nhất một vai trò',
+          }),
+        ]
+      : []),
+    ArrayUnique({ message: 'Vai trò bị trùng' }),
     IsIn([...ASSIGNABLE_TENANT_ROLES], {
       each: true,
       message:
         'Vai trò không hợp lệ hoặc không được cấp qua quản lý thành viên',
-    })(target, key);
-  };
-}
-
-function MemberEmail(): PropertyDecorator {
-  return (target, key) => {
-    Transform(toEmail)(target, key);
-    IsEmail({}, { message: 'Email không hợp lệ' })(target, key);
-    MaxLength(254, { message: 'Email quá dài' })(target, key);
-  };
+    }),
+  );
 }
 
 export class ListMembershipsQueryDto extends PaginationQueryDto {
@@ -73,7 +65,7 @@ export class ListMembershipsQueryDto extends PaginationQueryDto {
 }
 
 export class AddMemberByEmailDto {
-  @MemberEmail()
+  @EmailField()
   email: string;
 
   @AssignableRoles(1)
@@ -82,29 +74,19 @@ export class AddMemberByEmailDto {
 
 /** Tạo account mới (bắt đổi mật khẩu khi đăng nhập lần đầu) và thêm vào tenant. */
 export class CreateMemberAccountDto {
-  @MemberEmail()
+  @EmailField()
   email: string;
 
-  @Transform(trimString)
-  @IsString({ message: 'Họ tên không hợp lệ' })
-  @IsNotEmpty({ message: 'Vui lòng nhập họ tên' })
-  @MaxLength(150, { message: 'Họ tên tối đa 150 ký tự' })
+  @FullNameField()
   fullName: string;
 
   @IsDateOfBirth()
   dateOfBirth: string;
 
-  @IsOptional()
-  @IsIn(Object.values(Gender), { message: 'Giới tính không hợp lệ' })
+  @GenderField()
   gender?: Gender | null;
 
-  @IsOptional()
-  @Transform(trimToNull)
-  @IsString({ message: 'Số điện thoại không hợp lệ' })
-  @MaxLength(30, { message: 'Số điện thoại tối đa 30 ký tự' })
-  @Matches(/^[0-9+().\s-]*$/, {
-    message: 'Số điện thoại chỉ gồm chữ số và các ký tự + ( ) . -',
-  })
+  @PhoneField()
   phone?: string | null;
 
   /** Mật khẩu tạm do admin nhập; để trống thì hệ thống sinh. */

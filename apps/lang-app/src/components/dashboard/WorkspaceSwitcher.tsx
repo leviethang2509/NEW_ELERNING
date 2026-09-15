@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
-import { Check, ChevronsUpDown } from 'lucide-react';
+import { Check, ChevronsUpDown, LayoutGrid } from 'lucide-react';
 import { vi } from '@/i18n/vi';
 
 export interface WorkspaceOption {
@@ -29,7 +29,8 @@ export function WorkspaceSwitcher({
   const [open, setOpen] = useState(false);
   const rootRef = useRef<HTMLDivElement>(null);
   const current = workspaces.find((workspace) => workspace.key === currentKey);
-  const canSwitch = workspaces.length > 1;
+  // Luôn mở được khi đã đăng nhập: cuối danh sách có lối về `/me`.
+  const canSwitch = workspaces.length > 0;
 
   useEffect(() => {
     if (!open) return;
@@ -112,6 +113,14 @@ export function WorkspaceSwitcher({
               </Link>
             );
           })}
+          <Link
+            href="/me"
+            onClick={() => setOpen(false)}
+            className="mt-1 flex items-center gap-2 rounded-lg border-t border-[var(--border)] px-2.5 py-2 text-[13px] text-[var(--muted)] transition hover:bg-[var(--hover)] hover:text-[var(--body)]"
+          >
+            <LayoutGrid size={15} className="shrink-0" />
+            {vi.shell.allWorkspaces}
+          </Link>
         </div>
       )}
     </div>

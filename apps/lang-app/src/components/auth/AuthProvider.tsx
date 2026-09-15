@@ -9,8 +9,6 @@ import {
   useState,
 } from 'react';
 import {
-  hasAnyRole,
-  TENANT_DASHBOARD_ROLES,
   TenantStatus,
   type AuthResponse,
   type AuthUser,
@@ -25,7 +23,7 @@ import {
   refreshAccessToken,
   setAccessToken,
 } from '@/lib/api';
-import { isSystemManager } from '@/lib/auth-redirect';
+import { isSystemManager, tenantEntryPath } from '@/lib/auth-redirect';
 
 export type AuthStatus = 'loading' | 'authenticated' | 'anonymous';
 
@@ -39,9 +37,15 @@ export interface RegisterInput {
 interface AuthContextValue {
   status: AuthStatus;
   user: AuthUser | null;
+  /** Membership active của user (`GET /me/contexts`), mọi trạng thái tenant. */
+  tenantContexts: MeTenantContext[];
+  /** Đã tải `tenantContexts` cho user hiện tại (luôn `false` khi còn phải đổi mật khẩu). */
+  contextsReady: boolean;
+  /** Tải lại ngữ cảnh, vd. sau khi đăng ký tenant hay tự đổi role của mình. */
+  reloadContexts: () => Promise<void>;
   /**
-   * Không gian cho switcher: hệ thống (Owner/Admin) và dashboard các tenant
-   * đang hoạt động mà user có role vào dashboard.
+   * Không gian cho switcher: hệ thống (Owner/Admin) và các tenant đang hoạt
+   * động (dashboard hoặc trang trung tâm tuỳ role).
    */
   contexts: WorkspaceOption[];
   login: (email: string, password: string) => Promise<AuthUser>;
@@ -60,7 +64,14 @@ interface AuthState {
   user: AuthUser | null;
 }
 
+/** Ngữ cảnh gắn với user đã tải, để đổi user không dùng nhầm dữ liệu cũ. */
+interface ContextsState {
+  userId: string | null;
+  tenants: MeTenantContext[];
+}
+
 const anonymous: AuthState = { status: 'anonymous', user: null };
+const noTenants: MeTenantContext[] = [];
 
 export function AuthProvider({
   hasSession,
@@ -73,7 +84,10 @@ export function AuthProvider({
   const [state, setState] = useState<AuthState>(
     hasSession ? { status: 'loading', user: null } : anonymous,
   );
-  const [tenantContexts, setTenantContexts] = useState<MeTenantContext[]>([]);
+  const [contextsState, setContextsState] = useState<ContextsState>({
+    userId: null,
+    tenants: noTenants,
+  });
 
   const applySession = useCallback((session: AuthResponse) => {
     setAccessToken(session.accessToken);
@@ -96,27 +110,39 @@ export function AuthProvider({
 
   useEffect(() => onAuthFailure(() => setState(anonymous)), []);
 
-  // Tenant của user cho switcher. Còn phải đổi mật khẩu thì API từ chối, bỏ qua.
-  const userId = state.user?.id;
+  // Còn phải đổi mật khẩu thì API từ chối, chờ đổi xong mới tải.
+  const userId = state.user?.id ?? null;
   const mustChangePassword = state.user?.mustChangePassword ?? false;
   useEffect(() => {
-    if (!userId || mustChangePassword) {
-      setTenantContexts([]);
-      return;
-    }
+    if (!userId || mustChangePassword) return;
     let cancelled = false;
-    api
-      .get<MeContexts>('/me/contexts')
-      .then((data) => {
-        if (!cancelled) setTenantContexts(data.tenants);
-      })
-      .catch(() => {
-        if (!cancelled) setTenantContexts([]);
-      });
+    api.get<MeContexts>('/me/contexts').then(
+      (data) => {
+        if (!cancelled) setContextsState({ userId, tenants: data.tenants });
+      },
+      () => {
+        // Lỗi thì coi như chưa có tenant để trang đích không chờ mãi.
+        if (!cancelled) setContextsState({ userId, tenants: noTenants });
+      },
+    );
     return () => {
       cancelled = true;
     };
   }, [userId, mustChangePassword]);
+
+  const reloadContexts = useCallback(async () => {
+    if (!userId) return;
+    try {
+      const data = await api.get<MeContexts>('/me/contexts');
+      setContextsState({ userId, tenants: data.tenants });
+    } catch {
+      // Giữ danh sách cũ.
+    }
+  }, [userId]);
+
+  const contextsReady =
+    userId !== null && !mustChangePassword && contextsState.userId === userId;
+  const tenantContexts = contextsReady ? contextsState.tenants : noTenants;
 
   const login = useCallback(
     async (email: string, password: string) => {
@@ -159,19 +185,13 @@ export function AuthProvider({
     const options: WorkspaceOption[] = isSystemManager(state.user)
       ? [{ key: 'system', label: vi.shell.systemWorkspace, href: '/admin' }]
       : [];
-    // Trang `/t/{slug}` cho Student/Parent có ở Step 8; tới lúc đó chỉ liệt kê dashboard.
     for (const { tenant, roles } of tenantContexts) {
-      if (
-        tenant.status !== TenantStatus.ACTIVE ||
-        !hasAnyRole(roles, TENANT_DASHBOARD_ROLES)
-      ) {
-        continue;
-      }
+      if (tenant.status !== TenantStatus.ACTIVE) continue;
       options.push({
         key: `tenant:${tenant.slug}`,
         label: tenant.name,
         description: roles.map((role) => vi.tenantRoles[role]).join(', '),
-        href: `/t/${tenant.slug}/dashboard`,
+        href: tenantEntryPath(tenant.slug, roles),
       });
     }
     return options;
@@ -180,6 +200,9 @@ export function AuthProvider({
   const value = useMemo<AuthContextValue>(
     () => ({
       ...state,
+      tenantContexts,
+      contextsReady,
+      reloadContexts,
       contexts,
       login,
       register,
@@ -187,7 +210,18 @@ export function AuthProvider({
       applySession,
       setUser,
     }),
-    [state, contexts, login, register, logout, applySession, setUser],
+    [
+      state,
+      tenantContexts,
+      contextsReady,
+      reloadContexts,
+      contexts,
+      login,
+      register,
+      logout,
+      applySession,
+      setUser,
+    ],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

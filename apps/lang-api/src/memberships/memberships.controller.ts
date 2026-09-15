@@ -14,6 +14,7 @@ import {
 import {
   TENANT_MANAGER_ROLES,
   type CreateMemberAccountResult,
+  type DeactivationSuggestions,
   type GuardianLink,
   type MembershipDetail,
   type MembershipListItem,
@@ -69,6 +70,14 @@ export class MembershipsController {
     @Body() dto: CreateMemberAccountDto,
   ): Promise<CreateMemberAccountResult> {
     return this.memberships.createAccount(ctx, actor, dto);
+  }
+
+  /** Khai báo trước `:id` để không bị `ParseIdPipe` bắt. */
+  @Get('deactivation-suggestions')
+  deactivationSuggestions(
+    @TenantCtx() ctx: TenantContext,
+  ): Promise<DeactivationSuggestions> {
+    return this.memberships.deactivationSuggestions(ctx);
   }
 
   @Get(':id')

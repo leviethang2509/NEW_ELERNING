@@ -1,3 +1,4 @@
+import Link from 'next/link';
 import type { LucideIcon } from 'lucide-react';
 
 interface StatCardProps {
@@ -5,11 +6,38 @@ interface StatCardProps {
   /** `null` khi chưa có số liệu. */
   value: number | string | null;
   icon: LucideIcon;
+  /** Bấm vào thẻ để tới trang chi tiết. */
+  href?: string;
 }
 
-export function StatCard({ label, value, icon: Icon }: StatCardProps) {
+const cardClass =
+  'flex items-center gap-4 rounded-2xl border border-[var(--border)] bg-[var(--card)] px-5 py-4';
+
+export function StatCard({ label, value, icon, href }: StatCardProps) {
+  if (href) {
+    return (
+      <Link
+        href={href}
+        className={`${cardClass} transition hover:border-[var(--accent)]`}
+      >
+        <StatCardBody label={label} value={value} icon={icon} />
+      </Link>
+    );
+  }
   return (
-    <div className="flex items-center gap-4 rounded-2xl border border-[var(--border)] bg-[var(--card)] px-5 py-4">
+    <div className={cardClass}>
+      <StatCardBody label={label} value={value} icon={icon} />
+    </div>
+  );
+}
+
+function StatCardBody({
+  label,
+  value,
+  icon: Icon,
+}: Omit<StatCardProps, 'href'>) {
+  return (
+    <>
       <span className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-[var(--accent-soft)] text-[var(--accent)]">
         <Icon size={20} />
       </span>
@@ -21,6 +49,6 @@ export function StatCard({ label, value, icon: Icon }: StatCardProps) {
             : (value ?? '—')}
         </span>
       </span>
-    </div>
+    </>
   );
 }

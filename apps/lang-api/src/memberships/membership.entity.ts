@@ -60,6 +60,10 @@ export class Membership {
   @Column({ name: 'joined_at', type: 'timestamptz', default: () => 'now()' })
   joinedAt: Date;
 
+  /** Lần gần nhất gọi API của tenant, `TenantGuard` cập nhật tối đa 1 lần/giờ. */
+  @Column({ name: 'last_active_at', type: 'timestamptz', nullable: true })
+  lastActiveAt: Date | null;
+
   @Column({ name: 'created_by', type: 'uuid', nullable: true })
   createdBy: string | null;
 

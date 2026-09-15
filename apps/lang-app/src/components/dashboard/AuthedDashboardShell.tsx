@@ -15,12 +15,13 @@ interface AuthedDashboardShellProps {
 export function AuthedDashboardShell(props: AuthedDashboardShellProps) {
   return (
     <RequireAuth systemManager={props.scope.kind === 'system'}>
-      <ShellWithUser {...props} />
+      <DashboardShellWithUser {...props} />
     </RequireAuth>
   );
 }
 
-function ShellWithUser({
+/** Dùng bên trong `RequireAuth`. */
+export function DashboardShellWithUser({
   scope,
   currentWorkspaceKey,
   children,

@@ -7,11 +7,14 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import {
+  DEACTIVATION_SUGGESTION_ROLES,
   MembershipStatus,
   TenantRole,
   type CreateMemberAccountResult,
+  type DeactivationSuggestions,
   type GuardianLink,
   type MeContexts,
+  type MemberQuota,
   type MembershipDetail,
   type MembershipListItem,
 } from '@lang/shared';
@@ -114,6 +117,74 @@ export class MembershipsService {
       total,
       page: query.page,
       pageSize: query.pageSize,
+    };
+  }
+
+  /** Số thành viên active so với giới hạn gói hiện tại. */
+  getQuota(ctx: TenantContext): Promise<MemberQuota> {
+    return loadQuota(this.dataSource.manager, ctx.tenantId);
+  }
+
+  /**
+   * Khi vượt giới hạn gói (sau hạ gói): gợi ý tối đa `excess` membership chỉ có
+   * role Học viên/Phụ huynh, chưa từng vào tenant trước rồi tới lần vào cũ
+   * nhất. Chỉ gợi ý, Owner/Admin tự ngừng kích hoạt.
+   */
+  async deactivationSuggestions(
+    ctx: TenantContext,
+  ): Promise<DeactivationSuggestions> {
+    const quota = await this.getQuota(ctx);
+    if (quota.excess === 0) return { ...quota, items: [] };
+
+    const [active, roleRows] = await Promise.all([
+      this.memberships.findBy({
+        tenantId: ctx.tenantId,
+        status: MembershipStatus.ACTIVE,
+        deletedAt: IsNull(),
+      }),
+      this.membershipRoles.findBy({ tenantId: ctx.tenantId }),
+    ]);
+    const roles = new Map<string, TenantRole[]>();
+    for (const row of roleRows) {
+      roles.set(row.membershipId, [
+        ...(roles.get(row.membershipId) ?? []),
+        row.role,
+      ]);
+    }
+    const picked = active
+      .filter((membership) => {
+        const own = roles.get(membership.id) ?? [];
+        return (
+          own.length > 0 &&
+          own.every((role) => DEACTIVATION_SUGGESTION_ROLES.includes(role))
+        );
+      })
+      .sort(byLastActive)
+      .slice(0, quota.excess);
+    if (picked.length === 0) return { ...quota, items: [] };
+
+    const users = new Map(
+      (
+        await this.users.find({
+          where: { id: In(picked.map((membership) => membership.userId)) },
+          withDeleted: true,
+        })
+      ).map((user) => [user.id, user]),
+    );
+    return {
+      ...quota,
+      items: picked.flatMap((membership) => {
+        const user = users.get(membership.userId);
+        return user
+          ? [
+              toMembershipListItem(
+                membership,
+                user,
+                roles.get(membership.id) ?? [],
+              ),
+            ]
+          : [];
+      }),
     };
   }
 
@@ -509,6 +580,34 @@ async function findMember(
   return membership;
 }
 
+/** `lock`: khoá dòng tenant tới hết transaction. */
+async function loadQuota(
+  manager: EntityManager,
+  tenantId: string,
+  lock = false,
+): Promise<MemberQuota> {
+  const tenant = await manager.getRepository(Tenant).findOne({
+    where: { id: tenantId },
+    ...(lock ? { lock: { mode: 'pessimistic_write' as const } } : {}),
+  });
+  if (!tenant) throw new NotFoundException('Không tìm thấy trung tâm');
+  const plan = await manager
+    .getRepository(ServicePlan)
+    .findOneBy({ id: tenant.planId });
+  if (!plan) throw new NotFoundException('Không tìm thấy gói dịch vụ');
+  const activeMembers = await manager.getRepository(Membership).countBy({
+    tenantId,
+    status: MembershipStatus.ACTIVE,
+    deletedAt: IsNull(),
+  });
+  return {
+    planName: plan.name,
+    maxMembers: plan.maxMembers,
+    activeMembers,
+    excess: Math.max(0, activeMembers - plan.maxMembers),
+  };
+}
+
 /**
  * Chặn khi số membership active đã đạt giới hạn gói. Khoá dòng tenant để các
  * lượt thêm thành viên đồng thời không cùng lọt qua.
@@ -517,25 +616,23 @@ async function assertPlanHasRoom(
   manager: EntityManager,
   tenantId: string,
 ): Promise<void> {
-  const tenant = await manager.getRepository(Tenant).findOne({
-    where: { id: tenantId },
-    lock: { mode: 'pessimistic_write' },
-  });
-  if (!tenant) throw new NotFoundException('Không tìm thấy trung tâm');
-  const plan = await manager
-    .getRepository(ServicePlan)
-    .findOneBy({ id: tenant.planId });
-  if (!plan) throw new NotFoundException('Không tìm thấy gói dịch vụ');
-  const activeCount = await manager.getRepository(Membership).countBy({
-    tenantId,
-    status: MembershipStatus.ACTIVE,
-    deletedAt: IsNull(),
-  });
-  if (activeCount >= plan.maxMembers) {
+  const quota = await loadQuota(manager, tenantId, true);
+  if (quota.activeMembers >= quota.maxMembers) {
     throw new ConflictException(
-      `Trung tâm đã đạt giới hạn ${plan.maxMembers} thành viên của gói ${plan.name}`,
+      `Trung tâm đã đạt giới hạn ${quota.maxMembers} thành viên của gói ${quota.planName}`,
     );
   }
+}
+
+/** Chưa từng vào tenant trước, rồi tới lần vào cũ nhất, rồi tham gia sớm nhất. */
+function byLastActive(a: Membership, b: Membership): number {
+  const last = (membership: Membership) =>
+    membership.lastActiveAt?.getTime() ?? -Infinity;
+  return (
+    last(a) - last(b) ||
+    a.joinedAt.getTime() - b.joinedAt.getTime() ||
+    a.id.localeCompare(b.id)
+  );
 }
 
 async function createMembership(

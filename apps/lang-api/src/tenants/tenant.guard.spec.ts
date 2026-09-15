@@ -13,6 +13,7 @@ import {
 } from '@lang/shared';
 import type { MembershipRole } from '../memberships/membership-role.entity';
 import type { Membership } from '../memberships/membership.entity';
+import { fakeDate } from '../testing/fake-clock';
 import { InMemoryRepository } from '../testing/in-memory-repository';
 import { TenantRoles, type TenantRequest } from './tenant-context';
 import type { Tenant } from './tenant.entity';
@@ -28,6 +29,7 @@ class MembersController {
 function setup(status: TenantStatus = TenantStatus.ACTIVE) {
   const tenants = new InMemoryRepository<Tenant>();
   const memberships = new InMemoryRepository<Membership>(() => ({
+    lastActiveAt: null,
     deletedAt: null,
   }));
   const membershipRoles = new InMemoryRepository<MembershipRole>(undefined, [
@@ -83,7 +85,7 @@ function setup(status: TenantStatus = TenantStatus.ACTIVE) {
     return { request, result: guard.canActivate(context) };
   }
 
-  return { addMember, run };
+  return { addMember, run, memberships };
 }
 
 describe('TenantGuard', () => {
@@ -119,6 +121,39 @@ describe('TenantGuard', () => {
     await expect(run('student').result).rejects.toThrow(
       new ForbiddenException('Bạn không phải thành viên của trung tâm này'),
     );
+  });
+
+  it('ghi lần vào tenant tối đa 1 lần/giờ, không ghi khi bị chặn', async () => {
+    fakeDate('2026-09-15T08:00:00Z');
+    try {
+      const { addMember, run, memberships } = setup();
+      const student = await addMember('student', [TenantRole.STUDENT]);
+      const lastActive = () =>
+        memberships.rows.find((row) => row.id === student.id)?.lastActiveAt;
+
+      await expect(run('student', 'manage').result).rejects.toBeInstanceOf(
+        ForbiddenException,
+      );
+      expect(lastActive()).toEqual(new Date('2026-09-15T08:00:00Z'));
+
+      jest.setSystemTime(new Date('2026-09-15T08:59:00Z'));
+      await run('student').result;
+      expect(lastActive()).toEqual(new Date('2026-09-15T08:00:00Z'));
+
+      jest.setSystemTime(new Date('2026-09-15T09:00:00Z'));
+      await run('student').result;
+      expect(lastActive()).toEqual(new Date('2026-09-15T09:00:00Z'));
+
+      const pending = setup(TenantStatus.PENDING);
+      const owner = await pending.addMember('owner', [TenantRole.TENANT_OWNER]);
+      await expect(pending.run('owner').result).rejects.toBeInstanceOf(
+        ForbiddenException,
+      );
+      expect(pending.memberships.rows[0].id).toBe(owner.id);
+      expect(pending.memberships.rows[0].lastActiveAt).toBeNull();
+    } finally {
+      jest.useRealTimers();
+    }
   });
 
   it('@TenantRoles: Student bị chặn, Tenant Admin qua và có tenantCtx', async () => {

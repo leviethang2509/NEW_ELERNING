@@ -19,14 +19,17 @@ import {
   validateTenantSlug,
   type OwnedTenant,
   type PublicTenant,
+  type TenantMembershipInfo,
 } from '@lang/shared';
 import { DataSource, Like, type Repository } from 'typeorm';
 import { isUniqueViolation } from '../common/database-errors';
 import { MembershipRole } from '../memberships/membership-role.entity';
+import { sortRoles } from '../memberships/membership.mapper';
 import { Membership } from '../memberships/membership.entity';
 import { ServicePlan } from '../plans/service-plan.entity';
 import { User } from '../users/user.entity';
 import type { TenantFormDto } from './dto/tenant.dto';
+import type { TenantContext } from './tenant-context';
 import { toOwnedTenant, toPublicTenant } from './tenant.mapper';
 import { Tenant } from './tenant.entity';
 
@@ -164,6 +167,17 @@ export class TenantsService {
     });
     if (!tenant) throw new NotFoundException(TENANT_NOT_FOUND);
     return toPublicTenant(tenant);
+  }
+
+  /** Trang trung tâm của thành viên (`TenantGuard` đã kiểm tenant active + membership). */
+  async getMembershipInfo(ctx: TenantContext): Promise<TenantMembershipInfo> {
+    const tenant = await this.tenants.findOneBy({ id: ctx.tenantId });
+    if (!tenant) throw new NotFoundException(TENANT_NOT_FOUND);
+    return {
+      tenant: toPublicTenant(tenant),
+      membershipId: ctx.membershipId,
+      roles: sortRoles(ctx.roles),
+    };
   }
 
   /**

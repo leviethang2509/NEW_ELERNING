@@ -24,6 +24,8 @@ import {
 } from './tenant-context';
 import { Tenant } from './tenant.entity';
 
+const LAST_ACTIVE_INTERVAL_MS = 60 * 60 * 1000;
+
 const UNAVAILABLE_MESSAGES: Record<TenantStatus, string> = {
   [TenantStatus.PENDING]: 'Trung tâm đang chờ duyệt',
   [TenantStatus.REJECTED]: 'Trung tâm đã bị từ chối, vui lòng sửa và gửi lại',
@@ -75,6 +77,7 @@ export class TenantGuard implements CanActivate {
     if (tenant.status !== TenantStatus.ACTIVE) {
       throw new ForbiddenException(UNAVAILABLE_MESSAGES[tenant.status]);
     }
+    await this.touchLastActive(membership);
 
     const roles = (
       await this.membershipRoles.findBy({ membershipId: membership.id })
@@ -97,5 +100,21 @@ export class TenantGuard implements CanActivate {
     };
     request.tenantCtx = tenantCtx;
     return true;
+  }
+
+  /**
+   * Ghi lần vào tenant (dùng cho gợi ý ngừng kích hoạt khi vượt gói). Tối đa
+   * 1 lần/giờ để không ghi DB ở mọi request.
+   */
+  private async touchLastActive(membership: Membership): Promise<void> {
+    const now = new Date();
+    if (
+      membership.lastActiveAt &&
+      now.getTime() - membership.lastActiveAt.getTime() <
+        LAST_ACTIVE_INTERVAL_MS
+    ) {
+      return;
+    }
+    await this.memberships.update(membership.id, { lastActiveAt: now });
   }
 }

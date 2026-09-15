@@ -32,7 +32,7 @@
 | System role | Nhiều Owner được; Owner đầu tiên tạo bằng seed; chỉ Owner quản lý Admin; Admin tạo/sửa/khoá user thường & tenant, xem được Owner nhưng không sửa |
 | System ↔ tenant | System Owner/Admin chỉ xem danh sách + chi tiết cơ bản tenant; không vào nội dung tenant (trừ khi là member) |
 | Tenant | Đăng ký → `pending` → System Admin duyệt `active` / từ chối `rejected` + lý do (sửa & gửi lại). `pending` chưa vào dashboard. Không giới hạn số tenant/user |
-| Gói dịch vụ | Bảng `service_plans` (seed 3 gói: 100/500/1000 thành viên), chọn khi đăng ký, System Admin duyệt & đổi được. Giới hạn tính **mọi membership active**; đạt giới hạn → chặn thêm. Thanh toán/thời hạn ngoài phạm vi |
+| Gói dịch vụ | Bảng `service_plans` (seed 3 gói: 100/500/1000 thành viên), chọn khi đăng ký, System Admin duyệt & đổi được. Giới hạn tính **mọi membership active**; đạt giới hạn → chặn thêm. Thanh toán/thời hạn ngoài phạm vi. **Hạ gói** (chốt 2026-09-15): System Admin đổi, có hiệu lực ngay, không deactivate ai; tenant vượt giới hạn chỉ bị chặn thêm/mở lại thành viên, dashboard tenant cảnh báo và gợi ý Học viên/Phụ huynh lâu không vào tenant để Owner/Admin tự deactivate. Khi có thời hạn gói (req sau) thì chuyển sang hạ vào cuối kỳ |
 | URL tenant | Theo path `/t/{slug}/...`; dữ liệu dùng chung bảng, cột `tenant_id` |
 | Tenant Owner | Đúng 1; chuyển quyền để req sau; Tenant Admin quản lý mọi role (kể cả Tenant Admin) trừ Owner |
 | Thêm thành viên | (b) thêm theo email account có sẵn + (d) tạo account mới |
@@ -306,7 +306,7 @@ tenants:     POST (đăng ký, ≥18) · GET mine · PUT :id (sửa & gửi lạ
 admin:       GET stats · users CRUD + lock + reset-password + system-role · tenants list/detail/approve/reject/suspend/plan
              plans CRUD · exam-categories CRUD · exam-blueprints CRUD (kèm modules)
 t/:slug:     GET dashboard/stats
-             memberships: list · add-by-email · create-account · PATCH roles/status · DELETE · guardians add/remove
+             memberships: list · add-by-email · create-account · PATCH roles/status · DELETE · guardians add/remove · GET deactivation-suggestions
              exam-categories, exam-blueprints: list (hệ thống + tenant) · CRUD (tenant)
              exams: list · POST (từ blueprint) · GET :id (kèm raw_data version hiện tại, hasAttempts) · PATCH metadata/blueprint
                     PUT :id/content · GET :id/versions · GET :id/versions/:v · POST :id/versions/:v/restore
@@ -465,6 +465,7 @@ health:      GET /api/health
   - stats: tổng user, user mới 7 ngày, tenant theo trạng thái, số tenant chờ duyệt;
   - users: CRUD, khoá/mở, reset mật khẩu, đổi system role (Owner only), áp quy tắc bảo vệ Owner;
   - tenants: list/lọc trạng thái, chi tiết cơ bản (owner, gói, số thành viên/giới hạn), approve / reject (lý do) / suspend / đổi gói;
+    - đổi gói (nâng/hạ) có hiệu lực ngay, **không** yêu cầu số membership active ≤ giới hạn mới, không deactivate ai; danh sách/chi tiết đánh dấu tenant đang vượt giới hạn;
   - plans: CRUD.
 - **Frontend**:
   - Trang Tổng quan (thẻ số liệu).
@@ -475,6 +476,13 @@ health:      GET /api/health
 **Nghiệm thu:**
 - System Admin không thao tác được trên tài khoản Owner (UI ẩn nút, API trả 403).
 - Duyệt tenant xong thì Owner vào được dashboard tenant.
+
+> Cập nhật khi làm Step 7 (2026-09-15, người dùng chọn):
+> - Tạo user / reset mật khẩu: như create-account (admin nhập hoặc hệ thống sinh, hiển thị một lần), luôn bật `must_change_password`; reset còn tăng `token_version` và thu hồi mọi refresh token. User tạo trong `/admin` luôn là Registered User, đổi role qua `system-role` (chỉ Owner).
+> - **Không xoá user** trong req-1, chỉ khoá/mở khoá (khoá thì thu hồi refresh token). Không tự khoá hay tự reset mật khẩu của mình.
+> - Tenant: duyệt / từ chối (bắt buộc lý do) chỉ từ `pending`; tạm khoá (bắt buộc lý do, lưu cột mới `suspension_reason`) chỉ từ `active`; mở khoá `suspended → active`. `rejected` chỉ về `pending` khi Owner gửi lại. `reviewed_by/at` ghi người xử lý gần nhất.
+> - Gói: `code` cố định sau khi tạo; xoá cứng chỉ khi chưa tenant nào dùng (kể cả tenant đã xoá mềm), đang dùng thì chỉ ngừng áp dụng. Đổi gói tenant chỉ chọn gói đang áp dụng.
+> - System Admin chỉ thao tác trên Registered User; tài khoản System Admin/Owner chỉ System Owner thao tác (theo mục 1). Luôn còn ít nhất một System Owner đang hoạt động.
 
 ### Step 8 – Khu vực chính & dashboard tenant cơ bản
 **Việc làm**
@@ -490,12 +498,26 @@ health:      GET /api/health
   - **Thành viên:**
     - bảng lọc role, dialog thêm theo email, dialog tạo account (hiện mật khẩu tạm 1 lần), sửa roles (checkbox), khoá/xoá;
     - badge "< 18 tuổi";
-    - panel gắn phụ huynh cho học viên.
+    - panel gắn phụ huynh cho học viên;
+    - vượt giới hạn gói (sau khi hạ gói): banner "cần deactivate N thành viên để khớp gói", khoá nút thêm thành viên, danh sách gợi ý deactivate.
+  - **Gợi ý deactivate** (chốt 2026-09-15):
+    - cột `memberships.last_active_at`, `TenantGuard` cập nhật tối đa 1 lần/giờ mỗi membership;
+    - `GET t/:slug/memberships/deactivation-suggestions` (Owner/Admin): membership active chỉ có role `STUDENT`/`PARENT` (không gợi ý Owner, Tenant Admin, Teacher), xếp chưa từng vào tenant trước rồi tới `last_active_at` cũ nhất, lấy đúng N = số active − giới hạn;
+    - chỉ gợi ý, Owner/Admin tự bấm deactivate.
   - Menu sidebar theo role (mục 5.2).
 
 **Nghiệm thu:**
 - Một account vừa là System Admin, vừa là Owner tenant A, vừa là Student tenant B: sau đăng nhập thấy `/me`, chuyển qua lại được giữa 3 ngữ cảnh.
 - Student/Parent vào `/t/{slug}/dashboard` bị chặn.
+
+> Cập nhật khi làm Step 8 (2026-09-16; người dùng giao tự quyết phần giao diện):
+> - Landing `/` lấy từ `LC/design/Home.html`: header dính (mờ nền, link Tính năng/Gói dịch vụ), hero kèm thẻ minh hoạ đề IELTS, 3 thẻ tính năng, bảng gói dịch vụ lấy thật từ `public/plans` (gói giữa nổi bật, nút chọn gói mở `/me/tenants/new?plan=`), footer tối. Bỏ phần "Học phí/tháng", avatar học viên, số liệu marketing của mockup.
+> - Trang đích sau đăng nhập: ngữ cảnh gồm quản trị hệ thống và **mọi** tenant user là thành viên (kể cả chưa hoạt động, để thấy trạng thái trên `/me`); đúng 1 tenant mà tenant chưa hoạt động → `/me`.
+> - `/me`: mỗi trung tâm một thẻ (trạng thái, vai trò, gói nếu là chủ). Chờ duyệt / bị từ chối (kèm lý do + nút "Sửa và gửi lại") / tạm khoá; **lý do tạm khoá chỉ chủ trung tâm thấy** (`OwnedTenant.suspensionReason`), thành viên khác chỉ thấy "đang tạm khoá".
+> - `/t/{slug}`: khách thấy giới thiệu + liên hệ + mời đăng nhập; người đã đăng nhập nhưng không là thành viên thấy lời nhắn liên hệ trung tâm; thành viên thấy vai trò, nút vào dashboard (nếu có role) và khu đề thi trống. Thành viên của tenant chờ duyệt / bị từ chối / tạm khoá thấy thông báo trạng thái thay cho nội dung. Trang thành viên gọi `GET t/:slug/me` (API mới) để ghi lần vào tenant.
+> - Dashboard tenant: roles từ `me/contexts`; Student/Parent, người ngoài, tenant chưa hoạt động thấy trang thông báo (không có sidebar). Teacher có tổng quan **rút gọn**: học viên, đề theo trạng thái, lượt làm, bài chờ chấm (không có giáo viên/phụ huynh/giới hạn gói). API `GET t/:slug/dashboard/stats` trả `management = null` cho Teacher.
+> - Trang thành viên: quota `x / giới hạn` luôn hiện; đạt giới hạn thì khoá nút thêm; vượt giới hạn thì banner + nút "Xem gợi ý" mở danh sách gợi ý (ngừng kích hoạt từng người, có xác nhận). Chi tiết thành viên trong dialog: sửa vai trò (checkbox), gắn/gỡ phụ huynh (tìm Phụ huynh đang hoạt động), xem học viên được giám hộ.
+> - Không có "đăng ký nhanh" từ landing: nút "Đăng ký trung tâm" đưa khách qua `/login?next=/me/tenants/new` (có tab đăng ký).
 
 ### Step 9 – `packages/exam-core`
 **Việc làm**

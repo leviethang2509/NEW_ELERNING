@@ -1,8 +1,6 @@
-import { TenantRole } from '@lang/shared';
-import { AuthedDashboardShell } from '@/components/dashboard/AuthedDashboardShell';
+import { TenantDashboardShell } from '@/components/dashboard/TenantDashboardShell';
 
-// Dashboard tenant. Tạm hiển thị menu đầy đủ của Tenant Owner; roles thật lấy
-// từ membership ở Step 6–8.
+// Dashboard tenant cho Owner/Admin/Teacher; roles lấy từ membership thật.
 export default function TenantDashboardLayout({
   children,
   params,
@@ -11,15 +9,6 @@ export default function TenantDashboardLayout({
   params: { slug: string };
 }) {
   return (
-    <AuthedDashboardShell
-      scope={{
-        kind: 'tenant',
-        slug: params.slug,
-        roles: [TenantRole.TENANT_OWNER],
-      }}
-      currentWorkspaceKey={`tenant:${params.slug}`}
-    >
-      {children}
-    </AuthedDashboardShell>
+    <TenantDashboardShell slug={params.slug}>{children}</TenantDashboardShell>
   );
 }
