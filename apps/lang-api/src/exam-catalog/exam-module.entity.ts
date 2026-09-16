@@ -1,4 +1,3 @@
-import { DURATION_MAX_MINUTES, DURATION_STEP_MINUTES } from '@lang/shared';
 import {
   Check,
   Column,
@@ -10,6 +9,7 @@ import {
   Unique,
   UpdateDateColumn,
 } from 'typeorm';
+import { sqlDurationMinutes } from '../common/sql';
 import { CATALOG_CODE_CHECK } from './catalog-scope';
 import { ExamBlueprint } from './exam-blueprint.entity';
 
@@ -25,7 +25,7 @@ import { ExamBlueprint } from './exam-blueprint.entity';
 @Check('CHK_exam_modules_code_format', CATALOG_CODE_CHECK)
 @Check(
   'CHK_exam_modules_reference_duration',
-  `"reference_duration_minutes" BETWEEN ${DURATION_STEP_MINUTES} AND ${DURATION_MAX_MINUTES} AND "reference_duration_minutes" % ${DURATION_STEP_MINUTES} = 0`,
+  sqlDurationMinutes('reference_duration_minutes'),
 )
 export class ExamModule {
   @PrimaryGeneratedColumn('uuid', {

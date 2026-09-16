@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { Exam } from '../exams/exam.entity';
 import { TenantsModule } from '../tenants/tenants.module';
 import {
   AdminExamBlueprintsController,
@@ -19,7 +20,7 @@ import {
 @Module({
   imports: [
     TenantsModule,
-    TypeOrmModule.forFeature([ExamCategory, ExamBlueprint, ExamModule]),
+    TypeOrmModule.forFeature([ExamCategory, ExamBlueprint, ExamModule, Exam]),
   ],
   controllers: [
     AdminExamCategoriesController,

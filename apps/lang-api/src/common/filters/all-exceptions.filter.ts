@@ -12,6 +12,8 @@ export interface ErrorBody {
   statusCode: number;
   /** Chuỗi, hoặc danh sách lỗi validation (frontend nối lại bằng dấu phẩy). */
   message: string | string[];
+  /** Danh sách lỗi nội dung đề (422 khi publish/lưu), frontend hiển thị theo section. */
+  issues?: unknown[];
 }
 
 /**
@@ -29,12 +31,15 @@ export class AllExceptionsFilter implements ExceptionFilter {
     if (exception instanceof HttpException) {
       const statusCode = exception.getStatus();
       const body = exception.getResponse();
-      const message =
+      const { message = exception.message, issues } =
         typeof body === 'string'
-          ? body
-          : ((body as { message?: string | string[] }).message ??
-            exception.message);
-      response.status(statusCode).json({ statusCode, message } as ErrorBody);
+          ? { message: body }
+          : (body as Partial<ErrorBody>);
+      response.status(statusCode).json({
+        statusCode,
+        message,
+        ...(Array.isArray(issues) ? { issues } : {}),
+      } as ErrorBody);
       return;
     }
 

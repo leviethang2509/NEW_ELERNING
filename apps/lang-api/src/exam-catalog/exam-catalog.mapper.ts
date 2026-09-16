@@ -49,6 +49,7 @@ export function toExamBlueprintItem(
   blueprint: ExamBlueprint,
   category: ExamCategory,
   modules: ExamModule[],
+  examCount: number,
 ): ExamBlueprintItem {
   return {
     id: blueprint.id,
@@ -61,6 +62,7 @@ export function toExamBlueprintItem(
     modules: [...modules]
       .sort((a, b) => a.sortOrder - b.sortOrder)
       .map(toExamModuleItem),
+    examCount,
     updatedAt: blueprint.updatedAt.toISOString(),
   };
 }

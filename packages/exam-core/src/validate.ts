@@ -3,6 +3,7 @@ import { INDICATOR_KINDS, isIndicator, questionTypeMeta } from './indicator';
 import { isOrderingItem, isTodo } from './list';
 import { collectDataUrls } from './media';
 import {
+  MAX_NODE_ID_LENGTH,
   isExamValue,
   isPositiveInteger,
   plainText,
@@ -170,6 +171,7 @@ export function validateSectionShape(value: unknown): string[] {
     if (
       typeof node.id !== 'string' ||
       node.id === '' ||
+      node.id.length > MAX_NODE_ID_LENGTH ||
       !INDICATOR_KINDS.includes(node.kind) ||
       (node.options !== undefined && !isStringList(node.options))
     ) {

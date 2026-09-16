@@ -100,11 +100,12 @@ describe('validateSectionShape / validateSection', () => {
         indicator({ kind: 'part' }),
         indicator({ id: 'a', kind: 'khac' }),
         indicator({ id: 'b', kind: 'question', options: 'x' }),
+        indicator({ id: 'x'.repeat(65), kind: 'part' }),
         indicator({ id: 'c', kind: 'part' }),
         indicator({ id: 'c', kind: 'subpart' }),
       ]),
     ).toEqual([
-      '3 indicator thiếu id hoặc sai định dạng.',
+      '4 indicator thiếu id hoặc sai định dạng.',
       '1 indicator bị trùng id.',
     ]);
   });

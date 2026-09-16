@@ -7,7 +7,10 @@ import {
 import { plainToInstance } from 'class-transformer';
 import { validate } from 'class-validator';
 import { InMemoryDataSource } from '../testing/in-memory-data-source';
-import { InMemoryRepository } from '../testing/in-memory-repository';
+import {
+  InMemoryRepository,
+  stubQueryBuilderRepository,
+} from '../testing/in-memory-repository';
 import {
   CreateExamBlueprintDto,
   type ExamModuleInputDto,
@@ -45,6 +48,7 @@ function setup() {
     blueprints.asRepository(),
     categories.asRepository(),
     modules.asRepository(),
+    stubQueryBuilderRepository(),
   );
 
   const addCategory = async (

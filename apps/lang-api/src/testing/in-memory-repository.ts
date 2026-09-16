@@ -135,3 +135,27 @@ export class InMemoryRepository<T extends object> {
     return this.primaryKeys.every((key) => a[key] === b[key]);
   }
 }
+
+/**
+ * Query builder giả cho truy vấn gom nhóm (`getRawMany`) mà repository trong
+ * bộ nhớ không mô phỏng: mọi hàm dựng truy vấn trả lại chính nó.
+ */
+export function stubQueryBuilderRepository<T extends object>(
+  rawRows: unknown[] = [],
+): Repository<T> {
+  const builder: Record<string, unknown> = {};
+  const chain = () => builder;
+  for (const method of [
+    'withDeleted',
+    'select',
+    'addSelect',
+    'where',
+    'andWhere',
+    'groupBy',
+    'orderBy',
+  ]) {
+    builder[method] = chain;
+  }
+  builder.getRawMany = async () => rawRows;
+  return { createQueryBuilder: chain } as unknown as Repository<T>;
+}

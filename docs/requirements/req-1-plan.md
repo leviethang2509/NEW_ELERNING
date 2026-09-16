@@ -189,6 +189,7 @@ exam_questions
   params jsonb (seconds / maxChars / maxPicks), max_score numeric (auto = 1, manual = 10)
   UNIQUE(section_id, number)
 ```
+> Step 12: thêm `exams.content_revision int` (chống ghi đè khi lưu); FK `exams.blueprint_id` NO ACTION thay cho RESTRICT; `exam_parts` UNIQUE(section_id, node_id); bảng `exam_attempts` (mục 4.5) tạo luôn ở Step 12.
 
 ### 4.5 Bài làm
 ```
@@ -308,8 +309,8 @@ admin:       GET stats · users CRUD + lock + reset-password + system-role · te
 t/:slug:     GET dashboard/stats
              memberships: list · add-by-email · create-account · PATCH roles/status · DELETE · guardians add/remove · GET deactivation-suggestions
              exam-categories, exam-blueprints: list (hệ thống + tenant) · POST/PATCH/DELETE (tenant)
-             exams: list · POST (từ blueprint) · GET :id (kèm raw_data version hiện tại, hasAttempts) · PATCH metadata/blueprint
-                    PUT :id/content · GET :id/versions · GET :id/versions/:v · POST :id/versions/:v/restore
+             exams: list (lọc q/status/categoryId/blueprintId/createdBy) · GET creators · POST (từ blueprint) · GET :id (kèm raw_data version hiện tại, hasAttempts, contentRevision) · PATCH metadata/blueprint
+                    PUT :id/content (baseRevision) · GET :id/versions · GET :id/versions/:v · POST :id/versions/:v/restore (baseRevision)
                     POST :id/publish · POST :id/archive · DELETE :id
              media: POST upload (bucket public)
              learner: GET exams (published) · GET exams/:id (info + attempts của tôi)
@@ -640,6 +641,24 @@ health:      GET /api/health
 - Tạo đề IELTS sinh ra 4 tab.
 - Soạn và lưu xong, DB có đủ `exam_parts` / `exam_questions` với `answer_key` đúng.
 - Publish, rồi tạo 1 attempt, rồi sửa: sinh version 2.
+
+> Cập nhật khi làm Step 12 (2026-09-16, người dùng chọn):
+>
+> - **Đề đã publish/lưu trữ phải hết lỗi mới lưu được nội dung** (422 kèm danh sách lỗi theo section, như publish). Đề nháp lưu tự do, lỗi chỉ hiện ở bảng kiểm tra.
+> - **Trạng thái:** nháp → publish; publish → lưu trữ; **lưu trữ → publish lại** (validate lại). Không có đường về nháp. Đề lưu trữ vẫn sửa được, học viên không thấy.
+> - **Tạo bảng `exam_attempts` ngay ở Step 12** (đúng cột mục 4.5) để quy tắc version đếm bài làm thật; luồng làm bài vẫn ở Step 13.
+> - **Teacher mở đề người khác ở chế độ chỉ xem**: xem nội dung, xem trước, xem version; không lưu/publish/lưu trữ/xoá/khôi phục.
+>
+> Quyết định kỹ thuật (mình tự chọn):
+> - Thêm cột `exams.content_revision` (tăng mỗi lần lưu nội dung/khôi phục). Client gửi `baseRevision`; lệch → 409, tránh 2 tab/2 người ghi đè lẫn nhau. Sửa metadata không đổi revision.
+> - FK `exams.blueprint_id` và `exam_attempts.exam_id` là **NO ACTION** (thay cho RESTRICT): vẫn chặn xoá loại đề/đề đang dùng nhưng xoá cứng tenant (CASCADE cả loại đề, đề, bài làm) chạy được. `exam_sections.module_id` không có FK. `exam_parts`/`exam_questions` CASCADE theo section; `node_id` varchar(64) (exam-core chặn id indicator dài hơn).
+> - Xoá đề: chưa có bài làm (mọi version) → xoá hẳn; có → xoá mềm. Đề xoá mềm vẫn chặn xoá loại đề. Trang Loại đề có cột **Số đề** và khoá nút xoá khi > 0.
+> - Tạo đề/đổi loại đề: loại đề phải nhìn thấy được, đang dùng và danh mục đang dùng. Tạo đề: mỗi module thành 1 section trống (`duration = reference_duration`). Tối đa 20 section.
+> - Lưu nội dung: `PUT content` gửi toàn bộ section (thứ tự = vị trí); server kiểm `validateSectionShape` (400), tách `extractStructure`, `stripAnswers` với seed ngẫu nhiên. Section tạo lại mỗi lần lưu nên `created_at` = lúc lưu (`contentSavedAt` để so với bản nháp).
+> - Danh sách đề phân trang ở server, lọc tên/trạng thái/danh mục/loại đề/người tạo (`GET exams/creators`), mới cập nhật trước.
+> - Trình soạn: mỗi section một editor Plate (giữ lịch sử hoàn tác khi đổi tab); bản nháp `exam:{id}:draft` ghi sau 800ms ngừng gõ, mở lại mà bản nháp mới hơn bản server (và khác nội dung) thì hỏi khôi phục. Tắt `nodeId` của Plate (không gắn `id` cho mọi block) để so nội dung đã lưu chính xác. Rời trang khi chưa lưu: cảnh báo `beforeunload` (điều hướng trong app không chặn, bản nháp vẫn còn).
+> - Validation lồng nhau của Nest trả message không kèm tiền tố đường dẫn (`validationExceptionFactory`, áp dụng mọi API).
+> - Route frontend: `/t/{slug}/dashboard/exams`, `exams/[id]/edit`, `exams/[id]/versions` (đúng mục 6.1). API thêm `GET exams/creators`, `GET exams/:id/versions/:version`, `POST …/restore` nhận `baseRevision`.
 
 ### Step 13 – Làm bài thi (giả lập) & chấm tự động
 **Việc làm**

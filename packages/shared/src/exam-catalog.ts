@@ -109,6 +109,11 @@ export interface ExamBlueprintItem {
   isActive: boolean;
   /** Theo `sortOrder`. */
   modules: ExamModuleItem[];
+  /**
+   * Số đề dùng loại đề (kể cả đề đã xoá mềm vì vẫn chặn xoá loại đề). Trang hệ
+   * thống đếm đề mọi tenant; trang tenant đếm đề của tenant.
+   */
+  examCount: number;
   updatedAt: string;
 }
 

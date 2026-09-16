@@ -11,6 +11,7 @@ import {
   isForeignKeyViolation,
   isUniqueViolation,
 } from '../common/database-errors';
+import { Exam } from '../exams/exam.entity';
 import {
   compareText,
   findOwned,
@@ -36,6 +37,17 @@ const CATEGORY_INACTIVE = 'Danh mục đề đã ngừng dùng, hãy chọn danh
 const MODULE_NOT_FOUND = 'Module không thuộc loại đề này, hãy tải lại trang';
 const BLUEPRINT_IN_USE =
   'Loại đề đang có đề thi sử dụng, chỉ có thể ngừng dùng thay vì xoá';
+const BLUEPRINT_UNAVAILABLE = 'Loại đề không tồn tại';
+const BLUEPRINT_INACTIVE = 'Loại đề đã ngừng dùng, hãy chọn loại đề khác';
+const BLUEPRINT_CATEGORY_INACTIVE =
+  'Danh mục của loại đề đã ngừng dùng, hãy chọn loại đề khác';
+
+/** Loại đề chọn được cho đề thi, kèm module theo thứ tự. */
+export interface UsableBlueprint {
+  blueprint: ExamBlueprint;
+  category: ExamCategory;
+  modules: ExamModule[];
+}
 
 /**
  * Loại đề kèm module cho 2 phạm vi (xem `ExamCategoriesService`). Loại đề hệ
@@ -52,6 +64,8 @@ export class ExamBlueprintsService {
     private readonly categories: Repository<ExamCategory>,
     @InjectRepository(ExamModule)
     private readonly modules: Repository<ExamModule>,
+    @InjectRepository(Exam)
+    private readonly exams: Repository<Exam>,
   ) {}
 
   /** Mục hệ thống trước; theo danh mục rồi tên loại đề. */
@@ -73,19 +87,51 @@ export class ExamBlueprintsService {
           ) ||
           compareText(a.name, b.name),
       );
+    const ids = blueprints.map((blueprint) => blueprint.id);
     const modules =
-      blueprints.length > 0
-        ? await this.modules.findBy({
-            blueprintId: In(blueprints.map((blueprint) => blueprint.id)),
-          })
-        : [];
+      ids.length > 0 ? await this.modules.findBy({ blueprintId: In(ids) }) : [];
+    const examCounts = await this.countExams(owner, ids);
     return blueprints.map((blueprint) =>
       toExamBlueprintItem(
         blueprint,
         categories.get(blueprint.categoryId)!,
         modules.filter((module) => module.blueprintId === blueprint.id),
+        examCounts.get(blueprint.id) ?? 0,
       ),
     );
+  }
+
+  /**
+   * Loại đề tenant chọn được khi tạo/đổi loại đề của đề thi: nhìn thấy được,
+   * còn dùng và danh mục còn dùng (400 nếu không).
+   */
+  async findUsable(
+    tenantId: string,
+    id: string,
+    manager: EntityManager = this.dataSource.manager,
+  ): Promise<UsableBlueprint> {
+    const blueprint = await manager
+      .getRepository(ExamBlueprint)
+      .findOneBy({ id });
+    if (!blueprint || !isVisibleTo(blueprint, tenantId)) {
+      throw new BadRequestException(BLUEPRINT_UNAVAILABLE);
+    }
+    if (!blueprint.isActive) throw new BadRequestException(BLUEPRINT_INACTIVE);
+    const category = await manager
+      .getRepository(ExamCategory)
+      .findOneBy({ id: blueprint.categoryId });
+    if (!category) throw new BadRequestException(BLUEPRINT_UNAVAILABLE);
+    if (!category.isActive) {
+      throw new BadRequestException(BLUEPRINT_CATEGORY_INACTIVE);
+    }
+    const modules = await manager
+      .getRepository(ExamModule)
+      .findBy({ blueprintId: id });
+    return {
+      blueprint,
+      category,
+      modules: modules.sort((a, b) => a.sortOrder - b.sortOrder),
+    };
   }
 
   async create(
@@ -197,7 +243,29 @@ export class ExamBlueprintsService {
       blueprint,
       category,
       await this.modules.findBy({ blueprintId: id }),
+      (await this.countExams(owner, [id])).get(id) ?? 0,
     );
+  }
+
+  /** Số đề theo loại đề, kể cả đề đã xoá mềm (vẫn chặn xoá bằng khoá ngoại). */
+  private async countExams(
+    owner: CatalogOwner,
+    blueprintIds: string[],
+  ): Promise<Map<string, number>> {
+    if (blueprintIds.length === 0) return new Map();
+    const query = this.exams
+      .createQueryBuilder('exam')
+      .withDeleted()
+      .select('exam.blueprintId', 'blueprintId')
+      .addSelect('COUNT(*)::int', 'count')
+      .where('exam.blueprintId IN (:...blueprintIds)', { blueprintIds })
+      .groupBy('exam.blueprintId');
+    if (owner !== null) query.andWhere('exam.tenantId = :owner', { owner });
+    const rows = await query.getRawMany<{
+      blueprintId: string;
+      count: number;
+    }>();
+    return new Map(rows.map((row) => [row.blueprintId, row.count]));
   }
 
   private async onCodeConflict<T>(run: () => Promise<T>): Promise<T> {

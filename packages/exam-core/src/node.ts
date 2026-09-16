@@ -17,6 +17,9 @@ export type ExamNode = ExamElement | ExamText;
 /** Nội dung một section: mảng block phẳng như Plate lưu. */
 export type ExamValue = ExamElement[];
 
+/** Id của indicator lưu vào `exam_parts.node_id`/`exam_questions.node_id` (varchar 64). */
+export const MAX_NODE_ID_LENGTH = 64;
+
 /** Độ sâu lồng tối đa chấp nhận khi kiểm dữ liệu từ client (bảng chỉ vài mức). */
 export const MAX_NODE_DEPTH = 32;
 

@@ -19,24 +19,25 @@
 | 8 | Khu vực chính & dashboard tenant cơ bản | ✅ | 2026-09-16 | Đã commit (`10594de feat: main page`); migration `AddMembershipLastActiveAt` đã chạy trên DB dùng chung |
 | 9 | `packages/exam-core` | ✅ | 2026-09-16 | Đã commit (`350ad90 feat: exam core`); package thuần, không có migration/env |
 | 10 | Upload media (R2) | ✅ | 2026-09-16 | Đã commit (`42adeb4 feat: r2 storage`); 6 biến `R2_*` (tuỳ chọn) đã có ở `apps/lang-api/.env` + `deploy/.env`, **VPS `/opt/lang-simulator/.env` chưa cập nhật**; không có migration |
-| 11 | Danh mục đề & Loại đề | ✅ | 2026-09-16 | **Chưa commit**; migration `CreateExamCatalog` + `SeedExamCatalog` đã chạy trên DB dùng chung; không có env mới |
-| 12 | Đề thi, trình soạn thảo & version | ⬜ | | **Step tiếp theo** |
-| 13 | Làm bài thi & chấm tự động | ⬜ | | |
+| 11 | Danh mục đề & Loại đề | ✅ | 2026-09-16 | Đã commit (`fe39e4a feat: exam category and blueprint`); migration `CreateExamCatalog` + `SeedExamCatalog` đã chạy trên DB dùng chung; không có env mới |
+| 12 | Đề thi, trình soạn thảo & version | ✅ | 2026-09-16 | **Chưa commit**; migration `CreateExams` (gồm `exam_attempts`) đã chạy trên DB dùng chung; không có env mới |
+| 13 | Làm bài thi & chấm tự động | ⬜ | | **Step tiếp theo** |
 | 14 | Chấm bài thủ công | ⬜ | | |
 | 15 | Hoàn thiện & nghiệm thu tổng | ⬜ | | |
 
-### Bàn giao cho phiên tiếp theo (cuối phiên 2026-09-16)
+### Bàn giao cho phiên tiếp theo (cuối phiên 2026-09-16, sau Step 12)
 
 **Trạng thái repo**
-- Nhánh `main` tại `42adeb4 feat: r2 storage`. **Step 11 chưa commit**: `packages/shared/src/exam-catalog*.ts` (+ `index.ts`), `apps/lang-api/src/exam-catalog/*`, `app.module.ts`, 2 migration `1789565466681-CreateExamCatalog`, `1789565466682-SeedExamCatalog`, lang-app (`components/exam-catalog/*`, 4 trang `admin/exam-*` và `t/[slug]/dashboard/exam-*`, `vi.ts`), CLAUDE.md, plan, file này.
-- Kiểm xem Step 9–10 đã push chưa trước khi push — **push `main` là deploy**; lần deploy tới còn phải kiểm image có `sharp` (xem mục chờ người dùng).
-- Migration Step 11 **đã chạy trên DB dùng chung** (chỉ thêm bảng, container :3001 chạy code cũ không bị ảnh hưởng). Container deploy code mới sẽ thấy migration đã chạy và bỏ qua.
-- Không có server nào đang chạy; dữ liệu test (`step11-*`, tenant `step11-a`/`step11-b`, mục `STEP11*`) đã xoá. DB: 1 user System Owner, 0 tenant, danh mục `EN`/`JA`, loại đề `TOEIC`/`IELTS`/`JLPT_N2` (8 module).
+- Nhánh `main` tại `fe39e4a feat: exam category and blueprint`. **Step 12 chưa commit**: `packages/shared/src/exam-content.ts` (+ `exam-catalog.ts` thêm `examCount`, `index.ts`), `packages/exam-core` (giới hạn id indicator 64 ký tự), lang-api (`exams/*`, `attempts/exam-attempt.entity.ts`, migration `1789567469674-CreateExams`, `common/validation.ts`, `common/sql.ts`, `common/pipes.ts`, filter, `main.ts`, `exam-catalog` đếm số đề, `package.json` thêm `@lang/exam-core`), lang-app (`components/plate/*`, `components/exam-editor/*`, `components/exams/*`, 3 trang `t/[slug]/dashboard/exams/**`, `lib/exam-api.ts`, `lib/json-file.ts`, `lib/api.ts`, `FormAlert` tone `info`, `ExamBlueprintsView`, `vi.ts`, `package.json` thêm Plate), `pnpm-lock.yaml`, CLAUDE.md, plan, file này.
+- Push `main` là deploy; lần deploy tới vẫn cần kiểm image có `sharp` (xem mục chờ người dùng). Plate chỉ ở lang-app (Next build đã chạy local, bundle trang soạn đề ~342 kB).
+- Migration Step 12 **đã chạy trên DB dùng chung** (chỉ thêm bảng; container :3001 chạy code cũ không bị ảnh hưởng). `migration:generate` sau đó → "No changes".
+- Không có server nào đang chạy; dữ liệu test (`step12-*`, tenant `step12-a`/`step12-b`) và file R2 test đã xoá. DB: 1 System Owner, 0 tenant, 0 đề/bài làm, danh mục `EN`/`JA`, loại đề `TOEIC`/`IELTS`/`JLPT_N2` (8 module).
 
-**Bắt đầu Step 12**
-1. Đọc plan Step 12, mục 4.4 + 4.6 (thuật toán Save) và lưu ý cuối nhật ký Step 9 (luồng exam-core), Step 10 (`MediaDialog`, `uploadDataUrls`), Step 11 (bên dưới).
-2. Việc lớn: 4 migration (`exams`, `exam_sections`, `exam_parts`, `exam_questions`) + trình soạn Plate copy từ LC (`labs/exam-editor/_components/*`, `components/plate/*`). Nên hỏi người dùng các điểm chưa rõ trước khi code.
-3. `exams.blueprint_id` FK **RESTRICT** tới `exam_blueprints` để chặn xoá loại đề đang dùng (service đã đổi lỗi FK thành 409); chỉ cho chọn loại đề đang dùng và nhìn thấy được (`findVisible`).
+**Bắt đầu Step 13**
+1. Đọc plan Step 13, mục 4.5, "Cập nhật khi làm Step 12" và lưu ý cuối nhật ký Step 12 bên dưới.
+2. `exam_attempts` **đã có** (entity `apps/lang-api/src/attempts/exam-attempt.entity.ts`): Step 13 chỉ thêm `exam_attempt_sections`, `exam_attempt_answers` (nếu cần đổi cột `exam_attempts` thì thêm migration mới, không sửa `CreateExams`).
+3. Bắt đầu attempt phải khoá đọc `exams` (`FOR SHARE`) và lấy `current_version`; phục vụ nội dung bằng `content_public` + `shuffleOrdering(order_seed)`, chấm bằng `exam_questions`. Đề xoá mềm/không `published` không cho bắt đầu.
+4. Có thể dùng lại `ExamSimulator`/`SimulatorState` (`components/exam-editor`) cho trang thi, nhưng hiện chúng đọc `raw_data` qua `buildPlan` + `gradeExam` ở client — trang thi phải đọc `content_public` (không có đáp án) và chấm ở server.
 
 ---
 
@@ -84,7 +85,7 @@ Kiểm tra sau khi chuyển DB (2026-09-15):
    ```
    Thiếu thì container vẫn chạy, chỉ upload media trả 501. Đổi `.env` xong phải `docker compose up -d --force-recreate`.
 2. Lần deploy tới **kiểm image Docker có `sharp`** (dependency native, máy dev không có Docker): mở PR để workflow build thử **trước khi** push `main` (push `main` = deploy).
-3. Xem giao diện bằng mắt: `/login`, `/register`, `/me`, `/me/account`, `/admin`, `/admin/users`, `/admin/tenants`, `/admin/plans` (Step 5–7), `/`, `/me/tenants/new`, `/t/{slug}`, `/t/{slug}/dashboard`, `/t/{slug}/dashboard/members` (Step 8) `/t/{slug}/dashboard/media` + ô Logo trong form đăng ký trung tâm (Step 10), `/admin/exam-categories`, `/admin/exam-blueprints`, `/t/{slug}/dashboard/exam-categories`, `/t/{slug}/dashboard/exam-blueprints` (Step 11: bộ icon/màu, form module kéo thả). Mình mới kiểm bằng ảnh chụp Chrome headless. Phần giao diện Step 8 do mình tự quyết (người dùng giao), xem plan Step 8 mục "Cập nhật khi làm Step 8".
+3. Xem giao diện bằng mắt: `/login`, `/register`, `/me`, `/me/account`, `/admin`, `/admin/users`, `/admin/tenants`, `/admin/plans` (Step 5–7), `/`, `/me/tenants/new`, `/t/{slug}`, `/t/{slug}/dashboard`, `/t/{slug}/dashboard/members` (Step 8) `/t/{slug}/dashboard/media` + ô Logo trong form đăng ký trung tâm (Step 10), `/admin/exam-categories`, `/admin/exam-blueprints`, `/t/{slug}/dashboard/exam-categories`, `/t/{slug}/dashboard/exam-blueprints` (Step 11: bộ icon/màu, form module kéo thả), `/t/{slug}/dashboard/exams`, `…/exams/{id}/edit`, `…/exams/{id}/versions` (Step 12: trình soạn, tab section, xem trước, trang version; trên điện thoại thanh công cụ chiếm nhiều chỗ). Mình mới kiểm bằng ảnh chụp Chrome headless. Phần giao diện Step 8 do mình tự quyết (người dùng giao), xem plan Step 8 mục "Cập nhật khi làm Step 8".
 4. VPS `/opt/lang-simulator/.env`: **không bắt buộc** thêm `JWT_ACCESS_EXPIRES_IN`, `REFRESH_EXPIRES_IN`, `COOKIE_SECURE` (đều có mặc định); `deploy/.env` trên máy dev đã thêm.
 5. Không bắt buộc: `REVOKE CONNECT ON DATABASE "lightc-general" FROM PUBLIC` (hiện `lang_simulator` vẫn CONNECT được DB của LC nhưng không có quyền trên bảng); giới hạn IP truy cập cổng 5432.
 
@@ -95,6 +96,56 @@ Kiểm tra sau khi chuyển DB (2026-09-15):
 ---
 
 ## Nhật ký
+
+### Step 12 – Đề thi, trình soạn thảo & version (✅ 2026-09-16)
+
+**Quyết định (người dùng chọn phương án đề xuất, đã ghi vào plan Step 12)**
+- Đề đã publish/lưu trữ phải hết lỗi mới lưu được nội dung (422); đề nháp lưu tự do.
+- Lưu trữ → publish lại được; không có đường về nháp; đề lưu trữ vẫn sửa được.
+- Tạo bảng `exam_attempts` ngay ở Step 12 để quy tắc version đếm bài làm thật.
+- Teacher mở đề người khác ở chế độ chỉ xem (nội dung, xem trước, version).
+
+**Đã làm**
+- `@lang/shared/exam-content.ts`: giới hạn (tên 200, mô tả 2000, tên section 100, 1–20 section), `EXAM_STATUS_TRANSITIONS`, kiểu `ExamListItem`, `ExamDetail`, `ExamSectionItem`, input tạo/sửa/lưu/khôi phục, `ExamVersionList/Item/Detail`, `ExamContentIssue`. `ExamBlueprintItem.examCount`.
+- `@lang/exam-core`: `MAX_NODE_ID_LENGTH = 64`, `validateSectionShape` chặn id indicator dài hơn.
+- lang-api:
+  - Entity + migration `CreateExams1789567469674` (generate): `exams` (`content_revision`, xoá mềm, FK loại đề NO ACTION), `exam_sections` (CHECK duration/status, INDEX(exam_id, version)), `exam_parts` (UNIQUE(section, node), cha CASCADE), `exam_questions` (UNIQUE(section, number), CHECK qtype/grading, `max_score numeric(4,1)` đổi sang number), `exam_attempts` (mục 4.5). Helper `sqlDurationMinutes` (dùng lại cho `exam_modules`, generate vẫn "No changes").
+  - `ExamsService`: danh sách (QueryBuilder, lọc, phân trang, số section/câu/phút theo version hiện tại, `canEdit`), `creators`, tạo đề từ loại đề (`ExamBlueprintsService.findUsable`), chi tiết (`hasAttempts`, `contentSavedAt`), sửa metadata, publish (validate mọi section, update có điều kiện trạng thái cũ), lưu trữ, xoá (mềm nếu có bài làm).
+  - `ExamContentService`: `save` (400 định dạng → khoá dòng đề → quyền → revision → 422 nếu không nháp và còn lỗi → có bài làm thì deactivate + version mới, không thì xoá section cũ → insert section/part/câu → tăng revision), `restore`, `listVersions` (số bài làm theo version), `getVersion`. Controller `t/:slug/exams` (`EXAM_AUTHOR_ROLES`), `VersionPipe`.
+  - `AllExceptionsFilter` giữ `issues`; `validationExceptionFactory` bỏ tiền tố đường dẫn message lồng nhau (lưu ý từ Step 11). `ExamBlueprintsService.list` đếm số đề (kể cả xoá mềm).
+  - Test (+11): `exam-content.service.spec` (tạo đề sinh section, loại đề ngừng dùng 400, lưu chưa có bài làm giữ version + thay câu hỏi, có bài làm → version mới + cũ deactivated, khôi phục ghi đè/tạo version, Teacher sửa đề người khác 403, revision cũ 409, data: URI 400, publish lỗi 422 kèm issue + lưu đề đã publish còn lỗi 422 + lưu trữ/publish lại, DTO), `validation.spec`, filter giữ `issues`.
+- lang-app:
+  - Plate 53 (cùng bản LC) + `components/plate`: `value.ts` (`toEditorValue` kiểm dạng + migrate), `toolbar.tsx`, `exam/indicator|blank|pair|list-render|number-popover|media|table|marks|plugins|embedded-media|selection`.
+  - `components/exam-editor`: `ExamEditor` (header trạng thái/version, Lưu + Ctrl+S, xác nhận tạo version mới khi có bài làm, upload data: URI trước khi lưu rồi thay URL trong editor, lỗi 422 bấm để tới đúng tab/indicator, publish/lưu trữ, bản nháp localStorage, cảnh báo rời trang), `SectionTabs` (thêm trống/từ module, đổi tên, chọn thời lượng, xoá có xác nhận, kéo sắp xếp, số lỗi mỗi tab), `SectionEditor` (toolbar, slash menu, mini map, bảng kiểm tra, dialog dạng câu hỏi, MediaDialog, nhập/xuất JSON), `PreviewDialog` (chọn section) + `ExamSimulator`/`SimulatorState` (chép LC, bỏ `any`), `exam-draft.ts`, `editor-sections.ts`.
+  - `components/exams`: `ExamFormModal` (tạo đề/sửa thông tin, loại đề nhóm theo danh mục, gợi ý tên + section sẽ tạo), `ExamStatusBadge`. Trang danh sách đề, trình soạn (hỏi khôi phục bản nháp mới hơn bản server), trang version (xem nội dung, khôi phục có nêu rõ ghi đè hay tạo version). Trang Loại đề thêm cột Số đề, khoá xoá khi > 0.
+
+**Sai khác so với plan**
+- Thêm `exams.content_revision`, FK NO ACTION thay RESTRICT, bảng `exam_attempts` tạo sớm, `GET exams/creators` (đã ghi plan).
+- Preview chưa ghi âm Speaking (như LC); nhập/xuất JSON theo section hiện tại.
+- Kéo sắp xếp tab section dùng HTML5 drag & drop, chưa có nút trái/phải (bàn phím không sắp xếp được tab).
+- Rời trang bằng link trong app khi chưa lưu không bị chặn (chỉ `beforeunload`); nội dung vẫn còn trong bản nháp.
+- Xoá media không kiểm đề đang dùng (lưu ý Step 10) — chưa làm.
+
+**Kiểm tra đã chạy**
+- `pnpm build`, `lint`, `typecheck`, `test` (238: 45 shared + 49 exam-core + 144 api), `format:check` → OK (chạy lại sau lần sửa cuối).
+- `pnpm --filter lang-api migrate` trên DB dùng chung → chạy `CreateExams`; `migration:generate` lại → "No changes".
+- Kiểm ngược unit test: đảo điều kiện `hasAttempts` và cho mọi người sửa đề → 4 test fail, đã khôi phục.
+- Bản build (api `:3101`, `next start :3100`), script Node qua rewrite `/api`, **83/83 đạt**: khách 401, người ngoài/Học viên/tenant khác/System Admin không membership 403; Teacher tạo IELTS → 4 section đúng module/phút; thiếu tên, id sai, loại đề tenant khác, loại đề ngừng dùng → 400; Owner mở đề Teacher `canEdit`, Teacher khác chỉ xem, id tenant khác 404; lưu 4 section → `exam_questions` đúng số câu/đáp án (MC, 2 blank với `|`, TFNG, matching, writing/speaking chấm tay `max_score 10`), `exam_parts` đúng part/subpart/số câu/cha, `content_public` không còn `checked`/`answer`/chữ trong blank; revision cũ 409; Owner lưu đề Teacher, section cũ xoá hẳn; data: URI, duration 47 (message không tiền tố), 0 section, indicator thiếu id, field lạ → 400 và không đổi revision; nháp lưu được khi lỗi, publish lỗi 422 kèm issue đúng section/indicator, publish OK, publish lại 409, đề publish lưu lỗi 422 / lưu đúng 200; chèn bài làm `in_progress` qua SQL → `hasAttempts`, lưu → v2 (v1 deactivated, câu hỏi v1 còn), danh sách version (số bài làm), xem v1, version 99/abc 404, khôi phục: Teacher khác 403, revision cũ 409, version hiện tại 400, ghi đè v2 khi chưa có bài làm, tạo v3 khi v2 có bài làm; Tenant Admin lưu trữ, lưu trữ lại 409, publish lại; sửa tên/mô tả/loại đề không đổi version/revision, đổi sang loại đề ngừng dùng 400; lọc trạng thái/loại đề/danh mục/người tạo/tên (cả `%`), phân trang, `creators`, tenant B không thấy; `examCount` trang tenant + hệ thống, xoá loại đề có đề 409; xoá đề chưa có bài làm → xoá hẳn rồi xoá được loại đề, đề có bài làm → xoá mềm, GET 404; lưu section 120 câu (~106 KB).
+- Chrome headless (puppeteer-core), **58/58 đạt, chạy lặp 3 lần**: tạo đề qua modal (gợi ý tên, danh sách section) → 4 tab; soạn bằng toolbar (Part, Question MC qua dialog, danh sách checkbox, tick radio), slash menu `/quest` → fill-blank, bôi đen + nút Blank; tab báo số lỗi, bảng kiểm tra, mini map; Ctrl+S lưu, DB đúng đáp án, xoá bản nháp; gõ thêm → bản nháp localStorage → tải lại hỏi khôi phục (Khôi phục / Dùng bản trên server); thêm section từ module, đổi tên, đổi thời lượng, xoá có xác nhận, thêm section trống; nhập JSON có ảnh data: URI → lưu upload R2, DB và editor đổi sang URL R2, URL trả 200; xem trước chọn section, không lộ đáp án, nộp 2/2; publish; lưu đề đã publish còn lỗi 422 → bấm lỗi về tab, hoàn tác; có bài làm → hỏi tạo version → v2; trang version (v1 có 1 bài làm), xem nội dung, khôi phục nêu rõ ghi đè; sửa thông tin đề; Teacher khác: badge Chỉ xem, không toolbar/Lưu, editor không gõ được, vẫn xem trước, danh sách chỉ có Xem đề; lọc, lưu trữ, xoá (mềm) từ danh sách; 390px danh sách + trình soạn không tràn ngang; console chỉ có 404 favicon/prefetch `grading` và 422 cố ý.
+- Xoá cứng 2 tenant test có đề + bài làm → CASCADE chạy (FK NO ACTION đúng).
+- Đã xem ảnh chụp: danh sách đề, trình soạn (desktop Reading có TFNG/matching, mobile), xem trước, trang version, chế độ chỉ xem.
+
+**Lỗi tự phát hiện và đã sửa**
+- Plate mặc định gắn `id` cho mọi block khi tạo editor → nội dung trong editor luôn khác bản làm mốc, trạng thái "Có thay đổi chưa lưu" và bản nháp không bao giờ xoá sau khi lưu → `nodeId: false`, và sau khi lưu đồng bộ state với nội dung vừa gửi (không nháy "chưa lưu").
+- Bôi đen bằng bàn phím ngay sau khi chèn câu hỏi qua dialog rồi bấm nút Blank (lần đầu) không có tác dụng: slate-react chưa đồng bộ vùng chọn DOM vào editor (phím tắt vẫn chạy) → `syncSelectionFromDom` trước khi tạo blank/cặp ghép.
+- Màn hình 390px: thanh tab section bị ép còn vài ký tự → tablist có bề rộng tối thiểu, nút thao tác xuống dòng.
+- `FormAlert` là `<p>` nên không chứa được danh sách lỗi → đổi sang `<div>`, thêm tone `info`.
+
+**Lưu ý cho các step sau**
+- Step 13: `exam_attempts` đã có; khoá `exams` `FOR SHARE` khi bắt đầu; lượt làm dùng `content_public` + `shuffleOrdering`, chấm bằng dòng `exam_questions` (`GradableQuestion` = `number`, `node_id`, `qtype`, `answer_key`). Đề phải `published` và chưa xoá mềm. Trang `/t/{slug}` (khu vực chính) cần API learner riêng, không dùng `t/:slug/exams` (chỉ người soạn đề).
+- Simulator ở `components/exam-editor` đọc `raw_data` và chấm ở client; trang thi Step 13 phải tách renderer đọc `content_public` (dòng ordering có `key`), không có đáp án.
+- Menu dashboard vẫn còn link `grading` chưa làm → prefetch 404 trong console.
+- Chưa có kiểm "media đang được đề dùng" trước khi xoá ở Thư viện media.
 
 ### Step 11 – Danh mục đề & Loại đề (✅ 2026-09-16)
 

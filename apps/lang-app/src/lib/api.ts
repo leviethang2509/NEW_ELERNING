@@ -65,6 +65,8 @@ export class ApiError extends Error {
   constructor(
     message: string,
     readonly status: number,
+    /** Body lỗi nguyên văn (vd. `issues` của 422). */
+    readonly body?: unknown,
   ) {
     super(message);
     this.name = 'ApiError';
@@ -145,7 +147,7 @@ async function request<T>(
 
     const data: unknown = await res.json().catch(() => ({}));
     if (!res.ok) {
-      throw new ApiError(errorMessage(data, fallbackError), res.status);
+      throw new ApiError(errorMessage(data, fallbackError), res.status, data);
     }
     return data as T;
   });

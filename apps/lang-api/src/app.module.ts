@@ -8,6 +8,7 @@ import { AllExceptionsFilter } from './common/filters/all-exceptions.filter';
 import { EnvironmentVariables, validateEnv } from './config/env.validation';
 import { buildDataSourceOptions } from './database/database.config';
 import { ExamCatalogModule } from './exam-catalog/exam-catalog.module';
+import { ExamsModule } from './exams/exams.module';
 import { HealthModule } from './health/health.module';
 import { MembershipsModule } from './memberships/memberships.module';
 import { PlansModule } from './plans/plans.module';
@@ -46,6 +47,7 @@ import { UsersModule } from './users/users.module';
     TenantDashboardModule,
     StorageModule,
     ExamCatalogModule,
+    ExamsModule,
     AdminModule,
     // Đăng ký guard toàn cục: mọi route cần đăng nhập trừ route @Public().
     AuthModule,

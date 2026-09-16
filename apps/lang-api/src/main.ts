@@ -4,6 +4,7 @@ import { NestFactory } from '@nestjs/core';
 import type { NestExpressApplication } from '@nestjs/platform-express';
 import cookieParser from 'cookie-parser';
 import { AppModule } from './app.module';
+import { validationExceptionFactory } from './common/validation';
 import type { EnvironmentVariables } from './config/env.validation';
 
 async function bootstrap() {
@@ -25,6 +26,7 @@ async function bootstrap() {
       whitelist: true,
       forbidNonWhitelisted: true,
       transform: true,
+      exceptionFactory: validationExceptionFactory,
     }),
   );
   app.enableShutdownHooks();

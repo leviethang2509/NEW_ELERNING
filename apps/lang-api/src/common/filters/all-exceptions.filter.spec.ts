@@ -3,6 +3,7 @@ import {
   BadRequestException,
   Logger,
   NotFoundException,
+  UnprocessableEntityException,
 } from '@nestjs/common';
 import { AllExceptionsFilter } from './all-exceptions.filter';
 
@@ -37,6 +38,20 @@ describe('AllExceptionsFilter', () => {
     expect(json).toHaveBeenCalledWith({
       statusCode: 400,
       message: ['email must be an email'],
+    });
+  });
+
+  it('giữ danh sách lỗi nội dung đề (422)', () => {
+    const { host, json } = mockHost();
+    const issues = [{ sectionIndex: 0, message: 'Chưa chọn dạng câu hỏi.' }];
+    filter.catch(
+      new UnprocessableEntityException({ message: 'Đề còn lỗi', issues }),
+      host,
+    );
+    expect(json).toHaveBeenCalledWith({
+      statusCode: 422,
+      message: 'Đề còn lỗi',
+      issues,
     });
   });
 
