@@ -466,6 +466,85 @@ export const vi = {
     footerProduct: 'Sản phẩm',
     footerAccount: 'Tài khoản',
   },
+  examCatalog: {
+    scope: { system: 'Hệ thống', tenant: 'Trung tâm' },
+    systemHint: 'Mục của hệ thống chỉ xem được',
+    allScopes: 'Mọi phạm vi',
+    allStatuses: 'Mọi trạng thái',
+    active: 'Đang dùng',
+    inactive: 'Ngừng dùng',
+    code: 'Mã',
+    codeHint:
+      'Chữ in hoa không dấu, số, "-" hoặc "_" (tự đổi sang in hoa). Không trùng trong cùng phạm vi.',
+    name: 'Tên',
+    description: 'Mô tả',
+    sortOrder: 'Thứ tự',
+    status: 'Trạng thái',
+    scopeColumn: 'Phạm vi',
+    actions: 'Thao tác',
+    view: 'Xem chi tiết',
+    readOnly: 'Bạn chỉ có quyền xem.',
+    saveFailed: 'Lưu thất bại',
+    deleteFailed: 'Xoá thất bại',
+    categories: {
+      subtitle:
+        'Nhóm loại đề theo ngôn ngữ hoặc chương trình (Tiếng Anh, Tiếng Nhật…).',
+      tenantSubtitle:
+        'Gồm danh mục của hệ thống và danh mục riêng của trung tâm.',
+      create: 'Tạo danh mục',
+      edit: 'Sửa danh mục',
+      delete: 'Xoá danh mục',
+      deleteConfirm: (name: string) =>
+        `Xoá danh mục ${name}? Thao tác không hoàn tác được.`,
+      inUse: 'Danh mục đang có loại đề, chỉ có thể ngừng dùng',
+      blueprintCount: 'Loại đề',
+      icon: 'Biểu tượng',
+      color: 'Màu',
+      activeHint:
+        'Danh mục ngừng dùng không chọn được khi tạo loại đề mới; loại đề đã có giữ nguyên.',
+      empty: 'Chưa có danh mục đề.',
+      searchPlaceholder: 'Tìm theo tên hoặc mã danh mục',
+    },
+    blueprints: {
+      subtitle:
+        'Loại đề gồm các module (Listening, Reading…) với thời lượng tham khảo, dùng để sinh section khi tạo đề.',
+      tenantSubtitle:
+        'Gồm loại đề của hệ thống và loại đề riêng của trung tâm. Loại đề của trung tâm có thể thuộc danh mục hệ thống.',
+      create: 'Tạo loại đề',
+      edit: 'Sửa loại đề',
+      detail: 'Chi tiết loại đề',
+      delete: 'Xoá loại đề',
+      deleteConfirm: (name: string) =>
+        `Xoá loại đề ${name} cùng các module? Thao tác không hoàn tác được.`,
+      category: 'Danh mục',
+      allCategories: 'Mọi danh mục',
+      chooseCategory: 'Chọn danh mục',
+      noCategory:
+        'Chưa có danh mục đang dùng. Hãy tạo danh mục trước khi tạo loại đề.',
+      inactiveCategory: (name: string) => `${name} (ngừng dùng)`,
+      modules: 'Module',
+      moduleCount: (count: number, minutes: number) =>
+        `${count} module · ${minutes} phút`,
+      activeHint:
+        'Loại đề ngừng dùng không chọn được khi tạo đề mới; đề đã tạo giữ nguyên.',
+      empty: 'Chưa có loại đề.',
+      searchPlaceholder: 'Tìm theo tên hoặc mã loại đề',
+      moduleName: 'Tên module',
+      moduleCode: 'Mã module',
+      moduleDuration: 'Thời lượng tham khảo',
+      moduleDescription: 'Mô tả module',
+      addModule: 'Thêm module',
+      removeModule: 'Xoá module',
+      moveUp: 'Chuyển lên',
+      moveDown: 'Chuyển xuống',
+      dragHint: 'Kéo để sắp xếp',
+      modulesHint:
+        'Kéo thả hoặc dùng nút mũi tên để sắp xếp. Sửa module không ảnh hưởng đề đã tạo.',
+      minutes: (value: number) => `${value} phút`,
+      needModule: 'Loại đề phải có ít nhất 1 module',
+      duplicateModuleCode: (code: string) => `Mã module bị trùng: ${code}`,
+    },
+  },
   media: {
     title: 'Thư viện media',
     subtitle:

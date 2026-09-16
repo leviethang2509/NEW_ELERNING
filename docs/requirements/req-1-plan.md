@@ -307,7 +307,7 @@ admin:       GET stats · users CRUD + lock + reset-password + system-role · te
              plans CRUD · exam-categories CRUD · exam-blueprints CRUD (kèm modules)
 t/:slug:     GET dashboard/stats
              memberships: list · add-by-email · create-account · PATCH roles/status · DELETE · guardians add/remove · GET deactivation-suggestions
-             exam-categories, exam-blueprints: list (hệ thống + tenant) · CRUD (tenant)
+             exam-categories, exam-blueprints: list (hệ thống + tenant) · POST/PATCH/DELETE (tenant)
              exams: list · POST (từ blueprint) · GET :id (kèm raw_data version hiện tại, hasAttempts) · PATCH metadata/blueprint
                     PUT :id/content · GET :id/versions · GET :id/versions/:v · POST :id/versions/:v/restore
                     POST :id/publish · POST :id/archive · DELETE :id
@@ -595,6 +595,17 @@ health:      GET /api/health
   - Dùng cho cả `/admin/...` và `/t/{slug}/dashboard/...`. Ở tenant, mục hệ thống chỉ đọc (badge "Hệ thống"), Teacher chỉ xem.
 
 **Nghiệm thu:** CRUD 2 phạm vi đúng quyền (mục 5); tenant thấy cả loại đề hệ thống lẫn của mình.
+
+> Cập nhật khi làm Step 11 (2026-09-16, người dùng chọn):
+>
+> - **Icon/màu danh mục chọn từ bộ có sẵn**: 8 màu nhấn Solarized (`ExamCategoryColor`) và 12 icon lucide (`ExamCategoryIcon`), lưu tên (`blue`, `book-open`), CHECK trong DB. Mặc định `book-open` + `blue`.
+> - **Mã IN HOA, sửa được**: chữ in hoa không dấu, số, `-`/`_` ở giữa (`EXAM_CATALOG_CODE_PATTERN`, tối đa 32), tự đổi sang in hoa. Unique theo phạm vi (hệ thống / từng tenant); **tenant được trùng mã với mục hệ thống** (phân biệt bằng badge). Mã module bắt buộc, unique trong loại đề.
+> - **Xoá cứng khi chưa dùng**: danh mục còn loại đề (kể cả loại đề của tenant thuộc danh mục hệ thống) → 409; loại đề có đề thi → 409 (FK RESTRICT từ `exams`, Step 12). Module xoá tự do trong form (section chỉ snapshot). **Ngừng dùng** (`is_active=false`) vẫn hiện trong danh sách (badge "Ngừng dùng", tenant cũng thấy mục hệ thống ngừng dùng) nhưng không chọn được khi tạo loại đề/đề mới; loại đề giữ được danh mục cũ đã ngừng dùng, chỉ chặn khi **đổi sang** danh mục ngừng dùng.
+> - **Sắp xếp danh mục bằng ô Thứ tự** trong modal (như Gói dịch vụ); danh sách: mục hệ thống trước, rồi thứ tự, rồi tên. Loại đề xếp theo phạm vi → danh mục → tên. **Loại đề bắt buộc ≥ 1 module** (tối đa 20) vì đề cần ≥ 1 section.
+> - Module kéo thả bằng tay cầm (HTML5 drag & drop, không thêm thư viện) + nút lên/xuống; `sort_order` = vị trí trong danh sách gửi lên.
+> - API: `GET/POST /admin/exam-categories`, `PATCH/DELETE /admin/exam-categories/:id` và tương tự cho `exam-blueprints`, `t/:slug/exam-categories`, `t/:slug/exam-blueprints`. Sửa dùng **PATCH** (gửi `modules` là thay cả danh sách: có `id` = sửa, không có = thêm, thiếu = xoá). Danh sách không phân trang, lọc ở client. Tenant: xem cho Owner/Admin/Teacher, ghi cho Owner/Admin; tenant đụng mục hệ thống → 403, mục của tenant khác → 404.
+> - Unique mã module `DEFERRABLE INITIALLY DEFERRED` để đổi chéo mã giữa 2 module trong 1 lần lưu. Xoá cứng tenant thì danh mục/loại đề của tenant xoá theo (CASCADE); tenant chỉ xoá mềm thì dữ liệu giữ nguyên.
+> - Seed bằng migration `SeedExamCatalog`: danh mục `EN` Tiếng Anh, `JA` Tiếng Nhật; loại đề `TOEIC`, `IELTS`, `JLPT_N2` với module theo giả định 12 (JLPT N2: `LANGUAGE_READING` "Kiến thức ngôn ngữ & Đọc hiểu" 105, `LISTENING` "Nghe hiểu" 50).
 
 ### Step 12 – Đề thi, trình soạn thảo & version
 **Việc làm**

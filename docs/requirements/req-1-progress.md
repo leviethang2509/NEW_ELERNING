@@ -17,10 +17,10 @@
 | 6 | Tenant, gói dịch vụ, membership (backend) | ✅ | 2026-09-15 | Đã commit + push (`6c2083b feat: membership`); 3 gói đã seed |
 | 7 | Dashboard hệ thống `/admin` | ✅ | 2026-09-15 | Đã commit (`10594de feat: main page`, gộp Step 8); migration `AddTenantSuspensionReason` đã chạy trên DB dùng chung |
 | 8 | Khu vực chính & dashboard tenant cơ bản | ✅ | 2026-09-16 | Đã commit (`10594de feat: main page`); migration `AddMembershipLastActiveAt` đã chạy trên DB dùng chung |
-| 9 | `packages/exam-core` | ✅ | 2026-09-16 | **Chưa commit**; package thuần, không có migration/env |
-| 10 | Upload media (R2) | ✅ | 2026-09-16 | **Chưa commit**; 6 biến `R2_*` (tuỳ chọn) đã có ở `apps/lang-api/.env` + `deploy/.env`, **VPS chưa cập nhật**; không có migration |
-| 11 | Danh mục đề & Loại đề | ⬜ | | **Step tiếp theo** |
-| 12 | Đề thi, trình soạn thảo & version | ⬜ | | |
+| 9 | `packages/exam-core` | ✅ | 2026-09-16 | Đã commit (`350ad90 feat: exam core`); package thuần, không có migration/env |
+| 10 | Upload media (R2) | ✅ | 2026-09-16 | Đã commit (`42adeb4 feat: r2 storage`); 6 biến `R2_*` (tuỳ chọn) đã có ở `apps/lang-api/.env` + `deploy/.env`, **VPS `/opt/lang-simulator/.env` chưa cập nhật**; không có migration |
+| 11 | Danh mục đề & Loại đề | ✅ | 2026-09-16 | **Chưa commit**; migration `CreateExamCatalog` + `SeedExamCatalog` đã chạy trên DB dùng chung; không có env mới |
+| 12 | Đề thi, trình soạn thảo & version | ⬜ | | **Step tiếp theo** |
 | 13 | Làm bài thi & chấm tự động | ⬜ | | |
 | 14 | Chấm bài thủ công | ⬜ | | |
 | 15 | Hoàn thiện & nghiệm thu tổng | ⬜ | | |
@@ -28,15 +28,15 @@
 ### Bàn giao cho phiên tiếp theo (cuối phiên 2026-09-16)
 
 **Trạng thái repo**
-- Nhánh `main` tại `350ad90 feat: exam core` (Step 9 đã commit). **Step 10 chưa commit**: `apps/lang-api/src/storage/*`, `env.validation`, `tenants` (logoUrl), `@lang/shared/media.ts`, lang-app (`lib/media-api`, `lib/embedded-media`, `lib/clipboard`, `components/media/*`, trang `dashboard/media`, `vi.ts`, `navigation.ts`, `TenantAvatar`, `TenantForm`, `FormAlert`, `format.ts`), `.env.example`, `deploy/.env.example`, `docs/setup/deploy.md`, CLAUDE.md, plan, file này, `pnpm-lock.yaml`.
-- Dependency mới của lang-api: `@aws-sdk/client-s3`, `@aws-sdk/s3-request-presigner`, `sharp`, `@types/multer`. lang-app thêm `@lang/exam-core`. **`sharp` là native** — image Docker chưa build lại trên máy dev (không có Docker), phải kiểm bằng PR/workflow trước khi deploy.
-- Step 10 **không có migration**; `tenants.logo_url` đã có sẵn từ Step 6.
-- Không có server nào đang chạy; dữ liệu test (tenant `test-step-10`, `test-step-10-logo`, user `step10-media@example.com`, 4 object R2) đã xoá sạch.
+- Nhánh `main` tại `42adeb4 feat: r2 storage`. **Step 11 chưa commit**: `packages/shared/src/exam-catalog*.ts` (+ `index.ts`), `apps/lang-api/src/exam-catalog/*`, `app.module.ts`, 2 migration `1789565466681-CreateExamCatalog`, `1789565466682-SeedExamCatalog`, lang-app (`components/exam-catalog/*`, 4 trang `admin/exam-*` và `t/[slug]/dashboard/exam-*`, `vi.ts`), CLAUDE.md, plan, file này.
+- Kiểm xem Step 9–10 đã push chưa trước khi push — **push `main` là deploy**; lần deploy tới còn phải kiểm image có `sharp` (xem mục chờ người dùng).
+- Migration Step 11 **đã chạy trên DB dùng chung** (chỉ thêm bảng, container :3001 chạy code cũ không bị ảnh hưởng). Container deploy code mới sẽ thấy migration đã chạy và bỏ qua.
+- Không có server nào đang chạy; dữ liệu test (`step11-*`, tenant `step11-a`/`step11-b`, mục `STEP11*`) đã xoá. DB: 1 user System Owner, 0 tenant, danh mục `EN`/`JA`, loại đề `TOEIC`/`IELTS`/`JLPT_N2` (8 module).
 
-**Bắt đầu Step 11**
-1. Đọc plan Step 11 + mục 4.3 (`exam_categories`, `exam_blueprints`, `exam_modules`) và mục 5 (Teacher chỉ xem danh mục/loại đề của tenant).
-2. Có migration → nhớ quy tắc DB dùng chung: chỉ thêm bảng/cột, tương thích ngược với bản đang chạy trên :3001.
-3. Dùng lại `DataTable`/`SearchInput`/`SelectFilter`/`Modal` như trang Thành viên; service dùng chung cho 2 phạm vi (hệ thống `/admin/*` và tenant `/t/:slug/*`).
+**Bắt đầu Step 12**
+1. Đọc plan Step 12, mục 4.4 + 4.6 (thuật toán Save) và lưu ý cuối nhật ký Step 9 (luồng exam-core), Step 10 (`MediaDialog`, `uploadDataUrls`), Step 11 (bên dưới).
+2. Việc lớn: 4 migration (`exams`, `exam_sections`, `exam_parts`, `exam_questions`) + trình soạn Plate copy từ LC (`labs/exam-editor/_components/*`, `components/plate/*`). Nên hỏi người dùng các điểm chưa rõ trước khi code.
+3. `exams.blueprint_id` FK **RESTRICT** tới `exam_blueprints` để chặn xoá loại đề đang dùng (service đã đổi lỗi FK thành 409); chỉ cho chọn loại đề đang dùng và nhìn thấy được (`findVisible`).
 
 ---
 
@@ -77,24 +77,64 @@ Kiểm tra sau khi chuyển DB (2026-09-15):
 
 ### Đang chờ người dùng (cập nhật 2026-09-16)
 
-1. **Commit Step 10** (Step 9 đã commit ở `350ad90`).
-2. **VPS `/opt/lang-simulator/.env`: thêm 6 biến `R2_*`** (đã soạn sẵn trong `deploy/.env` trên máy dev):
+1. **VPS `/opt/lang-simulator/.env`: thêm 6 biến `R2_*`** (đã soạn sẵn trong `deploy/.env` trên máy dev):
    ```bash
    scp deploy/.env <user>@<ip-vps>:/opt/lang-simulator/.env
    ssh <user>@<ip-vps> chmod 600 /opt/lang-simulator/.env
    ```
    Thiếu thì container vẫn chạy, chỉ upload media trả 501. Đổi `.env` xong phải `docker compose up -d --force-recreate`.
-3. Lần deploy tới **kiểm image Docker có `sharp`** (native): mở PR để workflow build thử trước khi push `main`.
-4. Đã seed System Owner, nhưng `SEED_OWNER_PASSWORD` **vẫn còn** trong `apps/lang-api/.env` (kiểm lúc cuối phiên, không đọc giá trị) → nên xoá.
-3. Xem giao diện bằng mắt: `/login`, `/register`, `/me`, `/me/account`, `/admin`, `/admin/users`, `/admin/tenants`, `/admin/plans` (Step 5–7) và `/`, `/me/tenants/new`, `/t/{slug}`, `/t/{slug}/dashboard`, `/t/{slug}/dashboard/members` (Step 8). Mình mới kiểm bằng ảnh chụp Chrome headless. Phần giao diện Step 8 do mình tự quyết (người dùng giao), xem plan Step 8 mục "Cập nhật khi làm Step 8".
+2. Lần deploy tới **kiểm image Docker có `sharp`** (dependency native, máy dev không có Docker): mở PR để workflow build thử **trước khi** push `main` (push `main` = deploy).
+3. Xem giao diện bằng mắt: `/login`, `/register`, `/me`, `/me/account`, `/admin`, `/admin/users`, `/admin/tenants`, `/admin/plans` (Step 5–7), `/`, `/me/tenants/new`, `/t/{slug}`, `/t/{slug}/dashboard`, `/t/{slug}/dashboard/members` (Step 8) `/t/{slug}/dashboard/media` + ô Logo trong form đăng ký trung tâm (Step 10), `/admin/exam-categories`, `/admin/exam-blueprints`, `/t/{slug}/dashboard/exam-categories`, `/t/{slug}/dashboard/exam-blueprints` (Step 11: bộ icon/màu, form module kéo thả). Mình mới kiểm bằng ảnh chụp Chrome headless. Phần giao diện Step 8 do mình tự quyết (người dùng giao), xem plan Step 8 mục "Cập nhật khi làm Step 8".
 4. VPS `/opt/lang-simulator/.env`: **không bắt buộc** thêm `JWT_ACCESS_EXPIRES_IN`, `REFRESH_EXPIRES_IN`, `COOKIE_SECURE` (đều có mặc định); `deploy/.env` trên máy dev đã thêm.
 5. Không bắt buộc: `REVOKE CONNECT ON DATABASE "lightc-general" FROM PUBLIC` (hiện `lang_simulator` vẫn CONNECT được DB của LC nhưng không có quyền trên bảng); giới hạn IP truy cập cổng 5432.
+
+Đã xong ngày 2026-09-16: commit Step 9 (`350ad90 feat: exam core`) và Step 10 (`42adeb4 feat: r2 storage`); xoá `SEED_OWNER_PASSWORD` khỏi `apps/lang-api/.env` (đã kiểm lại tên biến, chỉ còn `SEED_OWNER_EMAIL`/`NAME`/`DOB`).
 
 Đã xong ngày 2026-09-15: người dùng đổi mật khẩu superuser `admin` và cập nhật `lightc-general/backend/.env` (kết nối lại OK); `pnpm dev` đã khởi động lại với user `lang_simulator`.
 
 ---
 
 ## Nhật ký
+
+### Step 11 – Danh mục đề & Loại đề (✅ 2026-09-16)
+
+**Quyết định (người dùng chọn phương án đề xuất, đã ghi vào plan Step 11)**
+- Icon/màu danh mục chọn từ bộ có sẵn (8 màu Solarized, 12 icon lucide).
+- Mã IN HOA, sửa được, unique theo phạm vi; tenant được trùng mã hệ thống; mã module unique trong loại đề.
+- Xoá cứng khi chưa dùng (409 nếu đang dùng); ngừng dùng chỉ chặn chọn mới, vẫn hiện trong danh sách (kể cả với tenant). Module xoá tự do.
+- Danh mục sắp xếp bằng ô Thứ tự; loại đề bắt buộc ≥ 1 module.
+
+**Đã làm**
+- `@lang/shared/exam-catalog.ts`: `CatalogScope`, `ExamCategoryColor`, `ExamCategoryIcon`, `EXAM_CATALOG_CODE_PATTERN` + giới hạn độ dài, `EXAM_BLUEPRINT_MIN/MAX_MODULES`, `normalizeCatalogCode`, kiểu `ExamCategoryItem`, `ExamCategoryRef`, `ExamModuleItem`, `ExamBlueprintItem`, `ExamModuleInput` (+ spec).
+- lang-api `exam-catalog/`:
+  - Entity `ExamCategory`, `ExamBlueprint`, `ExamModule`: 2 partial unique index mã (hệ thống / tenant), CHECK định dạng mã, icon, màu, duration (5..180, %5); unique (blueprint, code) deferred; FK tenant CASCADE, category RESTRICT, module CASCADE, `created_by`/`updated_by` SET NULL.
+  - Migration `CreateExamCatalog1789565466681` (generate rồi format lại) + `SeedExamCatalog1789565466682` (chỉ thêm mã chưa có; module chỉ thêm cho loại đề chưa có module).
+  - `catalog-scope.ts` (`CatalogOwner`, `findVisible`, `findOwned`, `ownedBy`, `scopeOf`), mapper, `ExamCategoriesService`, `ExamBlueprintsService` (lưu loại đề + module trong transaction, `saveModules` xoá/sửa/thêm theo `id`), DTO (`CatalogCodeField`… tự đổi in hoa, `ModulesField` ValidateNested, duration qua `isValidDurationMinutes`).
+  - Controller `/admin/exam-categories|exam-blueprints` (`SYSTEM_MANAGER_ROLES`) và `/t/:slug/exam-categories|exam-blueprints` (class `TENANT_MANAGER_ROLES`, `GET` ghi đè `EXAM_AUTHOR_ROLES`). `ExamCatalogModule` export `ExamBlueprintsService`.
+  - Test: `exam-categories.service.spec` (5), `exam-blueprints.service.spec` (6 service + 6 DTO).
+- lang-app `components/exam-catalog/`: `ExamCategoriesView`, `CategoryFormModal` (chọn icon/màu, xem trước), `ExamBlueprintsView` (lọc tên/mã, danh mục, phạm vi, trạng thái; mục không sửa được có nút Xem), `BlueprintFormModal` (chọn danh mục theo nhóm Hệ thống/Trung tâm, chế độ chỉ xem bằng `fieldset disabled`, kiểm trùng mã module ở client), `ModulesEditor` (kéo thả bằng tay cầm + nút lên/xuống/xoá, select 5..180 phút), `catalog-ui.tsx` (`CategoryIcon`, `ScopeBadge`, `ActiveBadge`, `matchesSearch` bỏ dấu, `useCatalogList`). 4 trang mỏng gọi view; chuỗi `vi.examCatalog`.
+
+**Sai khác so với plan**
+- Plan 6.2 ghi "CRUD": sửa dùng `PATCH` (plan đã sửa); danh sách không phân trang, lọc ở client.
+- Loại đề chưa đếm/kiểm đề thi đang dùng (bảng `exams` chưa có); chặn xoá dựa vào FK RESTRICT của Step 12.
+- Không thêm thư viện kéo thả; module có thêm ô mô tả (plan 4.3 có cột `description`).
+
+**Kiểm tra đã chạy**
+- `pnpm build`, `lint`, `typecheck`, `test` (227: 45 shared + 49 exam-core + 133 api), `format:check` → OK (chạy lại sau lần sửa cuối).
+- `pnpm --filter lang-api migrate` trên DB dùng chung → chạy 2 migration; `migration:generate` lại → "No changes". Truy vấn DB: 2 danh mục, 3 loại đề, 8 module đúng thứ tự/phút.
+- Kiểm ngược unit test: bỏ kiểm phạm vi danh mục và kiểm `id` module trong service → 2 test fail, đã khôi phục.
+- Bản build (api `:3101`, `next start :3100`), script Node qua rewrite `/api`, **61/61 đạt**: khách 401, user thường vào `/admin/*` 403, người ngoài / Học viên / System Admin không có membership vào API tenant 403; seed đúng; admin tạo danh mục (mã thành in hoa), trùng 409, mã có dấu/icon lạ 400; loại đề: duration 47 → 400, 0 module 400, trùng mã module 400, **đổi chéo mã 2 module trong 1 request 200** (unique deferred), thêm/xoá/giữ id module, `updated_by` đúng; Owner A thấy mục hệ thống, tạo danh mục trùng mã `EN` hệ thống, sửa/xoá mục hệ thống 403, tạo loại đề trong danh mục hệ thống và của mình, danh sách hệ thống trước, đếm loại đề theo phạm vi; Teacher xem 200, ghi 403; tenant B không thấy/không sửa được mục của A (404), dùng danh mục/module của A 400; admin sửa mục tenant qua `/admin` 404; loại đề hệ thống thuộc danh mục tenant 400; xoá danh mục có loại đề của tenant 409; ngừng dùng danh mục chặn tạo mới và đổi sang, loại đề giữ danh mục cũ vẫn sửa được; xoá loại đề xoá module (CASCADE), xoá danh mục trống 204; id sai định dạng 404.
+- Chrome headless (puppeteer-core), **31/31 đạt, chạy lặp 7 lần**: System Admin xem danh mục/loại đề mẫu; tạo danh mục qua modal (mã tự in hoa, icon/màu lưu đúng); tạo loại đề 3 module (tổng phút cập nhật), **kéo thả module bằng tay cầm**, nút chuyển lên, trùng mã module báo lỗi trước khi gửi, lưu đúng thứ tự/phút; sửa xoá 1 module; lọc theo danh mục; nút xoá danh mục đang dùng bị khoá; 390px trang + form không tràn ngang; Owner A: badge Hệ thống/Trung tâm, mục hệ thống chỉ có nút Xem (modal chỉ đọc, không có Lưu/Thêm module), tạo danh mục trung tâm, lọc phạm vi, chọn danh mục chia nhóm; Teacher không có nút tạo/sửa, có ghi chú chỉ xem; Học viên bị chặn dashboard; dữ liệu mẫu không đổi; console chỉ có 404 prefetch trang chưa làm.
+- Đã xem ảnh chụp: danh sách loại đề của Owner, form loại đề (desktop), form sửa trên mobile, bộ lọc phạm vi.
+
+**Lỗi tự phát hiện và đã sửa**
+- Lần chạy E2E đầu, script bấm nhầm nút Sửa của **JLPT N2 (dữ liệu mẫu)** do danh mục test có thứ tự 0 đứng đầu, và xoá mất module `LANGUAGE_READING`. Đã khôi phục bằng SQL (đúng mã/tên/thứ tự/phút, `updated_by` về NULL; id module mới, chưa có gì tham chiếu). Script sửa để bấm theo mã dòng và thêm bước kiểm dữ liệu mẫu không đổi.
+- Nhấn tay cầm kéo rồi thả chuột ở chỗ khác mà không kéo thì dòng module giữ `draggable` (bôi chọn chữ trong ô thành kéo) → lắng nghe `pointerup` trên `window` để tắt.
+
+**Lưu ý cho các step sau**
+- Step 12: tạo đề chọn loại đề qua `GET t/:slug/exam-blueprints` (lọc `isActive` ở client, section sinh từ `modules` theo `sortOrder`, `duration = referenceDurationMinutes`); server kiểm lại loại đề nhìn thấy được + đang dùng. `exams.blueprint_id` FK RESTRICT; trang Loại đề có thể thêm cột số đề và khoá nút xoá như danh mục.
+- Lỗi validate lồng nhau của Nest có tiền tố đường dẫn (vd. `modules.0.Thời lượng tham khảo…`); UI chặn trước nên người dùng không thấy, nhưng editor Step 12 có payload lồng sâu hơn → cân nhắc `exceptionFactory` riêng.
+- Menu dashboard vẫn còn link tới trang chưa làm (`exams`, `grading`) → prefetch 404 trong console.
 
 ### Step 10 – Upload media (R2) (✅ 2026-09-16)
 

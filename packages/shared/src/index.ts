@@ -2,6 +2,7 @@ export * from './admin';
 export * from './age';
 export * from './auth';
 export * from './exam';
+export * from './exam-catalog';
 export * from './media';
 export * from './pagination';
 export * from './roles';
