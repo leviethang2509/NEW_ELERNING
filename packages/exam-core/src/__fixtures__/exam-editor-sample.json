@@ -1,0 +1,852 @@
+[
+  {
+    "type": "h1",
+    "children": [
+      {
+        "text": "ĐỀ THI TIẾNG ANH — ĐỀ MẪU SỐ 01"
+      }
+    ],
+    "align": "center"
+  },
+  {
+    "type": "p",
+    "children": [
+      {
+        "text": "Thời gian làm bài: 60 phút · Tổng điểm: 100",
+        "italic": true
+      }
+    ],
+    "align": "center"
+  },
+  {
+    "type": "hr",
+    "children": [
+      {
+        "text": ""
+      }
+    ]
+  },
+  {
+    "type": "indicator",
+    "id": "sample-part-1",
+    "kind": "part",
+    "children": [
+      {
+        "text": ""
+      }
+    ]
+  },
+  {
+    "type": "h2",
+    "children": [
+      {
+        "text": "Part 1 — Listening"
+      }
+    ]
+  },
+  {
+    "type": "p",
+    "children": [
+      {
+        "text": "Nghe đoạn hội thoại và ",
+        "bold": true
+      },
+      {
+        "text": "điền vào chỗ trống",
+        "bold": true,
+        "underline": true
+      },
+      {
+        "text": ". Mỗi chỗ trống điền "
+      },
+      {
+        "text": "không quá hai từ",
+        "highlight": true
+      },
+      {
+        "text": "."
+      }
+    ]
+  },
+  {
+    "type": "indicator",
+    "id": "sample-question-1",
+    "kind": "question",
+    "children": [
+      {
+        "text": ""
+      }
+    ],
+    "qtype": "fill-blank"
+  },
+  {
+    "type": "p",
+    "children": [
+      {
+        "text": "The weekly meeting will start at "
+      },
+      {
+        "type": "blank",
+        "children": [
+          {
+            "text": "9:30 a.m."
+          }
+        ]
+      },
+      {
+        "text": " on "
+      },
+      {
+        "type": "blank",
+        "children": [
+          {
+            "text": "Monday"
+          }
+        ]
+      },
+      {
+        "text": " in room "
+      },
+      {
+        "type": "blank",
+        "children": [
+          {
+            "text": "B204"
+          }
+        ]
+      },
+      {
+        "text": "."
+      }
+    ]
+  },
+  {
+    "type": "indicator",
+    "id": "sample-question-2",
+    "kind": "question",
+    "children": [
+      {
+        "text": ""
+      }
+    ],
+    "qtype": "mc-single"
+  },
+  {
+    "type": "p",
+    "children": [
+      {
+        "text": "Chọn đáp án đúng nhất:"
+      }
+    ]
+  },
+  {
+    "type": "p",
+    "indent": 1,
+    "listStyleType": "todo",
+    "children": [
+      {
+        "text": "A. The speaker is booking a hotel room."
+      }
+    ],
+    "checked": false
+  },
+  {
+    "type": "p",
+    "indent": 1,
+    "listStyleType": "todo",
+    "children": [
+      {
+        "text": "B. The speaker is rescheduling an appointment."
+      }
+    ],
+    "checked": true
+  },
+  {
+    "type": "p",
+    "indent": 1,
+    "listStyleType": "todo",
+    "children": [
+      {
+        "text": "C. The speaker is complaining about a delayed flight."
+      }
+    ],
+    "checked": false
+  },
+  {
+    "type": "p",
+    "indent": 1,
+    "listStyleType": "todo",
+    "children": [
+      {
+        "text": "D. The speaker is ordering office supplies."
+      }
+    ],
+    "checked": false
+  },
+  {
+    "type": "indicator",
+    "id": "sample-pick-n-1",
+    "kind": "question",
+    "qtype": "pick-n",
+    "children": [
+      {
+        "text": ""
+      }
+    ]
+  },
+  {
+    "type": "p",
+    "children": [
+      {
+        "text": "Chọn HAI phát biểu đúng theo đoạn hội thoại:"
+      }
+    ]
+  },
+  {
+    "type": "p",
+    "listStyleType": "todo",
+    "checked": true,
+    "children": [
+      {
+        "text": "A. The meeting room has been changed."
+      }
+    ]
+  },
+  {
+    "type": "p",
+    "listStyleType": "todo",
+    "checked": false,
+    "children": [
+      {
+        "text": "B. The meeting starts in the afternoon."
+      }
+    ]
+  },
+  {
+    "type": "p",
+    "listStyleType": "todo",
+    "checked": true,
+    "children": [
+      {
+        "text": "C. Monday is the day of the meeting."
+      }
+    ]
+  },
+  {
+    "type": "p",
+    "listStyleType": "todo",
+    "checked": false,
+    "children": [
+      {
+        "text": "D. The speaker cancelled the meeting."
+      }
+    ]
+  },
+  {
+    "type": "p",
+    "listStyleType": "todo",
+    "checked": false,
+    "children": [
+      {
+        "text": "E. The meeting lasts two hours."
+      }
+    ]
+  },
+  {
+    "type": "indicator",
+    "id": "sample-matching-1",
+    "kind": "question",
+    "children": [
+      {
+        "text": ""
+      }
+    ],
+    "qtype": "matching"
+  },
+  {
+    "type": "p",
+    "children": [
+      {
+        "text": "Nối mỗi người nói với ý kiến tương ứng:"
+      }
+    ]
+  },
+  {
+    "type": "pair",
+    "id": "sample-pair-1",
+    "answer": "Prefers working from home",
+    "children": [
+      {
+        "text": "Martin"
+      }
+    ]
+  },
+  {
+    "type": "pair",
+    "id": "sample-pair-2",
+    "answer": "Thinks the deadline is too tight",
+    "children": [
+      {
+        "text": "Elena"
+      }
+    ]
+  },
+  {
+    "type": "pair",
+    "id": "sample-pair-3",
+    "answer": "Suggests hiring more staff",
+    "children": [
+      {
+        "text": "Kenji"
+      }
+    ]
+  },
+  {
+    "type": "indicator",
+    "id": "sample-part-2",
+    "kind": "part",
+    "children": [
+      {
+        "text": ""
+      }
+    ]
+  },
+  {
+    "type": "h2",
+    "children": [
+      {
+        "text": "Part 2 — Reading"
+      }
+    ]
+  },
+  {
+    "type": "indicator",
+    "id": "sample-subpart-1",
+    "kind": "subpart",
+    "children": [
+      {
+        "text": ""
+      }
+    ]
+  },
+  {
+    "type": "h3",
+    "children": [
+      {
+        "text": "2.1 — Đọc đoạn văn sau"
+      }
+    ]
+  },
+  {
+    "type": "blockquote",
+    "children": [
+      {
+        "text": "Remote work has reshaped how companies think about productivity. Instead of counting hours at a desk, many managers now measure output, trusting employees to organise their own schedules."
+      }
+    ]
+  },
+  {
+    "type": "p",
+    "children": [
+      {
+        "text": "Nguồn: "
+      },
+      {
+        "type": "a",
+        "url": "https://example.com/remote-work",
+        "children": [
+          {
+            "text": "example.com/remote-work"
+          }
+        ]
+      },
+      {
+        "text": ""
+      }
+    ]
+  },
+  {
+    "type": "indicator",
+    "id": "sample-question-3",
+    "kind": "question",
+    "children": [
+      {
+        "text": ""
+      }
+    ],
+    "qtype": "fill-blank"
+  },
+  {
+    "type": "p",
+    "children": [
+      {
+        "text": "Theo đoạn văn, các nhà quản lý hiện đo lường hiệu suất bằng "
+      },
+      {
+        "type": "blank",
+        "children": [
+          {
+            "text": "output"
+          }
+        ]
+      },
+      {
+        "text": " thay vì số giờ ngồi tại bàn làm việc."
+      }
+    ]
+  },
+  {
+    "type": "indicator",
+    "id": "sample-tfng-1",
+    "kind": "question",
+    "qtype": "tfng",
+    "children": [
+      {
+        "text": ""
+      }
+    ]
+  },
+  {
+    "type": "p",
+    "children": [
+      {
+        "text": "Theo đoạn văn, các phát biểu sau đúng, sai hay không được nhắc tới?"
+      }
+    ]
+  },
+  {
+    "type": "pair",
+    "id": "sample-pair-4",
+    "answer": "True",
+    "children": [
+      {
+        "text": "Managers now value output over hours at a desk."
+      }
+    ]
+  },
+  {
+    "type": "pair",
+    "id": "sample-pair-5",
+    "answer": "False",
+    "children": [
+      {
+        "text": "Every company has adopted a four-day week."
+      }
+    ]
+  },
+  {
+    "type": "pair",
+    "id": "sample-pair-6",
+    "answer": "Not Given",
+    "children": [
+      {
+        "text": "Remote work increases employee salaries."
+      }
+    ]
+  },
+  {
+    "type": "indicator",
+    "id": "sample-subpart-2",
+    "kind": "subpart",
+    "children": [
+      {
+        "text": ""
+      }
+    ]
+  },
+  {
+    "type": "h3",
+    "children": [
+      {
+        "text": "2.2 — Từ vựng"
+      }
+    ]
+  },
+  {
+    "type": "p",
+    "children": [
+      {
+        "text": "Điền dạng đúng của từ trong ngoặc:"
+      }
+    ]
+  },
+  {
+    "type": "p",
+    "indent": 1,
+    "listStyleType": "decimal",
+    "children": [
+      {
+        "text": "The new policy was "
+      },
+      {
+        "type": "blank",
+        "children": [
+          {
+            "text": "introduced"
+          }
+        ]
+      },
+      {
+        "text": " last March. (introduce)"
+      }
+    ]
+  },
+  {
+    "type": "p",
+    "indent": 1,
+    "listStyleType": "decimal",
+    "children": [
+      {
+        "text": "Her argument sounds "
+      },
+      {
+        "type": "blank",
+        "children": [
+          {
+            "text": "convincing"
+          }
+        ]
+      },
+      {
+        "text": " to me. (convince)"
+      }
+    ]
+  },
+  {
+    "type": "p",
+    "indent": 1,
+    "listStyleType": "decimal",
+    "children": [
+      {
+        "text": "They are "
+      },
+      {
+        "type": "blank",
+        "children": [
+          {
+            "text": "considering"
+          }
+        ]
+      },
+      {
+        "text": " a four-day week. (consider)"
+      }
+    ]
+  },
+  {
+    "type": "indicator",
+    "id": "sample-ordering-1",
+    "kind": "question",
+    "qtype": "ordering",
+    "children": [
+      {
+        "text": ""
+      }
+    ]
+  },
+  {
+    "type": "p",
+    "children": [
+      {
+        "text": "Sắp xếp các bước sau theo đúng trình tự trong đoạn văn:"
+      }
+    ]
+  },
+  {
+    "type": "p",
+    "listStyleType": "ordering",
+    "num": 1,
+    "children": [
+      {
+        "text": "Companies measured productivity by hours spent at a desk."
+      }
+    ]
+  },
+  {
+    "type": "p",
+    "listStyleType": "ordering",
+    "num": 2,
+    "children": [
+      {
+        "text": "Remote work became widespread."
+      }
+    ]
+  },
+  {
+    "type": "p",
+    "listStyleType": "ordering",
+    "num": 3,
+    "children": [
+      {
+        "text": "Managers started tracking output instead."
+      }
+    ]
+  },
+  {
+    "type": "p",
+    "listStyleType": "ordering",
+    "num": 4,
+    "children": [
+      {
+        "text": "Teams redesigned their weekly rituals."
+      }
+    ]
+  },
+  {
+    "type": "indicator",
+    "id": "sample-polytomous-scoring-1",
+    "kind": "question",
+    "children": [
+      {
+        "text": ""
+      }
+    ],
+    "qtype": "polytomous"
+  },
+  {
+    "type": "p",
+    "children": [
+      {
+        "text": "Câu này chấm theo thang nhiều mức:"
+      }
+    ]
+  },
+  {
+    "type": "p",
+    "listStyleType": "ordering",
+    "num": 2,
+    "children": [
+      {
+        "text": "Trả lời đúng và có dẫn chứng từ đoạn văn."
+      }
+    ]
+  },
+  {
+    "type": "p",
+    "listStyleType": "ordering",
+    "num": 1,
+    "children": [
+      {
+        "text": "Trả lời đúng nhưng không có dẫn chứng."
+      }
+    ]
+  },
+  {
+    "type": "p",
+    "listStyleType": "ordering",
+    "num": 0,
+    "children": [
+      {
+        "text": "Trả lời sai hoặc bỏ trống."
+      }
+    ]
+  },
+  {
+    "type": "indicator",
+    "id": "sample-part-3",
+    "kind": "part",
+    "children": [
+      {
+        "text": ""
+      }
+    ]
+  },
+  {
+    "type": "h2",
+    "children": [
+      {
+        "text": "Part 3 — Productive skills"
+      }
+    ]
+  },
+  {
+    "type": "indicator",
+    "id": "sample-speaking-1",
+    "kind": "question",
+    "children": [
+      {
+        "text": ""
+      }
+    ],
+    "seconds": 120,
+    "qtype": "speaking"
+  },
+  {
+    "type": "p",
+    "children": [
+      {
+        "text": "Describe a place you often go to relax. You should say "
+      },
+      {
+        "text": "where it is",
+        "italic": true
+      },
+      {
+        "text": ", "
+      },
+      {
+        "text": "how often you go there",
+        "italic": true
+      },
+      {
+        "text": " và giải thích vì sao bạn thấy thoải mái ở đó."
+      }
+    ]
+  },
+  {
+    "type": "indicator",
+    "id": "sample-writing-1",
+    "kind": "question",
+    "children": [
+      {
+        "text": ""
+      }
+    ],
+    "maxChars": 1200,
+    "qtype": "writing"
+  },
+  {
+    "type": "p",
+    "children": [
+      {
+        "text": "Some people believe that working from home reduces "
+      },
+      {
+        "text": "team creativity",
+        "color": "#c2255c"
+      },
+      {
+        "text": ". Others disagree. Discuss both views and give your own opinion."
+      }
+    ]
+  },
+  {
+    "type": "p",
+    "children": [
+      {
+        "text": "Lưu ý định dạng: "
+      },
+      {
+        "text": "gạch ngang",
+        "strikethrough": true
+      },
+      {
+        "text": " · "
+      },
+      {
+        "text": "H"
+      },
+      {
+        "text": "2",
+        "subscript": true
+      },
+      {
+        "text": "O · x"
+      },
+      {
+        "text": "2",
+        "superscript": true
+      },
+      {
+        "text": " · "
+      },
+      {
+        "text": "inline code",
+        "code": true
+      },
+      {
+        "text": " · "
+      },
+      {
+        "text": "nền vàng",
+        "backgroundColor": "#fff3bf"
+      },
+      {
+        "text": " · "
+      },
+      {
+        "text": "chữ to",
+        "fontSize": "20px"
+      },
+      {
+        "text": "."
+      }
+    ]
+  },
+  {
+    "type": "indicator",
+    "id": "sample-subpart-3",
+    "kind": "subpart",
+    "children": [
+      {
+        "text": ""
+      }
+    ]
+  },
+  {
+    "type": "h3",
+    "children": [
+      {
+        "text": "3.1 — Đọc hiểu đoạn mã (dành cho lớp tin học)"
+      }
+    ]
+  },
+  {
+    "type": "code_block",
+    "children": [
+      {
+        "type": "code_line",
+        "children": [
+          {
+            "text": "function score(answers) {"
+          }
+        ]
+      },
+      {
+        "type": "code_line",
+        "children": [
+          {
+            "text": "  return answers.filter(Boolean).length;"
+          }
+        ]
+      },
+      {
+        "type": "code_line",
+        "children": [
+          {
+            "text": "}"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "type": "p",
+    "children": [
+      {
+        "text": "Hàm trên trả về "
+      },
+      {
+        "type": "blank",
+        "children": [
+          {
+            "text": "số câu trả lời đúng"
+          }
+        ]
+      },
+      {
+        "text": "."
+      }
+    ]
+  },
+  {
+    "type": "p",
+    "children": [
+      {
+        "text": "— HẾT —",
+        "bold": true
+      }
+    ],
+    "align": "center"
+  }
+]

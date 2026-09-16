@@ -37,6 +37,29 @@ export const QuestionGrading = {
 export type QuestionGrading =
   (typeof QuestionGrading)[keyof typeof QuestionGrading];
 
+/** Dạng câu hỏi: `qtype` của indicator trong nội dung Plate và `exam_questions.qtype`. */
+export const QuestionType = {
+  MC_SINGLE: 'mc-single',
+  MC_MULTI: 'mc-multi',
+  PICK_N: 'pick-n',
+  MATCHING: 'matching',
+  TFNG: 'tfng',
+  YNNG: 'ynng',
+  FILL_BLANK: 'fill-blank',
+  ORDERING: 'ordering',
+  POLYTOMOUS: 'polytomous',
+  SPEAKING: 'speaking',
+  WRITING: 'writing',
+} as const;
+export type QuestionType = (typeof QuestionType)[keyof typeof QuestionType];
+
+/** `exam_parts.kind`. */
+export const ExamPartKind = {
+  PART: 'part',
+  SUBPART: 'subpart',
+} as const;
+export type ExamPartKind = (typeof ExamPartKind)[keyof typeof ExamPartKind];
+
 // Duration của module (tham khảo) và section (thực tế): phút, bội số 5, tối đa 180.
 export const DURATION_STEP_MINUTES = 5;
 export const DURATION_MAX_MINUTES = 180;

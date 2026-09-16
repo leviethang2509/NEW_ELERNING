@@ -79,7 +79,7 @@
 6. Attempt bỏ dở (đang ở màn hình chờ, chưa bắt đầu section kế) giữ trạng thái `in_progress`, học viên vào lại làm tiếp được. Theo quy tắc H3, attempt này vẫn khiến lần Save sau tạo version mới.
 7. Autosave câu trả lời lên server: debounce 3 giây và khi chuyển tab Part. Sau `deadline` (+ 10 giây trễ mạng) server từ chối cập nhật.
 8. Hết giờ được xử lý ở 2 nơi: client tự gọi nộp; server tự chốt khi có request tới attempt (lazy) **và** cron mỗi phút (`@nestjs/schedule`) chốt các section quá hạn.
-9. Câu `ordering`/`polytomous` trong `content_public`: bỏ `num`, gán `key` = chỉ số gốc cho từng dòng, **xáo thứ tự ở server**. Câu trả lời gửi lên dùng `key`.
+9. Câu `ordering`/`polytomous` trong `content_public`: bỏ `num`, gán `key` = chỉ số gốc cho từng dòng, **xáo thứ tự ở server**. Câu trả lời gửi lên dùng `key`. (Chốt Step 9: xáo sẵn lúc Save và xáo lại theo `order_seed` của từng lượt làm; thứ tự hiển thị không bao giờ trùng đáp án.)
 10. File ghi âm: `audio/webm` (opus), ≤ 10MB/file, ghi lại thì xoá file cũ.
 11. Membership của Tenant Owner được tạo ngay khi đăng ký tenant và được tính vào giới hạn gói.
 12. Seed dữ liệu mẫu hệ thống (sửa được):
@@ -551,6 +551,12 @@ health:      GET /api/health
   - `content_public` không còn chứa đáp án (duyệt đệ quy tìm `checked`/`answer`/text blank/`num`).
 
 **Nghiệm thu:** test pass, package build được cho cả Next và Nest.
+
+> Cập nhật khi làm Step 9 (2026-09-16, người dùng chọn):
+> - **Xáo theo từng lượt làm:** `stripAnswers(value, seed)` lúc Save đã xáo sẵn (content_public lỡ trả thẳng cũng không lộ đáp án); khi phục vụ lượt làm, server gọi `shuffleOrdering(content_public, order_seed, questions)`. Kết quả chỉ phụ thuộc seed.
+> - **Không hiện thứ tự lộ đáp án:** xáo xong mà Ordering trùng thứ tự đúng, hoặc dòng điểm cao nhất của Polytomous nằm đúng vị trí soạn gốc, thì xoay vòng dãy đó thêm một vị trí.
+> - **Câu trả lời bất thường:** bỏ lựa chọn trùng / không phải số nguyên ≥ 0; Pick-n còn nhiều hơn n lựa chọn thì sai cả n câu; MC 1 đáp án và Polytomous phải chọn đúng 1.
+> - Kỹ thuật: `QuestionType`, `ExamPartKind` khai báo trong `@lang/shared` (exam-core phụ thuộc shared). Save kiểm `validateSectionShape` (định dạng Plate, indicator có id/kind hợp lệ và không trùng id, không có data URI), publish kiểm `validateSection` (thêm lỗi soạn thảo và cảnh báo "chưa có câu hỏi"). content_public ghi bù `maxPicks` (pick-n đời cũ) và `options` (matching đời cũ) lên indicator để đánh số/hiển thị như bản gốc.
 
 ### Step 10 – Upload media (R2)
 **Việc làm**

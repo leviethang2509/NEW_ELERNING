@@ -15,10 +15,10 @@
 | 4 | Docker & deploy sớm | ✅ | 2026-09-15 | PR #1 đã merge; `http://160.25.166.163:3001` chạy, `/api/health` 200 |
 | 5 | Tài khoản & xác thực | ✅ | 2026-09-15 | Đã commit + push (`3868d15 feat: auth`), :3001 chạy code mới; đã seed 1 System Owner |
 | 6 | Tenant, gói dịch vụ, membership (backend) | ✅ | 2026-09-15 | Đã commit + push (`6c2083b feat: membership`); 3 gói đã seed |
-| 7 | Dashboard hệ thống `/admin` | ✅ | 2026-09-15 | **Chưa commit**; migration `AddTenantSuspensionReason` đã chạy trên DB dùng chung |
-| 8 | Khu vực chính & dashboard tenant cơ bản | ✅ | 2026-09-16 | **Chưa commit**; migration `AddMembershipLastActiveAt` đã chạy trên DB dùng chung |
-| 9 | `packages/exam-core` | ⬜ | | **Step tiếp theo** |
-| 10 | Upload media (R2) | ⬜ | | Cần P1 |
+| 7 | Dashboard hệ thống `/admin` | ✅ | 2026-09-15 | Đã commit (`10594de feat: main page`, gộp Step 8); migration `AddTenantSuspensionReason` đã chạy trên DB dùng chung |
+| 8 | Khu vực chính & dashboard tenant cơ bản | ✅ | 2026-09-16 | Đã commit (`10594de feat: main page`); migration `AddMembershipLastActiveAt` đã chạy trên DB dùng chung |
+| 9 | `packages/exam-core` | ✅ | 2026-09-16 | **Chưa commit**; package thuần, không có migration/env |
+| 10 | Upload media (R2) | ⬜ | | **Step tiếp theo**; cần P1 (tên bucket + `R2_PUBLIC_BASE_URL`) |
 | 11 | Danh mục đề & Loại đề | ⬜ | | |
 | 12 | Đề thi, trình soạn thảo & version | ⬜ | | |
 | 13 | Làm bài thi & chấm tự động | ⬜ | | |
@@ -28,9 +28,17 @@
 ### Bàn giao cho phiên tiếp theo (cuối phiên 2026-09-16)
 
 **Trạng thái repo**
-- Nhánh `main` tại `6c2083b feat: membership` (Step 6), đã push `origin/main`. **Step 7 và Step 8 chưa commit** (code, plan, CLAUDE.md, README, file này).
-- Migration `AddTenantSuspensionReason` (Step 7) và `AddMembershipLastActiveAt` (Step 8) đã chạy trên DB dùng chung; đều chỉ thêm cột cho phép null nên bản đang chạy trên :3001 không bị ảnh hưởng.
-- Không có server nào đang chạy (server kiểm thử :3100/:3101 đã tắt).
+- Nhánh `main` tại `10594de feat: main page` (Step 7 + 8). **Step 9 chưa commit** (`packages/exam-core`, `@lang/shared` thêm `QuestionType`/`ExamPartKind`, `.prettierignore`, `pnpm-lock.yaml`, plan, CLAUDE.md, file này).
+- Migration `AddTenantSuspensionReason` (Step 7) và `AddMembershipLastActiveAt` (Step 8) đã chạy trên DB dùng chung; đều chỉ thêm cột cho phép null nên bản đang chạy trên :3001 không bị ảnh hưởng. Step 9 không có migration.
+- Không có server nào đang chạy.
+
+**Bắt đầu Step 10**
+1. Hỏi người dùng tên 2 bucket R2 + `R2_PUBLIC_BASE_URL` (P1); thêm biến R2 vào `env.validation.ts`, `.env.example`, `deploy/.env.example` và nhắc cập nhật `.env` trên VPS.
+2. Mở `LC-BE/storage/r2.service.ts`, `media.controller.ts`, `LC-FE/lib/media-api.ts`, `MediaDialog.tsx`, `embedded-media.ts`. Phần thuần của `embedded-media.ts` (`collectDataUrls`, `replaceDataUrls`, `isDataUrl`) **đã có trong exam-core**, lang-app chỉ cần `uploadDataUrls`/`applyDataUrls`.
+
+---
+
+_Bàn giao cũ (cuối phiên Step 8, giữ để tham khảo):_
 
 **Database dùng chung (`lang-simulator` / `public` trên VPS)**
 - Migration đã chạy: `CreateUsersAndRefreshTokens1789482175602`, `CreateTenantsAndMemberships1789486401727`, `SeedServicePlans1789486401728`, `AddTenantSuspensionReason1789490128190`, `AddMembershipLastActiveAt1789491719211`.
@@ -67,7 +75,7 @@ Kiểm tra sau khi chuyển DB (2026-09-15):
 
 ### Đang chờ người dùng (tính đến 2026-09-15)
 
-1. Commit Step 7 + Step 8. Không có env mới.
+1. Commit Step 9 (Step 7 + 8 đã commit ở `10594de`). Không có env mới.
 2. Đã seed System Owner, nhưng `SEED_OWNER_PASSWORD` **vẫn còn** trong `apps/lang-api/.env` (kiểm lúc cuối phiên, không đọc giá trị) → nên xoá.
 3. Xem giao diện bằng mắt: `/login`, `/register`, `/me`, `/me/account`, `/admin`, `/admin/users`, `/admin/tenants`, `/admin/plans` (Step 5–7) và `/`, `/me/tenants/new`, `/t/{slug}`, `/t/{slug}/dashboard`, `/t/{slug}/dashboard/members` (Step 8). Mình mới kiểm bằng ảnh chụp Chrome headless. Phần giao diện Step 8 do mình tự quyết (người dùng giao), xem plan Step 8 mục "Cập nhật khi làm Step 8".
 4. VPS `/opt/lang-simulator/.env`: **không bắt buộc** thêm `JWT_ACCESS_EXPIRES_IN`, `REFRESH_EXPIRES_IN`, `COOKIE_SECURE` (đều có mặc định); `deploy/.env` trên máy dev đã thêm.
@@ -78,6 +86,46 @@ Kiểm tra sau khi chuyển DB (2026-09-15):
 ---
 
 ## Nhật ký
+
+### Step 9 – `packages/exam-core` (✅ 2026-09-16)
+
+**Quyết định (người dùng chọn, đã cập nhật plan giả định 9 + Step 9)**
+- Ordering/Polytomous xáo **theo từng lượt làm**: content_public lưu lúc Save đã xáo sẵn, phục vụ lượt làm thì xáo lại theo `order_seed`.
+- Thứ tự hiển thị **luôn khác đáp án**: Ordering không trùng thứ tự đúng, Polytomous không để dòng điểm cao nhất ở vị trí soạn gốc (xoay vòng dãy thêm một vị trí).
+- Câu trả lời bất thường: bỏ trùng / chỉ số không hợp lệ; Pick-n còn quá n lựa chọn thì sai cả n câu; MC 1 đáp án và Polytomous phải chọn đúng 1.
+
+**Đã làm**
+- `@lang/shared`: `QuestionType` (11 dạng), `ExamPartKind`.
+- `@lang/exam-core` (phụ thuộc `@lang/shared`, không phụ thuộc platejs/React):
+  - Chuyển từ LC, bỏ phần plugin/React: `indicator` (kiểu, meta màu/nhãn, `isIndicator`, `createIndicator`, thêm `isQuestionType`, `INDICATOR_KINDS`), `blank` (`isBlank`, `blanksIn`), `pair` (`isPair`, `pairOptions`, `fixedOptions`, `createPair`, thêm `pairAnswer`, `pairChoices` = option matching đời cũ gom từ đáp án như simulator LC), `list` (`ORDERING_STYLE`, `isTodo`, `isOrderingItem`), `scope`, `migrate` (`migrateExamValue`), `plan` (= `preview-plan.ts`: `buildPlan`, `numberingMode`, `segmentQtype`, `range`, thêm `pickCount`), `outline`, `media` (phần thuần của `embedded-media.ts`), `answer` (`normalizeAnswer`, `acceptedAnswers`).
+  - `node.ts`: kiểu `ExamElement`/`ExamValue`, `plainText`, `isExamValue` (kiểm dữ liệu từ client/DB, giới hạn lồng 32 mức). `id.ts`: `createNodeId` (thay `nanoid` của platejs; không dùng `crypto.randomUUID` vì VPS chạy HTTP).
+  - `extractStructure(value)` / `structureFromPlan(plan)` → `parts` (`nodeId`, `kind`, `parentNodeId`, `sortOrder`, `firstNumber`/`lastNumber`) + `questions` (`number`, `nodeId`, `subIndex`, `qtype`, `grading`, `partNodeId` = subpart/part gần nhất, `answerKey` theo bảng plan, `options` cho cặp ghép, `params`, `maxScore` 1/10). Kiểu `GradableQuestion` phân biệt theo `qtype`.
+  - `stripAnswers(value, seed)` + `shuffleOrdering(content, seed, questions)` (seed Mulberry32, xáo trong từng dãy dòng liền nhau như simulator hiển thị).
+  - `gradeResponses(questions, responses)`; `gradeExam(plan, responses)` gọi lại hàm này. `Responses`/`GradeResult` giữ định dạng LC.
+  - `validateExam` (lỗi soạn thảo của LC), `validateSectionShape` (chặn Save), `validateSection` + `hasErrors` (publish). `Issue` thêm `severity`, `indicatorId` có thể `null`.
+- Test (49): fixture `exam-editor-sample.json`, `exam-draft-2.json` chép từ LC; bản chép `gradeExam` gốc của LC ở `src/testing/lc-grading.ts` để đối chiếu; `simulateResponses` sinh câu trả lời như simulator LC.
+- Tài liệu: plan (giả định 9, cập nhật Step 9), CLAUDE.md (mục exam-core).
+
+**Sai khác so với plan / LC**
+- `QuestionType` nằm ở `@lang/shared` theo quy ước enum (plan không nói).
+- Thêm `shuffleOrdering`, `validateSectionShape`, `hasErrors`, `structureFromPlan`, `pickCount`, `pairChoices`; không chuyển `exam-draft.ts` (localStorage, để Step 12 ở lang-app), `uploadDataUrls`/`applyDataUrls` (cần fetch/editor).
+- Khác LC có chủ đích (chỉ với dữ liệu lỗi hoặc câu trả lời không do UI tạo): MC chưa tick đáp án / Ordering không có dòng thì không bao giờ đúng (LC chấm đúng khi bỏ trống); Pick-n `maxPicks` lớn hơn số lựa chọn bị chặn bằng số lựa chọn; dạng câu hỏi lạ không được đánh số; `normalizeAnswer` dùng `toLowerCase` thay `toLocaleLowerCase` để client/server luôn giống nhau.
+- Kiểm tra chặt hơn LC: tham số `seconds`/`maxChars`/`maxPicks` phải là số nguyên dương, `maxPicks` không vượt số lựa chọn, đáp án TFNG/YNNG ngoài bộ cố định cũng báo lỗi.
+- Câu hỏi đứng trước part đầu tiên: không tạo dòng `exam_parts` cho part ngầm, `partNodeId = null`.
+- content_public: indicator pick-n được ghi `maxPicks` = số câu, matching đời cũ được ghi `options` (sau khi bỏ `checked` thì không còn đếm lại được); dòng ordering có `key`; thuộc tính `key` cũ trong raw bị bỏ.
+- Fixture `exam-draft-2.json`: ảnh base64 ~500KB rút gọn thành data URI ngắn; `src/__fixtures__` thêm vào `.prettierignore`.
+
+**Kiểm tra đã chạy**
+- `pnpm build`, `lint`, `typecheck`, `test` (165: 49 exam-core + 32 shared + 84 api), `format:check` → OK.
+- Đối chiếu với `gradeExam` gốc của LC trên cả 2 fixture: câu trả lời trống, đúng hết và 300 bộ ngẫu nhiên mỗi đề → `gradeExam`, `gradeResponses` (câu hỏi qua JSON như jsonb) và `gradeResponses` với câu trả lời qua JSON đều khớp.
+- content_public 2 fixture: không còn `checked`/`answer`/`num`, blank rỗng và đủ số lượng, đánh số + cấu trúc câu hỏi giống bản gốc, không sửa đầu vào; 300 seed: Ordering không lần nào trùng đáp án (> 15 thứ tự khác nhau), Polytomous không để dòng điểm cao nhất ở vị trí đầu; câu 2 dòng luôn ngược; `shuffleOrdering(stripAnswers(v, 1), 2)` = `stripAnswers(v, 2)`.
+- Kiểm tra ngược: tắt bước xoay vòng trong `shuffleOrdering` → 2 test fail, đã khôi phục.
+- Chạy thử bản build bằng Node (script scratchpad): `require` `dist/index.cjs` và `import` `dist/index.js` (resolve `@lang/shared` thật) → `extractStructure` 17 câu / 6 part, `stripAnswers` + `shuffleOrdering` không lộ đáp án, `gradeResponses` chạy được. Next đã có `transpilePackages: ['@lang/exam-core']`; chưa app nào import (Step 12–13).
+
+**Lưu ý cho các step sau**
+- Step 12: lang-api/lang-app thêm dependency `@lang/exam-core: workspace:*`. Editor dùng `migrateExamValue` khi mở, `validateExam` cho bảng kiểm tra (`indicatorId` giờ có thể `null`), `buildOutline` cho minimap. Save: `validateSectionShape` → 400; `extractStructure` → `exam_parts` (`parent_part_id` tra theo `parentNodeId`) / `exam_questions` (`part_id` theo `partNodeId`); `content_public = stripAnswers(raw, randomInt)`; `question_count = questions.length`. Publish: `hasErrors(validateSection(raw))` → 422 kèm issue. CHECK `qtype` dùng `sqlInList(Object.values(QuestionType))`.
+- Step 13: renderer đọc content_public bằng `buildPlan` (số câu khớp server); Ordering/Polytomous gửi `key` thay cho vị trí hiển thị (`row.index` của LC); lựa chọn cặp ghép từ `pairOptions`/`pairChoices` của indicator. Phục vụ section: `shuffleOrdering(content_public, order_seed, questions)`; chấm: dựng `GradableQuestion` từ `exam_questions` (`number`, `node_id`, `qtype`, `answer_key`) rồi `gradeResponses`; `exam_attempt_answers.is_correct` lấy từ `verdicts`.
+- Preview dashboard (Step 12) chấm bằng `gradeExam` trên raw → cùng kết quả server trừ các trường hợp dữ liệu lỗi (đề lỗi không publish được).
 
 ### Step 8 – Khu vực chính & dashboard tenant cơ bản (✅ 2026-09-16)
 

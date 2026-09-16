@@ -1,0 +1,2480 @@
+[
+  {
+    "type": "indicator",
+    "id": "DkJfSIW-90azPNfEiJqOh",
+    "kind": "part",
+    "children": [
+      {
+        "text": ""
+      }
+    ]
+  },
+  {
+    "children": [
+      {
+        "text": "READING PASSAGE 1"
+      }
+    ],
+    "type": "h2",
+    "id": "oByOhhT6DA"
+  },
+  {
+    "children": [
+      {
+        "text": "You should spend about 20 minutes on "
+      },
+      {
+        "text": "Questions 1-13",
+        "bold": true
+      },
+      {
+        "text": " which are based on Reading Passage 1 below."
+      }
+    ],
+    "type": "p",
+    "id": "UV3iKICmhS"
+  },
+  {
+    "children": [
+      {
+        "text": "The Great Fire of London",
+        "fontSize": "20px",
+        "backgroundColor": "transparent",
+        "color": "rgb(0, 0, 0)",
+        "bold": true
+      }
+    ],
+    "type": "p",
+    "id": "msTa75X0Ew",
+    "align": "center"
+  },
+  {
+    "children": [
+      {
+        "text": "Paragraph A",
+        "fontSize": "11pt",
+        "backgroundColor": "transparent",
+        "color": "rgb(0, 0, 0)",
+        "bold": true
+      }
+    ],
+    "type": "p",
+    "id": "AeWaAY6qhO",
+    "align": "left"
+  },
+  {
+    "children": [
+      {
+        "text": "The Great Fire of London swept through London in September 1666, devastating many buildings, including 13,200 houses and 87 parish churches. The Royal Exchange, the Guildhall and St. Paul’s Cathedral, all built during the Middle Ages, were also all totally destroyed. Although the verified death toll was only six people, it is unknown how many people died in the Great Fire of London, because many more died through indirect causes. The financial losses caused by the fire were estimated to be £10 million, at a time when London’s annual income was only £12,000. Many people were financially ruined and debtors’ prisons became over-crowded.",
+        "fontSize": "11pt",
+        "backgroundColor": "transparent",
+        "color": "rgb(0, 0, 0)"
+      }
+    ],
+    "type": "p",
+    "id": "nfLtkBETq6",
+    "align": "left"
+  },
+  {
+    "children": [
+      {
+        "text": "Paragraph B",
+        "fontSize": "11pt",
+        "backgroundColor": "transparent",
+        "color": "rgb(0, 0, 0)",
+        "bold": true
+      }
+    ],
+    "type": "p",
+    "id": "JXhLGscyaN",
+    "align": "left"
+  },
+  {
+    "children": [
+      {
+        "text": "The Great Fire of London started on Sunday, 2 September 1666 in a baker’s shop in Pudding Lane, belonging to Thomas Farynor. Although he claimed to have extinguished the fire, three hours later, at 1 a.m., his house was a blazing inferno. It is not certain how the fire actually began, but it is likely that it may have been caused by a spark from Farynor’s oven falling onto a pile of fuel nearby. In 1979, archaeologists excavated the remains of a burnt out shop on Pudding Lane that was very close to the bakery where the fire started. In the cellar, they found the charred remnants of 20 barrels of pitch. Pitch burns very easily and would have helped to spread the fire.",
+        "fontSize": "11pt",
+        "backgroundColor": "transparent",
+        "color": "rgb(0, 0, 0)"
+      }
+    ],
+    "type": "p",
+    "id": "EM9hKpgY7A",
+    "align": "left"
+  },
+  {
+    "children": [
+      {
+        "text": "Paragraph C",
+        "fontSize": "11pt",
+        "backgroundColor": "transparent",
+        "color": "rgb(0, 0, 0)",
+        "bold": true
+      }
+    ],
+    "type": "p",
+    "id": "q4y2C3sPWb",
+    "align": "left"
+  },
+  {
+    "children": [
+      {
+        "text": "The fire spread quickly down Pudding Lane and carried on down Fish Hill and towards the Thames. The fire continued to spread rapidly, helped by a strong wind from the east. When it reached the Thames, it hit warehouses that were stocked with combustible products, such as oil and rope. Fortunately, the fire could not spread south of the river, because a previous blaze in 1633 had already wrecked a section of London Bridge. As the fire was spreading so quickly, most Londoners concentrated on escaping rather than fighting the fire.",
+        "fontSize": "11pt",
+        "backgroundColor": "transparent",
+        "color": "rgb(0, 0, 0)"
+      }
+    ],
+    "type": "p",
+    "id": "FhcXb1quwO",
+    "align": "left"
+  },
+  {
+    "children": [
+      {
+        "text": "Paragraph D",
+        "fontSize": "11pt",
+        "backgroundColor": "transparent",
+        "color": "rgb(0, 0, 0)",
+        "bold": true
+      }
+    ],
+    "type": "p",
+    "id": "oAEVPju9__",
+    "align": "left"
+  },
+  {
+    "children": [
+      {
+        "text": "In the 17th century, people were not as aware of the dangers of fire as they are today. Buildings were made of timber covered in pitch and tightly packed together. The design of buildings meant flames could easily spread from building to building. Following a long, dry summer, the city was suffering a drought; water was scarce and the wooden houses had dried out, making them easier to burn.",
+        "fontSize": "11pt",
+        "backgroundColor": "transparent",
+        "color": "rgb(0, 0, 0)"
+      }
+    ],
+    "type": "p",
+    "id": "_8Bs9Vg1tI",
+    "align": "left"
+  },
+  {
+    "children": [
+      {
+        "text": "Paragraph E",
+        "fontSize": "11pt",
+        "backgroundColor": "transparent",
+        "color": "rgb(0, 0, 0)",
+        "bold": true
+      }
+    ],
+    "type": "p",
+    "id": "drW2GzTRrY",
+    "align": "left"
+  },
+  {
+    "children": [
+      {
+        "text": "Samuel Pepys, a diarist of the period and Clerk to the Royal Navy, observed the fire and recommended to the King that buildings should be pulled down, as it could be the only way to stop the fire. The Mayor made the order to pull down burning houses using fire hooks, but the fire continued to spread. Pepys then spoke to the Admiral of the Navy and they agreed that they should blow up houses in the path of the fire. The hope was that by doing this, they would create a space to stop the fire spreading from house to house. The Navy carried out the request and by the next morning, the fire has been successfully stopped.",
+        "fontSize": "11pt",
+        "backgroundColor": "transparent",
+        "color": "rgb(0, 0, 0)"
+      }
+    ],
+    "type": "p",
+    "id": "YBbtV9g6yK",
+    "align": "left"
+  },
+  {
+    "children": [
+      {
+        "text": "Paragraph F",
+        "fontSize": "11pt",
+        "backgroundColor": "transparent",
+        "color": "rgb(0, 0, 0)",
+        "bold": true
+      }
+    ],
+    "type": "p",
+    "id": "AM31z-fZ3z",
+    "align": "left"
+  },
+  {
+    "children": [
+      {
+        "text": "London had to be almost totally reconstructed and many people went to the fields outside London. They stayed there for many days, sheltering in tents and shacks and some people were forced to live in this way for months and even years. Throughout 1667, people cleared rubble and surveyed the burnt area. Much time was spent planning new street layouts and drawing up new building regulations. Public buildings were paid for with money from a new coal tax, but by the end of the year only 150 new houses had been built. The new regulations were designed to prevent such a disaster happening again. Houses now had to be faced in brick instead of wood. Some streets were widened and two new streets were created. Pavements and new sewers were laid, and London’s quaysides were improved. Initially, however, only temporary buildings were erected that were ill-equipped, and this enabled the plague, which was common in London at that time, to spread easily. Many people died from this and the harsh winter that followed the fire.",
+        "fontSize": "11pt",
+        "backgroundColor": "transparent",
+        "color": "rgb(0, 0, 0)"
+      }
+    ],
+    "type": "p",
+    "id": "gFWxocxgKW",
+    "align": "left"
+  },
+  {
+    "children": [
+      {
+        "text": "Paragraph G",
+        "fontSize": "11pt",
+        "backgroundColor": "transparent",
+        "color": "rgb(0, 0, 0)",
+        "bold": true
+      }
+    ],
+    "type": "p",
+    "id": "vTr17qlcb5",
+    "align": "left"
+  },
+  {
+    "children": [
+      {
+        "text": "In 1666, there was no organised fire brigade. Fire fighting was very basic with little skill or knowledge involved. Leather buckets, axes and water squirts were used to fight the fire, but they had little effect. As a result of the Great Fire of London, early fire brigades were formed by insurance companies. Building insurance was very profitable and many more insurance companies were set up, establishing their own fire brigades. These brigades were sent to insured properties if a fire occurred to minimise damage and cost. Firemarks were used to identify – and advertise – different insurance companies. They were placed on the outside of an insured building and brigades would use them to determine whether a building was insured by them. If a building was on fire, several brigades would attend. If they did not see their specific firemark attached to the building, they would leave the property to burn. Some old firemarks can still be seen on London buildings today. Also, fire fighters wore brightly coloured uniforms to distinguish themselves from rival insurance brigades. Although this was a step in the right direction, fire fighters received little training and the equipment used remained very basic.",
+        "fontSize": "11pt",
+        "backgroundColor": "transparent",
+        "color": "rgb(0, 0, 0)"
+      }
+    ],
+    "type": "p",
+    "id": "cIPzW_TEi9",
+    "align": "left"
+  },
+  {
+    "type": "indicator",
+    "id": "J6QxKi-CcclCmCINqad9A",
+    "kind": "subpart",
+    "children": [
+      {
+        "text": ""
+      }
+    ]
+  },
+  {
+    "children": [
+      {
+        "text": "Questions 1-7",
+        "bold": true
+      },
+      {
+        "text": " "
+      }
+    ],
+    "type": "p",
+    "id": "ZHYoUAKNG6"
+  },
+  {
+    "children": [
+      {
+        "text": "The text on the previous pages has 7 paragraphs ("
+      },
+      {
+        "text": "A – G",
+        "bold": true
+      },
+      {
+        "text": "). "
+      }
+    ],
+    "type": "p",
+    "id": "KfnqVQvFpr"
+  },
+  {
+    "children": [
+      {
+        "text": "Choose the correct heading for each paragraph from the list of headings below."
+      }
+    ],
+    "type": "p",
+    "id": "Iem71sQker"
+  },
+  {
+    "children": [
+      {
+        "text": "Write the correct number (",
+        "italic": true
+      },
+      {
+        "text": "i – x",
+        "bold": true,
+        "italic": true
+      },
+      {
+        "text": ") in boxes ",
+        "italic": true
+      },
+      {
+        "text": "1-7",
+        "bold": true,
+        "italic": true
+      },
+      {
+        "text": " on your answer sheet.",
+        "italic": true
+      },
+      {
+        "text": " "
+      }
+    ],
+    "type": "p",
+    "id": "yzCH7gbQWe"
+  },
+  {
+    "children": [
+      {
+        "text": "i Vulnerable Buildings "
+      }
+    ],
+    "type": "p",
+    "id": "sNN0YaAuLC",
+    "indent": 1,
+    "listStyleType": "disc"
+  },
+  {
+    "children": [
+      {
+        "text": "ii The Effect on Trade "
+      }
+    ],
+    "type": "p",
+    "id": "aad2TPNWg2",
+    "indent": 1,
+    "listStyleType": "disc"
+  },
+  {
+    "children": [
+      {
+        "text": "iii How it Started "
+      }
+    ],
+    "type": "p",
+    "id": "20oaMx31nn",
+    "indent": 1,
+    "listStyleType": "disc"
+  },
+  {
+    "children": [
+      {
+        "text": "iv A Positive from the Ashes "
+      }
+    ],
+    "type": "p",
+    "id": "luPULb8aaH",
+    "indent": 1,
+    "listStyleType": "disc"
+  },
+  {
+    "children": [
+      {
+        "text": "v Food Shortages "
+      }
+    ],
+    "type": "p",
+    "id": "PchyNX1i0G",
+    "indent": 1,
+    "listStyleType": "disc"
+  },
+  {
+    "children": [
+      {
+        "text": "vi The Movement of the Fire "
+      }
+    ],
+    "type": "p",
+    "id": "Gt4cIpme1m",
+    "indent": 1,
+    "listStyleType": "disc"
+  },
+  {
+    "children": [
+      {
+        "text": "vii The Effects of the Smoke "
+      }
+    ],
+    "type": "p",
+    "id": "KSBCgPUskz",
+    "indent": 1,
+    "listStyleType": "disc"
+  },
+  {
+    "children": [
+      {
+        "text": "viii Extinguishing the Fire "
+      }
+    ],
+    "type": "p",
+    "id": "VBXF4qc5aU",
+    "indent": 1,
+    "listStyleType": "disc"
+  },
+  {
+    "children": [
+      {
+        "text": "ix The Costs "
+      }
+    ],
+    "type": "p",
+    "id": "Yn0PX0Kc58",
+    "indent": 1,
+    "listStyleType": "disc"
+  },
+  {
+    "children": [
+      {
+        "text": "x A New London"
+      }
+    ],
+    "type": "p",
+    "id": "Q3Ij_XoVPe",
+    "indent": 1,
+    "listStyleType": "disc"
+  },
+  {
+    "type": "indicator",
+    "id": "rDdKdPmRpKSnhi9yb-CjB",
+    "kind": "question",
+    "qtype": "matching",
+    "children": [
+      {
+        "text": ""
+      }
+    ],
+    "answer": "i"
+  },
+  {
+    "type": "pair",
+    "id": "DGcp61Ob_vYEBVvuP9wE6",
+    "answer": "i",
+    "children": [
+      {
+        "text": "Paragraph A"
+      }
+    ]
+  },
+  {
+    "type": "pair",
+    "id": "xVJIsConF9eiTyx6hbIKP",
+    "answer": "ii",
+    "children": [
+      {
+        "text": "Paragraph B"
+      }
+    ]
+  },
+  {
+    "type": "pair",
+    "id": "Q_scQZiBfIPPDH6vIgdRX",
+    "answer": "iii",
+    "children": [
+      {
+        "text": "Paragraph C"
+      }
+    ]
+  },
+  {
+    "type": "pair",
+    "id": "hcvNN2jB4-mAWaT4YQzOx",
+    "answer": "iv",
+    "children": [
+      {
+        "text": "Paragraph D"
+      }
+    ]
+  },
+  {
+    "type": "pair",
+    "id": "ZgbgoCrJjpYJgnxoiPS9F",
+    "answer": "v",
+    "children": [
+      {
+        "text": "Paragraph E"
+      }
+    ]
+  },
+  {
+    "type": "pair",
+    "id": "wqvzdE4O3mXZXYaeii36y",
+    "answer": "vi",
+    "children": [
+      {
+        "text": "Paragraph F"
+      }
+    ]
+  },
+  {
+    "type": "pair",
+    "id": "RtNef9PmjAoKm4gZ93ed8",
+    "answer": "vii",
+    "children": [
+      {
+        "text": "Paragraph G"
+      }
+    ]
+  },
+  {
+    "type": "indicator",
+    "id": "zy39UwPKnPn6DKxs3T6Yw",
+    "kind": "subpart",
+    "children": [
+      {
+        "text": ""
+      }
+    ]
+  },
+  {
+    "type": "p",
+    "children": [
+      {
+        "text": "Questions 8-11",
+        "bold": true
+      },
+      {
+        "text": " "
+      }
+    ],
+    "id": "BGjY0mxq0g"
+  },
+  {
+    "children": [
+      {
+        "text": "Choose FOUR letters, ",
+        "italic": true
+      },
+      {
+        "text": "A-G",
+        "bold": true,
+        "italic": true
+      },
+      {
+        "text": ".",
+        "italic": true
+      },
+      {
+        "text": " "
+      }
+    ],
+    "type": "p",
+    "id": "zsZye2Fhpy"
+  },
+  {
+    "children": [
+      {
+        "text": "What FOUR of the following were effects of the Great Fire of London? "
+      }
+    ],
+    "type": "p",
+    "id": "iDd2x8EbTd"
+  },
+  {
+    "children": [
+      {
+        "text": "Write the correct letter, ",
+        "italic": true
+      },
+      {
+        "text": "A-G",
+        "bold": true,
+        "italic": true
+      },
+      {
+        "text": ", in any order in boxes ",
+        "italic": true
+      },
+      {
+        "text": "8-11",
+        "bold": true,
+        "italic": true
+      },
+      {
+        "text": " on your answer sheet.",
+        "italic": true
+      },
+      {
+        "text": " "
+      }
+    ],
+    "type": "p",
+    "id": "5XHD_jmSHz"
+  },
+  {
+    "type": "indicator",
+    "id": "YgLQKfo6h64at3A9gsHXx",
+    "kind": "question",
+    "qtype": "pick-n",
+    "children": [
+      {
+        "text": ""
+      }
+    ]
+  },
+  {
+    "children": [
+      {
+        "text": "A Officially, only six people died."
+      }
+    ],
+    "type": "p",
+    "id": "qlG42eYjFZ",
+    "indent": 1,
+    "checked": true,
+    "listStyleType": "todo"
+  },
+  {
+    "children": [
+      {
+        "text": "B The French economy benefitted from the destruction of businesses in London."
+      }
+    ],
+    "type": "p",
+    "id": "FasNI8VAdd",
+    "indent": 1,
+    "checked": true,
+    "listStyleType": "todo",
+    "listStart": 2
+  },
+  {
+    "children": [
+      {
+        "text": "C Some people had to live rough in fields for years following the fire."
+      }
+    ],
+    "type": "p",
+    "id": "UlQdEue7GT",
+    "indent": 1,
+    "checked": false,
+    "listStyleType": "todo",
+    "listStart": 3
+  },
+  {
+    "children": [
+      {
+        "text": "D The English royal family were forced to live outside London for 18 months."
+      }
+    ],
+    "type": "p",
+    "id": "j2X6SdRnmZ",
+    "indent": 1,
+    "checked": true,
+    "listStyleType": "todo",
+    "listStart": 4
+  },
+  {
+    "children": [
+      {
+        "text": "E Disease spread more easily."
+      }
+    ],
+    "type": "p",
+    "id": "N0r2IHwTDH",
+    "indent": 1,
+    "checked": false,
+    "listStyleType": "todo",
+    "listStart": 5
+  },
+  {
+    "children": [
+      {
+        "text": "F An enquiry was completed by the government into why the damage was so bad."
+      }
+    ],
+    "type": "p",
+    "id": "vqtT_JeZUL",
+    "indent": 1,
+    "checked": true,
+    "listStyleType": "todo",
+    "listStart": 6
+  },
+  {
+    "children": [
+      {
+        "text": "G Fire fighting services were launched."
+      }
+    ],
+    "type": "p",
+    "id": "VfgpBimTyI",
+    "indent": 1,
+    "checked": false,
+    "listStyleType": "todo",
+    "listStart": 7
+  },
+  {
+    "type": "indicator",
+    "id": "ggDCCfRrnPfjTg0iZkWsp",
+    "kind": "subpart",
+    "children": [
+      {
+        "text": ""
+      }
+    ]
+  },
+  {
+    "children": [
+      {
+        "text": "Questions 12 and 13",
+        "bold": true
+      }
+    ],
+    "type": "p",
+    "id": "yXLfK8dAYg",
+    "checked": false
+  },
+  {
+    "children": [
+      {
+        "text": "Complete the sentences below. "
+      }
+    ],
+    "type": "p",
+    "id": "tgebEUU37P",
+    "checked": false
+  },
+  {
+    "children": [
+      {
+        "text": "Write "
+      },
+      {
+        "text": "NO MORE THAN THREE WORDS",
+        "bold": true
+      },
+      {
+        "text": " from the text for each answer. "
+      }
+    ],
+    "type": "p",
+    "id": "8Vm55wPLxX",
+    "checked": false
+  },
+  {
+    "children": [
+      {
+        "text": "Write your answers in boxes ",
+        "italic": true
+      },
+      {
+        "text": "12",
+        "bold": true,
+        "italic": true
+      },
+      {
+        "text": " and ",
+        "italic": true
+      },
+      {
+        "text": "13",
+        "bold": true,
+        "italic": true
+      },
+      {
+        "text": " on your answer sheet.",
+        "italic": true
+      }
+    ],
+    "type": "p",
+    "id": "hoh88NtOk8",
+    "checked": false
+  },
+  {
+    "type": "indicator",
+    "id": "MUOoZoFfpdqeX8psdAEOC",
+    "kind": "question",
+    "qtype": "fill-blank",
+    "children": [
+      {
+        "text": ""
+      }
+    ]
+  },
+  {
+    "children": [
+      {
+        "text": "12",
+        "bold": true
+      },
+      {
+        "text": " One measure to prevent further fires was to ensure that London houses would have "
+      },
+      {
+        "type": "blank",
+        "children": [
+          {
+            "text": "answer"
+          }
+        ],
+        "id": "8q3ChiUXfU"
+      },
+      {
+        "text": " facades in the future."
+      }
+    ],
+    "type": "p",
+    "id": "5yzQVWt7pc",
+    "checked": false
+  },
+  {
+    "children": [
+      {
+        "text": "13 ",
+        "fontSize": "11pt",
+        "backgroundColor": "transparent",
+        "color": "rgb(0, 0, 0)",
+        "bold": true
+      },
+      {
+        "text": "People could differentiate the fire brigades from different insurance companies by their ",
+        "fontSize": "11pt",
+        "backgroundColor": "transparent",
+        "color": "rgb(0, 0, 0)"
+      },
+      {
+        "type": "blank",
+        "children": [
+          {
+            "text": "answer two"
+          }
+        ],
+        "id": "CrMgdRdP5o"
+      },
+      {
+        "text": ".",
+        "fontSize": "11pt",
+        "backgroundColor": "transparent",
+        "color": "rgb(0, 0, 0)"
+      }
+    ],
+    "type": "p",
+    "id": "0spuSEgWHh"
+  },
+  {
+    "type": "indicator",
+    "id": "szPa7cvWRk7-6dTSk0WL_",
+    "kind": "part",
+    "children": [
+      {
+        "text": ""
+      }
+    ]
+  },
+  {
+    "type": "h2",
+    "children": [
+      {
+        "text": "READING PASSAGE 2"
+      }
+    ],
+    "id": "66x4E1L2IA"
+  },
+  {
+    "children": [
+      {
+        "text": "You should spend about 20 minutes on "
+      },
+      {
+        "text": "Questions 14-26",
+        "bold": true
+      },
+      {
+        "text": " which are based on Reading Passage 2 below."
+      }
+    ],
+    "type": "p",
+    "id": "l-4IBZbBeX"
+  },
+  {
+    "children": [
+      {
+        "text": "A New Threat of Yellowstone",
+        "fontSize": "20px",
+        "backgroundColor": "transparent",
+        "color": "rgb(0, 0, 0)",
+        "bold": true
+      }
+    ],
+    "type": "p",
+    "align": "center",
+    "id": "Zkrb7GxUA6"
+  },
+  {
+    "children": [
+      {
+        "text": "It has long been known that Yellowstone National Park lies over an enormous supervolcano. The term ‘supervolcano’ implies a volcanic centre that has had an eruption of magnitude 8 on the Volcano Explosivity Index (VEI), meaning the measured deposits for that eruption are greater than 1,000 cubic kilometres. This sounds worrying and Professor George Peters details the possible results if something were to happen. “A major eruption would obliterate the surroundings within a radius of hundreds of kilometres, and cover the rest of the United States and Canada with multiple inches of ash. This would shut down agriculture and cause global climate cooling for as long as a decade.” To calm everyone down, geologist, Tony Masters, explains there is little to fear today. “All VEI 8 eruptions, including the last at Yellowstone, occurred tens of thousands to millions of years ago. Another eruption could occur, but it is very unlikely to happen in the next million years or so.”"
+      }
+    ],
+    "type": "p",
+    "align": "left",
+    "id": "20gcfhEUYR"
+  },
+  {
+    "children": [
+      {
+        "text": ""
+      }
+    ],
+    "type": "p",
+    "align": "left",
+    "id": "M8V71HnE5Z"
+  },
+  {
+    "children": [
+      {
+        "text": "Yellowstone is no stranger to controversy. There was a previous media accusation that US Geological Survey (USGS) geologists had not done their work properly and that the identification of Yellowstone as a supervolcano was not done until scientists looked at photographs of Yellowstone from space. The Yellowstone scientists denied this. Spokesman Alice Wheeler clarifies their position. “The scientist who first identified the three Yellowstone calderas was from the USGS and he told the world about the great eruptions that formed them. He traced out the caldera boundaries through old fashioned field work, walking around with a hammer and hand lens and looking carefully at the rocks and their distributions.” The National Aeronautics and Space Administration (NASA) also agreed. Stan Forsyth, their spokesman, explains. “Several authors have written that these large calderas in Yellowstone were discovered from space, but we suspect that the rumour probably got started because initial field work that identified them was partly funded by NASA.”"
+      }
+    ],
+    "type": "p",
+    "align": "left",
+    "id": "liBn0QufA2"
+  },
+  {
+    "children": [
+      {
+        "text": ""
+      }
+    ],
+    "type": "p",
+    "align": "left",
+    "id": "OymN9QQFYB"
+  },
+  {
+    "children": [
+      {
+        "text": "A new problem in Yellowstone is that the supervolcano has now been discovered to be larger than originally thought and this has made people feel more nervous. Seismologists at the University of Utah have worked with several other institutions to create an image of the Yellowstone magma reservoir using a technique called seismic tomography. Masters student, Julia Grey, explains the results. “By looking closely at data from thousands of earthquakes, we have discovered that there are two magma reservoirs, one shallow and one deep, and that they are much larger than originally believed. The shallow one was previously known about to us, but the deeper one is a new finding.”"
+      }
+    ],
+    "type": "p",
+    "align": "left",
+    "id": "CfF7CqZkCa"
+  },
+  {
+    "children": [
+      {
+        "text": ""
+      }
+    ],
+    "type": "p",
+    "align": "left",
+    "id": "kEc926PFaZ"
+  },
+  {
+    "children": [
+      {
+        "text": "To create an image of this second magma reservoir beneath Yellowstone, the research teams reviewed data from thousands of earthquakes. Seismic waves travel slower through hot, partially molten rock and faster in cold, solid rock. The researchers made a map of the locations where seismic waves travel more slowly, which provided a sub-surface image of the hot or partially molten bodies in the crust beneath Yellowstone. The deeper magma storage region extends from 20 to 50 kilometres depth, contains about 2 per cent melt, and is about 4.5 times larger than the shallow magma body. The shallower magma storage region is about 90 kilometres long, extends from 5 to 17 kilometres depth, and is 2.5 times larger than a prior, less accurate, study indicated. This magma reservoir contains between about 5 to 15 per cent molten rock. Although this is the crustal magma storage region that has fuelled Yellowstone’s past volcanic activity, magma typically does not erupt unless it has greater than 50 per cent melt."
+      }
+    ],
+    "type": "p",
+    "align": "left",
+    "id": "_VyoiLQ9bZ"
+  },
+  {
+    "children": [
+      {
+        "text": ""
+      }
+    ],
+    "type": "p",
+    "align": "left",
+    "id": "IRB2MEpeRs"
+  },
+  {
+    "children": [
+      {
+        "text": "The US and world media were quick to dramatise the finding and exaggerate the threat that these findings represent. Yellowstone park scientist, Amy Brent, has calming words. “These findings do not increase the assessment of volcanic hazard for Yellowstone. The inferred magma storage region is no larger than we already knew. The research simply makes a better image of the magmatic system. Simply, we have more key information about how the Yellowstone volcano works.”"
+      }
+    ],
+    "type": "p",
+    "align": "left",
+    "id": "dSgzhPu278"
+  },
+  {
+    "children": [
+      {
+        "text": ""
+      }
+    ],
+    "type": "p",
+    "align": "left",
+    "id": "mqFKv_IT9O"
+  },
+  {
+    "children": [
+      {
+        "text": "Many independent reports back up Brent’s comments and have shown that the Yellowstone area has been on a long cycle of periodic eruptions. Eruptions are extremely infrequent in supervolcanos, and eventually the cycle ends in their deaths. US government geologist, Andrea Haller, explains the state of the Yellowstone supervolcano. “By investigating the patterns of behaviour in two previously completed caldera cycles, we can suggest that the current activity of Yellowstone is on the dying cycle.” This is based on comparisons with other supervolcanos. Scientists know the behaviour of the past and they know at what comparative stage Yellowstone is right now. It is believed that Yellowstone is currently on a third and dying cycle. This can be concluded by the fact that dying volcanos produce less fresh molten material from the Earth’s crust. Haller continues. “We’ve observed a lot of material in the magma chambers that represent recycled volcanic rocks, which were once buried inside of calderas and are now getting reused. Yellowstone has erupted enough of this material already to suggest that the future melting potential of the crust is getting exhausted.”"
+      }
+    ],
+    "type": "p",
+    "align": "left",
+    "id": "Sw1D8YsP6z"
+  },
+  {
+    "children": [
+      {
+        "text": ""
+      }
+    ],
+    "type": "p",
+    "align": "left",
+    "id": "4BuV1L4N89"
+  },
+  {
+    "children": [
+      {
+        "text": "Whatever the truth about Yellowstone, it seems that during the lives of most people, the geological status of Yellowstone can still prove hazardous. The park has often been closed due to volcanic activity in the past and this is likely to happen again before the volcano becomes harmless."
+      }
+    ],
+    "type": "p",
+    "align": "left",
+    "id": "73lHPnUIZ_"
+  },
+  {
+    "type": "indicator",
+    "id": "2ZRr9pRvIqZvoMmxZk82l",
+    "kind": "subpart",
+    "children": [
+      {
+        "text": ""
+      }
+    ]
+  },
+  {
+    "children": [
+      {
+        "text": "Question 14-20",
+        "bold": true
+      }
+    ],
+    "type": "p",
+    "align": "left",
+    "id": "h0rhgS28qP"
+  },
+  {
+    "children": [
+      {
+        "text": "Look at the following statements ("
+      },
+      {
+        "text": "questions 14-20",
+        "bold": true
+      },
+      {
+        "text": ") and the list of people below."
+      }
+    ],
+    "type": "p",
+    "align": "left",
+    "id": "yafb5y7Xdm"
+  },
+  {
+    "children": [
+      {
+        "text": "Match each statement with the correct person’s initials. "
+      }
+    ],
+    "type": "p",
+    "align": "left",
+    "id": "GPsY-qzxNw"
+  },
+  {
+    "children": [
+      {
+        "text": "Write the correct initials in boxes "
+      },
+      {
+        "text": "14-20",
+        "bold": true
+      },
+      {
+        "text": " on your answer sheet."
+      }
+    ],
+    "type": "p",
+    "align": "left",
+    "id": "T0y_bbe5le"
+  },
+  {
+    "children": [
+      {
+        "text": "GP George Peters "
+      }
+    ],
+    "type": "p",
+    "align": "left",
+    "id": "N9C0M0LN20",
+    "indent": 1,
+    "listStyleType": "disc"
+  },
+  {
+    "children": [
+      {
+        "text": "TM Tony Masters "
+      }
+    ],
+    "type": "p",
+    "align": "left",
+    "id": "lMWNTj7ZQM",
+    "indent": 1,
+    "listStyleType": "disc"
+  },
+  {
+    "children": [
+      {
+        "text": "AW Alice Wheeler "
+      }
+    ],
+    "type": "p",
+    "align": "left",
+    "id": "fwRmxmZSEs",
+    "indent": 1,
+    "listStyleType": "disc"
+  },
+  {
+    "children": [
+      {
+        "text": "SF Stan Forsyth "
+      }
+    ],
+    "type": "p",
+    "align": "left",
+    "id": "B3UKwx3BMt",
+    "indent": 1,
+    "listStyleType": "disc"
+  },
+  {
+    "children": [
+      {
+        "text": "JG Julia Grey "
+      }
+    ],
+    "type": "p",
+    "align": "left",
+    "id": "fcEE_H4aB2",
+    "indent": 1,
+    "listStyleType": "disc"
+  },
+  {
+    "children": [
+      {
+        "text": "AB Amy Brent "
+      }
+    ],
+    "type": "p",
+    "align": "left",
+    "id": "5_2Na7t0lg",
+    "indent": 1,
+    "listStyleType": "disc"
+  },
+  {
+    "children": [
+      {
+        "text": "AH Andrea Haller"
+      }
+    ],
+    "type": "p",
+    "align": "left",
+    "id": "N6BYf5dy01",
+    "indent": 1,
+    "listStyleType": "disc"
+  },
+  {
+    "type": "indicator",
+    "id": "61x6tjijyddQNlj4AkPGm",
+    "kind": "question",
+    "qtype": "matching",
+    "children": [
+      {
+        "text": ""
+      }
+    ]
+  },
+  {
+    "children": [
+      {
+        "text": "The Yellowstone volcano is on its dying supervolcano cycle."
+      }
+    ],
+    "type": "pair",
+    "align": "left",
+    "id": "kquC4Nh7b7LMDk7Q35Ieb",
+    "answer": "GP"
+  },
+  {
+    "children": [
+      {
+        "text": "The Yellowstone supervolcano was first identified by traditional geology work."
+      }
+    ],
+    "type": "pair",
+    "align": "left",
+    "id": "nX_CXUddzO4w5Z5W27Hk3",
+    "answer": "TM"
+  },
+  {
+    "children": [
+      {
+        "text": "A major Yellowstone eruption would cause Canadian farming to cease."
+      }
+    ],
+    "type": "pair",
+    "align": "left",
+    "id": "WewR0BLErJ8gRhojnhcEp",
+    "answer": "AW"
+  },
+  {
+    "children": [
+      {
+        "text": "The Yellowstone magma chambers are larger than previously thought."
+      }
+    ],
+    "type": "pair",
+    "align": "left",
+    "id": "KP50BK6uZVqnPb0J4MXlL",
+    "answer": "SF"
+  },
+  {
+    "children": [
+      {
+        "text": "A major Yellowstone eruption last occurred thousands of years ago. "
+      }
+    ],
+    "type": "pair",
+    "align": "left",
+    "id": "DO-5uSTG4GHA22LjpDKMQ",
+    "answer": "JG"
+  },
+  {
+    "children": [
+      {
+        "text": "Scientists now know better about the functioning of the Yellowstone volcano."
+      }
+    ],
+    "type": "pair",
+    "align": "left",
+    "id": "ty6ZuIJElbscSC9tsnKMc",
+    "answer": "AB"
+  },
+  {
+    "children": [
+      {
+        "text": "NASA has provided money in the past to help research on the Yellowstone supervolcano."
+      }
+    ],
+    "type": "pair",
+    "align": "left",
+    "id": "mryFTWy_1P1FXuIrUMWK9",
+    "answer": "AH"
+  },
+  {
+    "type": "indicator",
+    "id": "e-BxGN0muTie_K3T2A2Na",
+    "kind": "subpart",
+    "children": [
+      {
+        "text": ""
+      }
+    ]
+  },
+  {
+    "children": [
+      {
+        "text": "Question 21-23",
+        "bold": true
+      }
+    ],
+    "type": "p",
+    "align": "left",
+    "id": "_B07_Lm_NG"
+  },
+  {
+    "children": [
+      {
+        "text": "Label the diagram below."
+      }
+    ],
+    "type": "p",
+    "align": "left",
+    "id": "CPmGYGEmm-"
+  },
+  {
+    "children": [
+      {
+        "text": "Write "
+      },
+      {
+        "text": "NO MORE THAN THREE WORDS AND/OR A NUMBER",
+        "bold": true
+      },
+      {
+        "text": " from the text for each answer."
+      }
+    ],
+    "type": "p",
+    "align": "left",
+    "id": "DNk1RpHQWL"
+  },
+  {
+    "children": [
+      {
+        "text": "Write your answers in boxes "
+      },
+      {
+        "text": "21-23",
+        "bold": true
+      },
+      {
+        "text": " on your answer sheet."
+      }
+    ],
+    "type": "p",
+    "align": "left",
+    "id": "fYIP-sys9F"
+  },
+  {
+    "children": [
+      {
+        "text": "The Yellowstone Caldera",
+        "fontSize": "20px",
+        "backgroundColor": "transparent",
+        "color": "rgb(0, 0, 0)",
+        "bold": true
+      }
+    ],
+    "type": "p",
+    "align": "center",
+    "id": "eB1B9u2pv_"
+  },
+  {
+    "children": [
+      {
+        "text": ""
+      }
+    ],
+    "type": "img",
+    "url": "data:image/png;base64,iVBORw0KGgo=",
+    "id": "h0jvd4TT2R"
+  },
+  {
+    "type": "indicator",
+    "id": "ekO2P6VkiZ_480wFnleSt",
+    "kind": "question",
+    "qtype": "fill-blank",
+    "children": [
+      {
+        "text": ""
+      }
+    ]
+  },
+  {
+    "children": [
+      {
+        "text": ""
+      },
+      {
+        "type": "blank",
+        "children": [
+          {
+            "text": "answer 21"
+          }
+        ],
+        "id": "j5DiBP1iG1"
+      },
+      {
+        "text": " km deep"
+      }
+    ],
+    "type": "p",
+    "align": "left",
+    "id": "dmVi1Q9fS6",
+    "indent": 1,
+    "listStyleType": "disc"
+  },
+  {
+    "children": [
+      {
+        "text": "Deeper magma chamber - contains around "
+      },
+      {
+        "type": "blank",
+        "children": [
+          {
+            "text": "answer 22"
+          }
+        ],
+        "id": "Xn90VvlPim"
+      },
+      {
+        "text": " of molten rock."
+      }
+    ],
+    "type": "p",
+    "align": "left",
+    "id": "xvBhjsK2rN",
+    "indent": 1,
+    "listStyleType": "disc"
+  },
+  {
+    "children": [
+      {
+        "text": "Shallower magma chamber - contains 5 - 15% of molten rock. It will typically not erupt until it has "
+      },
+      {
+        "type": "blank",
+        "children": [
+          {
+            "text": "answer 23"
+          }
+        ],
+        "id": "RgprnpmMy5"
+      },
+      {
+        "text": " of molten rock."
+      }
+    ],
+    "type": "p",
+    "align": "left",
+    "id": "l_tb25kGBX",
+    "indent": 1,
+    "listStyleType": "disc"
+  },
+  {
+    "type": "indicator",
+    "id": "_VjlMbfFSCP5z3ZMdQBBO",
+    "kind": "subpart",
+    "children": [
+      {
+        "text": ""
+      }
+    ]
+  },
+  {
+    "children": [
+      {
+        "text": "Question 24-26",
+        "bold": true
+      }
+    ],
+    "type": "p",
+    "align": "left",
+    "id": "2YL3YYpRjg"
+  },
+  {
+    "children": [
+      {
+        "text": "Choose the correct letter "
+      },
+      {
+        "text": "A",
+        "bold": true
+      },
+      {
+        "text": ", "
+      },
+      {
+        "text": "B",
+        "bold": true
+      },
+      {
+        "text": ", "
+      },
+      {
+        "text": "C",
+        "bold": true
+      },
+      {
+        "text": " or "
+      },
+      {
+        "text": "D",
+        "bold": true
+      },
+      {
+        "text": ". "
+      }
+    ],
+    "type": "p",
+    "align": "left",
+    "id": "xfPaNqHEfZ"
+  },
+  {
+    "children": [
+      {
+        "text": "Write the correct letter in boxes ",
+        "italic": true
+      },
+      {
+        "text": "24-26",
+        "bold": true,
+        "italic": true
+      },
+      {
+        "text": " on your answer sheet.",
+        "italic": true
+      }
+    ],
+    "type": "p",
+    "align": "left",
+    "id": "dIQJ8-tcO0"
+  },
+  {
+    "type": "indicator",
+    "id": "2QyZAq6iYUE4XWHs4KI7p",
+    "kind": "question",
+    "qtype": "mc-single",
+    "children": [
+      {
+        "text": ""
+      }
+    ]
+  },
+  {
+    "children": [
+      {
+        "text": "Images of the magma chambers can be made, because"
+      }
+    ],
+    "type": "p",
+    "align": "left",
+    "id": "hCPCtrNBI6"
+  },
+  {
+    "children": [
+      {
+        "text": "A of the different speeds that seismic waves travel through different states of rock."
+      }
+    ],
+    "type": "p",
+    "align": "left",
+    "id": "u0ISAZk0ct",
+    "indent": 1,
+    "checked": false,
+    "listStyleType": "todo"
+  },
+  {
+    "children": [
+      {
+        "text": "B seismic waves cannot penetrate any sections of magma."
+      }
+    ],
+    "type": "p",
+    "align": "left",
+    "id": "nusG_OtMRs",
+    "indent": 1,
+    "checked": false,
+    "listStyleType": "todo",
+    "listStart": 2
+  },
+  {
+    "children": [
+      {
+        "text": "C seismic waves only detect colder rock."
+      }
+    ],
+    "type": "p",
+    "align": "left",
+    "id": "NmeCDpLNDy",
+    "indent": 1,
+    "checked": true,
+    "listStyleType": "todo",
+    "listStart": 3
+  },
+  {
+    "children": [
+      {
+        "text": "D seismic waves travel very fast."
+      }
+    ],
+    "type": "p",
+    "align": "left",
+    "id": "C03mRaYILx",
+    "indent": 1,
+    "checked": false,
+    "listStyleType": "todo",
+    "listStart": 4
+  },
+  {
+    "type": "indicator",
+    "id": "5KTlhCOrlpDbvBKCPbmgQ",
+    "kind": "question",
+    "qtype": "mc-single",
+    "children": [
+      {
+        "text": ""
+      }
+    ]
+  },
+  {
+    "children": [
+      {
+        "text": "The death of the Yellowstone supervolcano"
+      }
+    ],
+    "type": "p",
+    "align": "left",
+    "id": "a7CIA5YtP7",
+    "checked": false
+  },
+  {
+    "children": [
+      {
+        "text": "A will occur in the next few years."
+      }
+    ],
+    "type": "p",
+    "align": "left",
+    "id": "K9sA6BcvQk",
+    "indent": 1,
+    "checked": false,
+    "listStyleType": "todo"
+  },
+  {
+    "children": [
+      {
+        "text": "B cannot ever be predicted."
+      }
+    ],
+    "type": "p",
+    "align": "left",
+    "id": "UDukHJGUfg",
+    "indent": 1,
+    "checked": false,
+    "listStyleType": "todo",
+    "listStart": 2
+  },
+  {
+    "children": [
+      {
+        "text": "C can be probably predicted due to the lack of fresh molten rock."
+      }
+    ],
+    "type": "p",
+    "align": "left",
+    "id": "eIqtRMzl_W",
+    "indent": 1,
+    "checked": false,
+    "listStyleType": "todo",
+    "listStart": 3
+  },
+  {
+    "children": [
+      {
+        "text": "D will follow the next major eruption."
+      }
+    ],
+    "type": "p",
+    "align": "left",
+    "id": "7G7Nm1XYpQ",
+    "indent": 1,
+    "checked": true,
+    "listStyleType": "todo",
+    "listStart": 4
+  },
+  {
+    "type": "indicator",
+    "id": "BV_5Jzq9xbLUC_AkMwrfW",
+    "kind": "question",
+    "qtype": "mc-single",
+    "children": [
+      {
+        "text": ""
+      }
+    ]
+  },
+  {
+    "children": [
+      {
+        "text": "The Yellowstone National Park"
+      }
+    ],
+    "type": "p",
+    "align": "left",
+    "id": "ec9KMDKDYU",
+    "checked": false
+  },
+  {
+    "children": [
+      {
+        "text": "A will probably have to be closed at certain times of danger."
+      }
+    ],
+    "type": "p",
+    "align": "left",
+    "id": "JnaTkvN0q0",
+    "indent": 1,
+    "checked": false,
+    "listStyleType": "todo"
+  },
+  {
+    "children": [
+      {
+        "text": "B will probably never open again due to the dangers."
+      }
+    ],
+    "type": "p",
+    "align": "left",
+    "id": "BqxRxcktBt",
+    "indent": 1,
+    "checked": true,
+    "listStyleType": "todo",
+    "listStart": 2
+  },
+  {
+    "children": [
+      {
+        "text": "C will never need to be closed in the lifetimes of people today."
+      }
+    ],
+    "type": "p",
+    "align": "left",
+    "id": "vXhRitqNBv",
+    "indent": 1,
+    "checked": false,
+    "listStyleType": "todo",
+    "listStart": 3
+  },
+  {
+    "children": [
+      {
+        "text": "D will stop wild animals entering it if possible."
+      }
+    ],
+    "type": "p",
+    "align": "left",
+    "id": "2YGXjQjTIC",
+    "indent": 1,
+    "checked": false,
+    "listStyleType": "todo",
+    "listStart": 4
+  },
+  {
+    "type": "indicator",
+    "id": "HQNdtS9Y0c2iIwOgYTprH",
+    "kind": "part",
+    "children": [
+      {
+        "text": ""
+      }
+    ]
+  },
+  {
+    "type": "h2",
+    "children": [
+      {
+        "text": "READING PASSAGE 3"
+      }
+    ],
+    "id": "XPLr05DGmk"
+  },
+  {
+    "children": [
+      {
+        "text": "You should spend about 20 minutes on "
+      },
+      {
+        "text": "Questions 27-40",
+        "bold": true
+      },
+      {
+        "text": " which are based on Reading Passage 3 below."
+      }
+    ],
+    "type": "p",
+    "id": "ij0cQ_4_-T"
+  },
+  {
+    "children": [
+      {
+        "text": "The Psychology of Wealth",
+        "fontSize": "20px",
+        "backgroundColor": "transparent",
+        "color": "rgb(0, 0, 0)",
+        "bold": true
+      }
+    ],
+    "type": "p",
+    "align": "center",
+    "id": "qat-flsVF3"
+  },
+  {
+    "children": [
+      {
+        "text": "What stops people from succeeding financially and having on-going prosperity in their life? The answer is generally focused around the belief that financial success is not a possibility. There are many people who have unconscious barriers that prevent them from having the wealth and abundance that they deserve."
+      }
+    ],
+    "type": "p",
+    "align": "left",
+    "id": "fh7BCcTwTG"
+  },
+  {
+    "children": [
+      {
+        "text": ""
+      }
+    ],
+    "type": "p",
+    "align": "left",
+    "id": "N5fMm3YOcQ"
+  },
+  {
+    "children": [
+      {
+        "text": "At a conscious level, most people think they are doing everything possible to achieve their goals. However, there still might be some unwitting part of them that does not believe they can obtain success. The more that unconscious part is avoided, the more a person will be blocked in their everyday life. Another problem is that, instead of focusing on all the possible ways to get"
+      }
+    ],
+    "type": "p",
+    "align": "left",
+    "id": "Hd5Qf8r1vX"
+  },
+  {
+    "children": [
+      {
+        "text": "rich, many people have an obsession about what they do not have. An interesting pattern develops in which they can become angry or resentful over their situation and this in turn can limit these people in their lives more and more. Individuals would find it so much easier to get ahead in life with a peaceful state of mind, rather than an angry or resentful one."
+      }
+    ],
+    "type": "p",
+    "align": "left",
+    "id": "dgqeoxY2Wl"
+  },
+  {
+    "children": [
+      {
+        "text": ""
+      }
+    ],
+    "type": "p",
+    "align": "left",
+    "id": "Iw4VsbXZQ4"
+  },
+  {
+    "children": [
+      {
+        "text": "A first step in understanding the unconscious patterning of a person’s financial situation is to explore the deeper nature of how they represent money. For example, a person with money issues may have had parents who lived in poverty, and they subsequently formed a ‘Depression Era’ mentality. An unconscious belief can develop that he or she will always have to struggle financially, because that is what their parents did. Alternatively, the person might have had a parent tell them over and over again that they will never be successful, and eventually they begin to believe it."
+      }
+    ],
+    "type": "p",
+    "align": "left",
+    "id": "TS9Rzt_TFV"
+  },
+  {
+    "children": [
+      {
+        "text": ""
+      }
+    ],
+    "type": "p",
+    "align": "left",
+    "id": "6tzyVj8xzb"
+  },
+  {
+    "children": [
+      {
+        "text": "It is very common for children to unconsciously form limiting beliefs around money at an early age. In the field of Neuro Linguistic Programming (NLP), these types of limiting beliefs are referred to as ‘imprints.’ An imprint is basically a memory that is formed at an early age, and can serve as a root for both the limiting and empowering beliefs that people form as children. Some of the beliefs that people may develop at early ages are not always healthy, and are created as a result of a traumatic or confusing experience that they have forgotten. How we unconsciously and consciously view the world in terms of money is often based on such beliefs."
+      }
+    ],
+    "type": "p",
+    "align": "left",
+    "id": "T9gGDDHfXW"
+  },
+  {
+    "children": [
+      {
+        "text": ""
+      }
+    ],
+    "type": "p",
+    "align": "left",
+    "id": "ynZyvfZSt4"
+  },
+  {
+    "children": [
+      {
+        "text": "A primary and fundamental psychological difference between those who do well financially and those who do not revolves around beliefs. For example, many people do not even view financial success as an option. They do not have the capability to open themselves up to all of the possibilities that are available for achieving prosperity and they will nearly always get stuck in a monthly routine, so that they are unwilling to take risks or try something different, because they are afraid that they will end up being even worse off than before."
+      }
+    ],
+    "type": "p",
+    "align": "left",
+    "id": "jsDiUEZWL8"
+  },
+  {
+    "children": [
+      {
+        "text": ""
+      }
+    ],
+    "type": "p",
+    "align": "left",
+    "id": "Y9SW8wvoLB"
+  },
+  {
+    "children": [
+      {
+        "text": "Another issue can be that people become over-absorbed with the idea of making money and this can be extremely unhealthy. Money does not determine who you are; it’s simply a resource. There is a term called ‘affluenza,’ which has been defined as “a painful, contagious, socially transmitted condition of overload, debt, anxiety and waste resulting from the dogged pursuit of more.” Affluenza is an unsustainable and seriously unhealthy addiction to personal and societal economic growth. It is most acute in those who inherit wealth and seem to have no purpose or direction. For those with wealth or for those who desire it more than anything, abandoning the urge for more can often be the key to being more successful, and certainly happier. Once people stop equating their self-worth with money, then the doors of possibility can swing open for them, because they are willing to try more things. Once they start feeling better about themselves, they become less fearful and can be open to trying something completely different."
+      }
+    ],
+    "type": "p",
+    "align": "left",
+    "id": "7YdLkHWe7h"
+  },
+  {
+    "children": [
+      {
+        "text": ""
+      }
+    ],
+    "type": "p",
+    "align": "left",
+    "id": "O1qf_hKz4Z"
+  },
+  {
+    "children": [
+      {
+        "text": "So, can money make people happy? Research shows that it does up to a point, after which there are diminishing returns, so that the extremely wealthy are no happier than the comfortably well off. Rich nations are generally happier than poor ones, but the relationship is far from consistent; other factors like political stability, freedom and security also play a part. Research likewise shows that the money-happiness connection seems to be stronger for people paid hourly than those on a salary. This is presumably because salaried people can more easily compensate with career satisfaction. Money can also impair the ability to enjoy the simple things in life, which rather offsets the happiness that wealth brings."
+      }
+    ],
+    "type": "p",
+    "align": "left",
+    "id": "v2VYB-zHFP"
+  },
+  {
+    "children": [
+      {
+        "text": ""
+      }
+    ],
+    "type": "p",
+    "align": "left",
+    "id": "TVfcq-jNRi"
+  },
+  {
+    "children": [
+      {
+        "text": "Money can also impair people’s satisfaction in their play and humanitarian works. When someone has done something out of the goodness of their heart, they can be insulted by offers of payment. Cognitive dissonance experiments show that paying people derisory amounts of money for their work results in them enjoying it less and doing it less well than if they had no pay at all. The capacity for monetary reward to undermine a person’s intrinsic pleasure in work performance has been demonstrated neurologically."
+      }
+    ],
+    "type": "p",
+    "align": "left",
+    "id": "Xv10xkpW49"
+  },
+  {
+    "children": [
+      {
+        "text": ""
+      }
+    ],
+    "type": "p",
+    "align": "left",
+    "id": "AT9vjePTcf"
+  },
+  {
+    "children": [
+      {
+        "text": "In conclusion, people need to realise that their own attitudes to wealth can affect their chances of acquiring both money and happiness. As a person begins to embrace self worth and open himself or herself up to the idea of what is possible, he or she will attract wealth and prosperity into their life. The outer world is truly a reflection of people’s inner worlds. If someone feels good inside, generally it will show on the outside and they will draw positive experiences into their life."
+      }
+    ],
+    "type": "p",
+    "align": "left",
+    "id": "TMAoUnaljg"
+  },
+  {
+    "type": "indicator",
+    "id": "oPOgzj3QnhXA36w-xfSas",
+    "kind": "subpart",
+    "children": [
+      {
+        "text": ""
+      }
+    ]
+  },
+  {
+    "children": [
+      {
+        "text": "Question 27-29",
+        "bold": true
+      }
+    ],
+    "type": "p",
+    "align": "left",
+    "id": "OOuU9dU2_L"
+  },
+  {
+    "children": [
+      {
+        "text": "Complete the notes below. "
+      }
+    ],
+    "type": "p",
+    "align": "left",
+    "id": "2bwM3QtpiU"
+  },
+  {
+    "children": [
+      {
+        "text": "Write "
+      },
+      {
+        "text": "NO MORE THAN TWO WORDS",
+        "bold": true
+      },
+      {
+        "text": " for each answer. "
+      }
+    ],
+    "type": "p",
+    "align": "left",
+    "id": "pZG61ksG8p"
+  },
+  {
+    "children": [
+      {
+        "text": "Write your answers in boxes "
+      },
+      {
+        "text": "27-29",
+        "bold": true
+      },
+      {
+        "text": " on your answer sheet."
+      }
+    ],
+    "type": "p",
+    "align": "left",
+    "id": "4V2EDuiJuZ"
+  },
+  {
+    "type": "indicator",
+    "id": "rcNvgpzRU4T74a77mDHNM",
+    "kind": "question",
+    "qtype": "fill-blank",
+    "children": [
+      {
+        "text": ""
+      }
+    ]
+  },
+  {
+    "children": [
+      {
+        "text": "Some people unwittingly reject the prospect of becoming rich; these "
+      },
+      {
+        "type": "blank",
+        "children": [
+          {
+            "text": "answer 27"
+          }
+        ],
+        "id": "i5kj2itoT4"
+      },
+      {
+        "text": " stop them from financial success."
+      }
+    ],
+    "type": "p",
+    "align": "left",
+    "id": "4SVUhYRJJr"
+  },
+  {
+    "children": [
+      {
+        "text": "Most people believe they do the best they can, but sometimes they don’t really believe in their potential."
+      }
+    ],
+    "type": "p",
+    "align": "left",
+    "id": "l6bbKD6ZQ9"
+  },
+  {
+    "children": [
+      {
+        "text": "If people do not face up to this lack of self-belief, they’ll encounter more and more obstacles. People can also have an "
+      },
+      {
+        "type": "blank",
+        "children": [
+          {
+            "text": "answer 28"
+          }
+        ],
+        "id": "Ldqlcn0Njg"
+      },
+      {
+        "text": " about their lack of possessions. Anger is a result, which hinders their progress as well."
+      }
+    ],
+    "type": "p",
+    "align": "left",
+    "id": "kfGLLLjL42"
+  },
+  {
+    "children": [
+      {
+        "text": "People whose parents were poor may feel they will also be poor."
+      }
+    ],
+    "type": "p",
+    "align": "left",
+    "id": "4W5NreTEVj"
+  },
+  {
+    "children": [
+      {
+        "text": "A "
+      },
+      {
+        "type": "blank",
+        "children": [
+          {
+            "text": "answer 29"
+          }
+        ],
+        "id": "0Wwj7HwY-J"
+      },
+      {
+        "text": " who is always negative about a child’s prospects may also be eventually believed."
+      }
+    ],
+    "type": "p",
+    "align": "left",
+    "id": "ZqCSfi1bxD"
+  },
+  {
+    "type": "indicator",
+    "id": "mAqh97uFkv4i4TJ0ToEUk",
+    "kind": "subpart",
+    "children": [
+      {
+        "text": ""
+      }
+    ]
+  },
+  {
+    "children": [
+      {
+        "text": "Question 30-34",
+        "bold": true
+      }
+    ],
+    "type": "p",
+    "align": "left",
+    "id": "rM7GWMv6Vj"
+  },
+  {
+    "children": [
+      {
+        "text": "Do the following statements agree with the views of the writer of the text?"
+      }
+    ],
+    "type": "p",
+    "align": "left",
+    "id": "DXhw193lmd"
+  },
+  {
+    "children": [
+      {
+        "text": "In boxes ",
+        "italic": true
+      },
+      {
+        "text": "30-34",
+        "bold": true,
+        "italic": true
+      },
+      {
+        "text": " on your answer sheet write:",
+        "italic": true
+      },
+      {
+        "text": " "
+      }
+    ],
+    "type": "p",
+    "align": "left",
+    "id": "0gJErMtr8Q"
+  },
+  {
+    "children": [
+      {
+        "text": "YES",
+        "bold": true
+      },
+      {
+        "text": " if the statement agrees with the writer’s views "
+      }
+    ],
+    "type": "p",
+    "align": "left",
+    "id": "ENI5zSAHCc",
+    "indent": 1,
+    "listStyleType": "disc"
+  },
+  {
+    "children": [
+      {
+        "text": "NO",
+        "bold": true
+      },
+      {
+        "text": " if the statement doesn’t agree with the writer’s views "
+      }
+    ],
+    "type": "p",
+    "align": "left",
+    "id": "5XKBzqAGrh",
+    "indent": 1,
+    "listStyleType": "disc"
+  },
+  {
+    "children": [
+      {
+        "text": "NOT GIVEN",
+        "bold": true
+      },
+      {
+        "text": " if it is impossible to say what the writer thinks about this"
+      }
+    ],
+    "type": "p",
+    "align": "left",
+    "id": "9VhYaTig-H",
+    "indent": 1,
+    "listStyleType": "disc"
+  },
+  {
+    "type": "indicator",
+    "id": "7efsz-SLr1oHH3KqUyP9W",
+    "kind": "question",
+    "qtype": "ynng",
+    "children": [
+      {
+        "text": ""
+      }
+    ]
+  },
+  {
+    "type": "pair",
+    "id": "ztttnfoqShmU3_CesIf59",
+    "answer": "Yes",
+    "children": [
+      {
+        "text": "30 A person can develop unhelpful imprints about money when a child."
+      }
+    ]
+  },
+  {
+    "type": "pair",
+    "id": "VO569q7FE-a0CMO55ZxuI",
+    "answer": "No",
+    "children": [
+      {
+        "text": "31 Although important, belief is not a key part of whether someone can become financially successful."
+      }
+    ]
+  },
+  {
+    "type": "pair",
+    "id": "Prixjhap-hxgyrlNtD8be",
+    "answer": "Yes",
+    "children": [
+      {
+        "text": "32 Those people stuck in a monthly routine are the most likely to try something different."
+      }
+    ]
+  },
+  {
+    "type": "pair",
+    "id": "bLUG91CKmGUnyo18t-amu",
+    "answer": "Not Given",
+    "children": [
+      {
+        "text": "33 The problem of ‘affluenza’ has been in the media a lot recently."
+      }
+    ]
+  },
+  {
+    "type": "pair",
+    "id": "XXzteeGK0VqYHS99phbHq",
+    "answer": "No",
+    "children": [
+      {
+        "text": "34 ‘Affluenza’ is more common in people who have not had to work for their money."
+      }
+    ]
+  },
+  {
+    "type": "indicator",
+    "id": "_It2ZWCqROKkk8ScGXiH_",
+    "kind": "subpart",
+    "children": [
+      {
+        "text": ""
+      }
+    ]
+  },
+  {
+    "type": "p",
+    "children": [
+      {
+        "text": "Question 35-40",
+        "bold": true
+      }
+    ],
+    "id": "YD5h-osFui"
+  },
+  {
+    "children": [
+      {
+        "text": "Complete the summary below. "
+      }
+    ],
+    "type": "p",
+    "id": "buMKxJ7ZlA"
+  },
+  {
+    "children": [
+      {
+        "text": "Write "
+      },
+      {
+        "text": "NO MORE THAN THREE WORDS",
+        "bold": true
+      },
+      {
+        "text": " from the text for each answer. "
+      }
+    ],
+    "type": "p",
+    "id": "_hd6Zvqpp2"
+  },
+  {
+    "children": [
+      {
+        "text": "Write your answers in boxes ",
+        "italic": true
+      },
+      {
+        "text": "35-40",
+        "bold": true,
+        "italic": true
+      },
+      {
+        "text": " on your answer sheet.",
+        "italic": true
+      }
+    ],
+    "type": "p",
+    "id": "VcLhM3uRIr"
+  },
+  {
+    "type": "indicator",
+    "id": "IDymeFJiuXUYTMqnilh7X",
+    "kind": "question",
+    "qtype": "fill-blank",
+    "children": [
+      {
+        "text": ""
+      }
+    ]
+  },
+  {
+    "children": [
+      {
+        "text": "Money and Happiness",
+        "bold": true
+      }
+    ],
+    "type": "p",
+    "id": "VJTNEalsmg"
+  },
+  {
+    "children": [
+      {
+        "text": ""
+      },
+      {
+        "type": "blank",
+        "children": [
+          {
+            "text": "Answer 35"
+          }
+        ],
+        "id": "C8gdcMk3_u"
+      },
+      {
+        "text": " mean people are not happier with wealth beyond a certain amount. Rich countries are happier than poor ones, but this is simplistic, due to other relevant "
+      },
+      {
+        "type": "blank",
+        "children": [
+          {
+            "text": "answer 36"
+          }
+        ],
+        "id": "3NGiduE0PF"
+      },
+      {
+        "text": " Salaried workers have been shown to be happier than wage-paid workers, maybe due to "
+      },
+      {
+        "type": "blank",
+        "children": [
+          {
+            "text": "answer 37"
+          }
+        ],
+        "id": "o8fAyBRHkH"
+      },
+      {
+        "text": " Rich people also sometimes do not enjoy life’s "
+      },
+      {
+        "type": "blank",
+        "children": [
+          {
+            "text": "answer 38"
+          }
+        ],
+        "id": "Gp70lVsOVp"
+      },
+      {
+        "text": "."
+      }
+    ],
+    "type": "p",
+    "id": "llzuaLV4_R"
+  },
+  {
+    "children": [
+      {
+        "text": "Money can also relate to how people approach doing things and "
+      },
+      {
+        "type": "blank",
+        "children": [
+          {
+            "text": "answer 39"
+          }
+        ],
+        "id": "X1mDTRv-U0"
+      },
+      {
+        "text": " have proved this. The complex relationship between a "
+      },
+      {
+        "type": "blank",
+        "children": [
+          {
+            "text": "answer 40"
+          }
+        ],
+        "id": "jgzV0J800R"
+      },
+      {
+        "text": " and enjoyment of work has also been proved."
+      }
+    ],
+    "type": "p",
+    "id": "wtXUW6_Nur"
+  },
+  {
+    "children": [
+      {
+        "text": "Changing their attitudes to wealth can make some people happier and allow them to acquire money more easily."
+      }
+    ],
+    "type": "p",
+    "id": "IZFttxtC3s"
+  }
+]

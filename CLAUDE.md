@@ -27,6 +27,13 @@
 - Package trong `packages/*` build bằng tsup ra ESM (Next.js) + CJS (NestJS); app phải build package trước (turbo `dependsOn: ["^build"]` đã lo).
 - Comment, message lỗi, chuỗi UI bằng tiếng Việt (giống LC).
 
+## exam-core (`@lang/exam-core`)
+
+- Logic thuần dữ liệu của đề (chuyển từ LC), **không phụ thuộc platejs/React**; kiểu tài liệu là `ExamElement`/`ExamValue`. Plugin Plate và UI editor/simulator ở lang-app. Đánh số câu luôn theo `buildPlan` (từ 1 mỗi section).
+- Luồng server: Save → `validateSectionShape` (lỗi thì 400), `extractStructure` (→ `exam_parts`/`exam_questions`), `stripAnswers(value, seedNgẫuNhiên)` (→ `content_public`); publish → `hasErrors(validateSection(raw))` thì 422; phục vụ lượt làm → `shuffleOrdering(content_public, order_seed, questions)`; nộp → `gradeResponses(questions, responses)` (câu hỏi dựng từ dòng `exam_questions`). Preview client dùng `gradeExam(plan, responses)` – cùng logic.
+- Câu trả lời (`Responses`): `value`/`picks`/`order` theo số câu (pick-n, MC, ordering, polytomous theo số câu đầu). Ordering/Polytomous dùng `key` của dòng trong content_public, không dùng vị trí hiển thị; lựa chọn cặp ghép lấy từ `pairChoices`.
+- Test đối chiếu `gradeExam` gốc của LC nằm ở `src/testing/lc-grading.ts`; đổi quy tắc chấm có chủ đích thì sửa cả bản đó và ghi lý do. Fixture trong `src/__fixtures__` (prettier bỏ qua).
+
 ## lang-api (NestJS)
 
 - Env mới: thêm vào `src/config/env.validation.ts` (kiểm tra lúc khởi động, không có giá trị dự phòng cho secret) **và** `.env.example`.
