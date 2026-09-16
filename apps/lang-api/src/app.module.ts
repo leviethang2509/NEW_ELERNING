@@ -1,8 +1,10 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { APP_FILTER } from '@nestjs/core';
+import { ScheduleModule } from '@nestjs/schedule';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AdminModule } from './admin/admin.module';
+import { AttemptsModule } from './attempts/attempts.module';
 import { AuthModule } from './auth/auth.module';
 import { AllExceptionsFilter } from './common/filters/all-exceptions.filter';
 import { EnvironmentVariables, validateEnv } from './config/env.validation';
@@ -24,6 +26,8 @@ import { UsersModule } from './users/users.module';
       cache: true,
       validate: validateEnv,
     }),
+    // Cron chốt section quá giờ (`AttemptsScheduler`).
+    ScheduleModule.forRoot(),
     TypeOrmModule.forRootAsync({
       inject: [ConfigService],
       useFactory: (config: ConfigService<EnvironmentVariables, true>) => ({
@@ -48,6 +52,7 @@ import { UsersModule } from './users/users.module';
     StorageModule,
     ExamCatalogModule,
     ExamsModule,
+    AttemptsModule,
     AdminModule,
     // Đăng ký guard toàn cục: mọi route cần đăng nhập trừ route @Public().
     AuthModule,

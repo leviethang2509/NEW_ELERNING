@@ -3,6 +3,7 @@ import {
   BadRequestException,
   Logger,
   NotFoundException,
+  PayloadTooLargeException,
   UnprocessableEntityException,
 } from '@nestjs/common';
 import { AllExceptionsFilter } from './all-exceptions.filter';
@@ -52,6 +53,15 @@ describe('AllExceptionsFilter', () => {
       statusCode: 422,
       message: 'Đề còn lỗi',
       issues,
+    });
+  });
+
+  it('file vượt giới hạn của multer: message tiếng Việt', () => {
+    const { host, json } = mockHost();
+    filter.catch(new PayloadTooLargeException('File too large'), host);
+    expect(json).toHaveBeenCalledWith({
+      statusCode: 413,
+      message: 'File vượt quá dung lượng cho phép',
     });
   });
 

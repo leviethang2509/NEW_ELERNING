@@ -16,6 +16,8 @@ export interface ErrorBody {
   issues?: unknown[];
 }
 
+const FILE_TOO_LARGE = 'File vượt quá dung lượng cho phép';
+
 /**
  * Chuẩn hoá lỗi thành `{ statusCode, message }` như lightc-general. Lỗi không
  * mong đợi được log đầy đủ nhưng không lộ chi tiết ra client.
@@ -32,9 +34,12 @@ export class AllExceptionsFilter implements ExceptionFilter {
       const statusCode = exception.getStatus();
       const body = exception.getResponse();
       const { message = exception.message, issues } =
-        typeof body === 'string'
-          ? { message: body }
-          : (body as Partial<ErrorBody>);
+        statusCode === HttpStatus.PAYLOAD_TOO_LARGE
+          ? // Multer chặn file vượt `limits.fileSize` với message tiếng Anh.
+            { message: FILE_TOO_LARGE }
+          : typeof body === 'string'
+            ? { message: body }
+            : (body as Partial<ErrorBody>);
       response.status(statusCode).json({
         statusCode,
         message,

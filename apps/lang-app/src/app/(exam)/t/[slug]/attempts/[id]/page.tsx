@@ -1,7 +1,10 @@
-import { ComingSoon } from '@/components/ComingSoon';
-import { vi } from '@/i18n/vi';
+import { AttemptRunner } from '@/components/exam-taking/AttemptRunner';
 
-// Trang làm bài thi làm ở Step 13.
-export default function AttemptPage({ params }: { params: { slug: string } }) {
-  return <ComingSoon title={vi.nav.exams} backHref={`/t/${params.slug}`} />;
+// Trang thi toàn màn hình (layout `(exam)` đã bọc RequireAuth).
+export default function AttemptPage({
+  params,
+}: {
+  params: { slug: string; id: string };
+}) {
+  return <AttemptRunner slug={params.slug} attemptId={params.id} />;
 }

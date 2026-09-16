@@ -10,15 +10,9 @@ import {
   PrimaryGeneratedColumn,
   Unique,
 } from 'typeorm';
-import { sqlInList } from '../common/sql';
+import { numericTransformer, sqlInList } from '../common/sql';
 import { ExamPart } from './exam-part.entity';
 import { ExamSection } from './exam-section.entity';
-
-/** Postgres trả `numeric` dạng chuỗi; đổi về number khi đọc. */
-const numericTransformer = {
-  to: (value: number) => value,
-  from: (value: string | null) => (value === null ? null : Number(value)),
-};
 
 /**
  * Một số câu trong section (đánh số từ 1) kèm đáp án, tách bằng

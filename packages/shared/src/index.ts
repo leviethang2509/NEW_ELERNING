@@ -1,5 +1,6 @@
 export * from './admin';
 export * from './age';
+export * from './attempt';
 export * from './auth';
 export * from './exam';
 export * from './exam-catalog';

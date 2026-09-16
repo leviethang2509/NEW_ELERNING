@@ -20,26 +20,27 @@
 | 9 | `packages/exam-core` | ✅ | 2026-09-16 | Đã commit (`350ad90 feat: exam core`); package thuần, không có migration/env |
 | 10 | Upload media (R2) | ✅ | 2026-09-16 | Đã commit (`42adeb4 feat: r2 storage`); 6 biến `R2_*` (tuỳ chọn) đã có ở `apps/lang-api/.env` + `deploy/.env`, **VPS `/opt/lang-simulator/.env` chưa cập nhật**; không có migration |
 | 11 | Danh mục đề & Loại đề | ✅ | 2026-09-16 | Đã commit (`fe39e4a feat: exam category and blueprint`); migration `CreateExamCatalog` + `SeedExamCatalog` đã chạy trên DB dùng chung; không có env mới |
-| 12 | Đề thi, trình soạn thảo & version | ✅ | 2026-09-16 | **Chưa commit**; migration `CreateExams` (gồm `exam_attempts`) đã chạy trên DB dùng chung; không có env mới |
-| 13 | Làm bài thi & chấm tự động | ⬜ | | **Step tiếp theo** |
-| 14 | Chấm bài thủ công | ⬜ | | |
+| 12 | Đề thi, trình soạn thảo & version | ✅ | 2026-09-16 | Đã commit (`594be7e feat: exam compose`); migration `CreateExams` (gồm `exam_attempts`) đã chạy trên DB dùng chung; không có env mới |
+| 13 | Làm bài thi & chấm tự động | ✅ | 2026-09-16 | **Chưa commit**; migration `CreateAttemptSectionsAndAnswers` đã chạy trên DB dùng chung; thêm dependency `@nestjs/schedule` 4; không có env mới |
+| 14 | Chấm bài thủ công | ⬜ | | **Step tiếp theo** |
 | 15 | Hoàn thiện & nghiệm thu tổng | ⬜ | | |
 
-### Bàn giao cho phiên tiếp theo (cuối phiên 2026-09-16, sau Step 12)
+### Bàn giao cho phiên tiếp theo (cuối phiên 2026-09-16, sau Step 13)
 
 **Trạng thái repo**
-- Nhánh `main` tại `fe39e4a feat: exam category and blueprint`. **Step 12 chưa commit**: `packages/shared/src/exam-content.ts` (+ `exam-catalog.ts` thêm `examCount`, `index.ts`), `packages/exam-core` (giới hạn id indicator 64 ký tự), lang-api (`exams/*`, `attempts/exam-attempt.entity.ts`, migration `1789567469674-CreateExams`, `common/validation.ts`, `common/sql.ts`, `common/pipes.ts`, filter, `main.ts`, `exam-catalog` đếm số đề, `package.json` thêm `@lang/exam-core`), lang-app (`components/plate/*`, `components/exam-editor/*`, `components/exams/*`, 3 trang `t/[slug]/dashboard/exams/**`, `lib/exam-api.ts`, `lib/json-file.ts`, `lib/api.ts`, `FormAlert` tone `info`, `ExamBlueprintsView`, `vi.ts`, `package.json` thêm Plate), `pnpm-lock.yaml`, CLAUDE.md, plan, file này.
-- Push `main` là deploy; lần deploy tới vẫn cần kiểm image có `sharp` (xem mục chờ người dùng). Plate chỉ ở lang-app (Next build đã chạy local, bundle trang soạn đề ~342 kB).
-- Migration Step 12 **đã chạy trên DB dùng chung** (chỉ thêm bảng; container :3001 chạy code cũ không bị ảnh hưởng). `migration:generate` sau đó → "No changes".
-- Không có server nào đang chạy; dữ liệu test (`step12-*`, tenant `step12-a`/`step12-b`) và file R2 test đã xoá. DB: 1 System Owner, 0 tenant, 0 đề/bài làm, danh mục `EN`/`JA`, loại đề `TOEIC`/`IELTS`/`JLPT_N2` (8 module).
+- Nhánh `main` tại `594be7e feat: exam compose` (Step 12 đã commit). **Step 13 chưa commit**: `packages/shared/src/attempt.ts` (+ `index.ts`), lang-api (`attempts/*` mới: entity section/answer, `attempt-grading.ts`, `attempts.service(.spec).ts`, `learner-exams.service.ts`, `learner.controller.ts`, `attempts.scheduler.ts`, `attempts.module.ts`, `dto/`; `exam-attempt.entity.ts` thêm index; migration `1789572935771-CreateAttemptSectionsAndAnswers`; `app.module.ts` (ScheduleModule); `common/sql.ts` (`numericTransformer`); `exams.service.ts` (`toListItems` public); `all-exceptions.filter(.spec).ts` (413); `package.json` + `pnpm-lock.yaml` (`@nestjs/schedule`)), lang-app (`components/exam-simulator/*` chuyển từ `exam-editor`, `components/exam-taking/*`, `components/learner/*`, `lib/learner-api.ts`, trang `(site)/t/[slug]/exams/[examId]`, `(site)/t/[slug]/attempts/[id]/result`, `(exam)/t/[slug]/attempts/[id]`, `TenantHome.tsx`, `PreviewDialog.tsx`, `middleware.ts`, `vi.ts`), CLAUDE.md, plan, file này.
+- Migration Step 13 **đã chạy trên DB dùng chung** (chỉ thêm bảng + index; container :3001 chạy code cũ không bị ảnh hưởng). `migration:generate` sau đó → "No changes".
+- Không có server nào đang chạy; dữ liệu test (`step13-*`) và file ghi âm test trên R2 đã xoá. DB: 1 System Owner, 0 tenant, 0 đề/bài làm.
 
-**Bắt đầu Step 13**
-1. Đọc plan Step 13, mục 4.5, "Cập nhật khi làm Step 12" và lưu ý cuối nhật ký Step 12 bên dưới.
-2. `exam_attempts` **đã có** (entity `apps/lang-api/src/attempts/exam-attempt.entity.ts`): Step 13 chỉ thêm `exam_attempt_sections`, `exam_attempt_answers` (nếu cần đổi cột `exam_attempts` thì thêm migration mới, không sửa `CreateExams`).
-3. Bắt đầu attempt phải khoá đọc `exams` (`FOR SHARE`) và lấy `current_version`; phục vụ nội dung bằng `content_public` + `shuffleOrdering(order_seed)`, chấm bằng `exam_questions`. Đề xoá mềm/không `published` không cho bắt đầu.
-4. Có thể dùng lại `ExamSimulator`/`SimulatorState` (`components/exam-editor`) cho trang thi, nhưng hiện chúng đọc `raw_data` qua `buildPlan` + `gradeExam` ở client — trang thi phải đọc `content_public` (không có đáp án) và chấm ở server.
+**Bắt đầu Step 14**
+1. Đọc plan Step 14 và khối "Cập nhật khi làm Step 13" (ngay trên Step 14).
+2. `exam_attempt_answers` đã có đủ cột chấm tay (`score`, `comment`, `graded_by`, `graded_at`, `recording_key`); mọi câu (kể cả bỏ trống) đều có dòng sau khi nộp. `exam_attempts.manual_count` đã đếm sẵn; Step 14 tăng `manual_graded_count` và chuyển `submitted → graded` (update có điều kiện).
+3. `AttemptsService.recordingUrl` hiện chỉ cho chủ lượt làm; Step 14 mở cho người chấm (GRADER_ROLES, không phải bài của chính mình). Trang kết quả học viên (`AttemptResultView`) đã hiện điểm/nhận xét khi `graded_at` có giá trị.
+4. Menu dashboard còn link `grading` chưa làm (prefetch 404 trong console).
 
 ---
+
+_Bàn giao sau Step 12 (giữ để tham khảo):_ `exam_attempts` tạo sớm ở Step 12; bắt đầu attempt khoá `exams FOR SHARE`; simulator tách để đọc content_public — đều đã làm ở Step 13.
 
 _Bàn giao cũ (cuối phiên Step 8, giữ để tham khảo):_
 
@@ -76,7 +77,7 @@ Kiểm tra sau khi chuyển DB (2026-09-15):
 - `pnpm --filter lang-api migrate` và `node dist/database/migrate.js` bằng user `lang_simulator` → tạo `public.typeorm_migrations` (owner `lang_simulator`), chạy lại báo đã mới nhất.
 - `node dist/main.js` (PORT=3199) → `/api/health` 200 `{"status":"ok","database":"up"}`.
 
-### Đang chờ người dùng (cập nhật 2026-09-16)
+### Đang chờ người dùng (cập nhật 2026-09-16, sau Step 13)
 
 1. **VPS `/opt/lang-simulator/.env`: thêm 6 biến `R2_*`** (đã soạn sẵn trong `deploy/.env` trên máy dev):
    ```bash
@@ -87,7 +88,9 @@ Kiểm tra sau khi chuyển DB (2026-09-15):
 2. Lần deploy tới **kiểm image Docker có `sharp`** (dependency native, máy dev không có Docker): mở PR để workflow build thử **trước khi** push `main` (push `main` = deploy).
 3. Xem giao diện bằng mắt: `/login`, `/register`, `/me`, `/me/account`, `/admin`, `/admin/users`, `/admin/tenants`, `/admin/plans` (Step 5–7), `/`, `/me/tenants/new`, `/t/{slug}`, `/t/{slug}/dashboard`, `/t/{slug}/dashboard/members` (Step 8) `/t/{slug}/dashboard/media` + ô Logo trong form đăng ký trung tâm (Step 10), `/admin/exam-categories`, `/admin/exam-blueprints`, `/t/{slug}/dashboard/exam-categories`, `/t/{slug}/dashboard/exam-blueprints` (Step 11: bộ icon/màu, form module kéo thả), `/t/{slug}/dashboard/exams`, `…/exams/{id}/edit`, `…/exams/{id}/versions` (Step 12: trình soạn, tab section, xem trước, trang version; trên điện thoại thanh công cụ chiếm nhiều chỗ). Mình mới kiểm bằng ảnh chụp Chrome headless. Phần giao diện Step 8 do mình tự quyết (người dùng giao), xem plan Step 8 mục "Cập nhật khi làm Step 8".
 4. VPS `/opt/lang-simulator/.env`: **không bắt buộc** thêm `JWT_ACCESS_EXPIRES_IN`, `REFRESH_EXPIRES_IN`, `COOKIE_SECURE` (đều có mặc định); `deploy/.env` trên máy dev đã thêm.
-5. Không bắt buộc: `REVOKE CONNECT ON DATABASE "lightc-general" FROM PUBLIC` (hiện `lang_simulator` vẫn CONNECT được DB của LC nhưng không có quyền trên bảng); giới hạn IP truy cập cổng 5432.
+5. **Ghi âm Speaking cần HTTPS**: trình duyệt chặn micro trên `http://160.25.166.163:3001` (chỉ cho HTTPS hoặc localhost), ô ghi âm sẽ báo không hỗ trợ. Muốn thử trên VPS trước khi có domain + SSL: Chrome `chrome://flags/#unsafely-treat-insecure-origin-as-secure` thêm `http://160.25.166.163:3001`. Cần chốt domain + SSL trước nghiệm thu Step 15.
+6. Xem giao diện Step 13 bằng mắt: `/t/{slug}` (lượt làm gần đây + thẻ đề), `/t/{slug}/exams/{id}`, trang thi `/t/{slug}/attempts/{id}` (màn hình hướng dẫn, làm bài, đồng hồ, ghi âm, nộp toàn bài), `/t/{slug}/attempts/{id}/result`.
+7. Không bắt buộc: `REVOKE CONNECT ON DATABASE "lightc-general" FROM PUBLIC` (hiện `lang_simulator` vẫn CONNECT được DB của LC nhưng không có quyền trên bảng); giới hạn IP truy cập cổng 5432.
 
 Đã xong ngày 2026-09-16: commit Step 9 (`350ad90 feat: exam core`) và Step 10 (`42adeb4 feat: r2 storage`); xoá `SEED_OWNER_PASSWORD` khỏi `apps/lang-api/.env` (đã kiểm lại tên biến, chỉ còn `SEED_OWNER_EMAIL`/`NAME`/`DOB`).
 
@@ -96,6 +99,53 @@ Kiểm tra sau khi chuyển DB (2026-09-15):
 ---
 
 ## Nhật ký
+
+### Step 13 – Làm bài thi & chấm tự động (✅ 2026-09-16)
+
+**Quyết định (người dùng chọn phương án đề xuất, đã ghi vào plan)**
+- Mỗi người 1 lượt làm dở mỗi đề; màn hình hướng dẫn/chờ section có nút "Nộp toàn bài".
+- Đề lưu trữ/xoá mềm khi đang làm dở: vẫn làm tiếp được, chỉ chặn lượt mới; lịch sử + kết quả vẫn xem được.
+- Ghi âm nhận `audio/webm` + `audio/mp4` (Safari).
+- Trang kết quả chỉ mở khi đã nộp hết section.
+
+**Đã làm**
+- `@lang/shared/attempt.ts`: `ATTEMPT_GRACE_SECONDS` (10), giới hạn ghi âm/câu trả lời, `AttemptResponses`, kiểu `LearnerExamItem/List/Detail`, `LearnerAttemptItem`, `AttemptView` (`serverNow`, `current` = intro hoặc content + responses + recordings), `AttemptResult`.
+- lang-api:
+  - Entity + migration `CreateAttemptSectionsAndAnswers1789572935771` (generate): `exam_attempt_sections` (UNIQUE(attempt, sort_order), CHECK status, index một phần `deadline_at` đang làm, `responses` jsonb, `order_seed`), `exam_attempt_answers` (UNIQUE(attempt, question), `score numeric(4,1)`, `recording_key`, `graded_by` SET NULL), index unique một phần `UQ_exam_attempts_in_progress`. FK tới section/câu hỏi NO ACTION. Default jsonb viết đúng thứ tự khoá Postgres lưu (không thì generate báo lệch).
+  - `AttemptsService`: tạo lượt (khoá đề `FOR SHARE`, đề phải publish, 409 khi đang có lượt dở / unique violation), xem (lazy chốt), bắt đầu section (phải là section tới lượt, idempotent), autosave (update có điều kiện `status` + `deadline_at ≥ now − 10s`), nộp section (idempotent khi đã chốt), nộp toàn bài, ghi âm (kiểm trước khi đẩy R2, kiểm lại trong transaction, ghi lại xoá file cũ, lỗi thì xoá file vừa đẩy), presigned URL, kết quả (không đáp án, không đúng/sai từng câu), `finalizeExpired` cho cron. `attempt-grading.ts`: `gradeSection` (dùng `gradeResponses` của exam-core) + `responseOf` + `isAttemptResponses`.
+  - `LearnerExamsService`: danh sách đề publish (phân trang, lọc, bộ lọc danh mục/loại đề đang có đề), chi tiết đề (đề không còn mở chỉ xem được khi đã từng làm), lượt làm của tôi. `LearnerController` (`t/:slug/learner`), `AttemptsScheduler` (`@Cron` mỗi phút, không chạy chồng).
+  - `AllExceptionsFilter`: 413 → "File vượt quá dung lượng cho phép". `numericTransformer` chuyển sang `common/sql.ts`.
+  - Test (+12): tạo lượt chỉ trả intro; 1 lượt dở, đề lưu trữ 409, nháp 404; người khác 404; section sau khi section trước chưa nộp 409; nội dung không lộ `checked/answer/num/answerKey` và chữ đáp án, ordering có `key` đã xáo; chấm server khớp `gradeExam` + ghi đủ dòng câu trả lời (pick-n chung lựa chọn) + trạng thái `submitted` khi có câu tay + nộp lại không cộng dồn; quá hạn từ chối lưu, trong 10s vẫn nhận, lazy chốt bằng câu trả lời đã lưu; cron chỉ chốt lượt quá hạn; nộp toàn bài + kết quả không có đáp án; ghi âm (mime, câu không phải Speaking, chưa bắt đầu không đẩy file, ghi lại xoá file cũ, nộp giữ ghi âm, URL chỉ chủ lượt làm); dạng câu trả lời; filter 413.
+- lang-app:
+  - `components/exam-simulator` (chuyển từ `exam-editor`): `SimulatorProvider` thêm chế độ thi (`exam`: câu trả lời ban đầu, `onChange`, `onTabChange`, `onSubmit`, `locked`, `renderSpeaking`, cờ lưu localStorage); các ô nhập đọc giá trị ban đầu và đánh dấu đã trả lời; dòng có `key` dùng làm chỉ số và không xáo lại; `ExamIntro`; nút "Nộp section" luôn hỏi lại ở chế độ thi. Chuỗi chuyển sang `vi.simulator`.
+  - `components/exam-taking`: `AttemptRunner` (trạng thái từ server, bù lệch giờ, xong thì sang trang kết quả), `SectionIntroScreen` (báo section vừa nộp/tự nộp, hướng dẫn, bắt đầu, nộp toàn bài có xác nhận, danh sách section), `SectionWorkspace` (autosave 3s + đổi tab + ẩn trang, một request lưu mỗi lúc, 409 → tải lại, hết giờ tự nộp + thử lại khi lỗi mạng, cảnh báo rời trang khi chưa lưu), `Countdown`, `SpeakingRecorder` (MediaRecorder, giới hạn `seconds`, nghe lại, ghi lại, tải lên ngay, báo khi trình duyệt không cho ghi âm), `ExamHeader`.
+  - `components/learner`: `LearnerExamList` (thẻ đề, tìm/lọc, phân trang), `MyRecentAttempts`, `LearnerExamDetailView` (bắt đầu/làm tiếp/đề đã đóng, cấu trúc đề, lịch sử), `AttemptResultView`, badge/link lượt làm. Trang `/t/{slug}/exams/[examId]`, `/t/{slug}/attempts/[id]/result`, `(exam)/t/{slug}/attempts/[id]`; middleware chặn thêm `/t/:slug/exams/*`.
+
+**Sai khác so với plan**
+- Bảng `exam_attempts` đã có từ Step 12; Step 13 chỉ thêm 2 bảng + index unique một phần.
+- API thêm `GET learner/attempts` (lượt làm gần đây ở trang trung tâm) và `POST attempts/:id/finish` (nộp toàn bài); route đặt dưới `t/:slug/learner/*`.
+- `exam_attempt_answers` ghi cho mọi câu (plan chỉ nói "sinh khi nộp section"); câu Speaking có dòng từ lúc tải ghi âm.
+- Câu chấm tay bỏ trống vẫn chờ chấm (không tự cho 0) — theo plan, có thể đổi ở Step 14 nếu muốn.
+- Ghi âm chưa dùng được trên VPS vì HTTP (xem mục chờ người dùng số 5).
+
+**Kiểm tra đã chạy**
+- `pnpm build`, `lint`, `typecheck`, `test` (251: 45 shared + 49 exam-core + 157 api), `format:check` → OK (chạy lại sau lần sửa cuối).
+- `pnpm --filter lang-api migrate` trên DB dùng chung → chạy `CreateAttemptSectionsAndAnswers`; `migration:generate` lại → "No changes" (lần đầu báo lệch default jsonb, đã sửa entity).
+- Kiểm ngược unit test: bỏ điều kiện thứ tự section và điều kiện quá hạn → 3 test fail, đã khôi phục.
+- Bản build (api `:3101`, `next start :3100`), script Node qua rewrite `/api` + SQL, **71/71 đạt**: khách 401, người ngoài 403; học viên thấy 1 đề publish (không thấy nháp), số liệu thẻ đề, bộ lọc, lọc tên có `%`, đề nháp 404; tạo lượt → intro, lượt thứ hai 409, người khác 404; section 2 trước 409; deadline +45 phút, bắt đầu lại không đổi; content không lộ đáp án, ordering có `key` đã xáo, tải lại cùng thứ tự; câu trả lời sai dạng/trường lạ 400; autosave + tải lại giữ; ghi âm thật trên R2 private (video 400, không phải Speaking 400, > 10MB 413 tiếng Việt, webm 201, key đúng prefix, presigned tải được, người khác 404, ghi lại mp4 → file cũ bị xoá khỏi R2); sửa đề khi có bài làm → version 2, lượt làm vẫn đọc version 1; nộp section 1 → 6/6, 7 dòng câu trả lời, speaking giữ ghi âm; kết quả khi chưa xong 409; section 2: trong 10s vẫn lưu, quá hạn 409, GET tự chốt bằng câu trả lời đã lưu (6/6, `auto_submitted`), lượt làm 12/12 + 2 câu chờ chấm, kết quả theo section không có đáp án/bài làm; lượt 2 dùng version 2, **cron chốt section quá hạn** (chờ < 75s); lưu trữ đề: ẩn khỏi danh sách, chi tiết vẫn xem (isOpen=false), người chưa làm 404, vẫn làm tiếp, nộp toàn bài, lượt mới 409; lượt làm của tôi + lọc.
+- Chrome headless (puppeteer-core, micro giả), **44/44 đạt**: trang trung tâm (lượt làm gần đây, thẻ đề), trang đề → bắt đầu → màn hình hướng dẫn (không lộ nội dung) → bắt đầu section, đồng hồ ~45:00; trả lời radio, 2 blank, gắn cờ, 2 select, sắp xếp ordering bằng nút lên/xuống, ghi âm 2s → tải lên → nghe lại; "Đã lưu" + DB có câu trả lời; **tải lại giữa chừng giữ câu trả lời, ghi âm, cờ, thứ tự, thời gian không reset**; nộp section có xác nhận → màn hình section 2 báo đã nộp, DB 6/6; section 2 trả lời + autosave, đặt deadline còn 5s → đồng hồ đếm theo server → **hết giờ tự nộp → trang kết quả** (6/6, 2/6, badge hết giờ, chờ chấm, không có đáp án); 390px: trang trung tâm, hướng dẫn, vùng làm bài, kết quả không tràn ngang; nộp toàn bài từ màn hình chờ; xem trước trong trình soạn đề vẫn chấm ở client (1 / 6, có Làm lại); console chỉ có 404 favicon/prefetch `grading`.
+- Xoá cứng tenant test có lượt làm + câu trả lời → CASCADE chạy (FK NO ACTION đúng); file R2 test đã xoá.
+- Đã xem ảnh chụp: trang trung tâm, trang đề, màn hình hướng dẫn, vùng làm bài (desktop Part 2 có ghi âm, điện thoại), kết quả.
+
+**Lỗi tự phát hiện và đã sửa**
+- Multer chặn file ghi âm quá cỡ với message tiếng Anh "File too large" → `AllExceptionsFilter` đổi 413 sang tiếng Việt.
+- `migration:generate` báo lệch default jsonb `responses` do Postgres sắp lại khoá → viết default theo thứ tự đã lưu.
+- StrictMode (dev) gỡ rồi dựng lại effect làm cờ `unmounted` của `SectionWorkspace` kẹt `true` (autosave không chạy) → đặt lại cờ mỗi lần dựng effect.
+
+**Lưu ý cho các step sau**
+- Step 14: dùng `exam_attempt_answers` + `exam_questions` (grading `manual`); nội dung câu hỏi lấy `content_public` của đúng section trong lượt làm (`exam_attempt_sections.section_id`). Mở `recordingUrl` cho người chấm. Khi chấm đủ `manual_count` câu → `graded` + `graded_at` (update có điều kiện `status = 'submitted'`).
+- Ghi âm trên VPS cần HTTPS (hoặc flag Chrome) — nghiệm thu Step 15 phải có domain + SSL hoặc chấp nhận thử bằng flag.
+- Cron chạy ở mọi process API (máy dev + container dùng chung DB): an toàn vì chốt trong transaction có khoá dòng, nhưng log "Đã chốt" có thể xuất hiện ở máy khác.
 
 ### Step 12 – Đề thi, trình soạn thảo & version (✅ 2026-09-16)
 
