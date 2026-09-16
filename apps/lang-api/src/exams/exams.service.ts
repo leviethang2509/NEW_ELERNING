@@ -354,7 +354,8 @@ export class ExamsService {
     return item;
   }
 
-  private async toListItems(
+  /** Dòng danh sách của nhiều đề (tải loại đề, danh mục, số liệu section theo lô). */
+  async toListItems(
     ctx: TenantContext,
     actorId: string,
     exams: Exam[],

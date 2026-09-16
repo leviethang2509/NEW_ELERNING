@@ -4,6 +4,7 @@ import {
   createContext,
   useCallback,
   useContext,
+  useEffect,
   useMemo,
   useRef,
   useState,
@@ -23,8 +24,12 @@ import { vi } from '@/i18n/vi';
 // Trạng thái làm bài của bản giả lập: câu nào đã trả lời, câu nào gắn cờ, đang
 // xem part nào, câu trả lời để chấm và kết quả sau khi nộp. Provider bọc cả
 // phần đề lẫn footer (bảng số câu) để cùng đọc một nguồn.
+//
+// Hai chế độ: xem trước trong dashboard (chấm ngay ở trình duyệt, làm lại được)
+// và thi thật (`exam`): câu trả lời ban đầu lấy từ server, mỗi thay đổi báo ra
+// ngoài để autosave, nộp bài do trang thi gửi lên server.
 
-const text = vi.examEditor.simulator;
+const text = vi.simulator;
 
 export type AnswerStatus = 'todo' | 'flagged' | 'answered' | Verdict;
 
@@ -32,6 +37,23 @@ interface Respond {
   value: (no: number, input: string) => void;
   picks: (no: number, indexes: number[]) => void;
   order: (no: number, indexes: number[]) => void;
+}
+
+/** Cấu hình chế độ thi thật. */
+export interface SimulatorExamMode {
+  /** Câu trả lời đã lưu (làm tiếp sau khi tải lại trang). */
+  initialResponses: Responses;
+  /** Gọi sau mỗi thay đổi câu trả lời, nhận bản đang giữ (không sao chép). */
+  onChange: (responses: Responses) => void;
+  /** Đổi tab Part: trang thi lưu ngay thay vì chờ debounce. */
+  onTabChange?: () => void;
+  onSubmit: (responses: Responses) => void;
+  /** Đang nộp: khoá mọi ô nhập và nút nộp. */
+  locked: boolean;
+  /** Ô ghi âm của câu Speaking (component nằm ở trang thi). */
+  renderSpeaking?: (no: number, seconds: number | undefined) => ReactNode;
+  /** Khoá localStorage để giữ câu gắn cờ khi tải lại trang. */
+  flagStorageKey?: string;
 }
 
 interface SimulatorState {
@@ -46,8 +68,13 @@ interface SimulatorState {
   goTo: (no: number) => void;
   /** Ghi câu trả lời để chấm — không gây render lại. */
   respond: Respond;
-  /** Kết quả sau khi nộp; `null` khi đang làm. Có kết quả thì mọi ô bị khoá. */
+  /** Câu trả lời lúc dựng ô nhập (giá trị ban đầu của từng ô). */
+  initial: Responses;
+  /** Kết quả sau khi nộp (chỉ ở xem trước); `null` khi đang làm. */
   result: GradeResult | null;
+  /** Có kết quả hoặc đang nộp bài thi: mọi ô bị khoá. */
+  locked: boolean;
+  exam: SimulatorExamMode | null;
   /** Tăng mỗi lần làm lại — làm key để dựng lại toàn bộ ô nhập. */
   attempt: number;
   submit: () => void;
@@ -62,19 +89,54 @@ export function useSimulator(): SimulatorState {
   return state;
 }
 
+const cloneResponses = (responses: Responses): Responses =>
+  JSON.parse(JSON.stringify(responses)) as Responses;
+
+function readFlags(key: string | undefined): ReadonlySet<number> {
+  if (!key) return new Set();
+  try {
+    const saved: unknown = JSON.parse(localStorage.getItem(key) ?? '[]');
+    return new Set(
+      Array.isArray(saved) ? saved.filter((n) => Number.isInteger(n)) : [],
+    );
+  } catch {
+    return new Set();
+  }
+}
+
 export function SimulatorProvider({
   plan,
+  exam = null,
   children,
 }: {
   plan: PreviewPlan;
+  exam?: SimulatorExamMode | null;
   children: ReactNode;
 }) {
+  const flagKey = exam?.flagStorageKey;
   const [answered, setAnswered] = useState<ReadonlySet<number>>(new Set());
-  const [flagged, setFlagged] = useState<ReadonlySet<number>>(new Set());
-  const [tab, setTab] = useState(0);
+  const [flagged, setFlagged] = useState<ReadonlySet<number>>(() =>
+    readFlags(flagKey),
+  );
+  const [tab, setTabState] = useState(0);
   const [result, setResult] = useState<GradeResult | null>(null);
   const [attempt, setAttempt] = useState(0);
-  const responses = useRef<Responses>(emptyResponses());
+  // Chỉ đọc lúc dựng: trang thi truyền lại object mới mỗi lần render.
+  const [initial] = useState(() =>
+    exam ? cloneResponses(exam.initialResponses) : emptyResponses(),
+  );
+  const responses = useRef<Responses>(cloneResponses(initial));
+  const examRef = useRef(exam);
+  examRef.current = exam;
+
+  useEffect(() => {
+    if (!flagKey) return;
+    try {
+      localStorage.setItem(flagKey, JSON.stringify([...flagged]));
+    } catch {
+      // Trình duyệt chặn localStorage: chỉ mất cờ khi tải lại trang.
+    }
+  }, [flagKey, flagged]);
 
   const mark = useCallback((changes: Record<number, boolean>) => {
     setAnswered((prev) => {
@@ -101,6 +163,13 @@ export function SimulatorProvider({
     });
   }, []);
 
+  const setTab = useCallback((next: number) => {
+    setTabState((prev) => {
+      if (prev !== next) examRef.current?.onTabChange?.();
+      return next;
+    });
+  }, []);
+
   const goTo = useCallback(
     (no: number) => {
       const part = plan.parts.findIndex((p) => p.numbers.includes(no));
@@ -117,26 +186,30 @@ export function SimulatorProvider({
         field?.focus({ preventScroll: true });
       });
     },
-    [plan],
+    [plan, setTab],
   );
 
-  const respond = useMemo<Respond>(
-    () => ({
+  const respond = useMemo<Respond>(() => {
+    const changed = () => examRef.current?.onChange(responses.current);
+    return {
       value: (no, input) => {
         responses.current.value[no] = input;
+        changed();
       },
       picks: (no, indexes) => {
         responses.current.picks[no] = indexes;
+        changed();
       },
       order: (no, indexes) => {
         responses.current.order[no] = indexes;
+        changed();
       },
-    }),
-    [],
-  );
+    };
+  }, []);
 
   const submit = useCallback(() => {
-    setResult(gradeExam(plan, responses.current));
+    if (examRef.current) examRef.current.onSubmit(responses.current);
+    else setResult(gradeExam(plan, responses.current));
   }, [plan]);
 
   const retry = useCallback(() => {
@@ -147,6 +220,7 @@ export function SimulatorProvider({
     setAttempt((a) => a + 1);
   }, []);
 
+  const examLocked = !!exam?.locked;
   const value = useMemo(
     () => ({
       answered,
@@ -157,7 +231,10 @@ export function SimulatorProvider({
       toggleFlag,
       goTo,
       respond,
+      initial,
       result,
+      locked: !!result || examLocked,
+      exam: examRef.current,
       attempt,
       submit,
       retry,
@@ -166,11 +243,14 @@ export function SimulatorProvider({
       answered,
       flagged,
       tab,
+      setTab,
       mark,
       toggleFlag,
       goTo,
       respond,
+      initial,
       result,
+      examLocked,
       attempt,
       submit,
       retry,
@@ -253,7 +333,7 @@ export function ResultSummary() {
 }
 
 const buttonClass =
-  'inline-flex items-center gap-1.5 rounded-lg px-3.5 py-1.5 text-[13px] font-semibold transition';
+  'inline-flex items-center gap-1.5 rounded-lg px-3.5 py-1.5 text-[13px] font-semibold transition disabled:cursor-not-allowed disabled:opacity-60';
 
 /** Footer: toàn bộ số câu theo từng part, bấm để nhảy tới; nút nộp / làm lại. */
 export function AnswerNav({ plan }: { plan: PreviewPlan }) {
@@ -265,6 +345,7 @@ export function AnswerNav({ plan }: { plan: PreviewPlan }) {
   const legend: AnswerStatus[] = state.result
     ? ['correct', 'wrong', 'manual']
     : ['todo', 'flagged', 'answered'];
+  const submitLabel = state.exam ? text.submitSection : text.submit;
 
   const submit = () => {
     setConfirming(false);
@@ -330,7 +411,9 @@ export function AnswerNav({ plan }: { plan: PreviewPlan }) {
           ) : confirming ? (
             <>
               <span className="text-[#b58900]">
-                {text.unanswered(numbers.length - done)}
+                {done < numbers.length
+                  ? text.unanswered(numbers.length - done)
+                  : text.confirmSubmit}
               </span>
               <button
                 type="button"
@@ -342,6 +425,7 @@ export function AnswerNav({ plan }: { plan: PreviewPlan }) {
               <button
                 type="button"
                 onClick={submit}
+                disabled={state.locked}
                 className={`${buttonClass} bg-[var(--accent)] text-white hover:opacity-90`}
               >
                 <Send size={14} /> {text.submitAnyway}
@@ -352,12 +436,16 @@ export function AnswerNav({ plan }: { plan: PreviewPlan }) {
               <span>{text.progress(done, numbers.length)}</span>
               <button
                 type="button"
+                disabled={state.locked}
                 onClick={() =>
-                  done < numbers.length ? setConfirming(true) : submit()
+                  // Thi thật luôn hỏi lại: nộp xong không sửa được nữa.
+                  done < numbers.length || state.exam
+                    ? setConfirming(true)
+                    : submit()
                 }
                 className={`${buttonClass} bg-[var(--accent)] text-white hover:opacity-90`}
               >
-                <Send size={14} /> {text.submit}
+                <Send size={14} /> {submitLabel}
               </button>
             </>
           )}

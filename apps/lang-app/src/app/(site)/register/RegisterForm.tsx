@@ -24,6 +24,7 @@ import {
 import { vi } from '@/i18n/vi';
 import { safeNextPath } from '@/lib/auth-redirect';
 import { passwordStrength } from '@/lib/password-strength';
+import { errorMessage } from '@/lib/error-message';
 
 const strengthColors = ['var(--muted)', '#dc322f', '#b58900', '#859900'];
 
@@ -73,11 +74,7 @@ export function RegisterForm() {
     try {
       await register({ fullName, email, password, dateOfBirth });
     } catch (err) {
-      setError(
-        err instanceof Error && err.message
-          ? err.message
-          : vi.auth.registerFailed,
-      );
+      setError(errorMessage(err, vi.auth.registerFailed));
       setSubmitting(false);
     }
   }

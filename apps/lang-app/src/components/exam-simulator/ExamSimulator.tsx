@@ -31,7 +31,12 @@ import {
 } from '@lang/exam-core';
 import type { QuestionType } from '@lang/shared';
 import { vi } from '@/i18n/vi';
-import { QuestionBadge, ResultSummary, useSimulator } from './SimulatorState';
+import {
+  QuestionBadge,
+  ResultSummary,
+  SimulatorProvider,
+  useSimulator,
+} from './SimulatorState';
 
 // Bản giả lập như người làm bài nhìn thấy (chuyển từ lightc-general).
 //
@@ -40,8 +45,12 @@ import { QuestionBadge, ResultSummary, useSimulator } from './SimulatorState';
 // multiple choice, số thứ tự của ordering và thứ tự đáp án trong dropdown đều
 // không đi ra ngoài. Mỗi part là một tab: passage bên trái, subpart + question
 // bên phải. Câu trả lời ghi qua `respond` với khoá khớp `gradeExam`.
+//
+// Nội dung có thể là `raw_data` (xem trước) hoặc content_public (thi thật):
+// dòng ordering/polytomous của content_public đã được server xáo và mang `key`
+// là chỉ số gốc, nên dùng `key` làm khoá chấm và không xáo lại.
 
-const text = vi.examEditor.simulator;
+const text = vi.simulator;
 
 interface Ctx {
   /** Cách đánh số của câu hỏi đang render; `undefined` khi ngoài câu hỏi. */
@@ -101,15 +110,21 @@ function renderLeaf(leaf: ExamNode, key: string): ReactNode {
 }
 
 function BlankField({ no }: { no?: number }) {
-  const { mark, respond, result } = useSimulator();
+  const { mark, respond, initial, locked } = useSimulator();
+  const saved = no !== undefined ? (initial.value[no] ?? '') : '';
+  useEffect(() => {
+    if (no !== undefined && saved.trim() !== '') mark({ [no]: true });
+    // Chỉ đánh dấu câu đã trả lời từ trước, một lần lúc dựng.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
   return (
     <>
       {/* Số thứ tự nằm ngoài ô nhập để gõ đè cũng không mất số. */}
       {no !== undefined && <QuestionBadge nos={[no]} />}
       <input
         type="text"
-        defaultValue=""
-        readOnly={!!result}
+        defaultValue={saved}
+        readOnly={locked}
         data-sim-field={no}
         aria-label={no !== undefined ? text.question(no) : text.blank}
         onChange={
@@ -420,9 +435,20 @@ function ChoiceGroup({
   /** Pick-n: số ô được tick tối đa. */
   max?: number;
 }) {
-  const { mark, respond, result } = useSimulator();
-  const [picked, setPicked] = useState<ReadonlySet<number>>(new Set());
+  const { mark, respond, initial, locked } = useSimulator();
+  const [picked, setPicked] = useState<ReadonlySet<number>>(() => {
+    const valid = new Set(rows.map((row) => row.index));
+    const saved = nos.length > 0 ? (initial.picks[nos[0]] ?? []) : [];
+    return new Set(saved.filter((index) => valid.has(index)));
+  });
   const full = !single && max !== undefined && picked.size >= max;
+
+  useEffect(() => {
+    if (picked.size > 0) {
+      mark(Object.fromEntries(nos.map((no, i) => [no, i < picked.size])));
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const toggle = (index: number, checked: boolean) => {
     const next = new Set(single ? [] : picked);
@@ -446,7 +472,7 @@ function ChoiceGroup({
       <div className="grid gap-1">
         {rows.map((row) => {
           const checked = picked.has(row.index);
-          const disabled = !!result || (full && !checked);
+          const disabled = locked || (full && !checked);
           return (
             <label
               key={row.key}
@@ -474,7 +500,21 @@ function ChoiceGroup({
 }
 
 function PairGroup({ rows, options }: { rows: Row[]; options: string[] }) {
-  const { mark, respond, result } = useSimulator();
+  const { mark, respond, initial, locked } = useSimulator();
+  const savedOf = (no: number | undefined) => {
+    const saved = no !== undefined ? initial.value[no] : undefined;
+    return saved !== undefined && options.includes(saved) ? saved : '';
+  };
+  useEffect(() => {
+    mark(
+      Object.fromEntries(
+        rows.flatMap((row) =>
+          row.no !== undefined && savedOf(row.no) ? [[row.no, true]] : [],
+        ),
+      ),
+    );
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
   return (
     <div className="my-2 grid gap-1.5">
       {rows.map((row) => (
@@ -487,8 +527,8 @@ function PairGroup({ rows, options }: { rows: Row[]; options: string[] }) {
             {row.content}
           </div>
           <select
-            defaultValue=""
-            disabled={!!result}
+            defaultValue={savedOf(row.no)}
+            disabled={locked}
             data-sim-field={row.no}
             aria-label={
               row.no !== undefined ? text.question(row.no) : text.answer
@@ -514,16 +554,28 @@ function PairGroup({ rows, options }: { rows: Row[]; options: string[] }) {
 }
 
 function OrderingGroup({ rows, nos }: { rows: Row[]; nos: number[] }) {
-  const { mark, respond, result } = useSimulator();
-  const [order, setOrder] = useState(() => rows.map((row) => row.index));
+  const { mark, respond, initial, locked, exam } = useSimulator();
+  const [saved] = useState(() => {
+    const order = initial.order[nos[0]];
+    const indexes = rows.map((row) => row.index);
+    const isPermutation =
+      Array.isArray(order) &&
+      order.length === indexes.length &&
+      indexes.every((index) => order.includes(index));
+    return isPermutation ? order : null;
+  });
+  const [order, setOrder] = useState(
+    () => saved ?? rows.map((row) => row.index),
+  );
   const [dragIndex, setDragIndex] = useState<number | null>(null);
   const byIndex = new Map(rows.map((row) => [row.index, row]));
-  const locked = !!result;
 
-  // Thứ tự xáo ban đầu cũng là một câu trả lời — người làm có thể giữ nguyên.
   useEffect(() => {
-    respond.order(nos[0], order);
-    // Chỉ ghi một lần lúc dựng.
+    if (saved) mark(Object.fromEntries(nos.map((no) => [no, true])));
+    // Xem trước: thứ tự xáo ban đầu cũng là một câu trả lời. Thi thật chỉ lưu
+    // khi người làm đã sắp xếp (chưa động tới thì tính là bỏ trống).
+    else if (!exam) respond.order(nos[0], order);
+    // Chỉ chạy một lần lúc dựng.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -596,7 +648,11 @@ function OrderingGroup({ rows, nos }: { rows: Row[]; nos: number[] }) {
   );
 }
 
-function SpeakingBox({ seconds }: { seconds?: number }) {
+function SpeakingBox({ seconds, no }: { seconds?: number; no?: number }) {
+  const { exam } = useSimulator();
+  if (exam?.renderSpeaking && no !== undefined) {
+    return <>{exam.renderSpeaking(no, seconds)}</>;
+  }
   return (
     <div className="my-3 rounded-xl border border-dashed border-[var(--border-strong)] bg-[var(--sidebar)] px-4 py-3 text-[13.5px] text-[var(--muted)]">
       {text.speaking(seconds)}
@@ -605,15 +661,21 @@ function SpeakingBox({ seconds }: { seconds?: number }) {
 }
 
 function WritingBox({ maxChars, no }: { maxChars?: number; no?: number }) {
-  const { mark, respond, result } = useSimulator();
-  const [value, setValue] = useState('');
+  const { mark, respond, initial, locked } = useSimulator();
+  const [value, setValue] = useState(() =>
+    no !== undefined ? (initial.value[no] ?? '') : '',
+  );
+  useEffect(() => {
+    if (no !== undefined && value.trim() !== '') mark({ [no]: true });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
   return (
     <div className="my-3">
       <textarea
         rows={6}
         value={value}
         maxLength={maxChars}
-        readOnly={!!result}
+        readOnly={locked}
         data-sim-field={no}
         aria-label={no !== undefined ? text.question(no) : text.answer}
         onChange={(event) => {
@@ -734,12 +796,16 @@ function renderQuestion(
       i += 1;
     }
 
-    const rows: Row[] = run.map((item, k) => ({
-      key: `${keyPrefix}.${start + k}`,
-      index: itemIndex++,
-      no: mode === 'pair' ? ctx.next++ : undefined,
-      content: blockContent(item, `${keyPrefix}.${start + k}`, ctx),
-    }));
+    const rows: Row[] = run.map((item, k) => {
+      const position = itemIndex++;
+      return {
+        key: `${keyPrefix}.${start + k}`,
+        // content_public: dòng ordering/polytomous mang chỉ số gốc ở `key`.
+        index: numberProp(item, 'key') ?? position,
+        no: mode === 'pair' ? ctx.next++ : undefined,
+        content: blockContent(item, `${keyPrefix}.${start + k}`, ctx),
+      };
+    });
 
     if (input === 'choice' || qtype === 'polytomous') {
       // Polytomous soạn như ordering nhưng làm bài như MC một đáp án.
@@ -762,11 +828,17 @@ function renderQuestion(
         />,
       );
     } else {
-      // Thứ tự soạn trong editor chính là đáp án nên phải xáo trước khi hiện.
+      // Thứ tự soạn trong editor chính là đáp án nên phải xáo trước khi hiện;
+      // content_public đã được server xáo theo lượt làm.
+      const shuffledByServer = run.every(
+        (item) => numberProp(item, 'key') !== undefined,
+      );
       out.push(
         <OrderingGroup
           key={`${keyPrefix}.g${start}`}
-          rows={seededShuffle(rows, `${seed}:${start}`)}
+          rows={
+            shuffledByServer ? rows : seededShuffle(rows, `${seed}:${start}`)
+          }
           nos={questionNos}
         />,
       );
@@ -780,6 +852,7 @@ function renderQuestion(
       <SpeakingBox
         key={`${keyPrefix}.speak`}
         seconds={seg.indicator?.seconds}
+        no={questionNos[0]}
       />,
     );
   }
@@ -915,5 +988,15 @@ export function ExamSimulator({
         })}
       </Fragment>
     </div>
+  );
+}
+
+/** Khối nội dung chỉ để đọc: phần hướng dẫn section, đề bài khi chấm bài. */
+export function ExamBlocks({ blocks }: { blocks: readonly ExamElement[] }) {
+  const plan = useMemo(() => ({ intro: [...blocks], parts: [] }), [blocks]);
+  return (
+    <SimulatorProvider plan={plan}>
+      <div className={BODY_CLASS}>{renderPlain(blocks, 'intro')}</div>
+    </SimulatorProvider>
   );
 }

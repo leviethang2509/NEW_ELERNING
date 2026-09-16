@@ -1,0 +1,430 @@
+import type { ExamElement } from '@lang/exam-core';
+import {
+  AttemptStatus,
+  QuestionGrading,
+  isValidManualScore,
+  type GradeAnswerInput,
+  type GradeAnswerResult,
+  type GradingAnswerState,
+  type GradingAttemptDetail,
+  type GradingAttemptItem,
+  type GradingAttemptList,
+  type GradingAttemptProgress,
+  type GradingAttemptStatus,
+  type GradingQuestion,
+  type GradingSection,
+} from '@lang/shared';
+import {
+  BadRequestException,
+  ConflictException,
+  ForbiddenException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import {
+  DataSource,
+  In,
+  IsNull,
+  Not,
+  type EntityManager,
+  type Repository,
+} from 'typeorm';
+import { ATTEMPT_NOT_FOUND } from '../attempts/attempts.service';
+import { ExamAttemptAnswer } from '../attempts/exam-attempt-answer.entity';
+import { ExamAttemptSection } from '../attempts/exam-attempt-section.entity';
+import { ExamAttempt } from '../attempts/exam-attempt.entity';
+import { toSkipTake } from '../common/pagination';
+import { escapeLike } from '../common/sql';
+import { ExamQuestion } from '../exams/exam-question.entity';
+import { ExamSection } from '../exams/exam-section.entity';
+import { Exam } from '../exams/exam.entity';
+import { R2Service } from '../storage/r2.service';
+import type { TenantContext } from '../tenants/tenant-context';
+import { User } from '../users/user.entity';
+import type { ListGradingAttemptsQueryDto } from './dto/grading.dto';
+import { sectionPrompts } from './grading-content';
+
+export const OWN_ATTEMPT = 'Bạn không được chấm bài làm của chính mình';
+const ANSWER_NOT_FOUND = 'Không tìm thấy câu trả lời';
+const NOT_FINISHED = 'Lượt làm bài chưa nộp xong, chưa chấm được';
+const NOT_MANUAL = 'Câu này chấm tự động, không chấm tay được';
+const INVALID_SCORE = (max: number) => `Điểm phải từ 0 đến ${max}, bước 0,5`;
+const RECORDING_NOT_FOUND = 'Không tìm thấy bản ghi âm';
+
+const GRADABLE_STATUSES: GradingAttemptStatus[] = [
+  AttemptStatus.SUBMITTED,
+  AttemptStatus.GRADED,
+];
+
+const numberParam = (params: object, key: string): number | null => {
+  const value = (params as Record<string, unknown>)[key];
+  return typeof value === 'number' ? value : null;
+};
+
+function toProgress(attempt: ExamAttempt): GradingAttemptProgress {
+  return {
+    status: attempt.status as GradingAttemptStatus,
+    gradedAt: attempt.gradedAt?.toISOString() ?? null,
+    manualCount: attempt.manualCount,
+    manualGradedCount: attempt.manualGradedCount,
+  };
+}
+
+function toAnswerState(
+  answer: ExamAttemptAnswer,
+  graders: ReadonlyMap<string, User>,
+): GradingAnswerState {
+  const grader = answer.gradedBy ? graders.get(answer.gradedBy) : undefined;
+  return {
+    answerId: answer.id,
+    score: answer.gradedAt ? answer.score : null,
+    comment: answer.gradedAt ? answer.comment : null,
+    gradedAt: answer.gradedAt?.toISOString() ?? null,
+    grader: grader ? { id: grader.id, fullName: grader.fullName } : null,
+  };
+}
+
+/**
+ * Chấm tay Writing/Speaking (Step 14): Owner/Admin/Teacher chấm mọi lượt làm
+ * đã nộp hết của tenant, trừ bài của chính mình. Không sửa kết quả tự động;
+ * chấm lại được, lượt làm chuyển `graded` khi mọi câu chấm tay đã có điểm.
+ */
+@Injectable()
+export class GradingService {
+  constructor(
+    private readonly dataSource: DataSource,
+    private readonly r2: R2Service,
+    @InjectRepository(ExamAttempt)
+    private readonly attempts: Repository<ExamAttempt>,
+    @InjectRepository(ExamAttemptAnswer)
+    private readonly answers: Repository<ExamAttemptAnswer>,
+  ) {}
+
+  async list(
+    ctx: TenantContext,
+    graderId: string,
+    query: ListGradingAttemptsQueryDto,
+  ): Promise<GradingAttemptList> {
+    const { skip, take } = toSkipTake(query);
+    const qb = this.gradableQuery(ctx, graderId)
+      .innerJoinAndSelect('attempt.user', 'user')
+      .orderBy('attempt.submittedAt', 'DESC')
+      .addOrderBy('attempt.id', 'ASC')
+      .skip(skip)
+      .take(take);
+    if (query.status) {
+      qb.andWhere('attempt.status = :status', { status: query.status });
+    }
+    if (query.examId) {
+      qb.andWhere('attempt.examId = :examId', { examId: query.examId });
+    }
+    if (query.q) {
+      qb.andWhere('(user.fullName ILIKE :q OR user.email ILIKE :q)', {
+        q: `%${escapeLike(query.q)}%`,
+      });
+    }
+    const [[rows, total], examIds] = await Promise.all([
+      qb.getManyAndCount(),
+      this.gradableQuery(ctx, graderId)
+        .select('attempt.examId', 'examId')
+        .distinct(true)
+        .getRawMany<{ examId: string }>(),
+    ]);
+
+    const exams = await this.examsById([
+      ...rows.map((row) => row.examId),
+      ...examIds.map((row) => row.examId),
+    ]);
+    return {
+      items: rows.map((row) => this.toItem(row, row.user!, exams)),
+      total,
+      page: query.page,
+      pageSize: query.pageSize,
+      exams: examIds
+        .map(({ examId }) => ({
+          id: examId,
+          title: exams.get(examId)?.title ?? '',
+        }))
+        .sort((a, b) => a.title.localeCompare(b.title, 'vi')),
+    };
+  }
+
+  async detail(
+    ctx: TenantContext,
+    graderId: string,
+    id: string,
+  ): Promise<GradingAttemptDetail> {
+    const manager = this.dataSource.manager;
+    const attempt = await this.findGradable(manager, ctx, graderId, id);
+    const attemptSections = (
+      await manager
+        .getRepository(ExamAttemptSection)
+        .findBy({ attemptId: attempt.id })
+    ).sort((a, b) => a.sortOrder - b.sortOrder);
+    const sectionIds = attemptSections.map((section) => section.sectionId);
+    const [examSections, questions, answers, next] = await Promise.all([
+      manager.getRepository(ExamSection).findBy({ id: In(sectionIds) }),
+      this.manualQuestions(manager, sectionIds),
+      this.answers.findBy({ attemptId: attempt.id }),
+      this.attempts.findOne({
+        where: {
+          tenantId: ctx.tenantId,
+          status: AttemptStatus.SUBMITTED,
+          userId: Not(graderId),
+          id: Not(attempt.id),
+        },
+        order: { submittedAt: 'ASC', id: 'ASC' },
+      }),
+    ]);
+    const answerByQuestion = new Map(answers.map((a) => [a.questionId, a]));
+    const userIds = [
+      attempt.userId,
+      ...answers.flatMap((a) => (a.gradedBy ? [a.gradedBy] : [])),
+    ];
+    const [users, exams] = await Promise.all([
+      this.usersById(manager, userIds),
+      this.examsById([attempt.examId]),
+    ]);
+    const examSectionById = new Map(examSections.map((s) => [s.id, s]));
+
+    const sections: GradingSection[] = [];
+    for (const section of attemptSections) {
+      const examSection = examSectionById.get(section.sectionId);
+      const own = questions
+        .filter((question) => question.sectionId === section.sectionId)
+        .sort((a, b) => a.number - b.number);
+      if (!examSection || own.length === 0) continue;
+      const prompts = sectionPrompts(
+        examSection.contentPublic as ExamElement[],
+      );
+      sections.push({
+        id: section.id,
+        name: examSection.name,
+        correct: section.correct ?? 0,
+        total: section.total ?? 0,
+        autoSubmitted: section.autoSubmitted,
+        submittedAt: section.submittedAt?.toISOString() ?? null,
+        parts: prompts.parts,
+        questions: own.flatMap((question): GradingQuestion[] => {
+          const answer = answerByQuestion.get(question.id);
+          if (!answer) return [];
+          const prompt = prompts.questions.get(question.nodeId);
+          return [
+            {
+              ...toAnswerState(answer, users),
+              number: question.number,
+              qtype: question.qtype,
+              maxScore: question.maxScore,
+              seconds: numberParam(question.params, 'seconds'),
+              maxChars: numberParam(question.params, 'maxChars'),
+              partIndex: prompt?.partIndex ?? null,
+              prompt: prompt?.prompt ?? [],
+              text:
+                typeof answer.response === 'string' ? answer.response : null,
+              hasRecording: answer.recordingKey !== null,
+            },
+          ];
+        }),
+      });
+    }
+
+    return {
+      ...this.toItem(attempt, users.get(attempt.userId), exams),
+      startedAt: attempt.startedAt.toISOString(),
+      sections,
+      nextAttemptId: next?.id ?? null,
+    };
+  }
+
+  /** Chấm (hoặc chấm lại) một câu; đủ mọi câu chấm tay thì lượt làm → `graded`. */
+  async grade(
+    ctx: TenantContext,
+    graderId: string,
+    answerId: string,
+    input: GradeAnswerInput,
+  ): Promise<GradeAnswerResult> {
+    const now = new Date();
+    return this.dataSource.transaction(async (manager) => {
+      const answerRepository = manager.getRepository(ExamAttemptAnswer);
+      const answer = await answerRepository.findOneBy({ id: answerId });
+      if (!answer) throw new NotFoundException(ANSWER_NOT_FOUND);
+      // Khoá lượt làm: hai người chấm song song vẫn đếm đúng số câu đã chấm.
+      const attempt = await manager.getRepository(ExamAttempt).findOne({
+        where: { id: answer.attemptId, tenantId: ctx.tenantId },
+        lock: { mode: 'pessimistic_write' },
+      });
+      if (!attempt) throw new NotFoundException(ANSWER_NOT_FOUND);
+      assertGradable(attempt, graderId);
+
+      const question = await manager
+        .getRepository(ExamQuestion)
+        .findOneBy({ id: answer.questionId });
+      if (!question || question.grading !== QuestionGrading.MANUAL) {
+        throw new BadRequestException(NOT_MANUAL);
+      }
+      if (!isValidManualScore(input.score, question.maxScore)) {
+        throw new BadRequestException(INVALID_SCORE(question.maxScore));
+      }
+
+      const changes = {
+        score: input.score,
+        comment: input.comment?.trim() || null,
+        gradedBy: graderId,
+        gradedAt: now,
+      };
+      await answerRepository.update(answer.id, changes);
+      Object.assign(answer, changes);
+
+      const sectionIds = (
+        await manager
+          .getRepository(ExamAttemptSection)
+          .findBy({ attemptId: attempt.id })
+      ).map((section) => section.sectionId);
+      const manualIds = (await this.manualQuestions(manager, sectionIds)).map(
+        (q) => q.id,
+      );
+      const graded = await answerRepository.countBy({
+        attemptId: attempt.id,
+        questionId: In(manualIds),
+        gradedAt: Not(IsNull()),
+      });
+      const attemptChanges: Partial<ExamAttempt> = {
+        manualGradedCount: graded,
+      };
+      if (
+        attempt.status === AttemptStatus.SUBMITTED &&
+        graded >= attempt.manualCount
+      ) {
+        attemptChanges.status = AttemptStatus.GRADED;
+        attemptChanges.gradedAt = now;
+      }
+      await manager
+        .getRepository(ExamAttempt)
+        .update({ id: attempt.id, status: attempt.status }, attemptChanges);
+      Object.assign(attempt, attemptChanges);
+
+      const graders = await this.usersById(manager, [graderId]);
+      return {
+        answer: toAnswerState(answer, graders),
+        attempt: toProgress(attempt),
+      };
+    });
+  }
+
+  /** Link nghe ghi âm Speaking (presigned, bucket private) cho người chấm. */
+  async recordingUrl(
+    ctx: TenantContext,
+    graderId: string,
+    id: string,
+    answerId: string,
+  ): Promise<{ url: string }> {
+    const attempt = await this.findGradable(
+      this.dataSource.manager,
+      ctx,
+      graderId,
+      id,
+    );
+    const answer = await this.answers.findOneBy({
+      id: answerId,
+      attemptId: attempt.id,
+    });
+    if (!answer?.recordingKey) {
+      throw new NotFoundException(RECORDING_NOT_FOUND);
+    }
+    return { url: await this.r2.presignedGetUrl(answer.recordingKey) };
+  }
+
+  // --- Nội bộ ---------------------------------------------------------------
+
+  /** Lượt làm có câu chấm tay, đã nộp hết, không phải của người chấm. */
+  private gradableQuery(ctx: TenantContext, graderId: string) {
+    return this.attempts
+      .createQueryBuilder('attempt')
+      .where('attempt.tenantId = :tenantId', { tenantId: ctx.tenantId })
+      .andWhere('attempt.status IN (:...statuses)', {
+        statuses: GRADABLE_STATUSES,
+      })
+      .andWhere('attempt.manualCount > 0')
+      .andWhere('attempt.userId <> :graderId', { graderId });
+  }
+
+  private async findGradable(
+    manager: EntityManager,
+    ctx: TenantContext,
+    graderId: string,
+    id: string,
+  ): Promise<ExamAttempt> {
+    const attempt = await manager
+      .getRepository(ExamAttempt)
+      .findOneBy({ id, tenantId: ctx.tenantId });
+    if (!attempt || attempt.manualCount === 0) {
+      throw new NotFoundException(ATTEMPT_NOT_FOUND);
+    }
+    assertGradable(attempt, graderId);
+    return attempt;
+  }
+
+  private manualQuestions(
+    manager: EntityManager,
+    sectionIds: readonly string[],
+  ): Promise<ExamQuestion[]> {
+    if (sectionIds.length === 0) return Promise.resolve([]);
+    return manager.getRepository(ExamQuestion).findBy({
+      sectionId: In([...sectionIds]),
+      grading: QuestionGrading.MANUAL,
+    });
+  }
+
+  private async usersById(
+    manager: EntityManager,
+    ids: readonly string[],
+  ): Promise<Map<string, User>> {
+    const unique = [...new Set(ids)];
+    if (unique.length === 0) return new Map();
+    const users = await manager
+      .getRepository(User)
+      .find({ where: { id: In(unique) }, withDeleted: true });
+    return new Map(users.map((user) => [user.id, user]));
+  }
+
+  private async examsById(ids: readonly string[]): Promise<Map<string, Exam>> {
+    const unique = [...new Set(ids)];
+    if (unique.length === 0) return new Map();
+    // Đề bị xoá mềm vẫn hiện tên trong bài làm cũ.
+    const exams = await this.dataSource.manager
+      .getRepository(Exam)
+      .find({ where: { id: In(unique) }, withDeleted: true });
+    return new Map(exams.map((exam) => [exam.id, exam]));
+  }
+
+  private toItem(
+    attempt: ExamAttempt,
+    user: User | undefined,
+    exams: ReadonlyMap<string, Exam>,
+  ): GradingAttemptItem {
+    return {
+      id: attempt.id,
+      exam: {
+        id: attempt.examId,
+        title: exams.get(attempt.examId)?.title ?? '',
+      },
+      student: {
+        userId: attempt.userId,
+        fullName: user?.fullName ?? '',
+        email: user?.email ?? '',
+      },
+      submittedAt: attempt.submittedAt?.toISOString() ?? null,
+      autoCorrect: attempt.autoCorrect,
+      autoTotal: attempt.autoTotal,
+      ...toProgress(attempt),
+    };
+  }
+}
+
+function assertGradable(attempt: ExamAttempt, graderId: string): void {
+  if (attempt.userId === graderId) throw new ForbiddenException(OWN_ATTEMPT);
+  if (attempt.status === AttemptStatus.IN_PROGRESS) {
+    throw new ConflictException(NOT_FINISHED);
+  }
+}

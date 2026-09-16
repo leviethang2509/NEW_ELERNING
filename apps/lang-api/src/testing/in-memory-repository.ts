@@ -19,7 +19,10 @@ function matches<T>(row: T, where: Where<T>): boolean {
         case 'isNull':
           return actual === null || actual === undefined;
         case 'not':
-          return !matches(row, { [key]: expected.value } as Where<T>);
+          // `Not(IsNull())` giữ toán tử con ở `child`, `value` là undefined.
+          return !matches(row, {
+            [key]: expected.child ?? expected.value,
+          } as Where<T>);
         case 'lessThan':
           return (actual as number | Date) < (expected.value as number | Date);
         case 'in':

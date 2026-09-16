@@ -1,6 +1,6 @@
 import { RequireAuth } from '@/components/auth/RequireAuth';
 
-// Layout toàn màn hình cho giả lập thi (Step 13): không header/sidebar.
+// Layout toàn màn hình cho trang thi: không header/sidebar.
 export default function ExamLayout({
   children,
 }: {

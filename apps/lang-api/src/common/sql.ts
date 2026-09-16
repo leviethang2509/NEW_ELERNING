@@ -19,3 +19,9 @@ export function sqlInList(
 export function sqlDurationMinutes(column: string): string {
   return `"${column}" BETWEEN ${DURATION_STEP_MINUTES} AND ${DURATION_MAX_MINUTES} AND "${column}" % ${DURATION_STEP_MINUTES} = 0`;
 }
+
+/** Postgres trả `numeric` dạng chuỗi; đổi về number khi đọc. */
+export const numericTransformer = {
+  to: (value: number | null) => value,
+  from: (value: string | null) => (value === null ? null : Number(value)),
+};

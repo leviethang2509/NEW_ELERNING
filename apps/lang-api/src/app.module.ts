@@ -1,14 +1,17 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { APP_FILTER } from '@nestjs/core';
+import { ScheduleModule } from '@nestjs/schedule';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AdminModule } from './admin/admin.module';
+import { AttemptsModule } from './attempts/attempts.module';
 import { AuthModule } from './auth/auth.module';
 import { AllExceptionsFilter } from './common/filters/all-exceptions.filter';
 import { EnvironmentVariables, validateEnv } from './config/env.validation';
 import { buildDataSourceOptions } from './database/database.config';
 import { ExamCatalogModule } from './exam-catalog/exam-catalog.module';
 import { ExamsModule } from './exams/exams.module';
+import { GradingModule } from './grading/grading.module';
 import { HealthModule } from './health/health.module';
 import { MembershipsModule } from './memberships/memberships.module';
 import { PlansModule } from './plans/plans.module';
@@ -24,6 +27,8 @@ import { UsersModule } from './users/users.module';
       cache: true,
       validate: validateEnv,
     }),
+    // Cron chốt section quá giờ (`AttemptsScheduler`).
+    ScheduleModule.forRoot(),
     TypeOrmModule.forRootAsync({
       inject: [ConfigService],
       useFactory: (config: ConfigService<EnvironmentVariables, true>) => ({
@@ -48,6 +53,8 @@ import { UsersModule } from './users/users.module';
     StorageModule,
     ExamCatalogModule,
     ExamsModule,
+    AttemptsModule,
+    GradingModule,
     AdminModule,
     // Đăng ký guard toàn cục: mọi route cần đăng nhập trừ route @Public().
     AuthModule,

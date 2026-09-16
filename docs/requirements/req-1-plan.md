@@ -700,6 +700,23 @@ health:      GET /api/health
 - Hết giờ tự chuyển section.
 - Kết quả hiển thị theo section, không có đáp án.
 
+> Cập nhật khi làm Step 13 (2026-09-16, người dùng chọn phương án đề xuất):
+>
+> - **Mỗi người tối đa 1 lượt làm dở cho mỗi đề** (index unique `(exam_id, user_id) WHERE status = 'in_progress'`). Trang đề hiện "Làm tiếp"; màn hình hướng dẫn/chờ của mọi section có nút **"Nộp toàn bài"**: chốt các section còn lại (chưa làm tính bỏ trống), sau đó mới bắt đầu lượt mới được.
+> - **Đề bị lưu trữ hoặc xoá mềm khi đang làm dở: vẫn làm tiếp và nộp được**; chỉ chặn tạo lượt mới (409). Đề không còn mở vẫn xem được trang đề (lịch sử) và kết quả nếu mình từng làm.
+> - **Ghi âm nhận `audio/webm` và `audio/mp4`** (Safari chỉ ghi được mp4), ≤ 10MB, key `tenants/{tenantId}/attempts/{attemptId}/{questionId}-{uuid}.webm|m4a`.
+> - **Trang kết quả chỉ mở khi đã nộp hết các section** (409 nếu còn dở); lịch sử hiện tiến độ section cho lượt đang làm.
+>
+> Quyết định kỹ thuật (mình tự chọn):
+> - API học viên dưới `t/:slug/learner/*` (mọi thành viên active, không giới hạn role): `GET exams` (phân trang, lọc tên/danh mục/loại đề, kèm danh sách danh mục/loại đề đang có đề publish), `GET exams/:id`, `POST exams/:id/attempts`, `GET attempts` (lượt làm của tôi), `GET attempts/:id`, `POST attempts/:id/sections/:sid/start`, `PUT …/responses`, `POST …/submit` (gửi kèm câu trả lời mới nhất), `POST attempts/:id/finish`, `POST attempts/:id/recordings` (multipart `file`, `sectionId`, `number`), `GET attempts/:id/recordings/:answerId/url`, `GET attempts/:id/result`.
+> - Mọi thao tác ghi khoá dòng lượt làm + section (`FOR UPDATE`), chốt section quá `deadline_at + 10s` trước (lazy) rồi mới xử lý; cron `@nestjs/schedule` (bản 4, Nest 10) mỗi phút chốt nốt. Nộp section đã được chốt (client tự nộp tới sau cron) trả trạng thái hiện tại thay vì lỗi. `auto_submitted = true` khi nộp từ lúc `deadline_at` trở đi.
+> - `exam_attempt_answers` sinh cho **mọi câu** khi nộp section (kể cả bỏ trống: `response` null); câu tự động có `is_correct` + `score` (= `max_score` hoặc 0), câu chấm tay `score` null. Ghi âm tạo dòng sớm (lúc tải lên) và được giữ khi nộp. Câu chấm tay bỏ trống vẫn chờ giáo viên chấm (không tự cho 0).
+> - Chưa bắt đầu section thì chỉ trả phần hướng dẫn (`buildPlan(content_public).intro`). Ordering chưa động tới thì không lưu thứ tự (tính bỏ trống).
+> - `exam_attempt_sections.section_id` và `exam_attempt_answers.question_id` là FK **NO ACTION** (như `exam_attempts.exam_id`). Thêm index một phần `deadline_at WHERE status = 'in_progress'` cho cron.
+> - Frontend: simulator chuyển sang `components/exam-simulator` (dùng chung xem trước + thi), thêm chế độ thi (câu trả lời ban đầu, autosave 3s + khi đổi tab Part + khi ẩn tab, nộp qua server, ô ghi âm). Cờ câu hỏi lưu localStorage theo lượt làm/section. Trang `/t/{slug}` có "Lượt làm gần đây" (5 lượt) + danh sách đề; `/t/{slug}/exams/{id}`, trang thi `(exam)/t/{slug}/attempts/{id}`, kết quả `/t/{slug}/attempts/{id}/result`. Middleware chặn thêm `/t/:slug/exams/*`.
+> - Lỗi 413 của multer (file vượt `limits.fileSize`) đổi sang message tiếng Việt ở `AllExceptionsFilter` (áp dụng cả upload media).
+> - **Ghi âm cần HTTPS hoặc localhost**: trình duyệt chặn micro ở `http://<ip>:3001`, ô ghi âm báo không hỗ trợ cho tới khi có domain + SSL.
+
 ### Step 14 – Chấm bài thủ công
 **Việc làm**
 - **Backend:**
@@ -715,6 +732,19 @@ health:      GET /api/health
 **Nghiệm thu:**
 - Teacher chấm được bài của Student; không chấm được bài của chính mình.
 - Học viên thấy điểm và nhận xét sau khi chấm.
+
+> Cập nhật khi làm Step 14 (2026-09-16, người dùng chọn phương án đề xuất):
+>
+> - **Chấm lại được** mọi lúc (ghi đè điểm, nhận xét, người chấm, thời điểm chấm của câu); lượt làm đã `graded` giữ nguyên trạng thái và `graded_at` lần chấm đủ đầu tiên.
+> - **Câu Writing/Speaking bỏ trống vẫn chờ chấm** (không tự cho 0); trang chấm báo "bỏ trống/không ghi âm" và có nút "Cho 0 điểm".
+> - **Trang Chấm bài chỉ có lượt làm đã nộp hết** (`submitted`/`graded`, `manual_count > 0`); lượt đang làm dở chưa chấm được (409) dù section Writing đã nộp.
+> - **Học viên thấy điểm từng câu ngay khi chấm** (như trang kết quả Step 13); chấm đủ thì trang kết quả hiện thêm tổng điểm tự luận.
+>
+> Quyết định kỹ thuật (mình tự chọn):
+> - API `t/:slug/grading/*` (`GRADER_ROLES`): `GET attempts` (phân trang, lọc `status`/`examId`/`q` tên-email học viên, kèm danh sách đề có bài để lọc; bỏ bài của người chấm), `GET attempts/:id` (chỉ section có câu chấm tay; đề bài tách từ `content_public` của đúng section: hướng dẫn subpart trước câu + nội dung câu, passage part riêng; bài viết, có ghi âm, điểm/nhận xét/người chấm; `nextAttemptId` = bài chờ chấm nộp sớm nhất khác), `GET attempts/:id/recordings/:answerId/url` (presigned cho người chấm; route học viên giữ nguyên chỉ chủ lượt làm), `PUT answers/:answerId` (`score` 0 → `max_score` bước 0,5, `comment` ≤ 5000). Bài của chính mình 403, lượt chưa nộp xong 409, câu tự động 400.
+> - Chấm trong transaction khoá dòng lượt làm; `manual_graded_count` **đếm lại** số câu chấm tay đã có `graded_at` (không cộng dồn, chấm lại không tăng), đủ `manual_count` thì `submitted → graded` (update có điều kiện trạng thái cũ).
+> - Không cần migration (bảng/cột đã có từ Step 13). Tổng quan tenant lấy số thật: đề theo trạng thái, số lượt làm, **bài chờ chấm = lượt `submitted` không phải của người xem**; thẻ bấm được sang trang Chấm bài.
+> - Frontend: `/t/{slug}/dashboard/grading` (mặc định lọc Chờ chấm, `?status=graded|all`), `/t/{slug}/dashboard/grading/{attemptId}` (danh sách câu bên trái, đề bài + passage thu gọn + bài làm/player ghi âm, ô điểm + nhận xét, "Lưu điểm" / "Lưu & câu tiếp", điểm nháp giữ khi đổi câu và báo "Chưa lưu", link bài chờ chấm tiếp theo khi chấm đủ).
 
 ### Step 15 – Hoàn thiện & nghiệm thu tổng
 **Việc làm**
@@ -733,6 +763,13 @@ health:      GET /api/health
 - [ ] Thành viên thi tại khu vực chính: timer section, tự nộp, số câu đánh từ 1 mỗi section, ghi âm Speaking.
 - [ ] Chấm tự động phía server, không lộ đáp án; chấm tay Writing/Speaking.
 - [ ] Deploy `http://<ip>:3001`, LC ở 3000 không bị ảnh hưởng.
+
+> Cập nhật khi làm Step 15 (2026-09-16, người dùng chọn phương án đề xuất):
+>
+> - **Test e2e phân quyền không dùng DB**: app Nest thật (mọi controller của `AppModule`, guard toàn cục, `TenantGuard`, filter lỗi) + repository trong bộ nhớ, service rỗng, interceptor dừng ngay sau guard; bảng quyền viết tay theo mục 5 cho **mọi route** (thiếu route thì test lỗi), chạy trong `pnpm test`. Quy tắc trong service (đề của mình, bài của mình, bảo vệ Owner…) kiểm bằng unit test service.
+> - **Giữ HTTP** (`http://<ip>:3001`), chưa có domain + SSL; ghi âm Speaking trên VPS thử bằng flag Chrome `unsafely-treat-insecure-origin-as-secure`.
+> - **Deploy qua PR trước**: làm xong local → mở PR để workflow build thử image → người dùng cập nhật `R2_*` trên VPS và cho phép push `main` → nghiệm thu checklist trên :3001 bằng dữ liệu thử rồi xoá.
+> - **Không seed thêm dữ liệu mẫu**: chỉ Owner + 3 gói + danh mục/loại đề hệ thống (đã có).
 
 ---
 

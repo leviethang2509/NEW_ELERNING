@@ -18,10 +18,15 @@ import { User } from '../users/user.entity';
 
 /**
  * Lượt làm bài (plan 4.5). Tạo bảng ở Step 12 vì quy tắc version cần biết
- * version hiện tại đã có bài làm chưa; luồng làm bài ở Step 13.
+ * version hiện tại đã có bài làm chưa; luồng làm bài ở Step 13. Mỗi người chỉ
+ * có tối đa 1 lượt đang làm dở cho mỗi đề.
  */
 @Entity('exam_attempts')
 @Index('IDX_exam_attempts_exam_version', ['examId', 'examVersion'])
+@Index('UQ_exam_attempts_in_progress', ['examId', 'userId'], {
+  unique: true,
+  where: `"status" = '${AttemptStatus.IN_PROGRESS}'`,
+})
 @Check('CHK_exam_attempts_status', sqlInList('status', AttemptStatus))
 export class ExamAttempt {
   @PrimaryGeneratedColumn('uuid', {

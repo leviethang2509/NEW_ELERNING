@@ -11,9 +11,14 @@ export const vi = {
     close: 'Đóng',
     processing: 'Đang xử lý…',
     noData: 'Chưa có dữ liệu',
-    comingSoon: 'Tính năng đang được phát triển.',
     backHome: 'Về trang chủ',
     loadFailed: 'Không tải được dữ liệu',
+    retry: 'Thử lại',
+    notFoundTitle: 'Không tìm thấy trang',
+    notFoundText: 'Đường dẫn không tồn tại hoặc trang đã bị gỡ.',
+    errorTitle: 'Đã có lỗi xảy ra',
+    errorText:
+      'Trang gặp lỗi không mong đợi. Bạn thử tải lại, nếu vẫn lỗi hãy quay lại sau.',
     optional: '(không bắt buộc)',
   },
   auth: {
@@ -809,45 +814,224 @@ export const vi = {
       aside:
         'Đáp án soạn trong editor được ẩn · câu trả lời ở đây không được lưu',
     },
-    simulator: {
-      status: {
-        todo: 'Chưa làm',
-        flagged: 'Gắn cờ',
-        answered: 'Đã trả lời',
-        correct: 'Đúng',
-        wrong: 'Sai',
-        manual: 'Không chấm tự động',
-      },
-      badgeResult: (label: string, status: string) =>
-        `Câu ${label} — ${status}`,
-      badgeFlag: (label: string, flagged: boolean) =>
-        `Câu ${label} — bấm để ${flagged ? 'gỡ' : 'gắn'} cờ`,
-      correctSummary: (manual: number) =>
-        manual > 0 ? `câu đúng · ${manual} câu không chấm tự động` : 'câu đúng',
-      reviewHint: 'Bấm số để xem lại từng câu',
-      retry: 'Làm lại',
-      unanswered: (count: number) => `Còn ${count} câu chưa làm — vẫn nộp?`,
-      keepGoing: 'Làm tiếp',
-      submitAnyway: 'Vẫn nộp',
-      progress: (done: number, total: number) =>
-        `Đã trả lời ${done}/${total} · bấm số trong đề để gắn cờ`,
-      submit: 'Nộp bài',
-      question: (no: number) => `Câu ${no}`,
-      questionRange: (first: number, last: number) =>
-        first === last ? `Câu ${first}` : `Câu ${first}–${last}`,
-      blank: 'Ô trống',
-      choice: 'Lựa chọn',
-      answer: 'Câu trả lời',
-      choose: '— chọn —',
-      pickHint: (max: number, picked: number) =>
-        `Chọn ${max} đáp án · đã chọn ${picked}/${max}`,
-      moveUp: 'Lên',
-      moveDown: 'Xuống',
-      speaking: (seconds?: number) =>
-        `Phần nói${seconds !== undefined ? ` — ${seconds} giây` : ''}. Bản xem trước chưa ghi âm.`,
-      charCount: (count: number, max?: number) =>
-        `${count}${max !== undefined ? ` / ${max}` : ''} ký tự`,
+  },
+  // Khu vực chính: đề đang mở, lịch sử lượt làm, kết quả (Step 13).
+  learner: {
+    searchPlaceholder: 'Tìm đề thi',
+    allCategories: 'Mọi danh mục',
+    allBlueprints: 'Mọi loại đề',
+    noMatch: 'Không có đề nào khớp bộ lọc.',
+    examStats: (sections: number, questions: number, minutes: number) =>
+      `${sections} section · ${questions} câu · ${minutes} phút`,
+    recentAttempts: 'Lượt làm gần đây',
+    viewExam: 'Xem đề',
+    backToTenant: 'Về trang trung tâm',
+    sectionsHeading: 'Cấu trúc đề',
+    sectionColumns: {
+      section: 'Section',
+      duration: 'Thời gian',
+      questions: 'Số câu',
     },
+    minutes: (value: number) => `${value} phút`,
+    questions: (value: number) => `${value} câu`,
+    totalDuration: (value: number) => `Tổng thời gian ${value} phút`,
+    start: 'Bắt đầu làm bài',
+    continue: 'Làm tiếp',
+    starting: 'Đang tạo lượt làm…',
+    startHint:
+      'Mỗi section có đồng hồ riêng, chỉ bắt đầu tính giờ khi bạn bấm Bắt đầu ở màn hình hướng dẫn của section đó.',
+    inProgressHint:
+      'Bạn đang có lượt làm dở. Hãy làm tiếp hoặc nộp bài trước khi bắt đầu lượt mới.',
+    closed: 'Đề đã ngừng mở, bạn chỉ xem được lịch sử lượt làm.',
+    historyHeading: 'Lịch sử lượt làm',
+    noAttempts: 'Bạn chưa làm đề này lần nào.',
+    attemptColumns: {
+      exam: 'Đề thi',
+      startedAt: 'Bắt đầu',
+      status: 'Trạng thái',
+      score: 'Số câu đúng',
+      actions: 'Thao tác',
+    },
+    attemptStatus: {
+      in_progress: 'Đang làm',
+      submitted: 'Chờ chấm',
+      graded: 'Đã có kết quả',
+    },
+    sectionProgress: (done: number, total: number) =>
+      `Đã nộp ${done}/${total} section`,
+    score: (correct: number, total: number) => `${correct}/${total}`,
+    viewResult: 'Xem kết quả',
+    resultTitle: 'Kết quả bài làm',
+    startedAt: (value: string) => `Bắt đầu ${value}`,
+    submittedAt: (value: string) => `Nộp ${value}`,
+    autoTotal: 'Câu chấm tự động đúng',
+    manualProgress: (graded: number, total: number) =>
+      `Đã chấm ${graded}/${total} câu tự luận`,
+    noManual: 'Không có câu chấm tay',
+    resultNote:
+      'Kết quả chỉ hiện số câu đúng, không hiện đáp án. Câu Writing/Speaking do giáo viên chấm.',
+    autoSubmitted: 'Hết giờ, tự nộp',
+    manualHeading: 'Phần chấm tay',
+    manualItem: (no: number, qtype: string) => `Câu ${no} · ${qtype}`,
+    waitingGrade: 'Chờ chấm',
+    manualScore: (score: number, max: number) => `${score}/${max} điểm`,
+    manualTotal: (score: number, max: number) =>
+      `Tổng điểm tự luận ${score}/${max}`,
+    qtypes: { writing: 'Writing', speaking: 'Speaking' } as Record<
+      string,
+      string
+    >,
+  },
+  // Trang thi toàn màn hình.
+  examTaking: {
+    loadFailed: 'Không tải được bài làm',
+    sectionOf: (index: number, total: number) => `Section ${index}/${total}`,
+    sectionInfo: (minutes: number, questions: number) =>
+      `${minutes} phút · ${questions} câu`,
+    startSection: 'Bắt đầu section',
+    starting: 'Đang bắt đầu…',
+    startHint:
+      'Đồng hồ bắt đầu chạy khi bấm Bắt đầu. Hết giờ, bài được tự động nộp. Tải lại trang không làm mất câu trả lời đã lưu.',
+    noIntro: 'Section này không có phần hướng dẫn.',
+    justSubmitted: (name: string) => `Đã nộp section "${name}".`,
+    justAutoSubmitted: (name: string) =>
+      `Hết giờ, section "${name}" đã được tự động nộp.`,
+    sectionStatus: {
+      not_started: 'Chưa làm',
+      in_progress: 'Đang làm',
+      submitted: 'Đã nộp',
+    },
+    finish: 'Nộp toàn bài',
+    finishTitle: 'Nộp toàn bài?',
+    finishMessage: (remaining: number) =>
+      `Còn ${remaining} section chưa làm sẽ được tính là bỏ trống. Nộp rồi không làm tiếp được nữa.`,
+    timeLeft: 'Thời gian còn lại',
+    saveState: {
+      saved: 'Đã lưu',
+      dirty: 'Chưa lưu',
+      saving: 'Đang lưu…',
+      error: 'Lưu thất bại, đang thử lại',
+    },
+    submitting: 'Đang nộp section…',
+    timeUp: 'Hết giờ — đang nộp bài…',
+    submitFailed: 'Nộp section thất bại',
+    finished: 'Bạn đã nộp bài. Đang chuyển tới trang kết quả…',
+    exit: 'Thoát',
+    recorder: {
+      unsupported:
+        'Trình duyệt không cho ghi âm trên trang này (cần HTTPS hoặc localhost, và trình duyệt hỗ trợ MediaRecorder).',
+      permissionDenied:
+        'Không truy cập được micro. Hãy cho phép trình duyệt dùng micro rồi thử lại.',
+      record: 'Ghi âm',
+      rerecord: 'Ghi lại',
+      stop: 'Dừng',
+      recording: (elapsed: number, max?: number) =>
+        `Đang ghi ${elapsed}s${max !== undefined ? ` / ${max}s` : ''}`,
+      limit: (seconds?: number) =>
+        seconds !== undefined
+          ? `Ghi âm tối đa ${seconds} giây, được ghi lại trong thời gian làm section.`
+          : 'Được ghi lại trong thời gian làm section.',
+      uploading: 'Đang tải bản ghi lên…',
+      uploaded: (time: string) => `Đã lưu bản ghi lúc ${time}`,
+      uploadFailed: 'Tải bản ghi lên thất bại',
+      play: 'Nghe lại',
+      retryUpload: 'Tải lại lên',
+    },
+  },
+  // Bản giả lập đề: xem trước trong dashboard và trang thi.
+  grading: {
+    subtitle:
+      'Chấm các câu Writing/Speaking của bài đã nộp. Không chấm được bài của chính mình; phần chấm tự động giữ nguyên.',
+    searchPlaceholder: 'Tìm theo tên hoặc email học viên',
+    allStatuses: 'Mọi trạng thái',
+    allExams: 'Mọi đề thi',
+    status: { submitted: 'Chờ chấm', graded: 'Đã chấm' },
+    columns: {
+      student: 'Học viên',
+      exam: 'Đề thi',
+      submittedAt: 'Nộp lúc',
+      progress: 'Chấm tay',
+      status: 'Trạng thái',
+    },
+    empty: 'Không có bài nào khớp bộ lọc.',
+    open: 'Chấm bài',
+    view: 'Xem bài',
+    progress: (graded: number, total: number) => `${graded}/${total} câu`,
+    autoScore: (correct: number, total: number) =>
+      `Tự động đúng ${correct}/${total}`,
+    backToList: 'Danh sách bài',
+    submittedAt: (value: string) => `Nộp ${value}`,
+    questionsHeading: 'Câu cần chấm',
+    questionLabel: (no: number, qtype: string) => `Câu ${no} · ${qtype}`,
+    partLabel: (section: string, part: number | null) =>
+      part === null ? section : `${section} · Part ${part + 1}`,
+    autoSubmitted: 'Hết giờ, tự nộp',
+    passage: 'Nội dung part',
+    prompt: 'Đề bài',
+    response: 'Bài làm',
+    blank: 'Học viên bỏ trống câu này.',
+    noRecording: 'Học viên không ghi âm câu này.',
+    loadRecording: 'Tải ghi âm',
+    recordingFailed: 'Không tải được ghi âm',
+    charCount: (chars: number, words: number, max: number | null) =>
+      `${chars}${max ? `/${max}` : ''} ký tự · ${words} từ`,
+    maxSeconds: (seconds: number) => `Ghi tối đa ${seconds} giây`,
+    score: 'Điểm',
+    scoreHint: (max: number) => `0–${max}, bước 0,5`,
+    comment: 'Nhận xét',
+    commentPlaceholder: 'Nhận xét cho học viên (không bắt buộc)',
+    save: 'Lưu điểm',
+    saveAndNext: 'Lưu & câu tiếp',
+    zero: 'Cho 0 điểm',
+    saved: 'Đã lưu điểm',
+    unsaved: 'Chưa lưu',
+    invalidScore: (max: number) => `Điểm phải từ 0 đến ${max}, bước 0,5`,
+    waiting: 'Chờ chấm',
+    scoreBadge: (score: number, max: number) => `${score}/${max}`,
+    gradedBy: (name: string, at: string) => `Chấm bởi ${name} · ${at}`,
+    gradedByUnknown: (at: string) => `Đã chấm · ${at}`,
+    allGraded: 'Đã chấm đủ mọi câu của bài này. Học viên đã xem được điểm.',
+    nextAttempt: 'Bài chờ chấm tiếp theo',
+  },
+  simulator: {
+    status: {
+      todo: 'Chưa làm',
+      flagged: 'Gắn cờ',
+      answered: 'Đã trả lời',
+      correct: 'Đúng',
+      wrong: 'Sai',
+      manual: 'Không chấm tự động',
+    },
+    badgeResult: (label: string, status: string) => `Câu ${label} — ${status}`,
+    badgeFlag: (label: string, flagged: boolean) =>
+      `Câu ${label} — bấm để ${flagged ? 'gỡ' : 'gắn'} cờ`,
+    correctSummary: (manual: number) =>
+      manual > 0 ? `câu đúng · ${manual} câu không chấm tự động` : 'câu đúng',
+    reviewHint: 'Bấm số để xem lại từng câu',
+    retry: 'Làm lại',
+    unanswered: (count: number) => `Còn ${count} câu chưa làm — vẫn nộp?`,
+    keepGoing: 'Làm tiếp',
+    submitAnyway: 'Vẫn nộp',
+    progress: (done: number, total: number) =>
+      `Đã trả lời ${done}/${total} · bấm số trong đề để gắn cờ`,
+    submit: 'Nộp bài',
+    submitSection: 'Nộp section',
+    confirmSubmit: 'Nộp section này? Nộp rồi không sửa được nữa.',
+    question: (no: number) => `Câu ${no}`,
+    questionRange: (first: number, last: number) =>
+      first === last ? `Câu ${first}` : `Câu ${first}–${last}`,
+    blank: 'Ô trống',
+    choice: 'Lựa chọn',
+    answer: 'Câu trả lời',
+    choose: '— chọn —',
+    pickHint: (max: number, picked: number) =>
+      `Chọn ${max} đáp án · đã chọn ${picked}/${max}`,
+    moveUp: 'Lên',
+    moveDown: 'Xuống',
+    speaking: (seconds?: number) =>
+      `Phần nói${seconds !== undefined ? ` — ${seconds} giây` : ''}. Bản xem trước chưa ghi âm.`,
+    charCount: (count: number, max?: number) =>
+      `${count}${max !== undefined ? ` / ${max}` : ''} ký tự`,
   },
   media: {
     title: 'Thư viện media',

@@ -11,6 +11,8 @@ import {
   type TenantMembershipInfo,
 } from '@lang/shared';
 import { useAuth } from '@/components/auth/AuthProvider';
+import { LearnerExamList } from '@/components/learner/LearnerExamList';
+import { MyRecentAttempts } from '@/components/learner/MyRecentAttempts';
 import { TenantAvatar } from '@/components/tenant/TenantAvatar';
 import { TenantNotice } from '@/components/tenant/TenantNotice';
 import {
@@ -172,13 +174,12 @@ export function TenantHome({ slug: rawSlug }: { slug: string }) {
               </Badge>
             ))}
           </div>
+          <MyRecentAttempts slug={tenant.slug} />
           <section className="mt-10">
-            <h2 className="text-[12px] font-semibold uppercase tracking-[0.09em] text-[var(--muted)]">
+            <h2 className="mb-3 text-[12px] font-semibold uppercase tracking-[0.09em] text-[var(--muted)]">
               {vi.tenantPage.examsHeading}
             </h2>
-            <p className="mt-3 rounded-2xl border border-dashed border-[var(--border-strong)] px-4 py-10 text-center text-[14px] text-[var(--body)]">
-              {vi.tenantPage.noExams}
-            </p>
+            <LearnerExamList slug={tenant.slug} />
           </section>
         </>
       ) : (

@@ -4,8 +4,11 @@ import { useMemo, useState } from 'react';
 import { buildPlan, type ExamElement } from '@lang/exam-core';
 import { Modal } from '@/components/ui';
 import { vi } from '@/i18n/vi';
-import { ExamSimulator } from './ExamSimulator';
-import { AnswerNav, SimulatorProvider } from './SimulatorState';
+import { ExamSimulator } from '@/components/exam-simulator/ExamSimulator';
+import {
+  AnswerNav,
+  SimulatorProvider,
+} from '@/components/exam-simulator/SimulatorState';
 
 export interface PreviewSection {
   key: string;

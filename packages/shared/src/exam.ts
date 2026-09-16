@@ -81,3 +81,17 @@ export function isValidDurationMinutes(value: unknown): value is number {
 // Điểm chấm tay Writing/Speaking.
 export const MANUAL_SCORE_MAX = 10;
 export const MANUAL_SCORE_STEP = 0.5;
+
+/** Điểm chấm tay hợp lệ: 0 → `max` (mặc định `MANUAL_SCORE_MAX`), bước 0,5. */
+export function isValidManualScore(
+  value: unknown,
+  max: number = MANUAL_SCORE_MAX,
+): value is number {
+  return (
+    typeof value === 'number' &&
+    Number.isFinite(value) &&
+    value >= 0 &&
+    value <= max &&
+    Number.isInteger(value / MANUAL_SCORE_STEP)
+  );
+}
