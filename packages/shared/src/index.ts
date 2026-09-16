@@ -12,3 +12,4 @@ export * from './roles';
 export * from './status';
 export * from './tenant';
 export * from './user';
+export * from './user-manual';

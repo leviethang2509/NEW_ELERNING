@@ -115,6 +115,7 @@ const ROUTES: Record<string, Access> = {
   'POST /admin/exam-blueprints': SYSTEM,
   'PATCH /admin/exam-blueprints/:id': SYSTEM,
   'DELETE /admin/exam-blueprints/:id': SYSTEM,
+  'GET /admin/user-manual': SYSTEM,
 
   'GET /t/:slug/me': MEMBER,
   'GET /t/:slug/dashboard/stats': STAFF,

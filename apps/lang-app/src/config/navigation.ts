@@ -6,6 +6,7 @@ import {
   type TenantRole,
 } from '@lang/shared';
 import {
+  BookOpen,
   Building2,
   ClipboardCheck,
   CreditCard,
@@ -63,6 +64,11 @@ function systemNavigation(): NavSection[] {
           href: '/admin/exam-blueprints',
           icon: Layers,
         },
+      ],
+    },
+    {
+      items: [
+        { label: vi.nav.userManual, href: '/user-manual', icon: BookOpen },
       ],
     },
   ];

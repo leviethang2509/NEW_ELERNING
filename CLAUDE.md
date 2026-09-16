@@ -58,7 +58,7 @@
 
 ## lang-app (Next.js)
 
-- Route group: `(site)` khu vực chính, `(dashboard)` dùng `DashboardShell`, `(exam)` toàn màn hình cho thi.
+- Route group: `(site)` khu vực chính, `(dashboard)` dùng `DashboardShell`, `(exam)` toàn màn hình cho thi, `(docs)` tài liệu nội bộ.
 - Server component chỉ truyền dữ liệu thuần sang client component (vd. `NavScope`); menu/icon dựng trong client từ `src/config/navigation.ts`.
 - Chuỗi UI đặt trong `src/i18n/vi.ts`. Màu dùng CSS variables Solarized trong `globals.css` (class tiền tố `ls-`).
 - API gọi qua `src/lib/api.ts` (cùng origin `/api`, access token trong bộ nhớ, tự refresh khi 401; mất mạng / 5xx không có body JSON đổi thành `ApiError` tiếng Việt). `errorMessage` (`lib/error-message.ts`) chỉ hiện message của `ApiError`, lỗi khác (TypeError, DOMException – tiếng Anh) dùng thông báo mặc định. Trang 404 / lỗi render: `app/not-found.tsx`, `app/error.tsx`, `app/global-error.tsx` (`StatusPage`).
@@ -75,6 +75,13 @@
 - Form: `inputClass`/`labelClass`/`primaryButtonClass`, `PasswordInput`, `FormAlert`, `SectionCard` trong `src/components/ui`; nút trong dialog/toolbar dùng `compactPrimaryButtonClass`/`secondaryButtonClass`/`iconButtonClass`.
 - Trang danh sách dashboard: `DataTable` (truyền nguyên văn class `sm:grid-cols-[…]`) + `SearchInput`/`SelectFilter` + `Pagination`, trạng thái bằng `Badge`, mật khẩu tạm hiện bằng `TemporaryPasswordDialog`. Lỗi API qua `errorMessage` (`lib/error-message.ts`), ngày giờ/giá/số qua `lib/format.ts`. Page đọc query bằng prop `searchParams`.
 - ESLint: plugin `@next/next` bản 14 phải bọc `fixupPluginRules` (ESLint 10); lint bằng `eslint .`, không dùng `next lint`.
+
+## Tài liệu nội bộ `/user-manual` (req-2)
+
+- Nội dung: JSON trong `apps/lang-api/src/user-manual/content/` (mỗi file = 1 nhóm sidebar, ghép thứ tự ở `user-manual.content.ts`), phục vụ qua `GET /admin/user-manual` (System Owner/Admin). **Không** đặt nội dung ở `public/` hay bundle vào lang-app.
+- Kiểu dữ liệu, parser inline (`**đậm**`, `` `mã` ``, `[chữ](page:id#heading)`) và `validateUserManual` ở `@lang/shared` (`user-manual.ts`); `user-manual.content.spec.ts` kiểm nội dung thật (id trùng, block sai, liên kết gãy). Id heading = `manualHeadingId(text)` – đổi chữ heading thì sửa các liên kết `#…` trỏ tới nó.
+- UI: `app/(docs)/user-manual` + `components/user-manual` (shell, tìm kiếm, lọc role, mục lục, Trước/Sau), chuỗi ở `vi.userManual`.
+- **Thêm/đổi tính năng, quyền, giới hạn, env hay quy trình deploy phải cập nhật tài liệu JSON tương ứng** (tên menu/nút đúng `vi.ts`; không ghi secret, IP hay giá trị env) và đổi `updatedAt` trong `user-manual.content.ts`.
 
 ## Docker & deploy
 

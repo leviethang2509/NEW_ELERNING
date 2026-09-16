@@ -1,0 +1,448 @@
+{
+  "id": "gioi-thieu",
+  "title": "Giới thiệu",
+  "pages": [
+    {
+      "id": "tong-quan",
+      "title": "Tổng quan hệ thống",
+      "summary": "Lang Simulator là gì, gồm những khu vực nào và cách đọc tài liệu này.",
+      "roles": [],
+      "blocks": [
+        {
+          "type": "callout",
+          "tone": "info",
+          "title": "Tài liệu nội bộ",
+          "text": "Trang này chỉ dành cho **System Owner** và **System Admin**. Nội dung mô tả thao tác của mọi vai trò để đội quản trị hỗ trợ người dùng; không gửi đường dẫn cho người dùng ngoài."
+        },
+        {
+          "type": "paragraph",
+          "text": "**Lang Simulator** là nền tảng multi-tenant cho trung tâm ngoại ngữ: mỗi trung tâm (tenant) có không gian riêng để quản lý thành viên, soạn đề theo cấu trúc kỳ thi (TOEIC, IELTS, JLPT…), cho học viên thi thử có tính giờ, chấm tự động phần trắc nghiệm và để giáo viên chấm Writing/Speaking."
+        },
+        { "type": "heading", "level": 2, "text": "Các khu vực của hệ thống" },
+        {
+          "type": "table",
+          "columns": ["Khu vực", "Đường dẫn", "Ai dùng"],
+          "rows": [
+            [
+              "Trang chủ, đăng ký, đăng nhập",
+              "`/`, `/register`, `/login`",
+              "Mọi người"
+            ],
+            [
+              "Không gian của tôi, tài khoản",
+              "`/me`, `/me/account`",
+              "Mọi người dùng đã đăng nhập"
+            ],
+            ["Dashboard hệ thống", "`/admin/*`", "System Owner, System Admin"],
+            [
+              "Trang trung tâm (danh sách đề, lịch sử, kết quả)",
+              "`/t/{slug}`, `/t/{slug}/exams/{id}`",
+              "Mọi thành viên của trung tâm"
+            ],
+            [
+              "Dashboard trung tâm",
+              "`/t/{slug}/dashboard/*`",
+              "Chủ sở hữu, Quản trị viên, Giáo viên"
+            ],
+            [
+              "Màn hình thi (toàn màn hình)",
+              "`/t/{slug}/attempts/{id}`",
+              "Thành viên đang làm bài"
+            ],
+            ["Tài liệu nội bộ", "`/user-manual`", "System Owner, System Admin"]
+          ]
+        },
+        { "type": "heading", "level": 2, "text": "Luồng nghiệp vụ chính" },
+        {
+          "type": "steps",
+          "items": [
+            {
+              "title": "Người dùng tạo tài khoản",
+              "text": "Tự đăng ký tại `/register`, hoặc được System Admin / trung tâm tạo sẵn. Xem [Đăng ký & đăng nhập](page:dang-ky-dang-nhap)."
+            },
+            {
+              "title": "Đăng ký trung tâm",
+              "text": "Người dùng từ 18 tuổi gửi đăng ký, chọn gói dịch vụ. Xem [Đăng ký trung tâm](page:dang-ky-trung-tam)."
+            },
+            {
+              "title": "System Admin duyệt",
+              "text": "Trung tâm chuyển từ **Chờ duyệt** sang **Đang hoạt động** (hoặc bị từ chối kèm lý do). Xem [Quản lý trung tâm](page:admin-trung-tam)."
+            },
+            {
+              "title": "Trung tâm thêm thành viên",
+              "text": "Chủ sở hữu/Quản trị viên thêm giáo viên, học viên, phụ huynh. Xem [Thành viên](page:thanh-vien)."
+            },
+            {
+              "title": "Giáo viên soạn và publish đề",
+              "text": "Tạo đề từ loại đề, soạn nội dung từng section, publish. Xem [Vòng đời đề thi](page:vong-doi-de-thi)."
+            },
+            {
+              "title": "Học viên làm bài",
+              "text": "Làm từng section có đồng hồ, hết giờ tự nộp. Xem [Làm bài thi](page:lam-bai-thi)."
+            },
+            {
+              "title": "Chấm và xem kết quả",
+              "text": "Phần trắc nghiệm chấm ngay khi nộp; Writing/Speaking do giáo viên chấm. Xem [Chấm bài](page:cham-bai) và [Kết quả & lịch sử](page:ket-qua-lich-su)."
+            }
+          ]
+        },
+        { "type": "heading", "level": 2, "text": "Cách dùng tài liệu" },
+        {
+          "type": "list",
+          "items": [
+            "Menu bên trái chia theo nhóm; bấm một mục để mở trang tương ứng (mỗi trang có đường dẫn riêng để chia sẻ nội bộ).",
+            "Ô **Tìm kiếm** tìm trong tiêu đề và toàn bộ nội dung, không phân biệt dấu.",
+            "Bộ lọc **Vai trò** chỉ giữ các trang liên quan tới vai trò đó (trang chung luôn hiện).",
+            "Màn hình rộng có **Mục lục** bên phải; cuối trang có nút **Trước / Sau**.",
+            "Tên menu và nút trong tài liệu được ghi **đậm** đúng như trên giao diện."
+          ]
+        }
+      ]
+    },
+    {
+      "id": "thuat-ngu",
+      "title": "Thuật ngữ",
+      "summary": "Giải thích các khái niệm dùng trong hệ thống và tài liệu.",
+      "roles": [],
+      "blocks": [
+        { "type": "heading", "level": 2, "text": "Tài khoản & trung tâm" },
+        {
+          "type": "table",
+          "columns": ["Thuật ngữ", "Ý nghĩa"],
+          "rows": [
+            [
+              "Tài khoản (user)",
+              "Duy nhất theo email (không phân biệt hoa thường). Bắt buộc email, mật khẩu, họ tên, ngày sinh; tuỳ chọn giới tính, số điện thoại, địa chỉ."
+            ],
+            [
+              "Vai trò hệ thống",
+              "Mỗi tài khoản có đúng 1: **System Owner**, **System Admin** hoặc **Người dùng** (Registered User). Xem [Vai trò](page:vai-tro)."
+            ],
+            [
+              "Trung tâm (tenant)",
+              "Không gian riêng của một trung tâm ngoại ngữ, truy cập theo đường dẫn `/t/{slug}`. Dữ liệu các trung tâm tách biệt hoàn toàn."
+            ],
+            [
+              "Đường dẫn (slug)",
+              "Phần `{slug}` trong URL trung tâm: 3–40 ký tự, chữ thường không dấu, số và gạch nối; không trùng và không dùng từ hệ thống dành riêng."
+            ],
+            [
+              "Gói dịch vụ",
+              "Giới hạn số thành viên **đang hoạt động** của trung tâm (seed sẵn Basic 100, Standard 500, Pro 1000). Chưa có thanh toán hay thời hạn."
+            ],
+            [
+              "Thành viên (membership)",
+              "Liên kết tài khoản ↔ trung tâm. Mỗi tài khoản tối đa 1 membership mỗi trung tâm, mang **nhiều** vai trò trung tâm cùng lúc."
+            ],
+            [
+              "Vai trò trung tâm",
+              "Chủ sở hữu (Tenant Owner), Quản trị viên (Tenant Admin), Giáo viên (Teacher), Học viên (Student), Phụ huynh (Parent)."
+            ],
+            [
+              "Liên kết phụ huynh",
+              "Gắn thành viên có vai trò Phụ huynh với thành viên có vai trò Học viên (nhiều–nhiều, tuỳ chọn)."
+            ],
+            [
+              "Ngữ cảnh / không gian làm việc",
+              "Quản trị hệ thống hoặc một trung tâm mà user là thành viên; chuyển qua switcher trong sidebar dashboard hoặc trang `/me`."
+            ]
+          ]
+        },
+        { "type": "heading", "level": 2, "text": "Đề thi" },
+        {
+          "type": "table",
+          "columns": ["Thuật ngữ", "Ý nghĩa"],
+          "rows": [
+            [
+              "Danh mục đề (exam category)",
+              "Nhóm loại đề theo ngôn ngữ/chương trình, vd. Tiếng Anh, Tiếng Nhật. Có phạm vi **Hệ thống** hoặc **Trung tâm**."
+            ],
+            [
+              "Loại đề (exam blueprint)",
+              "Khuôn đề như TOEIC, IELTS, JLPT N2, thuộc một danh mục, gồm các module."
+            ],
+            [
+              "Module",
+              "Thành phần của loại đề (Listening, Reading…) với **thời lượng tham khảo** (bội số 5, tối đa 180 phút)."
+            ],
+            [
+              "Đề thi (exam)",
+              "Đề cụ thể của trung tâm, tạo từ một loại đề. Trạng thái **Nháp → Đã publish → Lưu trữ**."
+            ],
+            [
+              "Section",
+              "Phần thi có đồng hồ riêng, ban đầu sinh từ module (sửa được). Mỗi section là một tab soạn thảo."
+            ],
+            [
+              "Part / Subpart",
+              "Phần lớn và phần con trong một section, đánh dấu bằng indicator. Part hiện thành tab trong màn hình thi."
+            ],
+            [
+              "Indicator",
+              "Khối đánh dấu ranh giới Part / Subpart / Question trong trình soạn đề."
+            ],
+            [
+              "Câu hỏi & dạng câu hỏi",
+              "11 dạng: trắc nghiệm, pick-n, matching, T/F/NG, Y/N/NG, điền chỗ trống, sắp xếp, polytomous, Speaking, Writing. Xem [Dạng câu hỏi & cách chấm](page:dang-cau-hoi)."
+            ],
+            [
+              "Version",
+              "Phiên bản nội dung đề. Lưu đề khi version hiện tại **đã có bài làm** sẽ tạo version mới. Xem [Version đề thi](page:version-de-thi)."
+            ],
+            [
+              "Publish",
+              "Mở đề cho thành viên trung tâm làm bài; chỉ publish được khi nội dung không còn lỗi."
+            ]
+          ]
+        },
+        { "type": "heading", "level": 2, "text": "Thi & chấm" },
+        {
+          "type": "table",
+          "columns": ["Thuật ngữ", "Ý nghĩa"],
+          "rows": [
+            [
+              "Lượt làm (attempt)",
+              "Một lần làm đề của một thành viên. Trạng thái **Đang làm → Chờ chấm → Đã có kết quả**."
+            ],
+            [
+              "Chấm tự động",
+              "Mọi dạng trừ Speaking/Writing, chấm ở server ngay khi nộp section; kết quả là số câu đúng."
+            ],
+            [
+              "Chấm tay",
+              "Speaking/Writing: người chấm cho điểm 0–10 (bước 0,5) kèm nhận xét."
+            ],
+            [
+              "Tự nộp",
+              "Hết giờ section, hệ thống tự nộp bằng câu trả lời đã lưu."
+            ],
+            [
+              "Xem trước",
+              "Giả lập bài làm trong trình soạn đề, chấm ngay trên trình duyệt, không tạo lượt làm."
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "id": "vai-tro",
+      "title": "Vai trò",
+      "summary": "Hai lớp vai trò: vai trò hệ thống và vai trò trong trung tâm.",
+      "roles": [],
+      "blocks": [
+        {
+          "type": "paragraph",
+          "text": "Hệ thống có **hai lớp vai trò độc lập**. Vai trò hệ thống quyết định quyền trên dashboard `/admin`; vai trò trung tâm quyết định quyền trong từng trung tâm. System Owner/Admin **không** tự động có quyền trong trung tâm nào – muốn vào phải được thêm làm thành viên."
+        },
+        { "type": "heading", "level": 2, "text": "Vai trò hệ thống" },
+        {
+          "type": "table",
+          "columns": ["Vai trò", "Tên trên giao diện", "Tóm tắt"],
+          "rows": [
+            [
+              "System Owner",
+              "System Owner",
+              "Quyền cao nhất. Quản lý mọi tài khoản kể cả System Admin/Owner, đổi vai trò hệ thống. Có thể có nhiều Owner; Owner đầu tiên tạo bằng seed. Xem [hướng dẫn](page:system-owner)."
+            ],
+            [
+              "System Admin",
+              "System Admin",
+              "Quản lý Người dùng, trung tâm, gói dịch vụ, danh mục/loại đề hệ thống. Chỉ xem, không sửa được tài khoản System Owner/Admin. Xem [hướng dẫn](page:system-admin)."
+            ],
+            [
+              "Registered User",
+              "Người dùng",
+              "Người dùng thông thường: quản lý tài khoản của mình, đăng ký trung tâm, tham gia trung tâm. Xem [hướng dẫn](page:registered-user)."
+            ]
+          ]
+        },
+        { "type": "heading", "level": 2, "text": "Vai trò trong trung tâm" },
+        {
+          "type": "table",
+          "columns": ["Vai trò", "Tên trên giao diện", "Tóm tắt"],
+          "rows": [
+            [
+              "Tenant Owner",
+              "Chủ sở hữu",
+              "Người đăng ký trung tâm; đúng 1 người mỗi trung tâm, không cấp hay gỡ qua quản lý thành viên. Toàn quyền trong trung tâm. Xem [hướng dẫn](page:tenant-owner)."
+            ],
+            [
+              "Tenant Admin",
+              "Quản trị viên",
+              "Như Chủ sở hữu nhưng không thao tác được trên thành viên Chủ sở hữu. Xem [hướng dẫn](page:tenant-admin)."
+            ],
+            [
+              "Teacher",
+              "Giáo viên",
+              "Tạo đề, sửa/publish đề mình tạo, upload media, chấm bài. Xem [hướng dẫn](page:teacher)."
+            ],
+            [
+              "Student",
+              "Học viên",
+              "Làm đề đã publish, xem kết quả của mình. Không vào dashboard. Xem [hướng dẫn](page:student)."
+            ],
+            [
+              "Parent",
+              "Phụ huynh",
+              "Được gắn với học viên. Hiện dùng như thành viên thường (làm đề); trang xem kết quả của con để req sau. Xem [hướng dẫn](page:parent)."
+            ]
+          ]
+        },
+        { "type": "heading", "level": 2, "text": "Kết hợp nhiều vai trò" },
+        {
+          "type": "list",
+          "items": [
+            "Một tài khoản có thể là thành viên của nhiều trung tâm, mỗi nơi vai trò khác nhau.",
+            "Trong một trung tâm, một thành viên mang được nhiều vai trò, vd. Chủ sở hữu kiêm Giáo viên, hoặc Giáo viên kiêm Học viên. Quyền là **hợp** của các vai trò.",
+            "Người có cả vai trò hệ thống và trung tâm thấy nhiều ngữ cảnh; sau đăng nhập sẽ vào `/me` để chọn. Xem [Không gian của tôi](page:khong-gian-cua-toi)."
+          ]
+        },
+        {
+          "type": "callout",
+          "tone": "tip",
+          "text": "Bảng quyền chi tiết theo từng chức năng nằm ở [Ma trận phân quyền](page:ma-tran-phan-quyen)."
+        }
+      ]
+    },
+    {
+      "id": "ma-tran-phan-quyen",
+      "title": "Ma trận phân quyền",
+      "summary": "Bảng tổng hợp vai trò × chức năng cho hệ thống và trung tâm.",
+      "roles": [],
+      "blocks": [
+        {
+          "type": "paragraph",
+          "text": "Quyền được kiểm tra ở API (guard toàn cục + guard trung tâm + quy tắc trong service). Ẩn menu trên giao diện chỉ là lớp hiển thị. Ký hiệu: ✔ được phép, ✘ không, “xem” chỉ đọc."
+        },
+        { "type": "heading", "level": 2, "text": "Dashboard hệ thống" },
+        {
+          "type": "table",
+          "columns": [
+            "Chức năng",
+            "System Owner",
+            "System Admin",
+            "Người dùng"
+          ],
+          "rows": [
+            ["Vào `/admin`, xem thống kê", "✔", "✔", "✘"],
+            ["Xem danh sách, chi tiết người dùng", "✔", "✔", "✘"],
+            ["Tạo người dùng (luôn là Người dùng)", "✔", "✔", "✘"],
+            ["Sửa / khoá / mở khoá / reset mật khẩu Người dùng", "✔", "✔", "✘"],
+            [
+              "Sửa / khoá / reset mật khẩu System Admin, System Owner",
+              "✔",
+              "xem",
+              "✘"
+            ],
+            ["Đổi vai trò hệ thống", "✔", "✘", "✘"],
+            [
+              "Duyệt / từ chối / tạm khoá / mở khoá trung tâm, đổi gói",
+              "✔",
+              "✔",
+              "✘"
+            ],
+            ["Quản lý gói dịch vụ", "✔", "✔", "✘"],
+            ["Quản lý danh mục & loại đề hệ thống", "✔", "✔", "✘"],
+            ["Đọc tài liệu nội bộ `/user-manual`", "✔", "✔", "✘"],
+            [
+              "Vào nội dung một trung tâm",
+              "chỉ khi là thành viên",
+              "chỉ khi là thành viên",
+              "chỉ khi là thành viên"
+            ]
+          ]
+        },
+        {
+          "type": "callout",
+          "tone": "warning",
+          "text": "Không ai tự khoá/mở khoá được tài khoản của chính mình, và hệ thống luôn phải còn ít nhất một System Owner đang hoạt động."
+        },
+        { "type": "heading", "level": 2, "text": "Trong trung tâm" },
+        {
+          "type": "table",
+          "columns": [
+            "Chức năng",
+            "Chủ sở hữu",
+            "Quản trị viên",
+            "Giáo viên",
+            "Học viên",
+            "Phụ huynh"
+          ],
+          "rows": [
+            ["Dashboard trung tâm", "✔", "✔", "✔ (rút gọn)", "✘", "✘"],
+            [
+              "Quản lý thành viên, vai trò, trạng thái",
+              "✔",
+              "✔ (không đụng Chủ sở hữu)",
+              "✘",
+              "✘",
+              "✘"
+            ],
+            ["Gắn phụ huynh ↔ học viên", "✔", "✔", "✘", "✘", "✘"],
+            [
+              "Danh mục & loại đề riêng của trung tâm",
+              "✔",
+              "✔",
+              "xem",
+              "✘",
+              "✘"
+            ],
+            ["Tạo đề", "✔", "✔", "✔", "✘", "✘"],
+            ["Xem mọi đề trong dashboard", "✔", "✔", "✔", "✘", "✘"],
+            [
+              "Sửa nội dung, publish, lưu trữ, xoá, khôi phục version",
+              "mọi đề",
+              "mọi đề",
+              "đề mình tạo",
+              "✘",
+              "✘"
+            ],
+            ["Thư viện media (upload, xoá)", "✔", "✔", "✔", "✘", "✘"],
+            [
+              "Chấm bài Writing/Speaking (trừ bài của mình)",
+              "✔",
+              "✔",
+              "✔",
+              "✘",
+              "✘"
+            ],
+            ["Xem đề đã publish và làm bài", "✔", "✔", "✔", "✔", "✔"],
+            ["Xem lịch sử & kết quả lượt làm của mình", "✔", "✔", "✔", "✔", "✔"]
+          ]
+        },
+        {
+          "type": "heading",
+          "level": 2,
+          "text": "Menu dashboard theo vai trò"
+        },
+        {
+          "type": "table",
+          "columns": ["Menu", "Hiện cho"],
+          "rows": [
+            ["Tổng quan", "Chủ sở hữu, Quản trị viên, Giáo viên"],
+            ["Quản lý → Thành viên", "Chủ sở hữu, Quản trị viên"],
+            [
+              "Đề thi → Danh mục đề, Loại đề, Đề thi, Thư viện media",
+              "Chủ sở hữu, Quản trị viên, Giáo viên"
+            ],
+            ["Đề thi → Chấm bài", "Chủ sở hữu, Quản trị viên, Giáo viên"]
+          ]
+        },
+        {
+          "type": "heading",
+          "level": 2,
+          "text": "Điều kiện chung để vào trung tâm"
+        },
+        {
+          "type": "list",
+          "items": [
+            "Trung tâm phải ở trạng thái **Đang hoạt động**. Chờ duyệt / Bị từ chối / Tạm khoá thì mọi thành viên (kể cả Chủ sở hữu) bị chặn và thấy thông báo tương ứng.",
+            "Membership phải **Đang hoạt động**; thành viên bị ngừng kích hoạt coi như không phải thành viên.",
+            "Người không phải thành viên mở `/t/{slug}` chỉ thấy phần giới thiệu công khai của trung tâm.",
+            "Tài khoản đang phải đổi mật khẩu tạm bị chặn mọi thao tác cho tới khi đổi xong."
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -20,6 +20,7 @@ export const config = {
   matcher: [
     '/me/:path*',
     '/admin/:path*',
+    '/user-manual/:path*',
     '/t/:slug/dashboard/:path*',
     '/t/:slug/exams/:path*',
     '/t/:slug/attempts/:path*',

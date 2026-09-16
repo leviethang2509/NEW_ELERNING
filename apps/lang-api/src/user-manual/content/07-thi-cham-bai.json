@@ -1,0 +1,208 @@
+{
+  "id": "thi-cham-bai",
+  "title": "Thi & chấm bài",
+  "pages": [
+    {
+      "id": "lam-bai-thi",
+      "title": "Làm bài thi",
+      "summary": "Chọn đề, bắt đầu lượt làm, làm từng section có tính giờ, ghi âm Speaking, nộp bài.",
+      "roles": ["STUDENT", "PARENT", "TEACHER", "TENANT_ADMIN", "TENANT_OWNER"],
+      "blocks": [
+        {
+          "type": "roles",
+          "roles": [
+            "STUDENT",
+            "PARENT",
+            "TEACHER",
+            "TENANT_ADMIN",
+            "TENANT_OWNER"
+          ]
+        },
+        {
+          "type": "paragraph",
+          "text": "**Mọi thành viên** đang hoạt động của trung tâm đều làm được đề đã publish, bất kể vai trò."
+        },
+        { "type": "heading", "level": 2, "text": "Chọn đề" },
+        {
+          "type": "steps",
+          "items": [
+            {
+              "title": "Mở trang trung tâm",
+              "text": "`/t/{slug}` – hiện vai trò của bạn, danh sách đề đã publish (tìm theo tên, lọc danh mục, loại đề) và **Lượt làm gần đây**."
+            },
+            {
+              "title": "Bấm Xem đề",
+              "text": "Trang đề hiện **Cấu trúc đề** (section, thời gian, số câu), tổng thời gian và **Lịch sử lượt làm**."
+            },
+            {
+              "title": "Bấm Bắt đầu làm bài",
+              "text": "Đang có lượt dở thì nút thành **Làm tiếp**. Mỗi đề chỉ có 1 lượt đang làm; không giới hạn tổng số lượt."
+            }
+          ]
+        },
+        { "type": "heading", "level": 2, "text": "Làm từng section" },
+        {
+          "type": "steps",
+          "items": [
+            {
+              "title": "Màn hình hướng dẫn",
+              "text": "Hiện tên section, thời lượng, số câu và phần hướng dẫn. Đồng hồ **chưa** chạy."
+            },
+            {
+              "title": "Bấm Bắt đầu section",
+              "text": "Đồng hồ đếm ngược theo giờ server. Section phải làm **theo thứ tự**: nộp section trước mới bắt đầu được section sau."
+            },
+            {
+              "title": "Trả lời",
+              "text": "Các Part là tab; lưới số câu cho biết câu đã trả lời. Bấm số câu trong đề để **gắn cờ** câu cần xem lại."
+            },
+            {
+              "title": "Nộp section",
+              "text": "Bấm **Nộp section** (cảnh báo nếu còn câu chưa làm). Nộp rồi không sửa được. Chuyển sang màn hình hướng dẫn của section kế."
+            },
+            {
+              "title": "Kết thúc",
+              "text": "Nộp section cuối, hoặc **Nộp toàn bài** bất kỳ lúc nào (section chưa làm tính là bỏ trống). Sau đó chuyển tới trang kết quả."
+            }
+          ]
+        },
+        { "type": "heading", "level": 2, "text": "Lưu câu trả lời và hết giờ" },
+        {
+          "type": "list",
+          "items": [
+            "Câu trả lời tự lưu lên server khoảng **3 giây** sau khi thay đổi và khi chuyển tab Part. Trạng thái: **Đã lưu**, **Chưa lưu**, **Đang lưu…**, **Lưu thất bại, đang thử lại**.",
+            "Tải lại trang, đóng trình duyệt hay đổi máy không mất câu trả lời đã lưu; **đồng hồ vẫn chạy** trong lúc rời đi.",
+            "Hết giờ: trình duyệt tự nộp. Nếu học viên đã rời trang, server tự nộp section bằng câu trả lời đã lưu (kiểm tra mỗi phút và khi có truy cập). Kết quả có nhãn **Hết giờ, tự nộp**.",
+            "Sau hạn cộng 10 giây trễ mạng, server từ chối lưu thêm (“Đã hết giờ làm section này”).",
+            "Nút **Thoát** rời màn hình thi; lượt làm vẫn Đang làm và có thể **Làm tiếp**."
+          ]
+        },
+        { "type": "heading", "level": 2, "text": "Speaking – ghi âm" },
+        {
+          "type": "list",
+          "items": [
+            "Bấm **Ghi âm**, cho phép trình duyệt dùng micro; **Dừng** hoặc tự dừng khi đủ số giây tối đa.",
+            "Bản ghi tự tải lên (“Đã lưu bản ghi lúc …”); **Nghe lại** để kiểm tra; **Ghi lại** thay bản cũ trong thời gian section.",
+            "File tối đa 10MB, định dạng webm (Chrome/Firefox/Edge) hoặc mp4 (Safari), lưu ở kho **riêng tư**: chỉ chủ lượt làm và người chấm nghe được."
+          ]
+        },
+        {
+          "type": "callout",
+          "tone": "warning",
+          "title": "Ghi âm cần HTTPS",
+          "text": "Trình duyệt chỉ cho dùng micro trên HTTPS hoặc localhost. Truy cập qua HTTP sẽ báo “Trình duyệt không cho ghi âm trên trang này”. Xem [Sự cố thường gặp](page:su-co-thuong-gap)."
+        }
+      ]
+    },
+    {
+      "id": "ket-qua-lich-su",
+      "title": "Kết quả & lịch sử",
+      "summary": "Trạng thái lượt làm, trang kết quả và những gì học viên thấy.",
+      "roles": ["STUDENT", "PARENT", "TEACHER", "TENANT_ADMIN", "TENANT_OWNER"],
+      "blocks": [
+        {
+          "type": "roles",
+          "roles": [
+            "STUDENT",
+            "PARENT",
+            "TEACHER",
+            "TENANT_ADMIN",
+            "TENANT_OWNER"
+          ]
+        },
+        { "type": "heading", "level": 2, "text": "Trạng thái lượt làm" },
+        {
+          "type": "table",
+          "columns": ["Trạng thái", "Ý nghĩa"],
+          "rows": [
+            ["**Đang làm**", "Chưa nộp hết section; bấm Làm tiếp"],
+            [
+              "**Chờ chấm**",
+              "Đã nộp hết, còn câu Writing/Speaking chưa chấm đủ; phần tự động đã có kết quả"
+            ],
+            [
+              "**Đã có kết quả**",
+              "Đã nộp và mọi câu đã có kết quả (đề không có câu chấm tay thì có kết quả ngay khi nộp)"
+            ]
+          ]
+        },
+        { "type": "heading", "level": 2, "text": "Trang kết quả" },
+        {
+          "type": "paragraph",
+          "text": "Mở bằng **Xem kết quả** trong lịch sử (`/t/{slug}/attempts/{id}/result`). Chỉ chủ lượt làm xem được."
+        },
+        {
+          "type": "list",
+          "items": [
+            "Thời điểm bắt đầu, nộp; **Câu chấm tự động đúng** tổng và theo từng section (dạng `đúng/tổng`), nhãn **Hết giờ, tự nộp** nếu có.",
+            "**Phần chấm tay**: từng câu Writing/Speaking với điểm `x/10` và nhận xét khi đã chấm, hoặc **Chờ chấm**; tổng điểm tự luận; tiến độ “Đã chấm n/m câu tự luận”.",
+            "**Không** hiện đáp án đúng, không đánh dấu câu nào sai."
+          ]
+        },
+        { "type": "heading", "level": 2, "text": "Lịch sử" },
+        {
+          "type": "list",
+          "items": [
+            "Trang đề: **Lịch sử lượt làm** của chính mình với đề đó (vẫn xem được khi đề đã lưu trữ).",
+            "Trang trung tâm: **Lượt làm gần đây** trên mọi đề.",
+            "Người quản lý trung tâm xem bài của học viên qua [Chấm bài](page:cham-bai) (chỉ bài có câu chấm tay). Chưa có trang thống kê kết quả hay trang phụ huynh xem kết quả con."
+          ]
+        }
+      ]
+    },
+    {
+      "id": "cham-bai",
+      "title": "Chấm bài",
+      "summary": "Chấm Writing/Speaking: danh sách bài, chấm từng câu, chấm lại.",
+      "roles": ["TENANT_OWNER", "TENANT_ADMIN", "TEACHER"],
+      "blocks": [
+        {
+          "type": "roles",
+          "roles": ["TENANT_OWNER", "TENANT_ADMIN", "TEACHER"]
+        },
+        {
+          "type": "paragraph",
+          "text": "Menu **Đề thi → Chấm bài** (`/t/{slug}/dashboard/grading`). Danh sách chỉ gồm lượt làm **đã nộp hết** và **có câu chấm tay**; tìm theo tên/email học viên, lọc **Chờ chấm / Đã chấm** và đề thi. Cột Chấm tay hiện tiến độ `đã chấm/tổng câu`."
+        },
+        { "type": "heading", "level": 2, "text": "Chấm một bài" },
+        {
+          "type": "steps",
+          "items": [
+            {
+              "title": "Bấm Chấm bài (hoặc Xem bài với bài đã chấm)",
+              "text": "Trang bài hiện học viên, đề, thời điểm nộp, kết quả tự động (chỉ để tham khảo)."
+            },
+            {
+              "title": "Đọc từng câu cần chấm",
+              "text": "Nội dung part (passage), **Đề bài**, **Bài làm**: bài viết kèm số ký tự/từ, hoặc nút **Tải ghi âm** để nghe. Câu bỏ trống ghi rõ “Học viên bỏ trống câu này.”"
+            },
+            {
+              "title": "Nhập Điểm và Nhận xét",
+              "text": "Điểm 0–10, bước 0,5; nhận xét tuỳ chọn (tối đa 5000 ký tự), học viên sẽ thấy."
+            },
+            {
+              "title": "Lưu",
+              "text": "**Lưu điểm**, **Lưu & câu tiếp**, hoặc **Cho 0 điểm** cho câu bỏ trống."
+            },
+            {
+              "title": "Hoàn tất",
+              "text": "Đủ mọi câu thì lượt làm chuyển **Đã có kết quả** và học viên xem được điểm. Nút **Bài chờ chấm tiếp theo** mở bài kế."
+            }
+          ]
+        },
+        { "type": "heading", "level": 2, "text": "Quy tắc" },
+        {
+          "type": "list",
+          "items": [
+            "Không chấm được bài của **chính mình** (403).",
+            "Lượt làm chưa nộp xong chưa chấm được (409).",
+            "Chỉ chấm câu Writing/Speaking; kết quả tự động không sửa được.",
+            "Câu bỏ trống vẫn cần chấm (thường cho 0) thì bài mới hoàn tất.",
+            "Chấm lại được bất kỳ lúc nào: điểm mới thay điểm cũ, hiện “Chấm bởi … · thời điểm”.",
+            "Giáo viên chấm được bài của mọi đề trong trung tâm, không chỉ đề mình tạo."
+          ]
+        }
+      ]
+    }
+  ]
+}

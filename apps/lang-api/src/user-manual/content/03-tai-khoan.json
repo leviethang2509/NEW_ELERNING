@@ -1,0 +1,217 @@
+{
+  "id": "tai-khoan",
+  "title": "Tài khoản",
+  "pages": [
+    {
+      "id": "dang-ky-dang-nhap",
+      "title": "Đăng ký & đăng nhập",
+      "summary": "Tạo tài khoản, đăng nhập, phiên đăng nhập và trang đích sau đăng nhập.",
+      "roles": [
+        "REGISTERED_USER",
+        "SYSTEM_OWNER",
+        "SYSTEM_ADMIN",
+        "TENANT_OWNER",
+        "TENANT_ADMIN",
+        "TEACHER",
+        "STUDENT",
+        "PARENT"
+      ],
+      "blocks": [
+        { "type": "heading", "level": 2, "text": "Đăng ký tài khoản" },
+        {
+          "type": "steps",
+          "items": [
+            {
+              "title": "Mở trang Đăng ký",
+              "text": "Nút **Đăng ký** trên header hoặc `/register`."
+            },
+            {
+              "title": "Nhập thông tin",
+              "text": "**Email**, **Mật khẩu** (8–72 ký tự; thanh độ mạnh chỉ là gợi ý), **Họ và tên**, **Ngày sinh** (không ở tương lai, từ 1900)."
+            },
+            {
+              "title": "Bấm Tạo tài khoản",
+              "text": "Tài khoản là Người dùng, đăng nhập luôn và được chuyển tới trang đích (xem bên dưới)."
+            }
+          ]
+        },
+        {
+          "type": "list",
+          "items": [
+            "Email không phân biệt hoa thường và phải chưa có tài khoản khác dùng (“Email đã được sử dụng”).",
+            "Không giới hạn tuổi khi đăng ký tài khoản; chỉ đăng ký **trung tâm** mới cần đủ 18 tuổi.",
+            "Chưa có xác thực email, quên mật khẩu hay đăng nhập Google/Facebook."
+          ]
+        },
+        { "type": "heading", "level": 2, "text": "Đăng nhập" },
+        {
+          "type": "paragraph",
+          "text": "Tại `/login` nhập email và mật khẩu. Sai email hoặc mật khẩu đều báo chung “Email hoặc mật khẩu không đúng”. Tài khoản bị khoá báo “Tài khoản đã bị khoá, vui lòng liên hệ quản trị viên”."
+        },
+        { "type": "heading", "level": 3, "text": "Trang đích sau đăng nhập" },
+        {
+          "type": "table",
+          "columns": ["Điều kiện (xét theo thứ tự)", "Chuyển tới"],
+          "rows": [
+            [
+              "Tài khoản đang dùng mật khẩu tạm",
+              "`/me/account` (bắt buộc đổi mật khẩu)"
+            ],
+            [
+              "Đăng nhập từ link có `?next=` (bị chặn khi chưa đăng nhập)",
+              "Trang ban đầu"
+            ],
+            ["System Owner/Admin không thuộc trung tâm nào", "`/admin`"],
+            [
+              "Người dùng chỉ thuộc 1 trung tâm đang hoạt động, có vai trò Chủ sở hữu/Quản trị viên/Giáo viên",
+              "`/t/{slug}/dashboard`"
+            ],
+            [
+              "Người dùng chỉ thuộc 1 trung tâm đang hoạt động, chỉ là Học viên/Phụ huynh",
+              "`/t/{slug}`"
+            ],
+            [
+              "Còn lại (nhiều ngữ cảnh, chưa có trung tâm, trung tâm chưa hoạt động)",
+              "`/me`"
+            ]
+          ]
+        },
+        { "type": "heading", "level": 2, "text": "Phiên đăng nhập" },
+        {
+          "type": "list",
+          "items": [
+            "Access token sống 15 phút, tự làm mới bằng refresh token (cookie httpOnly, mặc định 30 ngày). Người dùng không phải đăng nhập lại khi còn dùng thường xuyên.",
+            "Mở nhiều tab cùng lúc vẫn giữ phiên bình thường.",
+            "**Đăng xuất** thu hồi phiên của thiết bị hiện tại.",
+            "Đổi mật khẩu, bị reset mật khẩu hoặc bị khoá tài khoản làm các phiên khác hết hiệu lực ngay."
+          ]
+        },
+        {
+          "type": "callout",
+          "tone": "warning",
+          "text": "Nếu người dùng báo “đăng nhập xong lại bị đẩy về trang đăng nhập”: kiểm tra trình duyệt có chặn cookie không, và biến `COOKIE_SECURE` phải là `false` khi truy cập qua HTTP. Xem [Sự cố thường gặp](page:su-co-thuong-gap)."
+        }
+      ]
+    },
+    {
+      "id": "ho-so-mat-khau",
+      "title": "Hồ sơ & mật khẩu",
+      "summary": "Trang Tài khoản của tôi: sửa hồ sơ, đổi mật khẩu, mật khẩu tạm.",
+      "roles": [
+        "REGISTERED_USER",
+        "SYSTEM_OWNER",
+        "SYSTEM_ADMIN",
+        "TENANT_OWNER",
+        "TENANT_ADMIN",
+        "TEACHER",
+        "STUDENT",
+        "PARENT"
+      ],
+      "blocks": [
+        {
+          "type": "paragraph",
+          "text": "Mở **Tài khoản của tôi** (`/me/account`) bằng cách bấm tên/avatar trên header khu vực chính, hoặc từ thẻ tài khoản ở `/me`."
+        },
+        { "type": "heading", "level": 2, "text": "Hồ sơ" },
+        {
+          "type": "list",
+          "items": [
+            "Sửa được: **Họ và tên**, **Ngày sinh**, **Giới tính**, **Số điện thoại** (chữ số và + ( ) . -), **Địa chỉ**. Bấm **Lưu thay đổi**.",
+            "Người dùng **không tự đổi email**. Cần đổi email thì System Owner/Admin sửa trong [Người dùng](page:admin-nguoi-dung)."
+          ]
+        },
+        { "type": "heading", "level": 2, "text": "Đổi mật khẩu" },
+        {
+          "type": "steps",
+          "items": [
+            { "title": "Nhập Mật khẩu hiện tại" },
+            {
+              "title": "Nhập Mật khẩu mới và Nhập lại mật khẩu mới",
+              "text": "8–72 ký tự, phải khác mật khẩu hiện tại."
+            },
+            {
+              "title": "Bấm Đổi mật khẩu",
+              "text": "Các thiết bị khác đang đăng nhập bị đăng xuất; thiết bị hiện tại giữ phiên."
+            }
+          ]
+        },
+        { "type": "heading", "level": 2, "text": "Mật khẩu tạm" },
+        {
+          "type": "paragraph",
+          "text": "Tài khoản do System Admin tạo/reset mật khẩu, hoặc do trung tâm tạo, có cờ **phải đổi mật khẩu**. Khi đăng nhập, người dùng bị đưa tới `/me/account` với thông báo “Tài khoản đang dùng mật khẩu tạm…” và không dùng được chức năng nào khác cho tới khi đổi xong."
+        },
+        {
+          "type": "callout",
+          "tone": "tip",
+          "text": "Trong danh sách người dùng của `/admin`, tài khoản còn mật khẩu tạm có nhãn **Chờ đổi mật khẩu**."
+        }
+      ]
+    },
+    {
+      "id": "khong-gian-cua-toi",
+      "title": "Không gian của tôi",
+      "summary": "Trang /me: chọn ngữ cảnh làm việc, theo dõi trạng thái trung tâm đã đăng ký.",
+      "roles": [
+        "REGISTERED_USER",
+        "SYSTEM_OWNER",
+        "SYSTEM_ADMIN",
+        "TENANT_OWNER",
+        "TENANT_ADMIN",
+        "TEACHER",
+        "STUDENT",
+        "PARENT"
+      ],
+      "blocks": [
+        {
+          "type": "paragraph",
+          "text": "`/me` (nút **Không gian của tôi** trên header) liệt kê mọi nơi người dùng làm việc được:"
+        },
+        {
+          "type": "list",
+          "items": [
+            "Thẻ **Quản trị hệ thống** – chỉ System Owner/Admin, dẫn tới `/admin`.",
+            "Thẻ **Tài khoản của tôi** – dẫn tới hồ sơ, đổi mật khẩu.",
+            "**Trung tâm của tôi** – mỗi trung tâm là thành viên đang hoạt động: logo, tên, trạng thái, vai trò, gói; nút **Vào dashboard** (có vai trò quản trị/Giáo viên) và **Trang trung tâm**.",
+            "Nút **Đăng ký trung tâm**."
+          ]
+        },
+        {
+          "type": "heading",
+          "level": 2,
+          "text": "Trạng thái trung tâm hiển thị"
+        },
+        {
+          "type": "table",
+          "columns": ["Trạng thái", "Người dùng thấy", "Việc cần làm"],
+          "rows": [
+            [
+              "Chờ duyệt",
+              "“Đăng ký đang chờ System Admin duyệt…”",
+              "Chờ System Admin duyệt"
+            ],
+            [
+              "Bị từ chối",
+              "Lý do từ chối + nút **Sửa và gửi lại**",
+              "Chủ sở hữu sửa theo lý do rồi gửi lại"
+            ],
+            [
+              "Tạm khoá",
+              "“Trung tâm đang bị tạm khoá…” (Chủ sở hữu thấy lý do)",
+              "Liên hệ System Admin"
+            ],
+            ["Đang hoạt động", "Nút vào trung tâm", "—"]
+          ]
+        },
+        {
+          "type": "heading",
+          "level": 2,
+          "text": "Chuyển không gian trong dashboard"
+        },
+        {
+          "type": "paragraph",
+          "text": "Sidebar dashboard (`/admin` hoặc dashboard trung tâm) có switcher **Chuyển không gian làm việc** ở đầu: chọn Quản trị hệ thống hoặc trung tâm khác, hoặc **Tất cả trong Không gian của tôi** để về `/me`."
+        }
+      ]
+    }
+  ]
+}

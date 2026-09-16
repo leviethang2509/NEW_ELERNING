@@ -18,6 +18,7 @@ import { PlansModule } from './plans/plans.module';
 import { StorageModule } from './storage/storage.module';
 import { TenantDashboardModule } from './tenant-dashboard/tenant-dashboard.module';
 import { TenantsModule } from './tenants/tenants.module';
+import { UserManualModule } from './user-manual/user-manual.module';
 import { UsersModule } from './users/users.module';
 
 @Module({
@@ -56,6 +57,7 @@ import { UsersModule } from './users/users.module';
     AttemptsModule,
     GradingModule,
     AdminModule,
+    UserManualModule,
     // Đăng ký guard toàn cục: mọi route cần đăng nhập trừ route @Public().
     AuthModule,
   ],
