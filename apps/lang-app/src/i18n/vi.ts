@@ -870,6 +870,8 @@ export const vi = {
     manualItem: (no: number, qtype: string) => `Câu ${no} · ${qtype}`,
     waitingGrade: 'Chờ chấm',
     manualScore: (score: number, max: number) => `${score}/${max} điểm`,
+    manualTotal: (score: number, max: number) =>
+      `Tổng điểm tự luận ${score}/${max}`,
     qtypes: { writing: 'Writing', speaking: 'Speaking' } as Record<
       string,
       string
@@ -932,6 +934,60 @@ export const vi = {
     },
   },
   // Bản giả lập đề: xem trước trong dashboard và trang thi.
+  grading: {
+    subtitle:
+      'Chấm các câu Writing/Speaking của bài đã nộp. Không chấm được bài của chính mình; phần chấm tự động giữ nguyên.',
+    searchPlaceholder: 'Tìm theo tên hoặc email học viên',
+    allStatuses: 'Mọi trạng thái',
+    allExams: 'Mọi đề thi',
+    status: { submitted: 'Chờ chấm', graded: 'Đã chấm' },
+    columns: {
+      student: 'Học viên',
+      exam: 'Đề thi',
+      submittedAt: 'Nộp lúc',
+      progress: 'Chấm tay',
+      status: 'Trạng thái',
+    },
+    empty: 'Không có bài nào khớp bộ lọc.',
+    open: 'Chấm bài',
+    view: 'Xem bài',
+    progress: (graded: number, total: number) => `${graded}/${total} câu`,
+    autoScore: (correct: number, total: number) =>
+      `Tự động đúng ${correct}/${total}`,
+    backToList: 'Danh sách bài',
+    submittedAt: (value: string) => `Nộp ${value}`,
+    questionsHeading: 'Câu cần chấm',
+    questionLabel: (no: number, qtype: string) => `Câu ${no} · ${qtype}`,
+    partLabel: (section: string, part: number | null) =>
+      part === null ? section : `${section} · Part ${part + 1}`,
+    autoSubmitted: 'Hết giờ, tự nộp',
+    passage: 'Nội dung part',
+    prompt: 'Đề bài',
+    response: 'Bài làm',
+    blank: 'Học viên bỏ trống câu này.',
+    noRecording: 'Học viên không ghi âm câu này.',
+    loadRecording: 'Tải ghi âm',
+    recordingFailed: 'Không tải được ghi âm',
+    charCount: (chars: number, words: number, max: number | null) =>
+      `${chars}${max ? `/${max}` : ''} ký tự · ${words} từ`,
+    maxSeconds: (seconds: number) => `Ghi tối đa ${seconds} giây`,
+    score: 'Điểm',
+    scoreHint: (max: number) => `0–${max}, bước 0,5`,
+    comment: 'Nhận xét',
+    commentPlaceholder: 'Nhận xét cho học viên (không bắt buộc)',
+    save: 'Lưu điểm',
+    saveAndNext: 'Lưu & câu tiếp',
+    zero: 'Cho 0 điểm',
+    saved: 'Đã lưu điểm',
+    unsaved: 'Chưa lưu',
+    invalidScore: (max: number) => `Điểm phải từ 0 đến ${max}, bước 0,5`,
+    waiting: 'Chờ chấm',
+    scoreBadge: (score: number, max: number) => `${score}/${max}`,
+    gradedBy: (name: string, at: string) => `Chấm bởi ${name} · ${at}`,
+    gradedByUnknown: (at: string) => `Đã chấm · ${at}`,
+    allGraded: 'Đã chấm đủ mọi câu của bài này. Học viên đã xem được điểm.',
+    nextAttempt: 'Bài chờ chấm tiếp theo',
+  },
   simulator: {
     status: {
       todo: 'Chưa làm',

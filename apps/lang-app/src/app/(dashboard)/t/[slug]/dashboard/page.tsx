@@ -25,6 +25,7 @@ import { vi } from '@/i18n/vi';
 import { api } from '@/lib/api';
 import { errorMessage } from '@/lib/error-message';
 import { formatNumber } from '@/lib/format';
+import { gradingListPath } from '@/lib/grading-api';
 
 // Tổng quan tenant. Teacher chỉ có bản rút gọn (API trả `management = null`).
 export default function TenantOverviewPage() {
@@ -122,6 +123,7 @@ export default function TenantOverviewPage() {
           label={vi.stats.pendingGrading}
           value={stats?.pendingGrading ?? null}
           icon={ClipboardCheck}
+          href={gradingListPath(tenant.slug)}
         />
       </div>
     </div>

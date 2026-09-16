@@ -991,8 +991,8 @@ export function ExamSimulator({
   );
 }
 
-/** Phần hướng dẫn của section (nội dung trước indicator đầu tiên), chỉ để đọc. */
-export function ExamIntro({ blocks }: { blocks: readonly ExamElement[] }) {
+/** Khối nội dung chỉ để đọc: phần hướng dẫn section, đề bài khi chấm bài. */
+export function ExamBlocks({ blocks }: { blocks: readonly ExamElement[] }) {
   const plan = useMemo(() => ({ intro: [...blocks], parts: [] }), [blocks]);
   return (
     <SimulatorProvider plan={plan}>

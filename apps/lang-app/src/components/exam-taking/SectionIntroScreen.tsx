@@ -8,7 +8,7 @@ import {
   type AttemptView,
 } from '@lang/shared';
 import { plainText, type ExamElement } from '@lang/exam-core';
-import { ExamIntro } from '@/components/exam-simulator/ExamSimulator';
+import { ExamBlocks } from '@/components/exam-simulator/ExamSimulator';
 import {
   ConfirmDialog,
   FormAlert,
@@ -107,7 +107,7 @@ export function SectionIntroScreen({
 
             <div className="mt-5 border-t border-[var(--border)] pt-4">
               {hasIntro ? (
-                <ExamIntro blocks={intro} />
+                <ExamBlocks blocks={intro} />
               ) : (
                 <p className="text-[14px] text-[var(--muted)]">
                   {text.noIntro}

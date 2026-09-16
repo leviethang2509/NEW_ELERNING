@@ -61,6 +61,16 @@ export function AttemptResultView({
     );
   }
 
+  // Tổng điểm tự luận chỉ hiện khi mọi câu đã được chấm.
+  const manualItems = result.sections.flatMap((section) => section.manual);
+  const manualTotal =
+    manualItems.length > 0 && manualItems.every((item) => item.score !== null)
+      ? {
+          score: manualItems.reduce((sum, item) => sum + (item.score ?? 0), 0),
+          max: manualItems.reduce((sum, item) => sum + item.maxScore, 0),
+        }
+      : null;
+
   return (
     <div className="mx-auto flex max-w-3xl flex-col gap-6 px-5 py-8">
       <Link
@@ -104,6 +114,11 @@ export function AttemptResultView({
                   )
                 : text.noManual}
             </p>
+            {manualTotal && (
+              <p className="mt-1 text-[22px] font-bold tabular-nums text-[var(--heading)]">
+                {text.manualTotal(manualTotal.score, manualTotal.max)}
+              </p>
+            )}
           </div>
         </div>
         <p className="mt-4 text-[13px] text-[var(--muted)]">

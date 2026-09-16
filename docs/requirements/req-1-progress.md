@@ -21,24 +21,24 @@
 | 10 | Upload media (R2) | ✅ | 2026-09-16 | Đã commit (`42adeb4 feat: r2 storage`); 6 biến `R2_*` (tuỳ chọn) đã có ở `apps/lang-api/.env` + `deploy/.env`, **VPS `/opt/lang-simulator/.env` chưa cập nhật**; không có migration |
 | 11 | Danh mục đề & Loại đề | ✅ | 2026-09-16 | Đã commit (`fe39e4a feat: exam category and blueprint`); migration `CreateExamCatalog` + `SeedExamCatalog` đã chạy trên DB dùng chung; không có env mới |
 | 12 | Đề thi, trình soạn thảo & version | ✅ | 2026-09-16 | Đã commit (`594be7e feat: exam compose`); migration `CreateExams` (gồm `exam_attempts`) đã chạy trên DB dùng chung; không có env mới |
-| 13 | Làm bài thi & chấm tự động | ✅ | 2026-09-16 | **Chưa commit**; migration `CreateAttemptSectionsAndAnswers` đã chạy trên DB dùng chung; thêm dependency `@nestjs/schedule` 4; không có env mới |
-| 14 | Chấm bài thủ công | ⬜ | | **Step tiếp theo** |
-| 15 | Hoàn thiện & nghiệm thu tổng | ⬜ | | |
+| 13 | Làm bài thi & chấm tự động | ✅ | 2026-09-16 | Đã commit (`3894fed feat: exam simulator`); migration `CreateAttemptSectionsAndAnswers` đã chạy trên DB dùng chung; thêm dependency `@nestjs/schedule` 4; không có env mới |
+| 14 | Chấm bài thủ công | ✅ | 2026-09-16 | **Chưa commit**; không có migration, không có env mới |
+| 15 | Hoàn thiện & nghiệm thu tổng | ⬜ | | **Step tiếp theo** |
 
-### Bàn giao cho phiên tiếp theo (cuối phiên 2026-09-16, sau Step 13)
+### Bàn giao cho phiên tiếp theo (cuối phiên 2026-09-16, sau Step 14)
 
 **Trạng thái repo**
-- Nhánh `main` tại `594be7e feat: exam compose` (Step 12 đã commit). **Step 13 chưa commit**: `packages/shared/src/attempt.ts` (+ `index.ts`), lang-api (`attempts/*` mới: entity section/answer, `attempt-grading.ts`, `attempts.service(.spec).ts`, `learner-exams.service.ts`, `learner.controller.ts`, `attempts.scheduler.ts`, `attempts.module.ts`, `dto/`; `exam-attempt.entity.ts` thêm index; migration `1789572935771-CreateAttemptSectionsAndAnswers`; `app.module.ts` (ScheduleModule); `common/sql.ts` (`numericTransformer`); `exams.service.ts` (`toListItems` public); `all-exceptions.filter(.spec).ts` (413); `package.json` + `pnpm-lock.yaml` (`@nestjs/schedule`)), lang-app (`components/exam-simulator/*` chuyển từ `exam-editor`, `components/exam-taking/*`, `components/learner/*`, `lib/learner-api.ts`, trang `(site)/t/[slug]/exams/[examId]`, `(site)/t/[slug]/attempts/[id]/result`, `(exam)/t/[slug]/attempts/[id]`, `TenantHome.tsx`, `PreviewDialog.tsx`, `middleware.ts`, `vi.ts`), CLAUDE.md, plan, file này.
-- Migration Step 13 **đã chạy trên DB dùng chung** (chỉ thêm bảng + index; container :3001 chạy code cũ không bị ảnh hưởng). `migration:generate` sau đó → "No changes".
-- Không có server nào đang chạy; dữ liệu test (`step13-*`) và file ghi âm test trên R2 đã xoá. DB: 1 System Owner, 0 tenant, 0 đề/bài làm.
+- Nhánh `main` tại `3894fed feat: exam simulator` (Step 13 đã commit). **Step 14 chưa commit**: `packages/shared/src/grading.ts` (+ `index.ts`), `exam.ts` (`isValidManualScore`) + spec; lang-api `grading/*` mới (module, controller, service + spec, `grading-content.ts`, `dto/`), `app.module.ts`, `tenant-dashboard/*` (số liệu thật), `testing/in-memory-repository.ts` (sửa `Not(IsNull())`); lang-app trang `(dashboard)/t/[slug]/dashboard/grading` + `grading/[attemptId]`, `components/grading/GradingAttemptView.tsx`, `lib/grading-api.ts`, `ExamIntro` đổi tên `ExamBlocks`, `AttemptResultView` (tổng điểm tự luận), trang tổng quan tenant (link Bài chờ chấm), `vi.ts`; CLAUDE.md, plan, file này.
+- Không có migration mới. Không có server nào đang chạy; dữ liệu test `step14-*` và file ghi âm test trên R2 đã xoá. DB: 1 System Owner, 0 tenant, 0 đề/bài làm.
 
-**Bắt đầu Step 14**
-1. Đọc plan Step 14 và khối "Cập nhật khi làm Step 13" (ngay trên Step 14).
-2. `exam_attempt_answers` đã có đủ cột chấm tay (`score`, `comment`, `graded_by`, `graded_at`, `recording_key`); mọi câu (kể cả bỏ trống) đều có dòng sau khi nộp. `exam_attempts.manual_count` đã đếm sẵn; Step 14 tăng `manual_graded_count` và chuyển `submitted → graded` (update có điều kiện).
-3. `AttemptsService.recordingUrl` hiện chỉ cho chủ lượt làm; Step 14 mở cho người chấm (GRADER_ROLES, không phải bài của chính mình). Trang kết quả học viên (`AttemptResultView`) đã hiện điểm/nhận xét khi `graded_at` có giá trị.
-4. Menu dashboard còn link `grading` chưa làm (prefetch 404 trong console).
+**Bắt đầu Step 15**
+1. Đọc plan Step 15 + checklist nghiệm thu req-1; rà mục "Đang chờ người dùng" bên dưới (R2 trên VPS, HTTPS cho ghi âm, xem giao diện).
+2. Test e2e phân quyền bằng supertest theo bảng mục 5 (hiện kiểm bằng script Node trong scratchpad, sẽ mất; mẫu script mô tả trong nhật ký Step 13/14).
+3. Deploy + nghiệm thu trên VPS cần domain + SSL (hoặc flag Chrome) để ghi âm.
 
 ---
+
+_Bàn giao sau Step 13 (giữ để tham khảo):_ `exam_attempt_answers` có đủ cột chấm tay, mọi câu có dòng sau khi nộp; `recordingUrl` của học viên chỉ cho chủ lượt làm — Step 14 thêm route riêng cho người chấm; link menu `grading` đã có trang.
 
 _Bàn giao sau Step 12 (giữ để tham khảo):_ `exam_attempts` tạo sớm ở Step 12; bắt đầu attempt khoá `exams FOR SHARE`; simulator tách để đọc content_public — đều đã làm ở Step 13.
 
@@ -77,7 +77,7 @@ Kiểm tra sau khi chuyển DB (2026-09-15):
 - `pnpm --filter lang-api migrate` và `node dist/database/migrate.js` bằng user `lang_simulator` → tạo `public.typeorm_migrations` (owner `lang_simulator`), chạy lại báo đã mới nhất.
 - `node dist/main.js` (PORT=3199) → `/api/health` 200 `{"status":"ok","database":"up"}`.
 
-### Đang chờ người dùng (cập nhật 2026-09-16, sau Step 13)
+### Đang chờ người dùng (cập nhật 2026-09-16, sau Step 14)
 
 1. **VPS `/opt/lang-simulator/.env`: thêm 6 biến `R2_*`** (đã soạn sẵn trong `deploy/.env` trên máy dev):
    ```bash
@@ -90,7 +90,8 @@ Kiểm tra sau khi chuyển DB (2026-09-15):
 4. VPS `/opt/lang-simulator/.env`: **không bắt buộc** thêm `JWT_ACCESS_EXPIRES_IN`, `REFRESH_EXPIRES_IN`, `COOKIE_SECURE` (đều có mặc định); `deploy/.env` trên máy dev đã thêm.
 5. **Ghi âm Speaking cần HTTPS**: trình duyệt chặn micro trên `http://160.25.166.163:3001` (chỉ cho HTTPS hoặc localhost), ô ghi âm sẽ báo không hỗ trợ. Muốn thử trên VPS trước khi có domain + SSL: Chrome `chrome://flags/#unsafely-treat-insecure-origin-as-secure` thêm `http://160.25.166.163:3001`. Cần chốt domain + SSL trước nghiệm thu Step 15.
 6. Xem giao diện Step 13 bằng mắt: `/t/{slug}` (lượt làm gần đây + thẻ đề), `/t/{slug}/exams/{id}`, trang thi `/t/{slug}/attempts/{id}` (màn hình hướng dẫn, làm bài, đồng hồ, ghi âm, nộp toàn bài), `/t/{slug}/attempts/{id}/result`.
-7. Không bắt buộc: `REVOKE CONNECT ON DATABASE "lightc-general" FROM PUBLIC` (hiện `lang_simulator` vẫn CONNECT được DB của LC nhưng không có quyền trên bảng); giới hạn IP truy cập cổng 5432.
+7. Xem giao diện Step 14 bằng mắt: `/t/{slug}/dashboard` (thẻ Bài chờ chấm), `/t/{slug}/dashboard/grading` (lọc, tìm), `/t/{slug}/dashboard/grading/{attemptId}` (đề bài, bài viết, nghe ghi âm, chấm từng câu, Lưu & câu tiếp), trang kết quả học viên sau khi chấm (tổng điểm tự luận).
+8. Không bắt buộc: `REVOKE CONNECT ON DATABASE "lightc-general" FROM PUBLIC` (hiện `lang_simulator` vẫn CONNECT được DB của LC nhưng không có quyền trên bảng); giới hạn IP truy cập cổng 5432.
 
 Đã xong ngày 2026-09-16: commit Step 9 (`350ad90 feat: exam core`) và Step 10 (`42adeb4 feat: r2 storage`); xoá `SEED_OWNER_PASSWORD` khỏi `apps/lang-api/.env` (đã kiểm lại tên biến, chỉ còn `SEED_OWNER_EMAIL`/`NAME`/`DOB`).
 
@@ -99,6 +100,49 @@ Kiểm tra sau khi chuyển DB (2026-09-15):
 ---
 
 ## Nhật ký
+
+### Step 14 – Chấm bài thủ công (✅ 2026-09-16)
+
+**Quyết định (người dùng chọn phương án đề xuất, đã ghi vào plan)**
+- Chấm lại được mọi lúc; lượt làm đã chấm xong giữ trạng thái `graded`.
+- Câu Writing/Speaking bỏ trống vẫn chờ chấm (có nút "Cho 0 điểm").
+- Trang Chấm bài chỉ có lượt làm đã nộp hết.
+- Học viên thấy điểm từng câu ngay khi chấm.
+
+**Đã làm**
+- `@lang/shared/grading.ts`: `GRADING_COMMENT_MAX_LENGTH`, `GradingAttemptItem/List/Detail`, `GradingSection`, `GradingQuestion`, `GradeAnswerInput/Result`, `GradingAnswerState`, `GradingAttemptProgress`. `exam.ts`: `isValidManualScore(value, max)` (0 → max, bước 0,5) + test.
+- lang-api:
+  - `grading/`: `GradingController` (`t/:slug/grading`, `GRADER_ROLES`) + `GradingService`: `list` (QueryBuilder join user, lọc trạng thái/đề/tên-email có `escapeLike`, bộ lọc đề), `detail` (section có câu chấm tay, đề bài từ `content_public` bằng `sectionPrompts` trong `grading-content.ts`, bài viết, có ghi âm, người chấm, `nextAttemptId`), `grade` (transaction khoá lượt làm, kiểm câu chấm tay + điểm theo `max_score`, đếm lại `manual_graded_count`, đủ thì `graded` có điều kiện), `recordingUrl` cho người chấm. Bài của mình 403, lượt chưa nộp xong 409, không có câu chấm tay 404.
+  - `TenantDashboardService`: số đề theo trạng thái, số lượt làm, bài chờ chấm (lượt `submitted` không phải của người xem) — trước đây trả 0.
+  - `InMemoryRepository`: `Not(IsNull())` đọc toán tử con ở `child` (trước đây luôn khớp sai).
+  - Test (+9): chi tiết (đề bài có hướng dẫn subpart, passage, bài viết, ghi âm, không có câu tự động), bài của mình 403 / tenant khác 404, lượt đang làm 409, chấm từng câu → graded + chấm lại không cộng dồn và giữ `graded_at`, chỉ chấm câu tay + điểm sai 400, câu bỏ trống + bài kế tiếp, link ghi âm, `sectionPrompts`, `GradeAnswerDto`.
+- lang-app:
+  - Trang `/t/{slug}/dashboard/grading`: `DataTable` + tìm học viên + lọc trạng thái (mặc định Chờ chấm, `?status=`) + lọc đề + phân trang.
+  - Trang `/t/{slug}/dashboard/grading/{attemptId}` → `GradingAttemptView`: thông tin bài (học viên, đề, nộp lúc, tự động đúng, tiến độ), danh sách câu theo section (badge Chờ chấm / điểm / Chưa lưu), khung câu: passage part (thu gọn), đề bài (`ExamBlocks`), bài viết + đếm ký tự/từ hoặc player ghi âm (presigned, tải lại khi lỗi), ô điểm (kiểm ở client, form `noValidate` để báo lỗi tiếng Việt) + nhận xét, Lưu điểm / Lưu & câu tiếp, người chấm + thời điểm; chấm đủ → thông báo + link bài chờ chấm tiếp theo.
+  - Tổng quan tenant: thẻ Bài chờ chấm bấm sang trang Chấm bài. `AttemptResultView`: tổng điểm tự luận khi mọi câu đã chấm. `ExamIntro` → `ExamBlocks` (dùng chung cho hướng dẫn section và đề bài khi chấm).
+
+**Sai khác so với plan**
+- Thêm `GET grading/attempts/:id/recordings/:answerId/url` (route học viên giữ nguyên chỉ chủ lượt làm) thay vì mở route learner cho người chấm.
+- Tổng quan tenant: ngoài "bài chờ chấm" còn điền số đề theo trạng thái và số lượt làm (Step 12–13 còn trả 0).
+- Trang kết quả học viên thêm tổng điểm tự luận.
+- Trên điện thoại danh sách câu nằm trên khung chấm; "Lưu & câu tiếp" không tự cuộn tới câu mới.
+
+**Kiểm tra đã chạy**
+- `pnpm build`, `lint`, `typecheck`, `test` (272: 57 shared + 49 exam-core + 166 api), `format:check` → OK (chạy lại sau lần sửa cuối).
+- Không có migration; entity không đổi.
+- Bản build (api `:3101`, `next start :3100`), script Node qua rewrite `/api` + SQL trên DB dùng chung, **54/54 + 4/4 đạt** (chạy lại từ dữ liệu sạch): tổng quan Teacher bài chờ chấm 2 (không tính bài mình), Owner 3, lượt làm 4, đề publish 1; khách 401, Student 403, Owner tenant khác 403; danh sách Teacher 2 bài (không bài mình, không lượt dở), Owner 3, tìm tên không phân biệt hoa thường, tìm email, `%` không khớp tất cả, lọc đề + trạng thái + phân trang, trạng thái `in_progress` 400; chi tiết: 2 section 4 câu, đề bài có hướng dẫn subpart cho cả hai câu writing, passage part, bài viết, `maxChars`/`seconds`, có/không ghi âm, không lộ `checked`/`answerKey`/`isCorrect`, `nextAttemptId`, bài mình 403, lượt dở chưa nộp section 404, lượt dở đã nộp Writing 409 (chi tiết + chấm) và không có trong danh sách, id lạ 404, tenant B 404, bài bỏ trống; ghi âm m4a thật trên R2 private: presigned tải đúng số byte, câu không ghi âm 404, bài mình 403; điểm 11 / 7.25 / chuỗi / thiếu / nhận xét 5001 ký tự → 400 tiếng Việt, câu tự động 400, chấm bài mình 403, Student 403, tenant B 404; chấm câu 1 → submitted 1/4, học viên thấy điểm + nhận xét câu 1, câu khác chờ; đủ 4 câu → graded + `graded_at`; Owner chấm lại → vẫn graded, không cộng dồn, giữ `graded_at`, người chấm đổi; kết quả học viên 4 điểm, không lộ người chấm; lịch sử học viên graded; lọc Đã chấm; bài chờ chấm còn 1.
+- Chrome headless (puppeteer-core), **34/34 đạt**: tổng quan thẻ Bài chờ chấm = 2 → bấm sang danh sách (2 bài, không bài của mình), lọc Đã chấm, tìm tên; trang chấm: header + tiến độ, 4 câu Chờ chấm, mở sẵn câu chưa chấm đầu tiên (đề bài, bài viết, đếm ký tự/từ), mở passage; điểm 11 báo lỗi tiếng Việt; 7.5 + nhận xét → Lưu & câu tiếp, badge 7.5/10, tiến độ 1/4; điểm nháp câu 2 báo "Chưa lưu" khi đổi câu và còn nguyên khi quay lại; câu 1 hiện người chấm; Speaking: player ghi âm tải được (có thời lượng), không có nút Cho 0 điểm; câu không ghi âm có nút Cho 0 điểm, câu cuối không có Lưu & câu tiếp; chấm đủ → thông báo + Đã chấm 4/4, DB graded; link bài chờ chấm tiếp theo mở bài bỏ trống; mở bài của mình báo lỗi; 390px danh sách + trang chấm không tràn ngang; học viên: kết quả tổng điểm tự luận 21.5/40 + nhận xét, không còn Chờ chấm, không vào được trang chấm; lỗi mạng chỉ có favicon 404 và 403 cố ý.
+- Đã xem ảnh chụp: danh sách, trang chấm Writing, Speaking, chấm xong, điện thoại, kết quả học viên.
+- Dữ liệu test + file R2 đã xoá.
+
+**Lỗi tự phát hiện và đã sửa**
+- `InMemoryRepository` xử lý `Not(IsNull())` sai (TypeORM giữ toán tử con ở `child`, `value` undefined) → đếm câu đã chấm sai trong unit test; đã sửa helper.
+- Ô điểm `type=number` có `max`: bấm "Lưu điểm" với 11 bị trình duyệt chặn bằng tooltip (không có thông báo tiếng Việt) → form `noValidate`, kiểm bằng `isValidManualScore`.
+
+**Lưu ý cho các step sau**
+- Step 15: thêm test e2e supertest cho `grading` theo bảng quyền (Owner/Admin/Teacher được, Student/Parent 403, bài của mình 403).
+- Presigned URL ghi âm có hạn; trang chấm mở lâu thì player lỗi → bấm "Tải ghi âm" để lấy link mới.
+- Điểm tối đa câu chấm tay đọc từ `exam_questions.max_score` (hiện luôn 10).
 
 ### Step 13 – Làm bài thi & chấm tự động (✅ 2026-09-16)
 

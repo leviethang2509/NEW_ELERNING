@@ -5,6 +5,7 @@ export * from './auth';
 export * from './exam';
 export * from './exam-catalog';
 export * from './exam-content';
+export * from './grading';
 export * from './media';
 export * from './pagination';
 export * from './roles';

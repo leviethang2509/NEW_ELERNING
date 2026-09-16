@@ -733,6 +733,19 @@ health:      GET /api/health
 - Teacher chấm được bài của Student; không chấm được bài của chính mình.
 - Học viên thấy điểm và nhận xét sau khi chấm.
 
+> Cập nhật khi làm Step 14 (2026-09-16, người dùng chọn phương án đề xuất):
+>
+> - **Chấm lại được** mọi lúc (ghi đè điểm, nhận xét, người chấm, thời điểm chấm của câu); lượt làm đã `graded` giữ nguyên trạng thái và `graded_at` lần chấm đủ đầu tiên.
+> - **Câu Writing/Speaking bỏ trống vẫn chờ chấm** (không tự cho 0); trang chấm báo "bỏ trống/không ghi âm" và có nút "Cho 0 điểm".
+> - **Trang Chấm bài chỉ có lượt làm đã nộp hết** (`submitted`/`graded`, `manual_count > 0`); lượt đang làm dở chưa chấm được (409) dù section Writing đã nộp.
+> - **Học viên thấy điểm từng câu ngay khi chấm** (như trang kết quả Step 13); chấm đủ thì trang kết quả hiện thêm tổng điểm tự luận.
+>
+> Quyết định kỹ thuật (mình tự chọn):
+> - API `t/:slug/grading/*` (`GRADER_ROLES`): `GET attempts` (phân trang, lọc `status`/`examId`/`q` tên-email học viên, kèm danh sách đề có bài để lọc; bỏ bài của người chấm), `GET attempts/:id` (chỉ section có câu chấm tay; đề bài tách từ `content_public` của đúng section: hướng dẫn subpart trước câu + nội dung câu, passage part riêng; bài viết, có ghi âm, điểm/nhận xét/người chấm; `nextAttemptId` = bài chờ chấm nộp sớm nhất khác), `GET attempts/:id/recordings/:answerId/url` (presigned cho người chấm; route học viên giữ nguyên chỉ chủ lượt làm), `PUT answers/:answerId` (`score` 0 → `max_score` bước 0,5, `comment` ≤ 5000). Bài của chính mình 403, lượt chưa nộp xong 409, câu tự động 400.
+> - Chấm trong transaction khoá dòng lượt làm; `manual_graded_count` **đếm lại** số câu chấm tay đã có `graded_at` (không cộng dồn, chấm lại không tăng), đủ `manual_count` thì `submitted → graded` (update có điều kiện trạng thái cũ).
+> - Không cần migration (bảng/cột đã có từ Step 13). Tổng quan tenant lấy số thật: đề theo trạng thái, số lượt làm, **bài chờ chấm = lượt `submitted` không phải của người xem**; thẻ bấm được sang trang Chấm bài.
+> - Frontend: `/t/{slug}/dashboard/grading` (mặc định lọc Chờ chấm, `?status=graded|all`), `/t/{slug}/dashboard/grading/{attemptId}` (danh sách câu bên trái, đề bài + passage thu gọn + bài làm/player ghi âm, ô điểm + nhận xét, "Lưu điểm" / "Lưu & câu tiếp", điểm nháp giữ khi đổi câu và báo "Chưa lưu", link bài chờ chấm tiếp theo khi chấm đủ).
+
 ### Step 15 – Hoàn thiện & nghiệm thu tổng
 **Việc làm**
 - Rà soát phân quyền toàn bộ API: bảng mục 5 → test e2e tối thiểu bằng supertest.
