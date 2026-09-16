@@ -753,16 +753,16 @@ health:      GET /api/health
 - Cập nhật `README.md`, `docs/setup/deploy.md`, `.env.example`.
 - Deploy production, chạy seed Owner + gói + dữ liệu mẫu, rồi đi hết checklist nghiệm thu bên dưới trên VPS.
 
-**Checklist nghiệm thu req-1**
-- [ ] Đăng ký / đăng nhập / đổi mật khẩu; khoá user có hiệu lực ngay.
-- [ ] System Owner/Admin: tổng quan, quản lý user (bảo vệ Owner), duyệt/từ chối tenant, gói dịch vụ, danh mục & loại đề hệ thống.
-- [ ] Registered User ≥ 18 đăng ký tenant; < 18 bị chặn; tenant `pending` chưa vào được dashboard.
-- [ ] Tenant Owner/Admin: tổng quan, quản lý membership (nhiều role, giới hạn gói, bảo vệ Owner, gắn phụ huynh).
-- [ ] Danh mục / loại đề / module theo 2 phạm vi.
-- [ ] Tạo đề từ blueprint → tab section → soạn Plate → Save → publish; version mới khi đã có bài làm; khôi phục version.
-- [ ] Thành viên thi tại khu vực chính: timer section, tự nộp, số câu đánh từ 1 mỗi section, ghi âm Speaking.
-- [ ] Chấm tự động phía server, không lộ đáp án; chấm tay Writing/Speaking.
-- [ ] Deploy `http://<ip>:3001`, LC ở 3000 không bị ảnh hưởng.
+**Checklist nghiệm thu req-1** (đạt trên `http://160.25.166.163:3001` ngày 2026-09-17, chi tiết trong nhật ký Step 15 của progress)
+- [x] Đăng ký / đăng nhập / đổi mật khẩu; khoá user có hiệu lực ngay.
+- [x] System Owner/Admin: tổng quan, quản lý user (bảo vệ Owner), duyệt/từ chối tenant, gói dịch vụ, danh mục & loại đề hệ thống.
+- [x] Registered User ≥ 18 đăng ký tenant; < 18 bị chặn; tenant `pending` chưa vào được dashboard.
+- [x] Tenant Owner/Admin: tổng quan, quản lý membership (nhiều role, giới hạn gói, bảo vệ Owner, gắn phụ huynh).
+- [x] Danh mục / loại đề / module theo 2 phạm vi.
+- [x] Tạo đề từ blueprint → tab section → soạn Plate → Save → publish; version mới khi đã có bài làm; khôi phục version.
+- [x] Thành viên thi tại khu vực chính: timer section, tự nộp, số câu đánh từ 1 mỗi section, ghi âm Speaking.
+- [x] Chấm tự động phía server, không lộ đáp án; chấm tay Writing/Speaking.
+- [x] Deploy `http://<ip>:3001`, LC ở 3000 không bị ảnh hưởng.
 
 > Cập nhật khi làm Step 15 (2026-09-16, người dùng chọn phương án đề xuất):
 >

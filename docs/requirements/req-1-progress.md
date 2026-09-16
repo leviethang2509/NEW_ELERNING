@@ -23,18 +23,16 @@
 | 12 | Đề thi, trình soạn thảo & version | ✅ | 2026-09-16 | Đã commit (`594be7e feat: exam compose`); migration `CreateExams` (gồm `exam_attempts`) đã chạy trên DB dùng chung; không có env mới |
 | 13 | Làm bài thi & chấm tự động | ✅ | 2026-09-16 | Đã commit (`3894fed feat: exam simulator`); migration `CreateAttemptSectionsAndAnswers` đã chạy trên DB dùng chung; thêm dependency `@nestjs/schedule` 4; không có env mới |
 | 14 | Chấm bài thủ công | ✅ | 2026-09-16 | Đã commit (`d8e9b94 feat: exam grading`); không có migration, không có env mới |
-| 15 | Hoàn thiện & nghiệm thu tổng | 🟡 | | Phần local xong (test phân quyền, trang lỗi, docs), **chưa commit**; còn mở PR → deploy → nghiệm thu checklist trên VPS |
+| 15 | Hoàn thiện & nghiệm thu tổng | ✅ | 2026-09-17 | Đã commit (`abbae0f`, `4073f78 test: acceptance`), merge PR #2 (`7a7998e`) và deploy; checklist req-1 đạt trên VPS :3001; không có migration, không có env mới |
 
-### Bàn giao cho phiên tiếp theo (2026-09-16, Step 15 phần local)
+### Bàn giao cho phiên tiếp theo (2026-09-17, req-1 xong)
 
-**Trạng thái repo**
-- Nhánh `main` tại `d8e9b94 feat: exam grading`. **Step 15 chưa commit**: `apps/lang-api/src/access-control.e2e.spec.ts` (mới) + devDependency `supertest`/`@types/supertest` (`package.json`, `pnpm-lock.yaml`), `exam-content.service.spec.ts` (+1 test); lang-app `app/not-found.tsx`, `app/error.tsx`, `app/global-error.tsx`, `components/StatusPage.tsx` (thay `ComingSoon` đã xoá), `lib/api.ts`, `lib/error-message.ts`, `LoginForm`, `RegisterForm`, `i18n/vi.ts`; `README.md`, `docs/setup/deploy.md`, `CLAUDE.md`, plan, file này.
-- Không có migration, không có env mới. Không có server nào đang chạy; dữ liệu test `step15-*` + file R2 đã xoá. DB: 1 System Owner, 0 tenant, 0 đề/bài làm.
+**Trạng thái**
+- **Req-1 hoàn thành**: 15/15 step ✅. `main` tại `7a7998e` (merge PR #2), đã deploy lên `http://160.25.166.163:3001` và nghiệm thu checklist req-1 trên VPS. Sau commit chỉ còn thay đổi docs nghiệm thu (plan, file này) **chưa commit**.
+- VPS `/opt/lang-simulator/.env` đã có 6 biến `R2_*` (upload media, ghi âm chạy thật trên container; image có `sharp`).
+- DB dùng chung sạch: 1 System Owner, 3 gói, 2 danh mục + 3 loại đề hệ thống, 0 tenant/đề/bài làm; 2 bucket R2 trống.
 
-**Việc còn lại của Step 15** (người dùng đã chọn: mở PR trước, người dùng duyệt rồi mới push `main`)
-1. Người dùng yêu cầu commit → tạo nhánh, push, mở PR vào `main` (máy dev không có `gh`: push nhánh rồi người dùng mở PR trên GitHub) → workflow build image phải xanh (kiểm `sharp`).
-2. Người dùng cập nhật `/opt/lang-simulator/.env` trên VPS (6 biến `R2_*`, mục chờ số 1) và merge/push `main` → deploy.
-3. Nghiệm thu checklist req-1 trên `http://160.25.166.163:3001` (theo mục "Kiểm tra nhanh sau deploy" trong `docs/setup/deploy.md`): script API + Chrome headless (cờ `--unsafely-treat-insecure-origin-as-secure=http://160.25.166.163:3001` + micro giả cho ghi âm), dữ liệu `step15-*` rồi xoá; LC ở :3000 vẫn chạy. Cập nhật bảng trạng thái → ✅.
+**Việc tiếp theo**: req sau (plan mục 8: domain + SSL để ghi âm không cần flag Chrome, thanh toán/thời hạn gói…). Theo quy trình: `req-2-question.md` → người dùng trả lời → `req-2-plan.md`.
 
 ---
 
@@ -77,21 +75,16 @@ Kiểm tra sau khi chuyển DB (2026-09-15):
 - `pnpm --filter lang-api migrate` và `node dist/database/migrate.js` bằng user `lang_simulator` → tạo `public.typeorm_migrations` (owner `lang_simulator`), chạy lại báo đã mới nhất.
 - `node dist/main.js` (PORT=3199) → `/api/health` 200 `{"status":"ok","database":"up"}`.
 
-### Đang chờ người dùng (cập nhật 2026-09-16, Step 15)
+### Đang chờ người dùng (cập nhật 2026-09-17, sau nghiệm thu req-1)
 
-1. **VPS `/opt/lang-simulator/.env`: thêm 6 biến `R2_*`** (đã soạn sẵn trong `deploy/.env` trên máy dev):
-   ```bash
-   scp deploy/.env <user>@<ip-vps>:/opt/lang-simulator/.env
-   ssh <user>@<ip-vps> chmod 600 /opt/lang-simulator/.env
-   ```
-   Thiếu thì container vẫn chạy, chỉ upload media trả 501. Đổi `.env` xong phải `docker compose up -d --force-recreate`.
-2. Lần deploy tới **kiểm image Docker có `sharp`** (dependency native, máy dev không có Docker): mở PR để workflow build thử **trước khi** push `main` (push `main` = deploy).
+1. ~~VPS `.env` thêm `R2_*`~~ – xong 2026-09-17 (upload media + ghi âm trên :3001 chạy được).
+2. ~~Kiểm image có `sharp`~~ – xong 2026-09-17 (image deploy từ `7a7998e` chạy được, ảnh upload trên VPS ra WebP).
 3. Xem giao diện bằng mắt: `/login`, `/register`, `/me`, `/me/account`, `/admin`, `/admin/users`, `/admin/tenants`, `/admin/plans` (Step 5–7), `/`, `/me/tenants/new`, `/t/{slug}`, `/t/{slug}/dashboard`, `/t/{slug}/dashboard/members` (Step 8) `/t/{slug}/dashboard/media` + ô Logo trong form đăng ký trung tâm (Step 10), `/admin/exam-categories`, `/admin/exam-blueprints`, `/t/{slug}/dashboard/exam-categories`, `/t/{slug}/dashboard/exam-blueprints` (Step 11: bộ icon/màu, form module kéo thả), `/t/{slug}/dashboard/exams`, `…/exams/{id}/edit`, `…/exams/{id}/versions` (Step 12: trình soạn, tab section, xem trước, trang version; trên điện thoại thanh công cụ chiếm nhiều chỗ). Mình mới kiểm bằng ảnh chụp Chrome headless. Phần giao diện Step 8 do mình tự quyết (người dùng giao), xem plan Step 8 mục "Cập nhật khi làm Step 8".
 4. VPS `/opt/lang-simulator/.env`: **không bắt buộc** thêm `JWT_ACCESS_EXPIRES_IN`, `REFRESH_EXPIRES_IN`, `COOKIE_SECURE` (đều có mặc định); `deploy/.env` trên máy dev đã thêm.
 5. **Ghi âm Speaking cần HTTPS**: đã chốt ở Step 15 giữ HTTP, domain + SSL để req sau; thử ghi âm trên VPS bằng Chrome `chrome://flags/#unsafely-treat-insecure-origin-as-secure` thêm `http://160.25.166.163:3001` (hướng dẫn trong `docs/setup/deploy.md`).
 6. Xem giao diện Step 13 bằng mắt: `/t/{slug}` (lượt làm gần đây + thẻ đề), `/t/{slug}/exams/{id}`, trang thi `/t/{slug}/attempts/{id}` (màn hình hướng dẫn, làm bài, đồng hồ, ghi âm, nộp toàn bài), `/t/{slug}/attempts/{id}/result`.
 7. Xem giao diện Step 14 bằng mắt: `/t/{slug}/dashboard` (thẻ Bài chờ chấm), `/t/{slug}/dashboard/grading` (lọc, tìm), `/t/{slug}/dashboard/grading/{attemptId}` (đề bài, bài viết, nghe ghi âm, chấm từng câu, Lưu & câu tiếp), trang kết quả học viên sau khi chấm (tổng điểm tự luận).
-8. **Step 15**: cho phép commit + push nhánh / mở PR (build thử image), sau đó merge/push `main` để deploy và nghiệm thu trên VPS. Xem giao diện mới: trang 404 (đường dẫn bất kỳ không tồn tại), thông báo mất mạng.
+8. ~~Step 15: commit, PR, deploy, nghiệm thu VPS~~ – xong 2026-09-17. Còn tuỳ ý xem bằng mắt: trang 404 (đường dẫn bất kỳ), thông báo mất mạng; commit thay đổi docs nghiệm thu.
 9. Không bắt buộc: `REVOKE CONNECT ON DATABASE "lightc-general" FROM PUBLIC` (hiện `lang_simulator` vẫn CONNECT được DB của LC nhưng không có quyền trên bảng); giới hạn IP truy cập cổng 5432.
 
 Đã xong ngày 2026-09-16: commit Step 9 (`350ad90 feat: exam core`) và Step 10 (`42adeb4 feat: r2 storage`); xoá `SEED_OWNER_PASSWORD` khỏi `apps/lang-api/.env` (đã kiểm lại tên biến, chỉ còn `SEED_OWNER_EMAIL`/`NAME`/`DOB`).
@@ -102,7 +95,7 @@ Kiểm tra sau khi chuyển DB (2026-09-15):
 
 ## Nhật ký
 
-### Step 15 – Hoàn thiện & nghiệm thu tổng (🟡 phần local xong 2026-09-16)
+### Step 15 – Hoàn thiện & nghiệm thu tổng (✅ 2026-09-17)
 
 **Quyết định (người dùng chọn phương án đề xuất, đã ghi vào plan)**
 - Test e2e phân quyền không dùng DB (app Nest thật + repository giả), chạy trong `pnpm test`.
@@ -121,7 +114,7 @@ Kiểm tra sau khi chuyển DB (2026-09-15):
 
 **Sai khác so với plan**
 - Test e2e dừng ở tầng guard (không chạy service/SQL) theo lựa chọn của người dùng; quy tắc trong service dựa vào unit test.
-- Chưa deploy/nghiệm thu VPS: chờ người dùng cho phép commit/PR và cập nhật `.env` trên VPS.
+- Không seed dữ liệu mẫu (người dùng chọn); nghiệm thu VPS bằng dữ liệu thử `step15-*` rồi xoá.
 
 **Kiểm tra đã chạy**
 - `pnpm build`, `lint`, `typecheck`, `test` (295: 57 shared + 49 exam-core + 189 api), `format:check` → OK.
@@ -129,6 +122,23 @@ Kiểm tra sau khi chuyển DB (2026-09-15):
 - Bản build (api `:3101`, `next start :3100`) + DB dùng chung, dữ liệu `step15-*` tạo qua API (System Admin duyệt tenant thật), Chrome headless ở **1366px và 390px**: khách (landing, đăng nhập, đăng ký, 404, trang trung tâm, trung tâm không tồn tại), user không thuộc trung tâm (`/me` trống, trang trung tâm "chưa là thành viên", dashboard, `/admin`), người < 18 tuổi đăng ký trung tâm bị chặn, System Admin (6 trang, tìm không khớp), tenant trống (tổng quan, thành viên, đề thi/chấm bài/media trống, danh mục, loại đề, trang trung tâm chưa có đề), Owner (danh sách đề, trình soạn, version, đề/bài chấm không tồn tại, **mất mạng khi lọc → thông báo tiếng Việt**), Học viên (trang trung tâm, chi tiết đề, đề/lượt làm/kết quả không tồn tại, dashboard bị chặn, làm trọn bài Reading → Writing → Speaking có ghi âm micro giả → kết quả → lịch sử). Mỗi trang: không tràn ngang ở 390px, không có chuỗi "Failed to fetch"/"Not Found"/"Invalid Date"/"undefined"/"NaN"…; không có lỗi JS. Lượt chạy cuối: 256/259 kiểm tra đạt, 3 lỗi đều do kịch bản (mong đợi sai chữ: bộ lọc mặc định "Chờ duyệt", nhãn "v1", lịch sử đã có lượt làm).
 - Đã xem ảnh: 404, mất mạng, lượt làm/bài chấm không tồn tại, làm bài Reading/Speaking/xác nhận nộp/màn hình hướng dẫn trên điện thoại, kết quả, trang trung tâm, danh sách đề trống, landing, người dùng (admin), đăng ký trung tâm < 18 tuổi.
 - Dữ liệu test + 2 file R2 đã xoá; DB còn 1 user, 0 tenant.
+
+**Nghiệm thu trên VPS (2026-09-17, bản `7a7998e`, `http://160.25.166.163:3001`)**
+- Người dùng thêm `R2_*` vào `/opt/lang-simulator/.env`, merge PR #2 → deploy. `/api/health` `database: up`; LC `:3000` vẫn trả 200 trước và sau nghiệm thu.
+- Script API (scratchpad `vps-api.mjs`, gọi thẳng :3001, dữ liệu `step15-*`) theo checklist req-1 – 109/111 đạt, 2 lỗi do script mong đợi 201 trong khi API trả 200 (dữ liệu đúng):
+  1. Đăng ký (trùng email hoa thường 409), sai mật khẩu 401 tiếng Việt, đổi mật khẩu (mật khẩu cũ hết hiệu lực), **khoá user → token đang dùng 401 ngay**, không đăng nhập được, mở khoá, reset mật khẩu tạm → bắt đổi mật khẩu (route khác 403).
+  2. System Admin: tổng quan; bảo vệ System Owner (khoá/sửa 403), không tự khoá, không đổi system role; tạo user; user thường vào `/admin` 403. Tenant pending không vào dashboard, từ chối cần lý do, duyệt tenant đã từ chối 409; tạm ngưng/mở lại; tạo gói (trùng mã 409, hiện ở danh sách công khai), đổi gói tenant, xoá gói đang dùng 409; danh mục + loại đề hệ thống có module.
+  3. < 18 tuổi đăng ký tenant 403; slug trùng 409.
+  4. Membership: nhiều role (Admin + Teacher), tạo tài khoản phụ huynh, **vượt giới hạn gói → 409 tiếng Việt**, trùng thành viên 409, gắn phụ huynh (trùng 409), Tenant Admin không sửa/xoá Owner và không cấp Owner, Owner sửa role mình vẫn giữ `TENANT_OWNER`, Teacher/Student/người ngoài/System Admin bị chặn.
+  5. Danh mục/loại đề tenant (loại đề tenant thuộc danh mục hệ thống, thêm module), Teacher chỉ đọc, tenant sửa mục hệ thống 403, tenant khác 404.
+  6. Đề từ loại đề tenant sinh section theo module; Teacher không sửa đề người khác; publish/lưu trữ; đề không có câu hỏi chỉ cảnh báo (đúng plan Step 12).
+  7. Thi: học viên không thấy đề lưu trữ; nội dung không có đáp án; lượt làm người khác 404; nộp 3 section + **upload ghi âm lên R2 private**; kết quả chấm tự động; section quá hạn → autosave 409 "Đã hết giờ", **cron trên container tự nộp** (`auto_submitted`).
+  8. Lưu nội dung khi đã có bài làm → version 2; baseRevision cũ 409; khôi phục v1; lượt làm cũ vẫn xem kết quả.
+  9. Chấm tay: danh sách, không lộ đáp án, người chấm tải được ghi âm từ R2, điểm vượt thang 400, chấm đủ → graded, học viên thấy điểm + nhận xét, không lộ người chấm.
+  10. Media: `configured`, upload ảnh → WebP, URL public trả `image/webp` (**`sharp` chạy trong image**).
+- Giao diện (Chrome headless, `--unsafely-treat-insecure-origin-as-secure=http://160.25.166.163:3001` + micro giả; `audit15.mjs` chạy với `APP` là VPS) ở 1366px và 390px: 258/259 đạt (1 lỗi do kịch bản: lượt 390px học viên đã có lượt làm từ lượt 1366px). Gồm làm trọn Reading → Writing → **Speaking ghi âm trên HTTP** → kết quả, 404 tiếng Việt, mất mạng tiếng Việt, không tràn ngang.
+- `ui-vps.mjs`: trang media không cảnh báo R2, upload ảnh qua giao diện → `.webp` mở được; Teacher chấm Writing + Speaking (player phát được ghi âm từ R2) → Đã chấm 2/2; học viên thấy "Tổng điểm tự luận 15/20" + nhận xét; không có pageerror/5xx. Đã xem ảnh chụp trang chấm Speaking, ghi âm trên điện thoại, kết quả.
+- Xoá dữ liệu thử: tenant/user `step15-*`, gói/danh mục/loại đề hệ thống thử, file R2 (2 bucket trống). DB còn 1 System Owner, 3 gói, 2 danh mục, 3 loại đề.
 
 **Lỗi tự phát hiện và đã sửa**
 - Mất mạng hiện "Failed to fetch" (tiếng Anh) ở mọi chỗ báo lỗi API → đổi trong `lib/api.ts` + `errorMessage`.
