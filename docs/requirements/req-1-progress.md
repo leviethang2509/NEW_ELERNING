@@ -18,8 +18,8 @@
 | 7 | Dashboard hệ thống `/admin` | ✅ | 2026-09-15 | Đã commit (`10594de feat: main page`, gộp Step 8); migration `AddTenantSuspensionReason` đã chạy trên DB dùng chung |
 | 8 | Khu vực chính & dashboard tenant cơ bản | ✅ | 2026-09-16 | Đã commit (`10594de feat: main page`); migration `AddMembershipLastActiveAt` đã chạy trên DB dùng chung |
 | 9 | `packages/exam-core` | ✅ | 2026-09-16 | **Chưa commit**; package thuần, không có migration/env |
-| 10 | Upload media (R2) | ⬜ | | **Step tiếp theo**; cần P1 (tên bucket + `R2_PUBLIC_BASE_URL`) |
-| 11 | Danh mục đề & Loại đề | ⬜ | | |
+| 10 | Upload media (R2) | ✅ | 2026-09-16 | **Chưa commit**; 6 biến `R2_*` (tuỳ chọn) đã có ở `apps/lang-api/.env` + `deploy/.env`, **VPS chưa cập nhật**; không có migration |
+| 11 | Danh mục đề & Loại đề | ⬜ | | **Step tiếp theo** |
 | 12 | Đề thi, trình soạn thảo & version | ⬜ | | |
 | 13 | Làm bài thi & chấm tự động | ⬜ | | |
 | 14 | Chấm bài thủ công | ⬜ | | |
@@ -28,13 +28,15 @@
 ### Bàn giao cho phiên tiếp theo (cuối phiên 2026-09-16)
 
 **Trạng thái repo**
-- Nhánh `main` tại `10594de feat: main page` (Step 7 + 8). **Step 9 chưa commit** (`packages/exam-core`, `@lang/shared` thêm `QuestionType`/`ExamPartKind`, `.prettierignore`, `pnpm-lock.yaml`, plan, CLAUDE.md, file này).
-- Migration `AddTenantSuspensionReason` (Step 7) và `AddMembershipLastActiveAt` (Step 8) đã chạy trên DB dùng chung; đều chỉ thêm cột cho phép null nên bản đang chạy trên :3001 không bị ảnh hưởng. Step 9 không có migration.
-- Không có server nào đang chạy.
+- Nhánh `main` tại `350ad90 feat: exam core` (Step 9 đã commit). **Step 10 chưa commit**: `apps/lang-api/src/storage/*`, `env.validation`, `tenants` (logoUrl), `@lang/shared/media.ts`, lang-app (`lib/media-api`, `lib/embedded-media`, `lib/clipboard`, `components/media/*`, trang `dashboard/media`, `vi.ts`, `navigation.ts`, `TenantAvatar`, `TenantForm`, `FormAlert`, `format.ts`), `.env.example`, `deploy/.env.example`, `docs/setup/deploy.md`, CLAUDE.md, plan, file này, `pnpm-lock.yaml`.
+- Dependency mới của lang-api: `@aws-sdk/client-s3`, `@aws-sdk/s3-request-presigner`, `sharp`, `@types/multer`. lang-app thêm `@lang/exam-core`. **`sharp` là native** — image Docker chưa build lại trên máy dev (không có Docker), phải kiểm bằng PR/workflow trước khi deploy.
+- Step 10 **không có migration**; `tenants.logo_url` đã có sẵn từ Step 6.
+- Không có server nào đang chạy; dữ liệu test (tenant `test-step-10`, `test-step-10-logo`, user `step10-media@example.com`, 4 object R2) đã xoá sạch.
 
-**Bắt đầu Step 10**
-1. Hỏi người dùng tên 2 bucket R2 + `R2_PUBLIC_BASE_URL` (P1); thêm biến R2 vào `env.validation.ts`, `.env.example`, `deploy/.env.example` và nhắc cập nhật `.env` trên VPS.
-2. Mở `LC-BE/storage/r2.service.ts`, `media.controller.ts`, `LC-FE/lib/media-api.ts`, `MediaDialog.tsx`, `embedded-media.ts`. Phần thuần của `embedded-media.ts` (`collectDataUrls`, `replaceDataUrls`, `isDataUrl`) **đã có trong exam-core**, lang-app chỉ cần `uploadDataUrls`/`applyDataUrls`.
+**Bắt đầu Step 11**
+1. Đọc plan Step 11 + mục 4.3 (`exam_categories`, `exam_blueprints`, `exam_modules`) và mục 5 (Teacher chỉ xem danh mục/loại đề của tenant).
+2. Có migration → nhớ quy tắc DB dùng chung: chỉ thêm bảng/cột, tương thích ngược với bản đang chạy trên :3001.
+3. Dùng lại `DataTable`/`SearchInput`/`SelectFilter`/`Modal` như trang Thành viên; service dùng chung cho 2 phạm vi (hệ thống `/admin/*` và tenant `/t/:slug/*`).
 
 ---
 
@@ -53,7 +55,7 @@ _Bàn giao cũ (cuối phiên Step 8, giữ để tham khảo):_
 
 | # | Việc | Trạng thái |
 |---|---|---|
-| P1 | 2 bucket R2 (public + private), gửi `R2_PUBLIC_BASE_URL` | 🟡 Người dùng báo đã chuẩn bị; tên bucket + URL gửi lúc làm Step 10 (biến R2 chưa thêm vào env) |
+| P1 | 2 bucket R2 (public + private), gửi `R2_PUBLIC_BASE_URL` | ✅ 2026-09-16: `lang-simulator-public` (public access bật, URL `pub-….r2.dev`) + `lang-simulator-private`; người dùng tạo **API token riêng** cho lang-simulator (Object Read & Write, giới hạn 2 bucket) và tự điền 6 biến `R2_*` vào `apps/lang-api/.env`; mình copy sang `deploy/.env` (không đọc giá trị). Đã upload/xoá thử file thật trên bucket public |
 | P2 | Database `lang-simulator` + user `lang_simulator` (quyền CREATE trên schema `public`); **Postgres VPS ≥ 13** | ✅ 2026-09-15: Postgres **16.15**; `lang_simulator` là owner database, không phải superuser, có CREATE trên `public`. Role ban đầu thiếu `LOGIN` → đã `ALTER ROLE … LOGIN PASSWORD` (mật khẩu ngẫu nhiên 64 ký tự, chỉ nằm trong `apps/lang-api/.env`) |
 | P3 | GitHub repo `vunguyenquangit/lang-simulator` + secrets VPS/GHCR | ✅ 2026-09-15: workflow build, push GHCR, scp và ssh deploy đều chạy được (repo private, máy dev không có `gh`) |
 | P4 | `/opt/lang-simulator` trên VPS, mở port 3001 | ✅ 2026-09-15: thư mục thuộc user `vunq` (cấp từ root), có `.env`; truy cập `:3001` từ ngoài OK |
@@ -73,10 +75,17 @@ Kiểm tra sau khi chuyển DB (2026-09-15):
 - `pnpm --filter lang-api migrate` và `node dist/database/migrate.js` bằng user `lang_simulator` → tạo `public.typeorm_migrations` (owner `lang_simulator`), chạy lại báo đã mới nhất.
 - `node dist/main.js` (PORT=3199) → `/api/health` 200 `{"status":"ok","database":"up"}`.
 
-### Đang chờ người dùng (tính đến 2026-09-15)
+### Đang chờ người dùng (cập nhật 2026-09-16)
 
-1. Commit Step 9 (Step 7 + 8 đã commit ở `10594de`). Không có env mới.
-2. Đã seed System Owner, nhưng `SEED_OWNER_PASSWORD` **vẫn còn** trong `apps/lang-api/.env` (kiểm lúc cuối phiên, không đọc giá trị) → nên xoá.
+1. **Commit Step 10** (Step 9 đã commit ở `350ad90`).
+2. **VPS `/opt/lang-simulator/.env`: thêm 6 biến `R2_*`** (đã soạn sẵn trong `deploy/.env` trên máy dev):
+   ```bash
+   scp deploy/.env <user>@<ip-vps>:/opt/lang-simulator/.env
+   ssh <user>@<ip-vps> chmod 600 /opt/lang-simulator/.env
+   ```
+   Thiếu thì container vẫn chạy, chỉ upload media trả 501. Đổi `.env` xong phải `docker compose up -d --force-recreate`.
+3. Lần deploy tới **kiểm image Docker có `sharp`** (native): mở PR để workflow build thử trước khi push `main`.
+4. Đã seed System Owner, nhưng `SEED_OWNER_PASSWORD` **vẫn còn** trong `apps/lang-api/.env` (kiểm lúc cuối phiên, không đọc giá trị) → nên xoá.
 3. Xem giao diện bằng mắt: `/login`, `/register`, `/me`, `/me/account`, `/admin`, `/admin/users`, `/admin/tenants`, `/admin/plans` (Step 5–7) và `/`, `/me/tenants/new`, `/t/{slug}`, `/t/{slug}/dashboard`, `/t/{slug}/dashboard/members` (Step 8). Mình mới kiểm bằng ảnh chụp Chrome headless. Phần giao diện Step 8 do mình tự quyết (người dùng giao), xem plan Step 8 mục "Cập nhật khi làm Step 8".
 4. VPS `/opt/lang-simulator/.env`: **không bắt buộc** thêm `JWT_ACCESS_EXPIRES_IN`, `REFRESH_EXPIRES_IN`, `COOKIE_SECURE` (đều có mặc định); `deploy/.env` trên máy dev đã thêm.
 5. Không bắt buộc: `REVOKE CONNECT ON DATABASE "lightc-general" FROM PUBLIC` (hiện `lang_simulator` vẫn CONNECT được DB của LC nhưng không có quyền trên bảng); giới hạn IP truy cập cổng 5432.
@@ -86,6 +95,51 @@ Kiểm tra sau khi chuyển DB (2026-09-15):
 ---
 
 ## Nhật ký
+
+### Step 10 – Upload media (R2) (✅ 2026-09-16)
+
+**Quyết định (người dùng chọn, đã cập nhật plan Step 10)**
+
+- Phạm vi: **trang Thư viện media** trong dashboard tenant + **logo trung tâm** (đúng phạm vi plan, cần chỗ upload thật vì editor tới Step 12 mới có).
+- Logo đặt theo **user** (`users/{userId}/branding/…`, `POST /me/branding/upload`) thay vì `tenants/{tenantId}/branding/…`: form đăng ký chọn logo khi tenant chưa tồn tại.
+- Ảnh convert **webp bằng `sharp`** như LC (audio/video giữ nguyên).
+
+**Đã làm**
+
+- Backend `apps/lang-api/src/storage/`: `R2Service` (2 bucket, `put`/`delete`/`list`/`presignedGetUrl` 600s, thiếu env → 501, `createClient` tách ra để test), `MediaService`, `media-file.ts` (loại/đuôi/giới hạn/key), `MediaController` (`GET status`, `GET`, `POST upload`, `DELETE ?key=` dưới `/t/:slug/media`, `@TenantRoles(...EXAM_AUTHOR_ROLES)`), `BrandingController`. `StorageModule` export `R2Service`/`MediaService` cho Step 13.
+- Env: 6 biến `R2_*` **tuỳ chọn** trong `env.validation.ts` + `.env.example` + `deploy/.env.example` + `docs/setup/deploy.md`.
+- `@lang/shared/media.ts`: `MediaKind`, `MEDIA_SIZE_LIMITS` (5/50/100MB), `MediaStatus`, `MediaItem`, `mediaKindFromExtension`.
+- Logo tenant: `logoUrl` vào `TenantFormDto` + `formFields` (dùng cho cả đăng ký và gửi lại), `TenantAvatar` nhận `logoUrl`, dùng ở `/me` và `/t/{slug}`.
+- Frontend: `lib/media-api.ts`, `lib/embedded-media.ts` (`uploadDataUrls`), `lib/clipboard.ts` (có đường lùi `execCommand` vì VPS chạy HTTP), `components/media/MediaDialog.tsx` + `LogoPicker.tsx`, trang `/t/{slug}/dashboard/media`, menu + `vi.media`, `formatBytes`, `FormAlert` thêm tone `warning`.
+- Test: **116** (thêm `media-file.spec`, `media.service.spec`, `r2.service.spec` và 2 case env R2).
+
+**Sai khác so với plan**
+
+- Key logo theo user (lý do ở trên) → plan đã sửa.
+- Thêm route `/t/{slug}/dashboard/media` (mục 6.1 chưa có); không thêm bảng DB, danh sách đọc thẳng R2 theo prefix (tối đa 1000 key, không phân trang).
+- `MediaDialog` viết lại thay vì copy LC (không phụ thuộc Plate); `embedded-media.ts` chưa có `applyDataUrls` (cần editor Plate → Step 12).
+- `R2Service` gộp `putObject/deleteObject` thành `put`/`delete` có tham số `scope` thay vì mỗi bucket một hàm.
+
+**Nghiệm thu (chạy thật 2026-09-16, không chỉ build)**
+
+- API `:3199` với `.env` thật, tenant test `test-step-10`: upload jpg → **webp 1794B**, mp3 200KB, mp4 500KB; 3 URL public trả **200** đúng `content-type`; `GET` list ra 3 file; pdf → 400; xoá key của tenant khác → **403**; xoá file của mình → 204 rồi URL trả **404**; `POST /me/branding/upload` → 201, URL 200.
+- Đăng ký tenant kèm `logoUrl` → 201, lưu đúng URL; `logoUrl: javascript:alert(1)` → 400.
+- API `:3198` với 6 biến R2 **để trống**: khởi động bình thường (log cảnh báo), `status` trả `configured:false` + lý do, `upload`/`list`/`branding` đều **501**.
+- Giao diện (Chrome headless, `next dev` :3100 → API :3199): đăng nhập → `/t/test-step-10/dashboard/media` hiện bảng đúng (tên file, badge loại, dung lượng, thời gian, nút chép/mở/xoá); upload qua nút "Tải lên" làm số file tăng; menu có "Thư viện media"; `/me/tenants/new` hiện LogoPicker; `/me` hiện logo lấy từ R2 trên thẻ tenant.
+- Dọn sạch sau nghiệm thu: 4 object R2 đã xoá (bucket public còn **0**), tenant/membership/user test đã xoá (DB còn 0 tenant, 0 membership, 1 user System Owner).
+
+**Lỗi tự phát hiện và đã sửa**
+
+- `@IsOptional()` **không** bỏ qua chuỗi rỗng → API **không khởi động được** khi `.env` có `R2_ACCOUNT_ID=` (đúng như `.env.example` ship sẵn). Thêm transform `blankToUndefined` + 2 test hồi quy.
+- Bọc `S3Client.send` bằng generic làm hỏng overload của SDK (TS7006/TS18046) → gọi thẳng `requireClient().send(...)`.
+- `presignedGetUrl` ném lỗi **đồng bộ** khi chưa cấu hình → đổi thành `async` để luôn trả promise bị reject.
+
+**Lưu ý cho step sau**
+
+- Step 12: `MediaDialog` và `uploadDataUrls` đã sẵn sàng; còn thiếu `applyDataUrls` (thay URL ngay trong editor Plate).
+- Step 13: `R2Service.presignedGetUrl` + bucket private đã có nhưng **chưa chạy thử với file thật** (mới unit test); endpoint ghi âm chưa có.
+- `sharp` là dependency native: kiểm image Docker bằng PR trước khi deploy.
+- Xoá file media hiện không kiểm đề nào đang dùng — cân nhắc ở Step 12 khi đã có `exam_sections`.
 
 ### Step 9 – `packages/exam-core` (✅ 2026-09-16)
 

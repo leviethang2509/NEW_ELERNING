@@ -14,6 +14,7 @@ import {
   type ServicePlanSummary,
 } from '@lang/shared';
 import { useAuth } from '@/components/auth/AuthProvider';
+import { LogoPicker } from '@/components/media/LogoPicker';
 import {
   FormAlert,
   SectionCard,
@@ -32,6 +33,8 @@ export interface TenantFormValues {
   name: string;
   slug: string;
   planId: string;
+  /** URL logo đã upload lên R2; `null` là dùng chữ cái đầu của tên. */
+  logoUrl: string | null;
   description: string;
   email: string;
   phone: string;
@@ -42,6 +45,7 @@ const emptyForm: TenantFormValues = {
   name: '',
   slug: '',
   planId: '',
+  logoUrl: null,
   description: '',
   email: '',
   phone: '',
@@ -68,6 +72,7 @@ export function TenantForm(props: TenantFormProps) {
           name: props.tenant.name,
           slug: props.tenant.slug,
           planId: props.tenant.plan.id,
+          logoUrl: props.tenant.logoUrl,
           description: props.tenant.description ?? '',
           email: props.tenant.email ?? '',
           phone: props.tenant.phone ?? '',
@@ -188,6 +193,22 @@ export function TenantForm(props: TenantFormProps) {
         >
           <SectionCard title={text.infoSection}>
             <div className="grid gap-4 sm:grid-cols-2">
+              <div className={`${labelClass} sm:col-span-2`}>
+                <span className={labelTextClass}>
+                  {text.logo}{' '}
+                  <span className="font-normal text-[var(--muted)]">
+                    {vi.common.optional}
+                  </span>
+                </span>
+                <LogoPicker
+                  value={form.logoUrl}
+                  name={form.name}
+                  onChange={(logoUrl) =>
+                    setForm((current) => ({ ...current, logoUrl }))
+                  }
+                />
+              </div>
+
               <label className={`${labelClass} sm:col-span-2`}>
                 <span className={labelTextClass}>{text.name}</span>
                 <input

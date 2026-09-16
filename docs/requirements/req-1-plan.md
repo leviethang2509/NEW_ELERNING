@@ -96,7 +96,7 @@
 
 | # | Việc | Cần trước step |
 |---|---|---|
-| P1 | Tạo 2 bucket R2 (`lang-simulator-public` bật public access / custom domain, `lang-simulator-private` tắt public). Gửi lại `R2_PUBLIC_BASE_URL` | Step 10 |
+| P1 | ✅ 2026-09-16: 2 bucket R2 (`lang-simulator-public` bật public access, `lang-simulator-private` tắt public) + API token riêng cho lang-simulator; 6 biến `R2_*` đã điền ở `apps/lang-api/.env` và `deploy/.env` | Step 10 |
 | P2 | Trên Postgres VPS (cần **Postgres ≥ 13**): database `lang-simulator` + user `lang_simulator` có quyền `CREATE` trên schema `public` (PG ≥ 15 mặc định không cấp cho user khác owner) | Step 4 |
 | P3 | Tạo GitHub repo `vunguyenquangit/lang-simulator`; thêm secrets `VPS_HOST`, `VPS_USER`, `VPS_SSH_KEY`, `VPS_PORT`, `GHCR_TOKEN` (secrets GitHub theo từng repo nên phải thêm lại, cùng giá trị với LC) | Step 4 |
 | P4 | Trên VPS: tạo `/opt/lang-simulator/` chứa `.env` (soạn sẵn ở `deploy/.env` trên máy dev, copy lên bằng scp; `docker-compose.yml` do workflow tự copy), mở port 3001 trên firewall | Step 4 |
@@ -571,6 +571,14 @@ health:      GET /api/health
 - Frontend: copy `LC-FE/lib/media-api.ts`, `MediaDialog.tsx`, `embedded-media.ts` (đổi endpoint theo slug).
 
 **Nghiệm thu:** upload ảnh/audio/video từ dashboard tenant, URL public mở được; thiếu cấu hình R2 trả 501 như LC.
+
+> Cập nhật khi làm Step 10 (2026-09-16, người dùng chọn):
+>
+> - **Logo trung tâm đặt theo user**, không theo tenant: endpoint `POST /me/branding/upload`, key `users/{userId}/branding/{uuid}.webp`. Lý do: logo chọn ngay trong form đăng ký, lúc đó tenant chưa tồn tại nên chưa có `tenantId`. `logoUrl` thêm vào `TenantFormDto` (URL http(s), ≤ 1024 ký tự).
+> - **Thêm trang Thư viện media** `/t/{slug}/dashboard/media` (mục 6.1 chưa liệt kê): upload, copy URL, mở, xoá. Danh sách đọc thẳng R2 theo prefix `tenants/{tenantId}/exam-media/` nên **không cần bảng DB**. Cần trang này để nghiệm thu vì trình soạn đề tới Step 12 mới có, và giáo viên dùng lại được file đã tải.
+> - Ảnh convert webp bằng `sharp` (như LC); audio/video giữ nguyên định dạng và mimetype gốc.
+> - 6 biến `R2_*` khai báo **tuỳ chọn** trong `env.validation.ts`: để trống thì API vẫn khởi động, chỉ endpoint media trả 501.
+> - `MediaDialog` viết lại cho lang-app (không phụ thuộc Plate, nhận `slug`); `embedded-media.ts` mới có `uploadDataUrls` – `applyDataUrls` cần editor Plate nên để Step 12.
 
 ### Step 11 – Danh mục đề & Loại đề
 **Việc làm**

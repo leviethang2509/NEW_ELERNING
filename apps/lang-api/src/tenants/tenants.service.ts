@@ -73,7 +73,6 @@ export class TenantsService {
           tenants.create({
             ...formFields(dto),
             slug,
-            logoUrl: null,
             status: TenantStatus.PENDING,
             rejectionReason: null,
             planId: plan.id,
@@ -237,6 +236,7 @@ export class TenantsService {
 function formFields(dto: TenantFormDto) {
   return {
     name: dto.name,
+    logoUrl: dto.logoUrl ?? null,
     description: dto.description ?? null,
     email: dto.email ?? null,
     phone: dto.phone ?? null,

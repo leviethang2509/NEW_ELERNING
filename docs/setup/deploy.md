@@ -57,6 +57,7 @@ ssh <user>@<ip-vps> chmod 600 /opt/lang-simulator/.env
   Network `bridge` mặc định không phân giải tên container; khi đó cần network do người dùng tạo (vd. của docker compose).
 - `JWT_SECRET`: khác giá trị ở máy dev (`openssl rand -base64 48`).
 - `JWT_ACCESS_EXPIRES_IN`, `REFRESH_EXPIRES_IN`, `COOKIE_SECURE` (từ Step 5): không bắt buộc, mặc định `15m`, `30d`, `false`. Chỉ đặt `COOKIE_SECURE=true` khi truy cập qua HTTPS, nếu không trình duyệt sẽ không gửi cookie đăng nhập.
+- `R2_*` (từ Step 10): 6 biến `R2_ACCOUNT_ID`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`, `R2_PUBLIC_BUCKET`, `R2_PUBLIC_BASE_URL`, `R2_PRIVATE_BUCKET` – copy y nguyên từ `apps/lang-api/.env` trên máy dev (container dùng chung 2 bucket với dev). Thiếu biến thì API vẫn khởi động được nhưng upload media trả 501.
 - **Không** đặt `SEED_OWNER_*` trên VPS: System Owner được seed một lần từ máy dev (database dùng chung).
 
 Mở cổng 3001 trên firewall nếu có (vd. `ufw allow 3001/tcp`).

@@ -7,6 +7,7 @@ import {
   IsIn,
   IsInt,
   IsNotEmpty,
+  IsOptional,
   IsString,
   Matches,
   Max,
@@ -18,6 +19,10 @@ import { DURATION_PATTERN } from '../common/duration';
 
 export const NODE_ENVS = ['development', 'production', 'test'] as const;
 export type NodeEnv = (typeof NODE_ENVS)[number];
+
+/** Biến để trống trong `.env` coi như chưa đặt (chỉ dùng cho biến tuỳ chọn). */
+const blankToUndefined = ({ value }: { value: unknown }) =>
+  typeof value === 'string' && value.trim() === '' ? undefined : value;
 
 /**
  * Biến môi trường của lang-api. Kiểm tra lúc khởi động: thiếu hoặc sai là
@@ -77,6 +82,46 @@ export class EnvironmentVariables {
   @Transform(({ value }) => value === true || value === 'true')
   @IsBoolean()
   COOKIE_SECURE = false;
+
+  // --- Cloudflare R2 ---
+  // Không bắt buộc: thiếu bất kỳ biến nào thì endpoint upload trả 501 và phần
+  // còn lại của API vẫn chạy (xem `R2Service`). `.env.example` để trống các
+  // biến này nên giá trị rỗng phải được coi là "chưa đặt", không phải lỗi.
+
+  @IsOptional()
+  @Transform(blankToUndefined)
+  @IsString()
+  R2_ACCOUNT_ID?: string;
+
+  @IsOptional()
+  @Transform(blankToUndefined)
+  @IsString()
+  R2_ACCESS_KEY_ID?: string;
+
+  @IsOptional()
+  @Transform(blankToUndefined)
+  @IsString()
+  R2_SECRET_ACCESS_KEY?: string;
+
+  /** Bucket bật public access: ảnh/audio/video của đề, logo trung tâm. */
+  @IsOptional()
+  @Transform(blankToUndefined)
+  @IsString()
+  R2_PUBLIC_BUCKET?: string;
+
+  /** URL gốc của bucket public (`https://pub-….r2.dev` hoặc custom domain). */
+  @IsOptional()
+  @Transform(blankToUndefined)
+  @Matches(/^https?:\/\/\S+$/, {
+    message: 'R2_PUBLIC_BASE_URL phải là URL http(s)',
+  })
+  R2_PUBLIC_BASE_URL?: string;
+
+  /** Bucket tắt public access: ghi âm của học viên, chỉ đọc qua presigned URL. */
+  @IsOptional()
+  @Transform(blankToUndefined)
+  @IsString()
+  R2_PRIVATE_BUCKET?: string;
 }
 
 export function validateEnv(

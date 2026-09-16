@@ -87,7 +87,7 @@ function TenantContextCard({
 
   return (
     <li className="flex flex-col gap-4 rounded-2xl border border-[var(--border)] bg-[var(--card)] p-5 sm:flex-row sm:items-start">
-      <TenantAvatar name={tenant.name} />
+      <TenantAvatar name={tenant.name} logoUrl={tenant.logoUrl} />
       <div className="min-w-0 flex-1">
         <div className="flex flex-wrap items-center gap-2">
           <span className="text-[15.5px] font-semibold text-[var(--heading)]">

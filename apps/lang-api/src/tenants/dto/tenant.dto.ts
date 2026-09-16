@@ -56,6 +56,14 @@ export class TenantFormDto {
   @IsUUID('all', { message: 'Vui lòng chọn gói dịch vụ' })
   planId: string;
 
+  /** URL logo đã upload qua `POST /me/branding/upload`; trống thì dùng chữ cái đầu của tên. */
+  @IsOptional()
+  @Transform(trimToNull)
+  @IsString({ message: 'Logo không hợp lệ' })
+  @MaxLength(1024, { message: 'Đường dẫn logo quá dài' })
+  @Matches(/^https?:\/\/\S+$/, { message: 'Logo phải là URL http(s)' })
+  logoUrl?: string | null;
+
   @IsOptional()
   @Transform(trimToNull)
   @IsString({ message: 'Mô tả không hợp lệ' })

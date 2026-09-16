@@ -32,3 +32,13 @@ export function formatPrice(price: string | null): string {
 export function formatNumber(value: number): string {
   return value.toLocaleString('vi-VN');
 }
+
+/** Dung lượng file (vd. 320 KB, 12,4 MB). */
+export function formatBytes(bytes: number): string {
+  if (bytes < 1024) return `${bytes} B`;
+  const kb = bytes / 1024;
+  if (kb < 1024) {
+    return `${kb.toLocaleString('vi-VN', { maximumFractionDigits: 0 })} KB`;
+  }
+  return `${(kb / 1024).toLocaleString('vi-VN', { maximumFractionDigits: 1 })} MB`;
+}

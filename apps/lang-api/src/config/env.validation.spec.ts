@@ -58,4 +58,34 @@ describe('validateEnv', () => {
   it('PORT không phải số thì dừng', () => {
     expect(() => validateEnv({ ...base, PORT: 'abc' })).toThrow(/PORT/);
   });
+
+  it('biến R2 để trống coi như chưa đặt (API vẫn khởi động)', () => {
+    // `.env.example` ship sẵn các dòng `R2_…=` rỗng, không được coi là lỗi.
+    const env = validateEnv({
+      ...base,
+      R2_ACCOUNT_ID: '',
+      R2_ACCESS_KEY_ID: '   ',
+      R2_SECRET_ACCESS_KEY: '',
+      R2_PUBLIC_BUCKET: '',
+      R2_PUBLIC_BASE_URL: '',
+      R2_PRIVATE_BUCKET: '',
+    });
+    expect(env.R2_ACCOUNT_ID).toBeUndefined();
+    expect(env.R2_ACCESS_KEY_ID).toBeUndefined();
+    expect(env.R2_PUBLIC_BASE_URL).toBeUndefined();
+  });
+
+  it('R2 điền đủ thì giữ nguyên, URL sai định dạng thì dừng', () => {
+    const env = validateEnv({
+      ...base,
+      R2_ACCOUNT_ID: 'acc',
+      R2_PUBLIC_BASE_URL: 'https://pub-abc.r2.dev',
+    });
+    expect(env.R2_ACCOUNT_ID).toBe('acc');
+    expect(env.R2_PUBLIC_BASE_URL).toBe('https://pub-abc.r2.dev');
+
+    expect(() =>
+      validateEnv({ ...base, R2_PUBLIC_BASE_URL: 'pub-abc.r2.dev' }),
+    ).toThrow(/R2_PUBLIC_BASE_URL/);
+  });
 });

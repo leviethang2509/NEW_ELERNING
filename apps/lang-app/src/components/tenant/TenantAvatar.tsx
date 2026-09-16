@@ -5,14 +5,29 @@ const sizeClass = {
   lg: 'h-[72px] w-[72px] rounded-2xl text-[24px]',
 } as const;
 
-// Ký hiệu trung tâm theo chữ cái đầu của tên; logo tải lên có ở Step 10.
+// Logo trung tâm; chưa có logo thì hiện chữ cái đầu của tên.
 export function TenantAvatar({
   name,
+  logoUrl = null,
   size = 'md',
 }: {
   name: string;
+  logoUrl?: string | null;
   size?: keyof typeof sizeClass;
 }) {
+  if (logoUrl) {
+    return (
+      // Ảnh từ R2 (domain đặt trong env, cố định lúc build) nên không dùng next/image.
+      // eslint-disable-next-line @next/next/no-img-element
+      <img
+        src={logoUrl}
+        alt=""
+        aria-hidden
+        className={`shrink-0 bg-[var(--hover)] object-cover ${sizeClass[size]}`}
+      />
+    );
+  }
+
   return (
     <span
       aria-hidden

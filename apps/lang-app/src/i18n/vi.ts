@@ -251,6 +251,13 @@ export const vi = {
       'Gói giới hạn số thành viên đang hoạt động. System Admin có thể đổi gói sau khi duyệt.',
     name: 'Tên trung tâm',
     namePlaceholder: 'Trung tâm Ngoại ngữ Á Châu',
+    logo: 'Logo',
+    logoHint:
+      'Ảnh vuông, tối đa 5MB. Để trống thì dùng chữ cái đầu của tên trung tâm.',
+    logoUpload: 'Chọn ảnh',
+    logoChange: 'Đổi ảnh',
+    logoRemove: 'Bỏ logo',
+    logoFailed: 'Tải logo thất bại',
     slug: 'Đường dẫn',
     slugHint:
       '3–40 ký tự: chữ thường không dấu, số và dấu gạch nối. Để trống thì hệ thống tự tạo từ tên.',
@@ -459,6 +466,51 @@ export const vi = {
     footerProduct: 'Sản phẩm',
     footerAccount: 'Tài khoản',
   },
+  media: {
+    title: 'Thư viện media',
+    subtitle:
+      'Ảnh, audio và video dùng trong đề thi của trung tâm. Ảnh được chuyển sang WebP khi tải lên.',
+    upload: 'Tải lên',
+    uploading: 'Đang tải lên…',
+    uploadFailed: 'Tải lên thất bại',
+    pickFile: 'Chọn file từ máy',
+    empty: 'Chưa có file nào.',
+    notConfigured: (reason: string) =>
+      `Chưa cấu hình Cloudflare R2 (${reason}) nên không tải lên được.`,
+    columns: {
+      file: 'File',
+      kind: 'Loại',
+      size: 'Dung lượng',
+      uploadedAt: 'Tải lên',
+      actions: 'Thao tác',
+    },
+    kinds: { image: 'Ảnh', audio: 'Audio', video: 'Video' },
+    copyUrl: 'Chép URL',
+    copied: 'Đã chép URL vào clipboard.',
+    copyFailed: 'Không chép được URL.',
+    openInNewTab: 'Mở trong tab mới',
+    remove: 'Xoá file',
+    removeTitle: 'Xoá file media?',
+    removeText:
+      'File bị xoá khỏi kho lưu trữ. Đề nào đang dùng file này sẽ không hiển thị được nữa.',
+    removeFailed: 'Xoá thất bại',
+    removed: 'Đã xoá file.',
+    insertTitle: {
+      image: 'Chèn hình ảnh',
+      audio: 'Chèn audio',
+      video: 'Chèn video',
+    },
+    sizeHint: {
+      image: (bytes: number) =>
+        `Ảnh tối đa ${Math.round(bytes / 1024 / 1024)}MB, tự chuyển sang WebP.`,
+      audio: (bytes: number) =>
+        `Audio tối đa ${Math.round(bytes / 1024 / 1024)}MB (đủ cho một đề nghe ~30 phút).`,
+      video: (bytes: number) =>
+        `Video tối đa ${Math.round(bytes / 1024 / 1024)}MB.`,
+    },
+    orPasteUrl: 'hoặc dán URL',
+    insertUrl: 'Chèn URL',
+  },
   nav: {
     overview: 'Tổng quan',
     users: 'Người dùng',
@@ -468,6 +520,7 @@ export const vi = {
     examCategories: 'Danh mục đề',
     examBlueprints: 'Loại đề',
     exams: 'Đề thi',
+    media: 'Thư viện media',
     grading: 'Chấm bài',
     sectionManagement: 'Quản lý',
     sectionExam: 'Đề thi',

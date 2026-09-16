@@ -10,6 +10,7 @@ import { buildDataSourceOptions } from './database/database.config';
 import { HealthModule } from './health/health.module';
 import { MembershipsModule } from './memberships/memberships.module';
 import { PlansModule } from './plans/plans.module';
+import { StorageModule } from './storage/storage.module';
 import { TenantDashboardModule } from './tenant-dashboard/tenant-dashboard.module';
 import { TenantsModule } from './tenants/tenants.module';
 import { UsersModule } from './users/users.module';
@@ -42,6 +43,7 @@ import { UsersModule } from './users/users.module';
     TenantsModule,
     MembershipsModule,
     TenantDashboardModule,
+    StorageModule,
     AdminModule,
     // Đăng ký guard toàn cục: mọi route cần đăng nhập trừ route @Public().
     AuthModule,

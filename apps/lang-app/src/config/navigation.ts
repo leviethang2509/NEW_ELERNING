@@ -11,6 +11,7 @@ import {
   CreditCard,
   FileText,
   FolderTree,
+  Images,
   Layers,
   LayoutDashboard,
   Users,
@@ -99,6 +100,7 @@ function tenantNavigation(
         icon: Layers,
       },
       { label: vi.nav.exams, href: `${base}/exams`, icon: FileText },
+      { label: vi.nav.media, href: `${base}/media`, icon: Images },
     );
   }
   if (hasAnyRole(roles, GRADER_ROLES)) {
