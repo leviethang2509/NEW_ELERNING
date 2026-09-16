@@ -764,6 +764,13 @@ health:      GET /api/health
 - [ ] Chấm tự động phía server, không lộ đáp án; chấm tay Writing/Speaking.
 - [ ] Deploy `http://<ip>:3001`, LC ở 3000 không bị ảnh hưởng.
 
+> Cập nhật khi làm Step 15 (2026-09-16, người dùng chọn phương án đề xuất):
+>
+> - **Test e2e phân quyền không dùng DB**: app Nest thật (mọi controller của `AppModule`, guard toàn cục, `TenantGuard`, filter lỗi) + repository trong bộ nhớ, service rỗng, interceptor dừng ngay sau guard; bảng quyền viết tay theo mục 5 cho **mọi route** (thiếu route thì test lỗi), chạy trong `pnpm test`. Quy tắc trong service (đề của mình, bài của mình, bảo vệ Owner…) kiểm bằng unit test service.
+> - **Giữ HTTP** (`http://<ip>:3001`), chưa có domain + SSL; ghi âm Speaking trên VPS thử bằng flag Chrome `unsafely-treat-insecure-origin-as-secure`.
+> - **Deploy qua PR trước**: làm xong local → mở PR để workflow build thử image → người dùng cập nhật `R2_*` trên VPS và cho phép push `main` → nghiệm thu checklist trên :3001 bằng dữ liệu thử rồi xoá.
+> - **Không seed thêm dữ liệu mẫu**: chỉ Owner + 3 gói + danh mục/loại đề hệ thống (đã có).
+
 ---
 
 ## 8. Ngoài phạm vi req-1 (ghi nhận cho req sau)

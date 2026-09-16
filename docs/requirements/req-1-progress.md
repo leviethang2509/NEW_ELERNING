@@ -22,19 +22,19 @@
 | 11 | Danh mục đề & Loại đề | ✅ | 2026-09-16 | Đã commit (`fe39e4a feat: exam category and blueprint`); migration `CreateExamCatalog` + `SeedExamCatalog` đã chạy trên DB dùng chung; không có env mới |
 | 12 | Đề thi, trình soạn thảo & version | ✅ | 2026-09-16 | Đã commit (`594be7e feat: exam compose`); migration `CreateExams` (gồm `exam_attempts`) đã chạy trên DB dùng chung; không có env mới |
 | 13 | Làm bài thi & chấm tự động | ✅ | 2026-09-16 | Đã commit (`3894fed feat: exam simulator`); migration `CreateAttemptSectionsAndAnswers` đã chạy trên DB dùng chung; thêm dependency `@nestjs/schedule` 4; không có env mới |
-| 14 | Chấm bài thủ công | ✅ | 2026-09-16 | **Chưa commit**; không có migration, không có env mới |
-| 15 | Hoàn thiện & nghiệm thu tổng | ⬜ | | **Step tiếp theo** |
+| 14 | Chấm bài thủ công | ✅ | 2026-09-16 | Đã commit (`d8e9b94 feat: exam grading`); không có migration, không có env mới |
+| 15 | Hoàn thiện & nghiệm thu tổng | 🟡 | | Phần local xong (test phân quyền, trang lỗi, docs), **chưa commit**; còn mở PR → deploy → nghiệm thu checklist trên VPS |
 
-### Bàn giao cho phiên tiếp theo (cuối phiên 2026-09-16, sau Step 14)
+### Bàn giao cho phiên tiếp theo (2026-09-16, Step 15 phần local)
 
 **Trạng thái repo**
-- Nhánh `main` tại `3894fed feat: exam simulator` (Step 13 đã commit). **Step 14 chưa commit**: `packages/shared/src/grading.ts` (+ `index.ts`), `exam.ts` (`isValidManualScore`) + spec; lang-api `grading/*` mới (module, controller, service + spec, `grading-content.ts`, `dto/`), `app.module.ts`, `tenant-dashboard/*` (số liệu thật), `testing/in-memory-repository.ts` (sửa `Not(IsNull())`); lang-app trang `(dashboard)/t/[slug]/dashboard/grading` + `grading/[attemptId]`, `components/grading/GradingAttemptView.tsx`, `lib/grading-api.ts`, `ExamIntro` đổi tên `ExamBlocks`, `AttemptResultView` (tổng điểm tự luận), trang tổng quan tenant (link Bài chờ chấm), `vi.ts`; CLAUDE.md, plan, file này.
-- Không có migration mới. Không có server nào đang chạy; dữ liệu test `step14-*` và file ghi âm test trên R2 đã xoá. DB: 1 System Owner, 0 tenant, 0 đề/bài làm.
+- Nhánh `main` tại `d8e9b94 feat: exam grading`. **Step 15 chưa commit**: `apps/lang-api/src/access-control.e2e.spec.ts` (mới) + devDependency `supertest`/`@types/supertest` (`package.json`, `pnpm-lock.yaml`), `exam-content.service.spec.ts` (+1 test); lang-app `app/not-found.tsx`, `app/error.tsx`, `app/global-error.tsx`, `components/StatusPage.tsx` (thay `ComingSoon` đã xoá), `lib/api.ts`, `lib/error-message.ts`, `LoginForm`, `RegisterForm`, `i18n/vi.ts`; `README.md`, `docs/setup/deploy.md`, `CLAUDE.md`, plan, file này.
+- Không có migration, không có env mới. Không có server nào đang chạy; dữ liệu test `step15-*` + file R2 đã xoá. DB: 1 System Owner, 0 tenant, 0 đề/bài làm.
 
-**Bắt đầu Step 15**
-1. Đọc plan Step 15 + checklist nghiệm thu req-1; rà mục "Đang chờ người dùng" bên dưới (R2 trên VPS, HTTPS cho ghi âm, xem giao diện).
-2. Test e2e phân quyền bằng supertest theo bảng mục 5 (hiện kiểm bằng script Node trong scratchpad, sẽ mất; mẫu script mô tả trong nhật ký Step 13/14).
-3. Deploy + nghiệm thu trên VPS cần domain + SSL (hoặc flag Chrome) để ghi âm.
+**Việc còn lại của Step 15** (người dùng đã chọn: mở PR trước, người dùng duyệt rồi mới push `main`)
+1. Người dùng yêu cầu commit → tạo nhánh, push, mở PR vào `main` (máy dev không có `gh`: push nhánh rồi người dùng mở PR trên GitHub) → workflow build image phải xanh (kiểm `sharp`).
+2. Người dùng cập nhật `/opt/lang-simulator/.env` trên VPS (6 biến `R2_*`, mục chờ số 1) và merge/push `main` → deploy.
+3. Nghiệm thu checklist req-1 trên `http://160.25.166.163:3001` (theo mục "Kiểm tra nhanh sau deploy" trong `docs/setup/deploy.md`): script API + Chrome headless (cờ `--unsafely-treat-insecure-origin-as-secure=http://160.25.166.163:3001` + micro giả cho ghi âm), dữ liệu `step15-*` rồi xoá; LC ở :3000 vẫn chạy. Cập nhật bảng trạng thái → ✅.
 
 ---
 
@@ -77,7 +77,7 @@ Kiểm tra sau khi chuyển DB (2026-09-15):
 - `pnpm --filter lang-api migrate` và `node dist/database/migrate.js` bằng user `lang_simulator` → tạo `public.typeorm_migrations` (owner `lang_simulator`), chạy lại báo đã mới nhất.
 - `node dist/main.js` (PORT=3199) → `/api/health` 200 `{"status":"ok","database":"up"}`.
 
-### Đang chờ người dùng (cập nhật 2026-09-16, sau Step 14)
+### Đang chờ người dùng (cập nhật 2026-09-16, Step 15)
 
 1. **VPS `/opt/lang-simulator/.env`: thêm 6 biến `R2_*`** (đã soạn sẵn trong `deploy/.env` trên máy dev):
    ```bash
@@ -88,10 +88,11 @@ Kiểm tra sau khi chuyển DB (2026-09-15):
 2. Lần deploy tới **kiểm image Docker có `sharp`** (dependency native, máy dev không có Docker): mở PR để workflow build thử **trước khi** push `main` (push `main` = deploy).
 3. Xem giao diện bằng mắt: `/login`, `/register`, `/me`, `/me/account`, `/admin`, `/admin/users`, `/admin/tenants`, `/admin/plans` (Step 5–7), `/`, `/me/tenants/new`, `/t/{slug}`, `/t/{slug}/dashboard`, `/t/{slug}/dashboard/members` (Step 8) `/t/{slug}/dashboard/media` + ô Logo trong form đăng ký trung tâm (Step 10), `/admin/exam-categories`, `/admin/exam-blueprints`, `/t/{slug}/dashboard/exam-categories`, `/t/{slug}/dashboard/exam-blueprints` (Step 11: bộ icon/màu, form module kéo thả), `/t/{slug}/dashboard/exams`, `…/exams/{id}/edit`, `…/exams/{id}/versions` (Step 12: trình soạn, tab section, xem trước, trang version; trên điện thoại thanh công cụ chiếm nhiều chỗ). Mình mới kiểm bằng ảnh chụp Chrome headless. Phần giao diện Step 8 do mình tự quyết (người dùng giao), xem plan Step 8 mục "Cập nhật khi làm Step 8".
 4. VPS `/opt/lang-simulator/.env`: **không bắt buộc** thêm `JWT_ACCESS_EXPIRES_IN`, `REFRESH_EXPIRES_IN`, `COOKIE_SECURE` (đều có mặc định); `deploy/.env` trên máy dev đã thêm.
-5. **Ghi âm Speaking cần HTTPS**: trình duyệt chặn micro trên `http://160.25.166.163:3001` (chỉ cho HTTPS hoặc localhost), ô ghi âm sẽ báo không hỗ trợ. Muốn thử trên VPS trước khi có domain + SSL: Chrome `chrome://flags/#unsafely-treat-insecure-origin-as-secure` thêm `http://160.25.166.163:3001`. Cần chốt domain + SSL trước nghiệm thu Step 15.
+5. **Ghi âm Speaking cần HTTPS**: đã chốt ở Step 15 giữ HTTP, domain + SSL để req sau; thử ghi âm trên VPS bằng Chrome `chrome://flags/#unsafely-treat-insecure-origin-as-secure` thêm `http://160.25.166.163:3001` (hướng dẫn trong `docs/setup/deploy.md`).
 6. Xem giao diện Step 13 bằng mắt: `/t/{slug}` (lượt làm gần đây + thẻ đề), `/t/{slug}/exams/{id}`, trang thi `/t/{slug}/attempts/{id}` (màn hình hướng dẫn, làm bài, đồng hồ, ghi âm, nộp toàn bài), `/t/{slug}/attempts/{id}/result`.
 7. Xem giao diện Step 14 bằng mắt: `/t/{slug}/dashboard` (thẻ Bài chờ chấm), `/t/{slug}/dashboard/grading` (lọc, tìm), `/t/{slug}/dashboard/grading/{attemptId}` (đề bài, bài viết, nghe ghi âm, chấm từng câu, Lưu & câu tiếp), trang kết quả học viên sau khi chấm (tổng điểm tự luận).
-8. Không bắt buộc: `REVOKE CONNECT ON DATABASE "lightc-general" FROM PUBLIC` (hiện `lang_simulator` vẫn CONNECT được DB của LC nhưng không có quyền trên bảng); giới hạn IP truy cập cổng 5432.
+8. **Step 15**: cho phép commit + push nhánh / mở PR (build thử image), sau đó merge/push `main` để deploy và nghiệm thu trên VPS. Xem giao diện mới: trang 404 (đường dẫn bất kỳ không tồn tại), thông báo mất mạng.
+9. Không bắt buộc: `REVOKE CONNECT ON DATABASE "lightc-general" FROM PUBLIC` (hiện `lang_simulator` vẫn CONNECT được DB của LC nhưng không có quyền trên bảng); giới hạn IP truy cập cổng 5432.
 
 Đã xong ngày 2026-09-16: commit Step 9 (`350ad90 feat: exam core`) và Step 10 (`42adeb4 feat: r2 storage`); xoá `SEED_OWNER_PASSWORD` khỏi `apps/lang-api/.env` (đã kiểm lại tên biến, chỉ còn `SEED_OWNER_EMAIL`/`NAME`/`DOB`).
 
@@ -100,6 +101,39 @@ Kiểm tra sau khi chuyển DB (2026-09-15):
 ---
 
 ## Nhật ký
+
+### Step 15 – Hoàn thiện & nghiệm thu tổng (🟡 phần local xong 2026-09-16)
+
+**Quyết định (người dùng chọn phương án đề xuất, đã ghi vào plan)**
+- Test e2e phân quyền không dùng DB (app Nest thật + repository giả), chạy trong `pnpm test`.
+- Giữ HTTP, ghi âm trên VPS thử bằng flag Chrome; domain + SSL để req sau.
+- Mở PR build thử image trước, người dùng duyệt rồi mới push `main`.
+- Không seed thêm dữ liệu mẫu.
+
+**Đã làm**
+- lang-api:
+  - `src/access-control.e2e.spec.ts` (supertest): lấy mọi controller từ `AppModule` (đệ quy imports), guard toàn cục từ metadata `AuthModule`, `TenantGuard` + `AllExceptionsFilter` thật; repository User/Tenant/Membership/MembershipRole trong bộ nhớ, service thay bằng object rỗng (`useMocker`), interceptor gắn header rồi dừng ngay sau guard. Bảng `ROUTES` viết tay theo plan mục 5 cho **95 route**, test đầu kiểm bảng khớp đúng route thật. 20 người gọi: khách, token sai / không phải Bearer, user bị khoá, token cũ (`token_version`), user không tồn tại, phải đổi mật khẩu, Registered User, System Admin/Owner (không là thành viên), 5 role tenant, Student + Teacher, membership inactive, Owner tenant chờ duyệt, người ngoài vào tenant chờ duyệt (404), slug không tồn tại; lỗi luôn dạng `{ statusCode, message }`. Thêm test slug hoa thường.
+  - `exam-content.service.spec.ts`: Teacher sửa metadata/lưu trữ/xoá/khôi phục đề người khác → 403; đề của tenant khác (xem, sửa, publish, xoá, danh sách version) → 404.
+- lang-app:
+  - `app/not-found.tsx`, `app/error.tsx` (nút Thử lại), `app/global-error.tsx` tiếng Việt, dùng `components/StatusPage.tsx`; xoá `ComingSoon` (không còn dùng) và chuỗi `comingSoon`.
+  - `lib/api.ts`: `fetch` lỗi mạng → `ApiError` "Không kết nối được máy chủ…"; 5xx không có body JSON → "Máy chủ đang gặp sự cố…". `errorMessage` chỉ lấy message của `ApiError`; `LoginForm`/`RegisterForm` dùng `errorMessage`.
+- Docs: README (đề thi, làm bài, chấm bài, ghi âm cần HTTPS, R2, test), `docs/setup/deploy.md` (ghi âm trên HTTP, kiểm tra nhanh sau deploy, sự cố 501 / không ghi âm được), CLAUDE.md. `.env.example` không đổi (không có env mới).
+
+**Sai khác so với plan**
+- Test e2e dừng ở tầng guard (không chạy service/SQL) theo lựa chọn của người dùng; quy tắc trong service dựa vào unit test.
+- Chưa deploy/nghiệm thu VPS: chờ người dùng cho phép commit/PR và cập nhật `.env` trên VPS.
+
+**Kiểm tra đã chạy**
+- `pnpm build`, `lint`, `typecheck`, `test` (295: 57 shared + 49 exam-core + 189 api), `format:check` → OK.
+- Test phân quyền chạy 3 lần liên tiếp đều đạt; thử bỏ `@TenantRoles` của `GradingController` và `@SystemRoles(SYSTEM_OWNER)` của route đổi system role → test báo đúng các route đó, đã khôi phục.
+- Bản build (api `:3101`, `next start :3100`) + DB dùng chung, dữ liệu `step15-*` tạo qua API (System Admin duyệt tenant thật), Chrome headless ở **1366px và 390px**: khách (landing, đăng nhập, đăng ký, 404, trang trung tâm, trung tâm không tồn tại), user không thuộc trung tâm (`/me` trống, trang trung tâm "chưa là thành viên", dashboard, `/admin`), người < 18 tuổi đăng ký trung tâm bị chặn, System Admin (6 trang, tìm không khớp), tenant trống (tổng quan, thành viên, đề thi/chấm bài/media trống, danh mục, loại đề, trang trung tâm chưa có đề), Owner (danh sách đề, trình soạn, version, đề/bài chấm không tồn tại, **mất mạng khi lọc → thông báo tiếng Việt**), Học viên (trang trung tâm, chi tiết đề, đề/lượt làm/kết quả không tồn tại, dashboard bị chặn, làm trọn bài Reading → Writing → Speaking có ghi âm micro giả → kết quả → lịch sử). Mỗi trang: không tràn ngang ở 390px, không có chuỗi "Failed to fetch"/"Not Found"/"Invalid Date"/"undefined"/"NaN"…; không có lỗi JS. Lượt chạy cuối: 256/259 kiểm tra đạt, 3 lỗi đều do kịch bản (mong đợi sai chữ: bộ lọc mặc định "Chờ duyệt", nhãn "v1", lịch sử đã có lượt làm).
+- Đã xem ảnh: 404, mất mạng, lượt làm/bài chấm không tồn tại, làm bài Reading/Speaking/xác nhận nộp/màn hình hướng dẫn trên điện thoại, kết quả, trang trung tâm, danh sách đề trống, landing, người dùng (admin), đăng ký trung tâm < 18 tuổi.
+- Dữ liệu test + 2 file R2 đã xoá; DB còn 1 user, 0 tenant.
+
+**Lỗi tự phát hiện và đã sửa**
+- Mất mạng hiện "Failed to fetch" (tiếng Anh) ở mọi chỗ báo lỗi API → đổi trong `lib/api.ts` + `errorMessage`.
+- Không có trang 404/lỗi tiếng Việt (Next.js hiện trang tiếng Anh mặc định).
+- Test e2e: supertest mở cổng ngẫu nhiên trên `::` cho từng request, thỉnh thoảng trùng cổng process khác nghe `127.0.0.1` → response lạ; sửa bằng `app.listen(0, '127.0.0.1')` một lần.
 
 ### Step 14 – Chấm bài thủ công (✅ 2026-09-16)
 

@@ -11,9 +11,14 @@ export const vi = {
     close: 'Đóng',
     processing: 'Đang xử lý…',
     noData: 'Chưa có dữ liệu',
-    comingSoon: 'Tính năng đang được phát triển.',
     backHome: 'Về trang chủ',
     loadFailed: 'Không tải được dữ liệu',
+    retry: 'Thử lại',
+    notFoundTitle: 'Không tìm thấy trang',
+    notFoundText: 'Đường dẫn không tồn tại hoặc trang đã bị gỡ.',
+    errorTitle: 'Đã có lỗi xảy ra',
+    errorText:
+      'Trang gặp lỗi không mong đợi. Bạn thử tải lại, nếu vẫn lỗi hãy quay lại sau.',
     optional: '(không bắt buộc)',
   },
   auth: {

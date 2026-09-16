@@ -130,6 +130,10 @@ async function send(
   return res;
 }
 
+const NETWORK_ERROR =
+  'Không kết nối được máy chủ, hãy kiểm tra mạng và thử lại';
+const SERVER_ERROR = 'Máy chủ đang gặp sự cố, vui lòng thử lại sau';
+
 function errorMessage(data: unknown, fallback: string): string {
   const message = (data as { message?: unknown } | null)?.message;
   if (Array.isArray(message)) return message.join(', ');
@@ -142,12 +146,20 @@ async function request<T>(
   fallbackError = 'Yêu cầu thất bại',
 ): Promise<T> {
   return withLoading(async () => {
-    const res = await send(path, init);
+    let res: Response;
+    try {
+      res = await send(path, init);
+    } catch {
+      // `fetch` ném TypeError tiếng Anh ("Failed to fetch") khi mất mạng.
+      throw new ApiError(NETWORK_ERROR, 0);
+    }
     if (res.status === 204) return undefined as T;
 
     const data: unknown = await res.json().catch(() => ({}));
     if (!res.ok) {
-      throw new ApiError(errorMessage(data, fallbackError), res.status, data);
+      // 5xx không có body JSON: API không chạy (rewrite của Next.js trả 500).
+      const fallback = res.status >= 500 ? SERVER_ERROR : fallbackError;
+      throw new ApiError(errorMessage(data, fallback), res.status, data);
     }
     return data as T;
   });

@@ -3,6 +3,7 @@ import {
   BadRequestException,
   ConflictException,
   ForbiddenException,
+  NotFoundException,
   UnprocessableEntityException,
 } from '@nestjs/common';
 import {
@@ -398,6 +399,35 @@ describe('ExamContentService.save', () => {
       baseRevision: 2,
     });
     expect(byOwner.contentRevision).toBe(3);
+  });
+
+  it('Teacher không sửa metadata/lưu trữ/xoá/khôi phục đề người khác; đề tenant khác → 404', async () => {
+    const { contentService, examsService, createExam } = await setup();
+    const exam = await createExam(teacherCtx, TEACHER);
+
+    for (const action of [
+      () =>
+        examsService.update(teacherCtx, OTHER_TEACHER, exam.id, { title: 'X' }),
+      () => examsService.archive(teacherCtx, OTHER_TEACHER, exam.id),
+      () => examsService.remove(teacherCtx, OTHER_TEACHER, exam.id),
+      () =>
+        contentService.restore(teacherCtx, OTHER_TEACHER, exam.id, 1, {
+          baseRevision: 1,
+        }),
+    ]) {
+      await expect(action()).rejects.toBeInstanceOf(ForbiddenException);
+    }
+
+    const otherTenant = { ...ownerCtx, tenantId: 'tenant-b' };
+    for (const action of [
+      () => examsService.getDetail(otherTenant, OWNER, exam.id),
+      () => examsService.update(otherTenant, OWNER, exam.id, { title: 'X' }),
+      () => examsService.publish(otherTenant, OWNER, exam.id),
+      () => examsService.remove(otherTenant, OWNER, exam.id),
+      () => contentService.listVersions(otherTenant, OWNER, exam.id),
+    ]) {
+      await expect(action()).rejects.toBeInstanceOf(NotFoundException);
+    }
   });
 
   it('revision cũ → 409; data: URI → 400', async () => {

@@ -15,6 +15,7 @@ import {
 } from '@/components/ui';
 import { vi } from '@/i18n/vi';
 import { safeNextPath } from '@/lib/auth-redirect';
+import { errorMessage } from '@/lib/error-message';
 
 export function LoginForm() {
   const nextPath = safeNextPath(useSearchParams().get('next'));
@@ -34,9 +35,7 @@ export function LoginForm() {
     try {
       await login(email, password);
     } catch (err) {
-      setError(
-        err instanceof Error && err.message ? err.message : vi.auth.loginFailed,
-      );
+      setError(errorMessage(err, vi.auth.loginFailed));
       setSubmitting(false);
     }
   }

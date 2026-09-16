@@ -42,6 +42,15 @@ pnpm dev
 - Quản trị hệ thống `/admin` (System Owner/Admin): thống kê; người dùng (tạo, sửa, khoá, reset mật khẩu – tài khoản quản trị và đổi vai trò chỉ System Owner thao tác); trung tâm (duyệt, từ chối, tạm khoá, đổi gói); gói dịch vụ.
 - Phiên: access token 15 phút (trong bộ nhớ trình duyệt) + refresh token 30 ngày (cookie httpOnly `ls_rt`). Đổi thời hạn bằng `JWT_ACCESS_EXPIRES_IN`, `REFRESH_EXPIRES_IN`; khi có HTTPS đặt `COOKIE_SECURE=true`.
 
+### Đề thi, làm bài & chấm bài
+
+- Danh mục đề & loại đề: hệ thống (`/admin/exam-categories`, `/admin/exam-blueprints`, seed sẵn TOEIC, IELTS, JLPT N2) và riêng từng trung tâm (`/t/{slug}/dashboard/exam-categories`, `exam-blueprints`; Giáo viên chỉ xem).
+- Soạn đề (`/t/{slug}/dashboard/exams`, Owner/Admin/Giáo viên): tạo từ loại đề → mỗi module thành 1 section (tab) → soạn bằng Plate → Lưu → Publish khi không còn lỗi. Lưu khi version hiện tại đã có bài làm thì tạo version mới; khôi phục version ở trang Version. Giáo viên chỉ sửa đề mình tạo. Media của đề upload lên R2 (`/t/{slug}/dashboard/media`).
+- Làm bài (mọi thành viên): `/t/{slug}` → chọn đề → từng section có màn hình hướng dẫn và đồng hồ riêng (tính ở server, hết giờ tự nộp), câu đánh số từ 1 mỗi section. Chấm trắc nghiệm ở server, học viên không nhận đáp án; kết quả hiện số câu đúng theo section.
+- Chấm tay Writing/Speaking (`/t/{slug}/dashboard/grading`, Owner/Admin/Giáo viên, không chấm bài của mình): điểm 0–10 bước 0,5 + nhận xét, học viên thấy ngay khi chấm.
+- **Ghi âm Speaking cần HTTPS hoặc localhost** (trình duyệt chặn micro trên HTTP). Trên VPS đang chạy `http://<ip>:3001`: thử bằng Chrome `chrome://flags/#unsafely-treat-insecure-origin-as-secure` thêm địa chỉ đó. Ghi âm lưu ở bucket R2 private, nghe qua link có hạn.
+- Upload media và ghi âm cần 6 biến `R2_*` (xem `apps/lang-api/.env.example`); thiếu thì các chức năng này trả 501, phần còn lại vẫn chạy.
+
 - Khu vực chính: http://localhost:3100
 - API: http://localhost:3101/api/health (hoặc qua rewrite http://localhost:3100/api/health)
 - `lang-app` không cần file `.env` khi dev (mặc định rewrite `/api` tới `127.0.0.1:3101`, xem `apps/lang-app/.env.example`).
@@ -55,7 +64,7 @@ apps/
   lang-api/            NestJS 10 – REST API /api
 packages/
   shared/              @lang/shared – enum role/trạng thái, hằng số, helper dùng chung
-  exam-core/           @lang/exam-core – cấu trúc đề, parse đáp án, chấm điểm (Step 9)
+  exam-core/           @lang/exam-core – cấu trúc đề, parse đáp án, chấm điểm
   tsconfig/            @lang/tsconfig – preset base / library / nestjs / nextjs
   eslint-config/       @lang/eslint-config – ESLint flat config dùng chung
 docs/requirements/     yêu cầu, câu hỏi, kế hoạch, tiến độ
@@ -73,7 +82,7 @@ pnpm dev              # chạy toàn bộ ở chế độ dev (app :3100, api :3
 pnpm build            # build mọi package/app (Turborepo, có cache; thêm --force để bỏ cache)
 pnpm lint             # ESLint
 pnpm typecheck        # tsc --noEmit
-pnpm test             # Jest (@lang/shared, lang-api)
+pnpm test             # Jest (@lang/shared, @lang/exam-core, lang-api; gồm test e2e phân quyền mọi route, không cần DB)
 pnpm format           # Prettier ghi đè / pnpm format:check để kiểm tra
 pnpm --filter <package> <script>   # chạy script cho một package, vd. --filter lang-api test
 ```
