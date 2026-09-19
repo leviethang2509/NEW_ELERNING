@@ -11,6 +11,7 @@ import {
   type CurriculumListItem,
 } from '@lang/shared';
 import { CategoryIcon } from '@/components/catalog/catalog-ui';
+import { CalendarFeedView } from '@/components/calendar/CalendarFeedView';
 import { CourseClassesPanel } from '@/components/classes/CourseClassesPanel';
 import { useTenantDashboard } from '@/components/dashboard/TenantDashboardShell';
 import { CourseFormModal } from '@/components/training/CourseFormModal';
@@ -24,6 +25,7 @@ import {
   secondaryButtonClass,
 } from '@/components/ui';
 import { vi } from '@/i18n/vi';
+import { getCourseSchedule } from '@/lib/schedule-api';
 import { api } from '@/lib/api';
 import { errorMessage } from '@/lib/error-message';
 import { formatDateTime } from '@/lib/format';
@@ -36,7 +38,7 @@ import {
   listCurricula,
 } from '@/lib/training-api';
 
-type Tab = 'info' | 'curricula' | 'classes';
+type Tab = 'info' | 'curricula' | 'classes' | 'schedule';
 
 /** Chi tiết khoá học: Thông tin · Giáo trình tham khảo · Lớp (Lịch ở Step 8). */
 export default function CourseDetailPage({
@@ -188,29 +190,42 @@ export default function CourseDetailPage({
         )}
       </header>
 
-      <nav className="flex gap-1 border-b border-[var(--border)]">
-        {(['info', 'curricula', 'classes'] as const).map((value) => (
-          <button
-            key={value}
-            type="button"
-            onClick={() => setTab(value)}
-            className={`-mb-px border-b-2 px-3 py-2 text-[14px] font-medium transition ${
-              tab === value
-                ? 'border-[var(--accent)] text-[var(--accent)]'
-                : 'border-transparent text-[var(--muted)] hover:text-[var(--heading)]'
-            }`}
-          >
-            {text.tabs[value]}
-            {value === 'curricula' && ` (${course.curricula.length})`}
-            {value === 'classes' && ` (${course.classCount})`}
-          </button>
-        ))}
+      <nav className="flex gap-1 overflow-x-auto border-b border-[var(--border)]">
+        {(['info', 'curricula', 'classes', 'schedule'] as const).map(
+          (value) => (
+            <button
+              key={value}
+              type="button"
+              onClick={() => setTab(value)}
+              className={`-mb-px shrink-0 border-b-2 px-3 py-2 text-[14px] font-medium transition ${
+                tab === value
+                  ? 'border-[var(--accent)] text-[var(--accent)]'
+                  : 'border-transparent text-[var(--muted)] hover:text-[var(--heading)]'
+              }`}
+            >
+              {text.tabs[value]}
+              {value === 'curricula' && ` (${course.curricula.length})`}
+              {value === 'classes' && ` (${course.classCount})`}
+            </button>
+          ),
+        )}
       </nav>
 
       {notice && <FormAlert tone="success">{notice}</FormAlert>}
       {error && <FormAlert tone="error">{error}</FormAlert>}
 
-      {tab === 'classes' ? (
+      {tab === 'schedule' ? (
+        <div className="flex flex-col gap-3">
+          <p className="text-[13px] text-[var(--muted)]">
+            {vi.schedule.courseTabHint}
+          </p>
+          <CalendarFeedView
+            slug={slug}
+            load={(range) => getCourseSchedule(slug, course.id, range)}
+            reloadKey={course.id}
+          />
+        </div>
+      ) : tab === 'classes' ? (
         <CourseClassesPanel slug={slug} course={course} canManage={canManage} />
       ) : tab === 'info' ? (
         <section className="rounded-2xl border border-[var(--border)] bg-[var(--card)] p-4 sm:p-5">

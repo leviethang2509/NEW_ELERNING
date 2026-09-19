@@ -34,7 +34,7 @@ const TEACHER_NOT_IN_CLASS = 'Giáo viên không thuộc lớp này';
 const STUDENT_NOT_IN_CLASS = 'Học viên không thuộc lớp này';
 
 /** Thành viên kèm user, dùng để hiển thị và ghi nhật ký. */
-interface MemberInfo {
+export interface MemberInfo {
   membership: Membership;
   user: User;
 }
@@ -345,7 +345,7 @@ function toMemberView(
 }
 
 /** Membership của tenant (kể cả đã xoá, để vẫn hiện tên trong lớp) kèm user. */
-async function loadMembers(
+export async function loadMembers(
   manager: EntityManager,
   tenantId: string,
   membershipIds: string[],
@@ -374,7 +374,7 @@ async function loadMembers(
  * Thành viên được chọn phải thuộc tenant, chưa xoá, đang hoạt động và có
  * `role`; không thì 400 kèm tên người không hợp lệ.
  */
-async function loadEligible(
+export async function loadEligible(
   manager: EntityManager,
   tenantId: string,
   membershipIds: string[],

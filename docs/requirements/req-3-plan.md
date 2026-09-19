@@ -299,15 +299,15 @@ t/:slug:
   courses: CRUD · POST/DELETE :id/curricula/:curriculumId · GET :id/sessions (lịch gộp)
   curricula: CRUD · PUT :id/items (toàn bộ chương + mục, baseRevision) · POST :id/clone
   classes: list · POST · GET :id · PATCH · POST :id/status · DELETE
-           teachers/students: GET · POST · DELETE · GET :id/conflicts?membershipId=
+           teachers/students: GET · POST · DELETE · POST :id/conflicts {membershipIds} (Step 8: POST vì gửi nhiều người)
            curriculum: GET · PUT (baseRevision) · POST import/:curriculumId · GET logs
-           schedule: GET · PUT slots (+ planned_sessions, start_date) · GET preview
+           schedule: GET · PUT (slots + planned_sessions, start_date, apply_tenant_holidays) · POST schedule/preview (cùng body với PUT)
            sessions: PATCH :sid (phòng, ghi chú, giờ, giáo viên) · POST :sid/cancel · POST :sid/restore · POST makeup · DELETE :sid (buổi bù) · PUT :sid/links
            attempts: POST items/:itemId/void/:attemptId · GET students/:membershipId/attempts
            progress: GET attendance · GET gradebook · GET export.xlsx · PUT students/:membershipId/comment
   sessions: GET :sid (chi tiết, cho giáo viên dạy thế)
   schedule: GET mine (giáo viên) · GET center (Owner/Admin)
-  settings: GET · PATCH · holidays CRUD (+ GET holidays/:id/impact)
+  settings: GET · PATCH · holidays CRUD (+ POST holidays/impact {holidayId?, startDate, endDate, remove?} – ngày nghỉ mới chưa có id)
   grading: GET attempts (+ kind exam/lesson, classId, itemId) · GET attempts/:id · PUT answers/:answerId
            lesson-attempts/:id · PUT lesson-answers/:answerId · delegations CRUD
   learner: GET lessons (visibility tenant) · GET lessons/:id · POST lessons/:id/attempts
@@ -381,6 +381,7 @@ t/:slug:
 - `@lang/shared`: hàm thuần sinh ô lặp + `recomputeSchedule` (mục 4.6) + phát hiện chồng giờ, unit test kỹ (ngày nghỉ nhiều ngày, thêm/xoá ngày nghỉ, buổi huỷ, buổi đã qua, đổi số buổi, 2 ô/tuần giờ khác nhau).
 - API lịch lặp, xem trước, huỷ/khôi phục, buổi bù, giáo viên buổi (dạy thế + cảnh báo dời), map nội dung, cảnh báo trùng; cài đặt tenant (ngày nghỉ + ảnh hưởng, tham số chuyên cần).
 - lang-app: `components/calendar` (tuần/tháng/danh sách), tab Thời khoá biểu của lớp, lịch khoá học, lịch trung tâm, "Lịch dạy của tôi", chi tiết buổi, trang Cài đặt.
+- Người dùng chốt 2026-09-19: ngày bắt đầu và số buổi của lớp đã tạo **chỉ** sửa ở tab Thời khoá biểu (có xem trước), form sửa thông tin lớp bỏ 2 ô này; lịch khoá học của Teacher chỉ gồm lớp mình phụ trách (+ buổi mình dạy thế); buổi đã diễn ra chỉ sửa được phòng/link, ghi chú, nội dung map (huỷ/khôi phục, đổi giờ, đổi giáo viên, xoá buổi bù chỉ với buổi chưa diễn ra); cảnh báo "buổi đã dời" tắt bằng nút **Đã kiểm tra** hoặc khi lưu giáo viên/giờ của buổi.
 - **Nghiệm thu:** lớp T2+T4 10 buổi; thêm ngày nghỉ T4 → các buổi dời đúng bảng ví dụ U-bối cảnh, ngày kết thúc lùi; xoá ngày nghỉ → về như cũ; huỷ buổi 5 + buổi bù; giáo viên dạy thế thấy buổi trong lịch; trùng giờ hiện đỏ.
 
 ### Step 9 – Học viên trong lớp

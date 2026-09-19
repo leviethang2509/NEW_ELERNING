@@ -41,7 +41,7 @@ const toCode = ({ value }: { value: unknown }) =>
   typeof value === 'string' ? normalizeCatalogCode(value) : value;
 
 /** Ngày `YYYY-MM-DD` đúng lịch. */
-function IsCalendarDate(message: string): PropertyDecorator {
+export function IsCalendarDate(message: string): PropertyDecorator {
   return (target, propertyName) => {
     registerDecorator({
       name: 'isCalendarDate',
@@ -91,10 +91,10 @@ const DescriptionField = () =>
     }),
   );
 
-const StartDateField = () =>
+export const StartDateField = () =>
   IsCalendarDate('Ngày bắt đầu không hợp lệ (YYYY-MM-DD)');
 
-const PlannedSessionsField = () =>
+export const PlannedSessionsField = () =>
   composeDecorators(
     IsInt({ message: 'Số buổi phải là số nguyên' }),
     Min(1, { message: 'Số buổi tối thiểu là 1' }),
@@ -176,7 +176,10 @@ export class CreateClassroomDto implements CreateClassroomInput {
   sourceCurriculumId?: string | null;
 }
 
-/** PATCH: bỏ trường nào thì giữ nguyên; trường tuỳ chọn gửi `null` để xoá. */
+/**
+ * PATCH: bỏ trường nào thì giữ nguyên; trường tuỳ chọn gửi `null` để xoá.
+ * Ngày bắt đầu, số buổi sửa qua thời khoá biểu (người dùng chốt Step 8).
+ */
 export class UpdateClassroomDto implements UpdateClassroomInput {
   @ValidateIf(isPresent)
   @CodeField()
@@ -188,14 +191,6 @@ export class UpdateClassroomDto implements UpdateClassroomInput {
 
   @DescriptionField()
   description?: string | null;
-
-  @ValidateIf(isPresent)
-  @StartDateField()
-  startDate?: string;
-
-  @ValidateIf(isPresent)
-  @PlannedSessionsField()
-  plannedSessions?: number;
 
   @MaxStudentsField()
   maxStudents?: number | null;

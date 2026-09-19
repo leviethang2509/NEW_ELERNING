@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import {
   ClassLogAction,
+  type ClassLogDetail,
   type ClassLogEntry,
   type ClassroomStatus,
   type Paginated,
@@ -11,9 +12,18 @@ import { FormAlert, Pagination } from '@/components/ui';
 import { vi } from '@/i18n/vi';
 import { listClassLogs } from '@/lib/classroom-api';
 import { errorMessage } from '@/lib/error-message';
-import { formatDateTime } from '@/lib/format';
+import { formatDate, formatDateTime } from '@/lib/format';
+import { formatSessionStart } from '@/components/schedule/schedule-format';
 
 const PAGE_SIZE = 30;
+
+/** "Buổi 5 (T4 21/10/2026 18:00)" – thời điểm ghi lúc thao tác. */
+function session(detail: ClassLogDetail): string {
+  const label = vi.schedule.sessionLabel(detail.seq ?? null);
+  return detail.sessionAt
+    ? `${label} (${formatSessionStart(detail.sessionAt)})`
+    : label;
+}
 
 /** Dòng chữ của một nhật ký (dựng từ `action` + `detail`). */
 function describe(entry: ClassLogEntry): { title: string; lines: string[] } {
@@ -74,6 +84,71 @@ function describe(entry: ClassLogEntry): { title: string; lines: string[] } {
         lines: lines.length > 0 ? lines : [text.noChange],
       };
     }
+    case ClassLogAction.SCHEDULE_SAVED:
+    case ClassLogAction.SCHEDULE_RECOMPUTED: {
+      const lines: string[] = [];
+      const changed = [
+        detail.moved ? text.moved(detail.moved) : '',
+        detail.createdSessions
+          ? text.createdSessions(detail.createdSessions)
+          : '',
+        detail.removedSessions
+          ? text.removedSessions(detail.removedSessions)
+          : '',
+      ].filter(Boolean);
+      if (detail.fields?.length) {
+        lines.push(
+          `${text.scheduleChanged} ${detail.fields
+            .map((field) => text.scheduleFields[field] ?? field)
+            .join(', ')}`,
+        );
+      }
+      if (changed.length > 0) lines.push(changed.join(', '));
+      if (detail.previousEndDate !== detail.endDate) {
+        lines.push(
+          text.endDateChange(
+            formatDate(detail.previousEndDate),
+            formatDate(detail.endDate),
+          ),
+        );
+      }
+      return {
+        title:
+          entry.action === ClassLogAction.SCHEDULE_SAVED
+            ? text.scheduleSaved
+            : text.scheduleRecomputed(
+                detail.holiday ?? '',
+                text.holidayActions[detail.holidayAction ?? ''] ?? '',
+              ),
+        lines,
+      };
+    }
+    case ClassLogAction.SESSION_UPDATED:
+      return {
+        title: text.sessionUpdated(
+          session(detail),
+          (detail.sessionFields ?? [])
+            .map((field) => text.sessionFields[field])
+            .join(', '),
+        ),
+        lines: [],
+      };
+    case ClassLogAction.SESSION_CANCELLED:
+      return {
+        title: text.sessionCancelled(session(detail)),
+        lines: detail.reason ? [text.reason(detail.reason)] : [],
+      };
+    case ClassLogAction.SESSION_RESTORED:
+      return { title: text.sessionRestored(session(detail)), lines: [] };
+    case ClassLogAction.MAKEUP_ADDED:
+      return {
+        title: text.makeupAdded(session(detail), detail.makeupForSeq ?? null),
+        lines: [],
+      };
+    case ClassLogAction.MAKEUP_REMOVED:
+      return { title: text.makeupRemoved(session(detail)), lines: [] };
+    case ClassLogAction.SESSION_LINKS_SAVED:
+      return { title: text.linksSaved(session(detail)), lines: [] };
     default:
       return { title: entry.action, lines: [] };
   }

@@ -1,8 +1,12 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import { Check } from 'lucide-react';
-import type { MembershipListItem, TenantRole } from '@lang/shared';
+import { useEffect, useRef, useState } from 'react';
+import { AlertTriangle, Check } from 'lucide-react';
+import type {
+  MemberScheduleConflicts,
+  MembershipListItem,
+  TenantRole,
+} from '@lang/shared';
 import {
   FormAlert,
   Modal,
@@ -14,6 +18,7 @@ import { vi } from '@/i18n/vi';
 import { listActiveMembers } from '@/lib/classroom-api';
 import { errorMessage } from '@/lib/error-message';
 import { useDebouncedValue } from '@/lib/use-debounced-value';
+import { formatSessionStart } from '@/components/schedule/schedule-format';
 
 /**
  * Chọn nhiều thành viên đang hoạt động có đúng vai trò để thêm vào lớp
@@ -28,6 +33,7 @@ export function MemberPickerDialog({
   busy,
   error,
   footerNote,
+  checkConflicts,
   onAdd,
   onClose,
 }: {
@@ -40,6 +46,10 @@ export function MemberPickerDialog({
   busy: boolean;
   error: string | null;
   footerNote?: string;
+  /** Kiểm trùng lịch của người đang chọn (R15: cảnh báo, không chặn). */
+  checkConflicts?: (
+    membershipIds: string[],
+  ) => Promise<MemberScheduleConflicts[]>;
   onAdd: (membershipIds: string[]) => void;
   onClose: () => void;
 }) {
@@ -50,6 +60,28 @@ export function MemberPickerDialog({
   const [loading, setLoading] = useState(false);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [selected, setSelected] = useState<Set<string>>(new Set());
+  const [conflicts, setConflicts] = useState<MemberScheduleConflicts[]>([]);
+  const selectedKey = useDebouncedValue([...selected].sort().join(','));
+  const checkRef = useRef(checkConflicts);
+  checkRef.current = checkConflicts;
+
+  useEffect(() => {
+    const check = checkRef.current;
+    if (!open || !check || !selectedKey) {
+      setConflicts([]);
+      return;
+    }
+    let cancelled = false;
+    check(selectedKey.split(',')).then(
+      (result) => {
+        if (!cancelled) setConflicts(result);
+      },
+      () => undefined,
+    );
+    return () => {
+      cancelled = true;
+    };
+  }, [open, selectedKey]);
 
   useEffect(() => {
     if (!open) return;
@@ -128,6 +160,30 @@ export function MemberPickerDialog({
         />
         {(error ?? loadError) && (
           <FormAlert tone="error">{error ?? loadError}</FormAlert>
+        )}
+        {conflicts.length > 0 && (
+          <div className="rounded-xl border border-[var(--danger)] bg-[#fdf1ef] px-3 py-2 text-[13px] text-[var(--danger)]">
+            <p className="flex items-center gap-1.5 font-semibold">
+              <AlertTriangle size={15} /> {text.conflictsTitle}
+            </p>
+            <ul className="mt-1 list-disc pl-5">
+              {conflicts.map((row) => (
+                <li key={row.membershipId}>
+                  {text.conflictLine(row.fullName, row.sessions.length)}:{' '}
+                  {row.sessions
+                    .slice(0, 3)
+                    .map(
+                      (session) =>
+                        `${vi.schedule.sessionLabel(session.seq)} ${formatSessionStart(session.startsAt)} ↔ ${session.conflicts
+                          .map((other) => other.classroom.code)
+                          .join(', ')}`,
+                    )
+                    .join('; ')}
+                  {row.sessions.length > 3 && '…'}
+                </li>
+              ))}
+            </ul>
+          </div>
         )}
         <ul className="flex max-h-[50vh] flex-col gap-1.5 overflow-auto">
           {loading && rows.length === 0 ? (

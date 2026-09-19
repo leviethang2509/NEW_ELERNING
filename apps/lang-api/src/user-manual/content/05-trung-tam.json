@@ -316,6 +316,65 @@
           "text": "Ảnh dán thẳng vào trình soạn đề (dạng dữ liệu nhúng `data:`) được tự tải lên thư viện media khi bấm **Lưu**; server không lưu nội dung còn dữ liệu nhúng."
         }
       ]
+    },
+    {
+      "id": "cai-dat-trung-tam",
+      "title": "Cài đặt trung tâm",
+      "summary": "Ngày nghỉ của trung tâm và tham số chuyên cần.",
+      "roles": ["TENANT_OWNER", "TENANT_ADMIN"],
+      "blocks": [
+        { "type": "roles", "roles": ["TENANT_OWNER", "TENANT_ADMIN"] },
+        {
+          "type": "paragraph",
+          "text": "Menu **Cài đặt** (`/t/{slug}/dashboard/settings`), chỉ Chủ sở hữu và Quản trị viên."
+        },
+        { "type": "heading", "level": 2, "text": "Tham số chuyên cần" },
+        {
+          "type": "table",
+          "columns": ["Tham số", "Quy tắc"],
+          "rows": [
+            [
+              "Hệ số nộp muộn (k)",
+              "0–1, tối đa 2 chữ số thập phân, mặc định 0,5. Nộp đúng hạn tính 1, nộp muộn tính k, quá hạn chưa làm tính 0"
+            ],
+            [
+              "Ngưỡng cảnh báo (%)",
+              "0–100, mặc định 70. Học viên có tỉ lệ chuyên cần dưới ngưỡng hiện cảnh báo"
+            ]
+          ]
+        },
+        {
+          "type": "paragraph",
+          "text": "Bấm **Lưu tham số**. Bảng chuyên cần dùng các tham số này có ở giai đoạn sau."
+        },
+        { "type": "heading", "level": 2, "text": "Ngày nghỉ" },
+        {
+          "type": "list",
+          "items": [
+            "Mỗi ngày nghỉ: **Tên** (vd. Tết Nguyên đán), **Từ ngày** – **Đến ngày** (bỏ trống đến ngày = 1 ngày; tối đa 366 ngày). Không lặp hằng năm: mỗi năm nhập lại. Các ngày nghỉ được phép chồng nhau.",
+            "Buổi học (chưa diễn ra) rơi vào ngày nghỉ tự **dời** sang ô lịch kế tiếp, các buổi sau lùi theo, ngày kết thúc lớp lùi – xem [Ngày nghỉ dời buổi](page:thoi-khoa-bieu#ngay-nghi-doi-buoi).",
+            "Lớp tắt **Áp dụng ngày nghỉ của trung tâm**, lớp đã kết thúc/huỷ, buổi đã diễn ra, buổi bù: không bị ảnh hưởng.",
+            "Ngày nghỉ hiện màu xám trên mọi lịch."
+          ]
+        },
+        {
+          "type": "steps",
+          "items": [
+            {
+              "title": "Bấm Thêm ngày nghỉ (hoặc biểu tượng sửa / xoá)",
+              "text": "Nhập tên và khoảng ngày rồi bấm **Tiếp tục**."
+            },
+            {
+              "title": "Xem lớp bị ảnh hưởng",
+              "text": "Hộp xác nhận liệt kê từng lớp bị dời: số buổi dời, ngày kết thúc cũ → mới (hoặc “Không lớp nào bị dời buổi”)."
+            },
+            {
+              "title": "Bấm Lưu và dời lịch (hoặc Xoá ngày nghỉ)",
+              "text": "Lịch các lớp được tính lại ngay; nhật ký mỗi lớp bị dời ghi “Lịch tự tính lại vì … ngày nghỉ”."
+            }
+          ]
+        }
+      ]
     }
   ]
 }

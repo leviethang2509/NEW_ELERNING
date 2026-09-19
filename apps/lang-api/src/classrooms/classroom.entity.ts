@@ -20,8 +20,8 @@ import { User } from '../users/user.entity';
 /**
  * Lớp học (req-3 Step 7, D1–D2, U1): tạo từ khoá học, chép giáo trình tham
  * khảo sang `class_groups`/`class_items`. Mã in hoa (CHECK) nên unique
- * `(tenant_id, code)` đã không phân biệt hoa thường. `end_date` tự tính từ
- * thời khoá biểu (Step 8).
+ * `(tenant_id, code)` đã không phân biệt hoa thường. `end_date` = ngày buổi
+ * thường cuối, tính lại cùng thời khoá biểu (`recomputeSchedule`, Step 8).
  */
 @Entity('classrooms')
 @Index('UQ_classrooms_tenant_code', ['tenantId', 'code'], { unique: true })
@@ -88,6 +88,10 @@ export class Classroom {
 
   @Column({ type: 'varchar', length: 16, default: ClassroomStatus.UPCOMING })
   status: ClassroomStatus;
+
+  /** Lịch lớp bỏ qua ngày nghỉ của trung tâm (U6). */
+  @Column({ name: 'apply_tenant_holidays', type: 'boolean', default: true })
+  applyTenantHolidays: boolean;
 
   /** Giáo trình tham khảo đã chép lúc tạo lớp; xoá giáo trình không ảnh hưởng lớp. */
   @Column({ name: 'source_curriculum_id', type: 'uuid', nullable: true })

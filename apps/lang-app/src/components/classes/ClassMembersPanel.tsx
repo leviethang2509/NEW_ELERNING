@@ -26,6 +26,7 @@ import {
 } from '@/lib/classroom-api';
 import { errorMessage } from '@/lib/error-message';
 import { formatDate } from '@/lib/format';
+import { getMemberConflicts } from '@/lib/schedule-api';
 import { MemberPickerDialog } from './MemberPickerDialog';
 
 type Kind = 'teachers' | 'students';
@@ -290,6 +291,7 @@ export function ClassMembersPanel({
             ),
           )
         }
+        checkConflicts={(ids) => getMemberConflicts(slug, classroom.id, ids)}
         busy={busy}
         error={pickError}
         footerNote={

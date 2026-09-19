@@ -36,6 +36,7 @@ import { ClassChangeLog } from './class-change-log.entity';
 import { copyCurriculumIntoClassroom } from './class-curriculum.service';
 import { ClassItem } from './class-item.entity';
 import { writeClassLog } from './class-logs';
+import { loadHolidays, recomputeClassroom } from './class-schedule';
 import {
   findClassroom,
   isClassManager,
@@ -74,8 +75,6 @@ const INFO_FIELDS = [
   'code',
   'name',
   'description',
-  'startDate',
-  'plannedSessions',
   'maxStudents',
   'location',
 ] as const;
@@ -241,6 +240,7 @@ export class ClassroomsService {
             maxStudents: dto.maxStudents ?? null,
             location: dto.location ?? null,
             status: ClassroomStatus.UPCOMING,
+            applyTenantHolidays: true,
             sourceCurriculumId: source?.id ?? null,
             curriculumRevision: 1,
             createdBy: actorId,
@@ -304,7 +304,8 @@ export class ClassroomsService {
 
   /**
    * Đổi trạng thái bằng tay (D2, T6). Sang "Đã kết thúc"/"Đã huỷ": chốt ngay
-   * mọi lượt thi làm dở trong lớp (không mở lại khi lớp mở lại).
+   * mọi lượt thi làm dở trong lớp (không mở lại khi lớp mở lại). Mở lại lớp đã
+   * kết thúc thì tính lại thời khoá biểu.
    */
   async changeStatus(
     ctx: TenantContext,
@@ -326,6 +327,16 @@ export class ClassroomsService {
         .update({ id, status: from }, { status, updatedBy: actorId });
       if (!affected) throw new ConflictException(STATUS_CONFLICT);
 
+      if (isClassroomClosed(from) && !isClassroomClosed(status)) {
+        // Mở lại lớp: lịch không được dời lúc lớp đóng (U3.4), tính lại ngay.
+        await recomputeClassroom(
+          manager,
+          { ...classroom, status },
+          await loadHolidays(manager, ctx.tenantId),
+          new Date(),
+          actorId,
+        );
+      }
       let finalized: number | undefined;
       if (isClassroomClosed(status)) {
         const items = await manager.getRepository(ClassItem).find({

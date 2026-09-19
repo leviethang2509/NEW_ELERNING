@@ -10,13 +10,21 @@ import { ClassCurriculumService } from './class-curriculum.service';
 import { ClassGroup } from './class-group.entity';
 import { ClassItem } from './class-item.entity';
 import { ClassMembersService } from './class-members.service';
+import { ClassScheduleSlot } from './class-schedule-slot.entity';
+import { ClassScheduleService } from './class-schedule.service';
+import { ClassSessionLink } from './class-session-link.entity';
+import { ClassSessionTeacher } from './class-session-teacher.entity';
+import { ClassSession } from './class-session.entity';
+import { ClassSessionsService } from './class-sessions.service';
 import { ClassroomStudent } from './classroom-student.entity';
 import { ClassroomTeacher } from './classroom-teacher.entity';
 import { Classroom } from './classroom.entity';
 import { ClassroomsController } from './classrooms.controller';
 import { ClassroomsService } from './classrooms.service';
+import { ScheduleFeedService } from './schedule-feed.service';
+import { ScheduleController } from './schedule.controller';
 
-/** Lớp học, giáo viên/học viên và giáo trình lớp (req-3 Step 7). */
+/** Lớp học, giáo viên/học viên, giáo trình lớp (Step 7), thời khoá biểu và lịch (Step 8). */
 @Module({
   imports: [
     TenantsModule,
@@ -29,12 +37,23 @@ import { ClassroomsService } from './classrooms.service';
       ClassGroup,
       ClassItem,
       ClassChangeLog,
+      ClassScheduleSlot,
+      ClassSession,
+      ClassSessionTeacher,
+      ClassSessionLink,
       Membership,
       User,
     ]),
   ],
-  controllers: [ClassroomsController],
-  providers: [ClassroomsService, ClassMembersService, ClassCurriculumService],
+  controllers: [ClassroomsController, ScheduleController],
+  providers: [
+    ClassroomsService,
+    ClassMembersService,
+    ClassCurriculumService,
+    ClassScheduleService,
+    ClassSessionsService,
+    ScheduleFeedService,
+  ],
   exports: [TypeOrmModule],
 })
 export class ClassroomsModule {}

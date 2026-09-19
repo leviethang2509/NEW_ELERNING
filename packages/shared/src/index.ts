@@ -12,6 +12,7 @@ export * from './lesson-content';
 export * from './media';
 export * from './pagination';
 export * from './roles';
+export * from './schedule';
 export * from './status';
 export * from './tenant';
 export * from './training';

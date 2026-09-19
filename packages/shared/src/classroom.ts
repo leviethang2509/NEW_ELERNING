@@ -159,13 +159,14 @@ export interface CreateClassroomInput {
   sourceCurriculumId?: string | null;
 }
 
-/** PATCH: bỏ trường nào thì giữ nguyên; khoá học không đổi được (D1). */
+/**
+ * PATCH: bỏ trường nào thì giữ nguyên; khoá học không đổi được (D1). Ngày bắt
+ * đầu, số buổi sửa ở thời khoá biểu (`SaveClassScheduleInput`, Step 8).
+ */
 export interface UpdateClassroomInput {
   code?: string;
   name?: string;
   description?: string | null;
-  startDate?: string;
-  plannedSessions?: number;
   maxStudents?: number | null;
   location?: string | null;
 }
@@ -288,6 +289,16 @@ export const ClassLogAction = {
   STUDENTS_ADDED: 'students_added',
   STUDENT_REMOVED: 'student_removed',
   CURRICULUM_SAVED: 'curriculum_saved',
+  /** Step 8: sửa lịch lặp/ngày bắt đầu/số buổi/áp dụng ngày nghỉ. */
+  SCHEDULE_SAVED: 'schedule_saved',
+  /** Lịch tự dời vì ngày nghỉ của trung tâm thay đổi. */
+  SCHEDULE_RECOMPUTED: 'schedule_recomputed',
+  SESSION_UPDATED: 'session_updated',
+  SESSION_CANCELLED: 'session_cancelled',
+  SESSION_RESTORED: 'session_restored',
+  MAKEUP_ADDED: 'makeup_added',
+  MAKEUP_REMOVED: 'makeup_removed',
+  SESSION_LINKS_SAVED: 'session_links_saved',
 } as const;
 export type ClassLogAction =
   (typeof ClassLogAction)[keyof typeof ClassLogAction];
@@ -330,7 +341,29 @@ export interface ClassLogDetail {
   groupsRemoved?: string[];
   groupsChanged?: string[];
   reordered?: boolean;
+  /** Thời khoá biểu: số buổi dời/thêm/xoá, ngày kết thúc cũ/mới. */
+  moved?: number;
+  createdSessions?: number;
+  removedSessions?: number;
+  previousEndDate?: string | null;
+  endDate?: string | null;
+  /** `schedule_recomputed`: tên ngày nghỉ và thao tác gây ra. */
+  holiday?: string;
+  holidayAction?: 'created' | 'updated' | 'removed';
+  /** Thao tác trên buổi: số buổi (`null` = buổi bù) và giờ bắt đầu (ISO). */
+  seq?: number | null;
+  sessionAt?: string;
+  /** `session_cancelled`. */
+  reason?: string | null;
+  /** `makeup_added`: buổi thường được bù. */
+  makeupForSeq?: number | null;
+  /** `session_updated`: trường đã đổi. */
+  sessionFields?: SessionField[];
 }
+
+/** Trường của buổi học có thể đổi (nhật ký). */
+export type SessionField =
+  'location' | 'note' | 'time' | 'teachers' | 'movedWarning';
 
 /** `GET t/:slug/classes/:id/logs`. */
 export interface ClassLogEntry {

@@ -6,6 +6,8 @@ import {
 } from '@nestjs/common';
 import {
   ClassLogAction,
+  ClassSessionKind,
+  ClassSessionStatus,
   ClassroomStatus,
   CourseStatus,
   CurriculumItemLabel,
@@ -14,9 +16,13 @@ import {
   MembershipStatus,
   TenantRole,
   TenantStatus,
+  trainingDateOf,
+  trainingDateTimeToIso,
   type ClassCurriculum,
   type ClassItemInput,
   type ClassItemView,
+  type ClassScheduleView,
+  type ScheduleSlot,
 } from '@lang/shared';
 import { plainToInstance } from 'class-transformer';
 import { validate } from 'class-validator';
@@ -29,7 +35,10 @@ import { LessonAttempt } from '../lesson-attempts/lesson-attempt.entity';
 import { Lesson } from '../lessons/lesson.entity';
 import { MembershipRole } from '../memberships/membership-role.entity';
 import { Membership } from '../memberships/membership.entity';
+import { TenantHoliday } from '../tenant-settings/tenant-holiday.entity';
+import { TenantSettingsService } from '../tenant-settings/tenant-settings.service';
 import type { TenantContext } from '../tenants/tenant-context';
+import { Tenant } from '../tenants/tenant.entity';
 import { InMemoryDataSource } from '../testing/in-memory-data-source';
 import { InMemoryRepository } from '../testing/in-memory-repository';
 import { assertLessonNotInUse } from '../training/content-usage';
@@ -50,11 +59,20 @@ import { ClassroomStudent } from './classroom-student.entity';
 import { ClassroomTeacher } from './classroom-teacher.entity';
 import { Classroom } from './classroom.entity';
 import { ClassroomsService } from './classrooms.service';
+import { ClassScheduleSlot } from './class-schedule-slot.entity';
+import { ClassScheduleService } from './class-schedule.service';
+import { ClassSessionLink } from './class-session-link.entity';
+import { ClassSessionTeacher } from './class-session-teacher.entity';
+import { ClassSession } from './class-session.entity';
+import { ClassSessionsService } from './class-sessions.service';
 import {
   ClassGroupInputDto,
   SaveClassCurriculumDto,
 } from './dto/class-curriculum.dto';
+import type { SaveClassScheduleDto } from './dto/class-schedule.dto';
 import { CreateClassroomDto } from './dto/classroom.dto';
+import { UpdateTenantSettingsDto } from '../tenant-settings/dto/tenant-settings.dto';
+import { fakeDate } from '../testing/fake-clock';
 
 const TENANT = 'tenant-a';
 const OWNER = 'user-owner';
@@ -107,6 +125,20 @@ function setup() {
   const users = new InMemoryRepository<User>(timestamps);
   const examAttempts = new InMemoryRepository<ExamAttempt>();
   const lessonAttempts = new InMemoryRepository<LessonAttempt>();
+  const slots = new InMemoryRepository<ClassScheduleSlot>();
+  const sessions = new InMemoryRepository<ClassSession>(timestamps);
+  const sessionTeachers = new InMemoryRepository<ClassSessionTeacher>(
+    () => ({}),
+    ['sessionId', 'membershipId'],
+  );
+  const sessionLinks = new InMemoryRepository<ClassSessionLink>();
+  const holidays = new InMemoryRepository<TenantHoliday>(timestamps);
+  const tenants = new InMemoryRepository<Tenant>(timestamps);
+  tenants.rows.push({
+    id: TENANT,
+    lateWeight: 0.5,
+    warningThreshold: 70,
+  } as Tenant);
 
   const dataSource = new InMemoryDataSource()
     .register(Classroom, classrooms)
@@ -127,6 +159,12 @@ function setup() {
     .register(User, users)
     .register(ExamAttempt, examAttempts)
     .register(LessonAttempt, lessonAttempts)
+    .register(ClassScheduleSlot, slots)
+    .register(ClassSession, sessions)
+    .register(ClassSessionTeacher, sessionTeachers)
+    .register(ClassSessionLink, sessionLinks)
+    .register(TenantHoliday, holidays)
+    .register(Tenant, tenants)
     .asDataSource();
 
   const attemptsService = {
@@ -145,6 +183,9 @@ function setup() {
   );
   const membersService = new ClassMembersService(dataSource);
   const curriculumService = new ClassCurriculumService(dataSource);
+  const scheduleService = new ClassScheduleService(dataSource);
+  const sessionsService = new ClassSessionsService(dataSource);
+  const settingsService = new TenantSettingsService(dataSource);
   const coursesService = new CoursesService(
     dataSource,
     {} as CurriculaService,
@@ -315,6 +356,11 @@ function setup() {
     classroomsService,
     membersService,
     curriculumService,
+    scheduleService,
+    sessionsService,
+    settingsService,
+    sessions,
+    sessionLinks,
     coursesService,
     attemptsService,
     dataSource,
@@ -974,5 +1020,669 @@ describe('ClassroomsService', () => {
         'Deadline không hợp lệ',
       ]),
     );
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Thời khoá biểu, ngày nghỉ, buổi học (Step 8). Ví dụ bối cảnh T4: T2 + T4,
+// 10 buổi, bắt đầu T2 05/01/2026.
+
+const MON_WED: ScheduleSlot[] = [
+  { weekday: 1, startTime: '18:00', endTime: '19:30' },
+  { weekday: 3, startTime: '18:00', endTime: '19:30' },
+];
+const scheduleDto = (extra: Partial<SaveClassScheduleDto> = {}) =>
+  ({
+    startDate: '2026-01-05',
+    plannedSessions: 10,
+    applyTenantHolidays: true,
+    slots: MON_WED,
+    ...extra,
+  }) as SaveClassScheduleDto;
+const regularDates = (view: ClassScheduleView) =>
+  view.sessions
+    .filter((row) => row.seq !== null)
+    .map((row) => trainingDateOf(row.startsAt));
+const at = (date: string, time: string) => trainingDateTimeToIso(date, time);
+
+describe('Thời khoá biểu & buổi học', () => {
+  beforeEach(() => fakeDate('2026-01-01T09:00:00+07:00'));
+  afterEach(() => jest.useRealTimers());
+
+  async function scheduledClass(
+    context: ReturnType<typeof setup>,
+    extra: Partial<CreateClassroomDto> = {},
+  ) {
+    const { id } = await context.createClass({
+      startDate: '2026-01-05',
+      plannedSessions: 10,
+      ...extra,
+    });
+    const view = await context.scheduleService.save(
+      ownerCtx,
+      OWNER,
+      id,
+      scheduleDto(),
+    );
+    return { id, view };
+  }
+
+  it('lưu lịch lặp sinh buổi theo ô, ngày kết thúc tự tính; xem trước không ghi', async () => {
+    const context = setup();
+    const { id } = await context.createClass({
+      startDate: '2026-01-05',
+      plannedSessions: 10,
+    });
+    const preview = await context.scheduleService.preview(
+      ownerCtx,
+      id,
+      scheduleDto(),
+    );
+    expect(preview).toEqual(
+      expect.objectContaining({ created: 10, endDate: '2026-02-04' }),
+    );
+    expect(context.sessions.rows).toHaveLength(0);
+
+    const view = await context.scheduleService.save(
+      ownerCtx,
+      OWNER,
+      id,
+      scheduleDto(),
+    );
+    expect(regularDates(view)).toEqual([
+      '2026-01-05',
+      '2026-01-07',
+      '2026-01-12',
+      '2026-01-14',
+      '2026-01-19',
+      '2026-01-21',
+      '2026-01-26',
+      '2026-01-28',
+      '2026-02-02',
+      '2026-02-04',
+    ]);
+    expect(view.endDate).toBe('2026-02-04');
+    expect(view.sessions[0]).toEqual(
+      expect.objectContaining({
+        seq: 1,
+        startsAt: at('2026-01-05', '18:00'),
+        teachers: [expect.objectContaining({ fullName: 'Giáo viên A' })],
+      }),
+    );
+    expect(
+      (await context.classroomsService.getDetail(ownerCtx, id)).endDate,
+    ).toBe('2026-02-04');
+    expect(context.logs.rows.at(-1)).toEqual(
+      expect.objectContaining({
+        action: ClassLogAction.SCHEDULE_SAVED,
+        detail: expect.objectContaining({
+          createdSessions: 10,
+          endDate: '2026-02-04',
+        }),
+      }),
+    );
+
+    // Giáo viên của lớp xem được; ô chồng giờ → 400.
+    expect((await context.scheduleService.get(teacherCtx, id)).canManage).toBe(
+      false,
+    );
+    await expect(
+      context.scheduleService.save(
+        ownerCtx,
+        OWNER,
+        id,
+        scheduleDto({
+          slots: [
+            ...MON_WED,
+            { weekday: 1, startTime: '19:00', endTime: '20:00' },
+          ],
+        }),
+      ),
+    ).rejects.toThrow('chồng giờ');
+  });
+
+  it('ngày nghỉ T4 07/01: buổi 2…10 dời, kết thúc 09/02; xoá ngày nghỉ → về như cũ; lớp tắt ngày nghỉ không đổi', async () => {
+    const context = setup();
+    const { id, view } = await scheduledClass(context);
+    const other = await scheduledClass(context, { code: 'N5-02' });
+    await context.scheduleService.save(
+      ownerCtx,
+      OWNER,
+      other.id,
+      scheduleDto({ applyTenantHolidays: false }),
+    );
+    const before = view.sessions.map((row) => row.id);
+
+    const impact = await context.settingsService.impact(ownerCtx, {
+      startDate: '2026-01-07',
+      endDate: '2026-01-07',
+    });
+    expect(impact.classes).toEqual([
+      expect.objectContaining({
+        classroom: expect.objectContaining({ id }),
+        moved: 9,
+        previousEndDate: '2026-02-04',
+        endDate: '2026-02-09',
+      }),
+    ]);
+
+    const settings = await context.settingsService.createHoliday(
+      ownerCtx,
+      OWNER,
+      { name: 'Nghỉ bù', startDate: '2026-01-07', endDate: '2026-01-07' },
+    );
+    const moved = await context.scheduleService.get(ownerCtx, id);
+    expect(regularDates(moved)).toEqual([
+      '2026-01-05',
+      '2026-01-12',
+      '2026-01-14',
+      '2026-01-19',
+      '2026-01-21',
+      '2026-01-26',
+      '2026-01-28',
+      '2026-02-02',
+      '2026-02-04',
+      '2026-02-09',
+    ]);
+    expect(moved.endDate).toBe('2026-02-09');
+    // Buổi giữ id (nội dung map, giáo viên đi theo buổi).
+    expect(moved.sessions.map((row) => row.id)).toEqual(before);
+    expect(moved.holidays).toEqual([
+      expect.objectContaining({ name: 'Nghỉ bù' }),
+    ]);
+    expect(context.logs.rows.at(-1)).toEqual(
+      expect.objectContaining({
+        classroomId: id,
+        action: ClassLogAction.SCHEDULE_RECOMPUTED,
+        detail: expect.objectContaining({
+          holiday: 'Nghỉ bù',
+          holidayAction: 'created',
+          moved: 9,
+          endDate: '2026-02-09',
+        }),
+      }),
+    );
+    expect(
+      regularDates(await context.scheduleService.get(ownerCtx, other.id))[1],
+    ).toBe('2026-01-07');
+
+    await context.settingsService.removeHoliday(
+      ownerCtx,
+      OWNER,
+      settings.holidays[0].id,
+    );
+    const back = await context.scheduleService.get(ownerCtx, id);
+    expect(regularDates(back)).toEqual(regularDates(view));
+    expect(back.endDate).toBe('2026-02-04');
+  });
+
+  it('buổi đã diễn ra giữ nguyên; không giảm số buổi dưới số đã học; giảm thì xoá buổi cuối kèm map', async () => {
+    const context = setup();
+    const { id } = await scheduledClass(context);
+    const curriculum = await context.curriculumService.get(ownerCtx, id);
+    const last = (await context.scheduleService.get(ownerCtx, id)).sessions[9];
+    await context.sessionsService.saveLinks(ownerCtx, OWNER, id, last.id, {
+      groupIds: [],
+      itemIds: [curriculum.ungrouped[0].id],
+    });
+
+    fakeDate('2026-01-13T09:00:00+07:00');
+    await expect(
+      context.scheduleService.save(
+        ownerCtx,
+        OWNER,
+        id,
+        scheduleDto({ plannedSessions: 2 }),
+      ),
+    ).rejects.toThrow('Lớp đã học 3 buổi');
+    const preview = await context.scheduleService.preview(
+      ownerCtx,
+      id,
+      scheduleDto({ plannedSessions: 8 }),
+    );
+    expect(preview.removed).toEqual([
+      expect.objectContaining({ seq: 9, linkCount: 0 }),
+      expect.objectContaining({ seq: 10, linkCount: 1 }),
+    ]);
+    await context.settingsService.createHoliday(ownerCtx, OWNER, {
+      name: 'Nghỉ',
+      startDate: '2026-01-07',
+      endDate: '2026-01-14',
+    });
+    const view = await context.scheduleService.get(ownerCtx, id);
+    expect(view.heldCount).toBe(3);
+    // Buổi 1–3 đã qua giữ ngày cũ (kể cả 07/01 nằm trong ngày nghỉ).
+    expect(regularDates(view).slice(0, 4)).toEqual([
+      '2026-01-05',
+      '2026-01-07',
+      '2026-01-12',
+      '2026-01-19',
+    ]);
+
+    await context.scheduleService.save(
+      ownerCtx,
+      OWNER,
+      id,
+      scheduleDto({ plannedSessions: 8 }),
+    );
+    expect(
+      regularDates(await context.scheduleService.get(ownerCtx, id)),
+    ).toHaveLength(8);
+    expect(context.sessionLinks.rows).toHaveLength(0);
+  });
+
+  it('huỷ buổi giữ số, không dời buổi sau, khôi phục được; buổi đã qua không huỷ được', async () => {
+    const context = setup();
+    const { id, view } = await scheduledClass(context);
+    const fifth = view.sessions[4];
+    const cancelled = await context.sessionsService.cancel(
+      teacherCtx,
+      'user-m-teacher',
+      id,
+      fifth.id,
+      'Giáo viên ốm',
+    );
+    expect(cancelled).toEqual(
+      expect.objectContaining({
+        seq: 5,
+        status: ClassSessionStatus.CANCELLED,
+        cancelReason: 'Giáo viên ốm',
+      }),
+    );
+    expect(
+      regularDates(await context.scheduleService.get(ownerCtx, id)),
+    ).toEqual(regularDates(view));
+    // Ngày nghỉ vẫn dời buổi đã huỷ như buổi thường (V1).
+    await context.settingsService.createHoliday(ownerCtx, OWNER, {
+      name: 'Nghỉ',
+      startDate: '2026-01-19',
+      endDate: '2026-01-19',
+    });
+    const after = await context.scheduleService.get(ownerCtx, id);
+    expect(after.sessions[4]).toEqual(
+      expect.objectContaining({
+        seq: 5,
+        status: ClassSessionStatus.CANCELLED,
+        startsAt: at('2026-01-21', '18:00'),
+      }),
+    );
+    await expect(
+      context.sessionsService.cancel(otherTeacherCtx, 'x', id, fifth.id, null),
+    ).rejects.toBeInstanceOf(ForbiddenException);
+    const restored = await context.sessionsService.restore(
+      ownerCtx,
+      OWNER,
+      id,
+      fifth.id,
+    );
+    expect(restored.status).toBe(ClassSessionStatus.SCHEDULED);
+
+    fakeDate('2026-01-06T09:00:00+07:00');
+    await expect(
+      context.sessionsService.cancel(
+        ownerCtx,
+        OWNER,
+        id,
+        view.sessions[0].id,
+        null,
+      ),
+    ).rejects.toThrow('đã diễn ra');
+    // Buổi đã qua: ghi chú vẫn sửa được, giờ thì không.
+    await context.sessionsService.update(
+      ownerCtx,
+      OWNER,
+      id,
+      view.sessions[0].id,
+      {
+        note: 'Đã học bài 1',
+      },
+    );
+    await expect(
+      context.sessionsService.update(ownerCtx, OWNER, id, view.sessions[0].id, {
+        startsAt: at('2026-01-05', '17:00'),
+        endsAt: at('2026-01-05', '18:30'),
+      }),
+    ).rejects.toThrow('đã diễn ra');
+  });
+
+  it('buổi bù: ngày cố định, "Bù cho Buổi N", không dời theo ngày nghỉ, xoá được khi chưa diễn ra', async () => {
+    const context = setup();
+    const { id, view } = await scheduledClass(context);
+    const makeup = await context.sessionsService.createMakeup(
+      teacherCtx,
+      'user-m-teacher',
+      id,
+      {
+        startsAt: at('2026-01-24', '09:00'),
+        endsAt: at('2026-01-24', '10:30'),
+        makeupForSessionId: view.sessions[4].id,
+      },
+    );
+    expect(makeup).toEqual(
+      expect.objectContaining({
+        kind: ClassSessionKind.MAKEUP,
+        seq: null,
+        makeupFor: { id: view.sessions[4].id, seq: 5 },
+      }),
+    );
+    await context.settingsService.createHoliday(ownerCtx, OWNER, {
+      name: 'Nghỉ',
+      startDate: '2026-01-19',
+      endDate: '2026-01-24',
+    });
+    const after = await context.scheduleService.get(ownerCtx, id);
+    const kept = after.sessions.find((row) => row.id === makeup.id)!;
+    expect(kept.startsAt).toBe(at('2026-01-24', '09:00'));
+    // Buổi bù xen theo thời gian giữa các buổi thường.
+    expect(after.sessions.map((row) => row.seq)).toEqual([
+      1,
+      2,
+      3,
+      4,
+      null,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+    ]);
+
+    await expect(
+      context.sessionsService.removeMakeup(
+        ownerCtx,
+        OWNER,
+        id,
+        view.sessions[1].id,
+      ),
+    ).rejects.toThrow('Chỉ xoá được buổi bù');
+    await context.sessionsService.removeMakeup(ownerCtx, OWNER, id, makeup.id);
+    expect(context.sessions.rows).toHaveLength(10);
+    await expect(
+      context.sessionsService.createMakeup(ownerCtx, OWNER, id, {
+        startsAt: at('2025-12-30', '09:00'),
+        endsAt: at('2025-12-30', '10:00'),
+      }),
+    ).rejects.toThrow('sau thời điểm hiện tại');
+  });
+
+  it('dạy thế: giáo viên buổi riêng, dời buổi bật cảnh báo, "Đã kiểm tra" tắt; giáo viên dạy thế chỉ xem buổi của mình', async () => {
+    const context = setup();
+    const { id, view } = await scheduledClass(context);
+    const third = view.sessions[2];
+    await expect(
+      context.sessionsService.detail(otherTeacherCtx, third.id),
+    ).rejects.toBeInstanceOf(ForbiddenException);
+    await expect(
+      context.sessionsService.update(
+        teacherCtx,
+        'user-m-teacher',
+        id,
+        third.id,
+        {
+          teacherMembershipIds: ['m-student-1'],
+        },
+      ),
+    ).rejects.toThrow('không có vai trò Giáo viên');
+    const updated = await context.sessionsService.update(
+      teacherCtx,
+      'user-m-teacher',
+      id,
+      third.id,
+      {
+        teacherMembershipIds: ['m-teacher-2'],
+        startsAt: at('2026-01-12', '17:00'),
+        endsAt: at('2026-01-12', '18:30'),
+      },
+    );
+    expect(updated).toEqual(
+      expect.objectContaining({
+        customTeachers: true,
+        timeOverridden: true,
+        teachers: [expect.objectContaining({ fullName: 'Giáo viên B' })],
+      }),
+    );
+    await expect(
+      context.sessionsService.update(ownerCtx, OWNER, id, third.id, {
+        startsAt: at('2026-01-13', '17:00'),
+        endsAt: at('2026-01-13', '18:30'),
+      }),
+    ).rejects.toThrow('cùng ngày');
+
+    const detail = await context.sessionsService.detail(
+      otherTeacherCtx,
+      third.id,
+    );
+    expect(detail).toEqual(
+      expect.objectContaining({
+        canOpenClass: false,
+        canEdit: false,
+        classTeachers: [expect.objectContaining({ fullName: 'Giáo viên A' })],
+      }),
+    );
+
+    await context.settingsService.createHoliday(ownerCtx, OWNER, {
+      name: 'Nghỉ',
+      startDate: '2026-01-07',
+      endDate: '2026-01-07',
+    });
+    const movedView = await context.scheduleService.get(ownerCtx, id);
+    const moved = movedView.sessions.find((row) => row.id === third.id)!;
+    expect(moved).toEqual(
+      expect.objectContaining({
+        startsAt: at('2026-01-14', '18:00'),
+        timeOverridden: false,
+        movedWarning: true,
+        customTeachers: true,
+      }),
+    );
+    const dismissed = await context.sessionsService.update(
+      ownerCtx,
+      OWNER,
+      id,
+      third.id,
+      { dismissMovedWarning: true },
+    );
+    expect(dismissed.movedWarning).toBe(false);
+
+    // Về giáo viên của lớp.
+    const reset = await context.sessionsService.update(
+      ownerCtx,
+      OWNER,
+      id,
+      third.id,
+      {
+        teacherMembershipIds: null,
+      },
+    );
+    expect(reset.customTeachers).toBe(false);
+    expect(reset.teachers.map((row) => row.fullName)).toEqual(['Giáo viên A']);
+  });
+
+  it('map nội dung: chương/mục của lớp; mục bị ẩn khỏi giáo trình thì bỏ map', async () => {
+    const context = setup();
+    const { id, view } = await scheduledClass(context);
+    const curriculum = await context.curriculumService.get(ownerCtx, id);
+    const lessonItem = curriculum.ungrouped[0];
+    const linked = await context.sessionsService.saveLinks(
+      teacherCtx,
+      'user-m-teacher',
+      id,
+      view.sessions[0].id,
+      { groupIds: [curriculum.groups[0].id], itemIds: [lessonItem.id] },
+    );
+    expect(linked.links.map((row) => row.title)).toEqual([
+      'Chương 1',
+      'Minna bài 1',
+    ]);
+    await expect(
+      context.sessionsService.saveLinks(
+        ownerCtx,
+        OWNER,
+        id,
+        view.sessions[0].id,
+        {
+          groupIds: [],
+          itemIds: ['00000000-0000-4000-8000-000000000000'],
+        },
+      ),
+    ).rejects.toThrow('không thuộc giáo trình lớp');
+
+    // Mục có bài làm → bị ẩn khi bỏ khỏi giáo trình → mất map.
+    context.lessonAttempts.rows.push({
+      id: 'la-1',
+      classItemId: lessonItem.id,
+      userId: 'user-m-student-1',
+    } as LessonAttempt);
+    await context.curriculumService.save(
+      ownerCtx,
+      OWNER,
+      id,
+      payload(curriculum, (draft) => {
+        draft.ungrouped = [];
+      }),
+    );
+    const after = await context.scheduleService.get(ownerCtx, id);
+    expect(after.sessions[0].links.map((row) => row.title)).toEqual([
+      'Chương 1',
+    ]);
+  });
+
+  it('trùng lịch: học viên/giáo viên có buổi chồng giờ ở lớp khác (cảnh báo, không chặn)', async () => {
+    const context = setup();
+    const first = await scheduledClass(context);
+    await context.membersService.addStudents(ownerCtx, OWNER, first.id, [
+      'm-student-1',
+    ]);
+    const { id } = await context.createClass({
+      code: 'N5-02',
+      startDate: '2026-01-05',
+      plannedSessions: 4,
+    });
+    await context.scheduleService.save(
+      ownerCtx,
+      OWNER,
+      id,
+      scheduleDto({
+        plannedSessions: 4,
+        slots: [{ weekday: 1, startTime: '19:00', endTime: '20:00' }],
+      }),
+    );
+    const conflicts = await context.scheduleService.memberConflicts(
+      ownerCtx,
+      id,
+      ['m-student-1', 'm-student-2'],
+    );
+    expect(conflicts).toEqual([
+      expect.objectContaining({
+        membershipId: 'm-student-1',
+        sessions: expect.arrayContaining([
+          expect.objectContaining({
+            seq: 1,
+            conflicts: [
+              expect.objectContaining({
+                classroom: expect.objectContaining({ code: 'N5-01' }),
+                seq: 1,
+                people: ['Học viên 1'],
+              }),
+            ],
+          }),
+        ]),
+      }),
+    ]);
+    // Thêm vẫn được; lịch 2 lớp hiện trùng (giáo viên A dạy cả hai lớp).
+    await context.membersService.addStudents(ownerCtx, OWNER, id, [
+      'm-student-1',
+    ]);
+    const view = await context.scheduleService.get(ownerCtx, id);
+    expect(view.sessions[0].conflicts[0].people).toEqual([
+      'Giáo viên A',
+      'Học viên 1',
+    ]);
+    // Buổi huỷ không tính trùng.
+    await context.sessionsService.cancel(
+      ownerCtx,
+      OWNER,
+      id,
+      view.sessions[0].id,
+      null,
+    );
+    expect(
+      (await context.scheduleService.get(ownerCtx, id)).sessions[0].conflicts,
+    ).toEqual([]);
+  });
+
+  it('lớp đã kết thúc không dời lịch và khoá thao tác buổi; mở lại thì tính lại', async () => {
+    const context = setup();
+    const { id, view } = await scheduledClass(context);
+    await context.classroomsService.changeStatus(
+      ownerCtx,
+      OWNER,
+      id,
+      ClassroomStatus.ONGOING,
+    );
+    await context.classroomsService.changeStatus(
+      ownerCtx,
+      OWNER,
+      id,
+      ClassroomStatus.FINISHED,
+    );
+    await context.settingsService.createHoliday(ownerCtx, OWNER, {
+      name: 'Nghỉ',
+      startDate: '2026-01-07',
+      endDate: '2026-01-07',
+    });
+    const closed = await context.scheduleService.get(ownerCtx, id);
+    expect(regularDates(closed)).toEqual(regularDates(view));
+    expect(closed.canEditSessions).toBe(false);
+    await expect(
+      context.sessionsService.cancel(
+        ownerCtx,
+        OWNER,
+        id,
+        view.sessions[4].id,
+        null,
+      ),
+    ).rejects.toBeInstanceOf(ConflictException);
+    await expect(
+      context.scheduleService.save(ownerCtx, OWNER, id, scheduleDto()),
+    ).rejects.toBeInstanceOf(ConflictException);
+
+    await context.classroomsService.changeStatus(
+      ownerCtx,
+      OWNER,
+      id,
+      ClassroomStatus.ONGOING,
+    );
+    const reopened = await context.scheduleService.get(ownerCtx, id);
+    expect(reopened.endDate).toBe('2026-02-09');
+  });
+
+  it('cài đặt: tham số chuyên cần, ngày nghỉ sai khoảng → 400', async () => {
+    const { settingsService } = setup();
+    const settings = await settingsService.update(ownerCtx, {
+      lateWeight: 0.3,
+      warningThreshold: 80,
+    });
+    expect(settings).toEqual({
+      lateWeight: 0.3,
+      warningThreshold: 80,
+      holidays: [],
+    });
+    await expect(
+      settingsService.createHoliday(ownerCtx, OWNER, {
+        name: 'Sai',
+        startDate: '2026-02-10',
+        endDate: '2026-02-01',
+      }),
+    ).rejects.toBeInstanceOf(BadRequestException);
+    const invalid = plainToInstance(UpdateTenantSettingsDto, {
+      lateWeight: 1.5,
+      warningThreshold: 70.5,
+    });
+    expect(validationMessages(await validate(invalid))).toEqual([
+      'Hệ số nộp muộn là số từ 0 đến 1',
+      'Ngưỡng cảnh báo phải là số nguyên',
+    ]);
   });
 });

@@ -238,7 +238,7 @@
             ],
             [
               "Lớp học",
-              "Lớp mở từ một khoá học: mã, tên, ngày bắt đầu, số buổi, sĩ số tối đa; trạng thái **Sắp mở → Đang học → Đã kết thúc** hoặc **Đã huỷ**. Xem [Lớp học](page:lop-hoc)."
+              "Lớp mở từ một khoá học: mã, tên, ngày bắt đầu, số buổi, ngày kết thúc (tự tính từ thời khoá biểu), sĩ số tối đa; trạng thái **Sắp mở → Đang học → Đã kết thúc** hoặc **Đã huỷ**. Xem [Lớp học](page:lop-hoc)."
             ],
             [
               "Giáo viên của lớp",
@@ -263,6 +263,30 @@
             [
               "Nhãn mục",
               "**Bài học**/**Bài tập** (mục bài học), **Bài kiểm tra**/**Bài thi** (mục đề thi); chỉ để hiển thị và lọc."
+            ],
+            [
+              "Thời khoá biểu",
+              "Ngày bắt đầu + tổng số buổi + các buổi trong tuần (thứ, giờ) của lớp; buổi thứ N rơi vào ô lịch thứ N, bỏ qua ngày nghỉ. Xem [Thời khoá biểu & buổi học](page:thoi-khoa-bieu)."
+            ],
+            [
+              "Buổi học (Buổi N)",
+              "Buổi thường của lớp theo số thứ tự; ngày giờ tự dời khi đổi lịch lặp hoặc ngày nghỉ, nội dung/ghi chú/phòng/giáo viên đi theo buổi."
+            ],
+            [
+              "Buổi bù",
+              "Buổi thêm tay có ngày cố định (vd. bù cho buổi đã huỷ), không đánh số, không bị dời."
+            ],
+            [
+              "Ngày nghỉ",
+              "Khoảng ngày trung tâm nghỉ (Cài đặt); buổi rơi vào ngày nghỉ dời sang ô kế tiếp."
+            ],
+            [
+              "Dạy thế",
+              "Giáo viên riêng của một buổi (thay/thêm giáo viên của lớp); người dạy thế xem được chi tiết buổi đó."
+            ],
+            [
+              "Trùng lịch",
+              "Hai buổi của hai lớp chồng giờ và có chung giáo viên hoặc học viên; cảnh báo đỏ, không chặn."
             ]
           ]
         },
@@ -535,6 +559,47 @@
               "✘",
               "✘"
             ],
+            [
+              "Sửa lịch lặp của lớp (ngày bắt đầu, số buổi, buổi trong tuần, áp dụng ngày nghỉ)",
+              "✔",
+              "✔",
+              "✘",
+              "✘",
+              "✘"
+            ],
+            [
+              "Huỷ/khôi phục buổi, buổi bù, sửa buổi (phòng, giờ, giáo viên dạy thế), nội dung buổi",
+              "mọi lớp",
+              "mọi lớp",
+              "lớp mình phụ trách",
+              "✘",
+              "✘"
+            ],
+            [
+              "Xem chi tiết buổi học",
+              "mọi buổi",
+              "mọi buổi",
+              "lớp mình phụ trách + buổi mình dạy thế",
+              "✘",
+              "✘"
+            ],
+            [
+              "Lịch dạy của tôi, lịch của khoá học",
+              "✔",
+              "✔",
+              "lớp mình phụ trách + buổi mình dạy thế",
+              "✘",
+              "✘"
+            ],
+            ["Lịch trung tâm", "✔", "✔", "✘", "✘", "✘"],
+            [
+              "Cài đặt trung tâm (ngày nghỉ, tham số chuyên cần)",
+              "✔",
+              "✔",
+              "✘",
+              "✘",
+              "✘"
+            ],
             ["Học bài học công khai trong trung tâm", "✔", "✔", "✔", "✔", "✔"],
             [
               "Chấm bài Writing/Speaking – đề thi và bài học (trừ bài của mình)",
@@ -575,9 +640,10 @@
               "Chủ sở hữu, Quản trị viên, Giáo viên"
             ],
             [
-              "Đào tạo → Khoá học, Giáo trình, Lớp học",
-              "Chủ sở hữu, Quản trị viên, Giáo viên (khoá học chỉ xem; lớp học chỉ thấy lớp mình phụ trách)"
-            ]
+              "Đào tạo → Khoá học, Giáo trình, Lớp học, Lịch",
+              "Chủ sở hữu, Quản trị viên, Giáo viên (khoá học chỉ xem; lớp học chỉ thấy lớp mình phụ trách; Lịch của Giáo viên chỉ có Lịch dạy của tôi)"
+            ],
+            ["Cài đặt", "Chủ sở hữu, Quản trị viên"]
           ]
         },
         {

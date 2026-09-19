@@ -431,9 +431,12 @@
             ["Trung tâm", "Chuyển quyền Chủ sở hữu, tự xin tham gia trung tâm"],
             [
               "Học tập",
-              "Thời khoá biểu/lịch học của lớp; học viên vào học bài và làm đề trong lớp; chấm bài và tính điểm nhóm thi theo lớp; chuyên cần, bảng điểm; thông báo; vai trò theo khoá học; giới thiệu khoá học công khai (lớp học và giáo trình lớp đã có – xem [Lớp học](page:lop-hoc))"
+              "Trang lớp và lịch học của học viên; học viên vào học bài và làm đề trong lớp; chấm bài và tính điểm nhóm thi theo lớp; chuyên cần, bảng điểm; thông báo; vai trò theo khoá học; giới thiệu khoá học công khai (lớp học, giáo trình lớp, thời khoá biểu và lịch dạy đã có – xem [Lớp học](page:lop-hoc), [Thời khoá biểu & buổi học](page:thoi-khoa-bieu))"
             ],
-            ["Phụ huynh", "Trang phụ huynh xem kết quả học tập của con"],
+            [
+              "Phụ huynh",
+              "Trang phụ huynh xem kết quả học tập, lịch học của con"
+            ],
             [
               "Gói dịch vụ",
               "Thanh toán, thời hạn gói, hạ gói vào cuối kỳ, quota dung lượng upload"

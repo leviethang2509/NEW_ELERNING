@@ -23,6 +23,9 @@ const classesPath = (slug: string) => `/t/${slug}/classes`;
 export const classListPath = (slug: string) => `/t/${slug}/dashboard/classes`;
 export const classDetailPath = (slug: string, id: string) =>
   `${classListPath(slug)}/${id}`;
+/** Trang lớp mở sẵn tab Thời khoá biểu. */
+export const classSchedulePath = (slug: string, id: string) =>
+  `${classDetailPath(slug, id)}?tab=schedule`;
 
 function withQuery(path: string, query: object): string {
   const params = new URLSearchParams();

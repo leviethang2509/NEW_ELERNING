@@ -8,6 +8,7 @@ import {
 import {
   BookOpen,
   Building2,
+  CalendarDays,
   ClipboardCheck,
   CreditCard,
   FileText,
@@ -20,6 +21,7 @@ import {
   ListTree,
   Presentation,
   School,
+  Settings,
   Users,
   type LucideIcon,
 } from 'lucide-react';
@@ -135,7 +137,6 @@ function tenantNavigation(
   if (examItems.length > 0) {
     sections.push({ label: vi.nav.sectionExam, items: examItems });
   }
-  // Lịch thêm ở Step 8.
   if (hasAnyRole(roles, EXAM_AUTHOR_ROLES)) {
     sections.push({
       label: vi.nav.sectionTraining,
@@ -143,6 +144,18 @@ function tenantNavigation(
         { label: vi.nav.courses, href: `${base}/courses`, icon: School },
         { label: vi.nav.curricula, href: `${base}/curricula`, icon: ListTree },
         { label: vi.nav.classes, href: `${base}/classes`, icon: Presentation },
+        {
+          label: vi.nav.schedule,
+          href: `${base}/schedule`,
+          icon: CalendarDays,
+        },
+      ],
+    });
+  }
+  if (hasAnyRole(roles, TENANT_MANAGER_ROLES)) {
+    sections.push({
+      items: [
+        { label: vi.nav.settings, href: `${base}/settings`, icon: Settings },
       ],
     });
   }

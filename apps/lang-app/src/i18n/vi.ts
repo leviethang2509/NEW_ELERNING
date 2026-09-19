@@ -793,6 +793,7 @@ export const vi = {
       info: 'Thông tin',
       curricula: 'Giáo trình tham khảo',
       classes: 'Lớp',
+      schedule: 'Lịch',
     },
     noValue: '—',
     noCategory: 'Không có danh mục',
@@ -948,6 +949,7 @@ export const vi = {
     backToList: 'Về danh sách lớp',
     tabs: {
       info: 'Thông tin',
+      schedule: 'Thời khoá biểu',
       members: 'Giáo viên & Học viên',
       curriculum: 'Giáo trình',
       logs: 'Nhật ký thay đổi',
@@ -1017,6 +1019,7 @@ export const vi = {
       maxStudentsHint:
         'Bỏ trống = không giới hạn. Đủ sĩ số thì không thêm được học viên.',
       location: 'Phòng học / link online',
+      scheduleFieldsHint: 'Ngày bắt đầu và số buổi sửa ở tab "Thời khoá biểu".',
       create: 'Tạo lớp',
       save: 'Lưu',
     },
@@ -1058,6 +1061,9 @@ export const vi = {
       added: (count: number) => `Đã thêm ${count} người.`,
       removedDone: (name: string) => `Đã bỏ ${name} khỏi lớp.`,
       room: (room: number) => `Còn ${room} chỗ`,
+      conflictsTitle: 'Trùng lịch (vẫn thêm được)',
+      conflictLine: (name: string, count: number) =>
+        `${name}: ${count} buổi của lớp này trùng giờ với lớp khác`,
     },
     curriculum: {
       hint: 'Giáo trình riêng của lớp: giáo viên của lớp và Owner/Admin thêm bài học/đề thi đã publish, sắp xếp, đặt ngày mở, deadline. Không ảnh hưởng giáo trình tham khảo.',
@@ -1138,6 +1144,44 @@ export const vi = {
       groupsChanged: 'Sửa chương',
       reordered: 'Sắp xếp lại thứ tự',
       noChange: 'Không có thay đổi nội dung',
+      scheduleSaved: 'Sửa thời khoá biểu',
+      scheduleRecomputed: (holiday: string, action: string) =>
+        `Lịch tự tính lại vì ${action} ngày nghỉ "${holiday}"`,
+      holidayActions: {
+        created: 'thêm',
+        updated: 'sửa',
+        removed: 'xoá',
+      } as Record<string, string>,
+      scheduleFields: {
+        startDate: 'ngày bắt đầu',
+        plannedSessions: 'số buổi',
+        applyTenantHolidays: 'áp dụng ngày nghỉ',
+        slots: 'lịch lặp',
+      } as Record<string, string>,
+      scheduleChanged: 'Đổi',
+      moved: (count: number) => `${count} buổi dời ngày`,
+      createdSessions: (count: number) => `thêm ${count} buổi`,
+      removedSessions: (count: number) => `xoá ${count} buổi cuối`,
+      endDateChange: (from: string, to: string) =>
+        `Ngày kết thúc: ${from} → ${to}`,
+      sessionUpdated: (session: string, fields: string) =>
+        `Sửa ${session}: ${fields}`,
+      sessionCancelled: (session: string) => `Huỷ ${session}`,
+      sessionRestored: (session: string) => `Khôi phục ${session}`,
+      makeupAdded: (session: string, target: number | null) =>
+        target === null
+          ? `Thêm ${session}`
+          : `Thêm ${session} (bù cho Buổi ${target})`,
+      makeupRemoved: (session: string) => `Xoá ${session}`,
+      linksSaved: (session: string) => `Sửa nội dung ${session}`,
+      reason: (reason: string) => `Lý do: ${reason}`,
+      sessionFields: {
+        location: 'phòng/link',
+        note: 'ghi chú',
+        time: 'giờ học',
+        teachers: 'giáo viên',
+        movedWarning: 'đã kiểm tra sau khi dời',
+      },
       fields: {
         code: 'mã lớp',
         name: 'tên lớp',
@@ -1159,6 +1203,214 @@ export const vi = {
         group: 'chương',
       },
     },
+  },
+  schedule: {
+    weekdays: [
+      '',
+      'Thứ 2',
+      'Thứ 3',
+      'Thứ 4',
+      'Thứ 5',
+      'Thứ 6',
+      'Thứ 7',
+      'Chủ nhật',
+    ],
+    weekdaysShort: ['', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7', 'CN'],
+    sessionLabel: (seq: number | null) =>
+      seq === null ? 'Buổi bù' : `Buổi ${seq}`,
+    views: { week: 'Tuần', month: 'Tháng', list: 'Danh sách' },
+    today: 'Hôm nay',
+    previous: 'Trước',
+    next: 'Sau',
+    weekTitle: (from: string, to: string) => `${from} – ${to}`,
+    monthTitle: (month: number, year: number) => `Tháng ${month}/${year}`,
+    more: (count: number) => `+${count} buổi`,
+    empty: 'Không có buổi học nào trong khoảng này.',
+    holiday: 'Nghỉ',
+    cancelled: 'Đã huỷ',
+    past: 'Đã diễn ra',
+    makeup: 'Buổi bù',
+    conflict: 'Trùng lịch',
+    moved: 'Đã dời – kiểm tra lại',
+    substitute: 'Dạy thế',
+    timeOverridden: 'Giờ sửa tay',
+    customTeachers: 'Giáo viên riêng của buổi',
+    classTeachers: 'Theo giáo viên của lớp',
+    noTeacher: 'Chưa có giáo viên',
+    noLocation: 'Chưa có phòng/link',
+    // Tab Thời khoá biểu của lớp
+    tabHint:
+      'Buổi thứ N rơi vào ô lặp thứ N, bỏ qua ngày nghỉ của trung tâm. Thêm/xoá ngày nghỉ hoặc sửa lịch lặp thì các buổi chưa diễn ra tự dời; nội dung, ghi chú, phòng, giáo viên đi theo buổi.',
+    recurring: 'Lịch lặp',
+    recurringHint:
+      'Owner/Admin sửa ngày bắt đầu, số buổi và các buổi trong tuần. Buổi đã diễn ra, buổi bù không bị dời.',
+    noSlots:
+      'Chưa có lịch lặp. Owner/Admin thêm các buổi trong tuần để sinh buổi học.',
+    startDate: 'Ngày bắt đầu',
+    plannedSessions: 'Tổng số buổi',
+    endDate: 'Ngày kết thúc (tự tính)',
+    applyHolidays: 'Áp dụng ngày nghỉ của trung tâm',
+    applyHolidaysHint:
+      'Tắt cho lớp vẫn học ngày lễ (lớp online, cấp tốc). Ngày nghỉ quản lý ở trang Cài đặt.',
+    applyHolidaysOn: 'Có',
+    applyHolidaysOff: 'Không (học cả ngày nghỉ)',
+    slots: 'Các buổi trong tuần',
+    slotWeekday: 'Thứ',
+    slotStart: 'Bắt đầu',
+    slotEnd: 'Kết thúc',
+    addSlot: 'Thêm buổi trong tuần',
+    removeSlot: 'Bỏ buổi này',
+    editRecurring: 'Sửa lịch lặp',
+    previewSave: 'Xem trước & lưu',
+    heldHint: (count: number) =>
+      count > 0 ? `Lớp đã học ${count} buổi: các buổi này giữ nguyên.` : '',
+    previewTitle: 'Xác nhận thay đổi thời khoá biểu',
+    previewNoChange: 'Không có buổi nào thay đổi ngày giờ.',
+    previewCreated: (count: number) => `Thêm ${count} buổi mới.`,
+    previewMoved: (count: number) => `${count} buổi đổi ngày giờ:`,
+    previewRemoved: (count: number) => `Xoá ${count} buổi cuối:`,
+    previewRemovedLinks: (count: number) =>
+      `có ${count} nội dung đã map sẽ bị bỏ`,
+    previewWarning:
+      'Buổi có giáo viên dạy thế hoặc giờ sửa tay bị dời: giờ sửa tay bị bỏ, hãy kiểm tra lại giáo viên.',
+    previewEndDate: (from: string, to: string) =>
+      `Ngày kết thúc: ${from} → ${to}`,
+    saved: 'Đã lưu thời khoá biểu.',
+    sessionsTitle: 'Buổi học',
+    sessionsHint:
+      'Giáo viên của lớp và Owner/Admin huỷ/khôi phục buổi, thêm buổi bù, đổi phòng/giờ/giáo viên và map nội dung. Bấm vào buổi để xem chi tiết.',
+    addMakeup: 'Thêm buổi bù',
+    noSessions: 'Chưa có buổi học nào.',
+    columns: {
+      session: 'Buổi',
+      time: 'Ngày giờ',
+      teachers: 'Giáo viên',
+      location: 'Phòng/link',
+      content: 'Nội dung',
+    },
+    showList: 'Danh sách',
+    showCalendar: 'Lịch',
+    // Chi tiết buổi
+    backToClass: 'Về lớp học',
+    backToSchedule: 'Về lịch',
+    detailTitle: (label: string, className: string) =>
+      `${label} · ${className}`,
+    course: 'Khoá học',
+    classroom: 'Lớp',
+    time: 'Thời gian',
+    location: 'Phòng/link',
+    locationInherited: (value: string) => `${value} (theo lớp)`,
+    teachers: 'Giáo viên',
+    note: 'Ghi chú',
+    makeupFor: 'Bù cho',
+    content: 'Nội dung buổi',
+    noContent: 'Chưa map nội dung nào.',
+    students: 'Học viên',
+    noStudents: 'Lớp chưa có học viên.',
+    substituteHint:
+      'Bạn dạy thế buổi này: chỉ xem được chi tiết buổi, không vào được trang lớp.',
+    cancelledNotice: (reason: string | null) =>
+      reason ? `Buổi đã huỷ. Lý do: ${reason}` : 'Buổi đã huỷ.',
+    cancelledContent:
+      'Buổi đã huỷ – hãy chuyển nội dung sang buổi khác (buổi bù hoặc buổi sau).',
+    movedNotice:
+      'Buổi vừa bị dời sang ngày khác. Kiểm tra lại giáo viên dạy thế/giờ học rồi bấm "Đã kiểm tra".',
+    movedDismiss: 'Đã kiểm tra',
+    conflictsTitle: 'Trùng lịch (cảnh báo, không chặn)',
+    conflictLine: (
+      className: string,
+      session: string,
+      time: string,
+      people: string,
+    ) => `${className} · ${session} (${time}): ${people}`,
+    actions: {
+      edit: 'Sửa buổi',
+      cancel: 'Huỷ buổi',
+      restore: 'Khôi phục buổi',
+      deleteMakeup: 'Xoá buổi bù',
+      links: 'Chọn nội dung',
+    },
+    pastHint: 'Buổi đã diễn ra: chỉ sửa được phòng/link, ghi chú và nội dung.',
+    cancelTitle: 'Huỷ buổi học',
+    cancelMessage: (label: string) =>
+      `Huỷ ${label}? Buổi giữ số, các buổi sau không dời. Dạy bù bằng cách thêm buổi bù.`,
+    cancelReason: 'Lý do (tuỳ chọn)',
+    restoreConfirm: (label: string) => `Khôi phục ${label}?`,
+    deleteMakeupConfirm:
+      'Xoá buổi bù này? Nội dung đã map với buổi cũng bị bỏ.',
+    done: 'Đã lưu.',
+    editTitle: 'Sửa buổi học',
+    date: 'Ngày',
+    startTime: 'Giờ bắt đầu',
+    endTime: 'Giờ kết thúc',
+    regularTimeHint:
+      'Buổi thường chỉ đổi giờ trong ngày. Đổi ngày thì sửa thời khoá biểu, hoặc huỷ buổi và thêm buổi bù.',
+    teacherMode: 'Giáo viên của buổi',
+    teacherModeClass: 'Mọi giáo viên của lớp',
+    teacherModeCustom: 'Chọn giáo viên (dạy thế)',
+    teacherPickerHint:
+      'Thành viên có vai trò Giáo viên, kể cả người ngoài lớp.',
+    locationPlaceholder: 'Bỏ trống = theo phòng/link của lớp',
+    makeupTitle: 'Thêm buổi bù',
+    makeupHint:
+      'Buổi bù có ngày cố định, không bị dời khi đổi lịch hay ngày nghỉ. Giáo viên mặc định là giáo viên của lớp.',
+    makeupForPlaceholder: 'Không bù cho buổi cụ thể',
+    linksTitle: 'Nội dung buổi học',
+    linksHint:
+      'Chọn chương hoặc mục của giáo trình lớp học ở buổi này (chỉ để tham khảo). Một mục có thể học ở nhiều buổi.',
+    ungrouped: 'Chưa xếp chương',
+    wholeGroup: 'Cả chương',
+    // Trang lịch
+    pageTitle: 'Lịch',
+    mine: 'Lịch dạy của tôi',
+    center: 'Lịch trung tâm',
+    mineHint:
+      'Các buổi bạn dạy: lớp bạn phụ trách (trừ buổi đã xếp giáo viên khác) và buổi bạn được xếp dạy thế.',
+    centerHint:
+      'Mọi buổi học của các lớp chưa huỷ trong trung tâm. Viền đỏ = trùng lịch giáo viên/học viên.',
+    allCourses: 'Mọi khoá học',
+    allTeachers: 'Mọi giáo viên',
+    courseTabHint:
+      'Buổi học của các lớp thuộc khoá học (mỗi lớp một màu). Teacher chỉ thấy lớp mình phụ trách.',
+  },
+  tenantSettings: {
+    title: 'Cài đặt',
+    subtitle:
+      'Cài đặt chung của trung tâm (Owner/Admin): tham số chuyên cần và ngày nghỉ.',
+    attendanceTitle: 'Tham số chuyên cần',
+    attendanceHint:
+      'Dùng khi tính tỉ lệ chuyên cần của học viên (bài kiểm tra/bài thi có deadline). Lớp có thể ghi đè.',
+    lateWeight: 'Hệ số nộp muộn (k)',
+    lateWeightHint:
+      'Nộp đúng hạn tính 1, nộp muộn tính k, quá hạn chưa làm tính 0.',
+    warningThreshold: 'Ngưỡng cảnh báo (%)',
+    warningThresholdHint:
+      'Học viên có tỉ lệ chuyên cần dưới ngưỡng này hiện cảnh báo.',
+    save: 'Lưu tham số',
+    saved: 'Đã lưu tham số chuyên cần.',
+    holidaysTitle: 'Ngày nghỉ',
+    holidaysHint:
+      'Buổi học rơi vào ngày nghỉ tự dời sang ô lịch kế tiếp (các buổi sau lùi theo, ngày kết thúc lớp lùi). Xoá/sửa ngày nghỉ thì lịch tự tính lại. Không lặp hằng năm: mỗi năm nhập lại. Lớp tắt "Áp dụng ngày nghỉ" không bị ảnh hưởng.',
+    addHoliday: 'Thêm ngày nghỉ',
+    editHoliday: 'Sửa ngày nghỉ',
+    noHolidays: 'Chưa có ngày nghỉ nào.',
+    holidayName: 'Tên ngày nghỉ',
+    holidayNamePlaceholder: 'VD: Tết Nguyên đán',
+    from: 'Từ ngày',
+    to: 'Đến ngày',
+    days: (count: number) => `${count} ngày`,
+    impactTitle: 'Lớp bị ảnh hưởng',
+    impactNone: 'Không lớp nào bị dời buổi.',
+    impactLine: (code: string, moved: number) => `${code}: ${moved} buổi dời`,
+    impactEnd: (from: string, to: string) => `kết thúc ${from} → ${to}`,
+    impactNotify:
+      'Buổi đã diễn ra, buổi bù và lớp đã kết thúc/huỷ không bị dời.',
+    checkImpact: 'Tiếp tục',
+    confirmSave: 'Lưu và dời lịch',
+    deleteTitle: 'Xoá ngày nghỉ',
+    deleteMessage: (name: string) => `Xoá ngày nghỉ "${name}"?`,
+    holidaySaved: 'Đã lưu ngày nghỉ, lịch các lớp đã được tính lại.',
+    holidayDeleted: 'Đã xoá ngày nghỉ, lịch các lớp đã được tính lại.',
   },
   examEditor: {
     backToList: 'Về danh sách đề',
@@ -1762,6 +2014,8 @@ export const vi = {
     courses: 'Khoá học',
     curricula: 'Giáo trình',
     classes: 'Lớp học',
+    schedule: 'Lịch',
+    settings: 'Cài đặt',
     userManual: 'Tài liệu nội bộ',
     sectionManagement: 'Quản lý',
     sectionExam: 'Đề thi & Bài học',

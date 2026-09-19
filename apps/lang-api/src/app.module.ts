@@ -19,6 +19,7 @@ import { MembershipsModule } from './memberships/memberships.module';
 import { PlansModule } from './plans/plans.module';
 import { StorageModule } from './storage/storage.module';
 import { TenantDashboardModule } from './tenant-dashboard/tenant-dashboard.module';
+import { TenantSettingsModule } from './tenant-settings/tenant-settings.module';
 import { TenantsModule } from './tenants/tenants.module';
 import { TrainingModule } from './training/training.module';
 import { ClassroomsModule } from './classrooms/classrooms.module';
@@ -64,6 +65,7 @@ import { UsersModule } from './users/users.module';
     GradingModule,
     TrainingModule,
     ClassroomsModule,
+    TenantSettingsModule,
     AdminModule,
     UserManualModule,
     // Đăng ký guard toàn cục: mọi route cần đăng nhập trừ route @Public().

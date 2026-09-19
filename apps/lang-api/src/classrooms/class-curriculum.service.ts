@@ -27,6 +27,7 @@ import { learnerCountsByItem } from './class-activity';
 import { ClassGroup } from './class-group.entity';
 import { ClassItem } from './class-item.entity';
 import { writeClassLog } from './class-logs';
+import { ClassSessionLink } from './class-session-link.entity';
 import { assertClassroomOpen, loadClassroomAccess } from './classroom-access';
 import { Classroom } from './classroom.entity';
 import { classContentIdOf, toClassItemView } from './classroom.mapper';
@@ -242,6 +243,12 @@ export class ClassCurriculumService {
       for (const item of hidden) {
         await itemRepository.update(item.id, { removedAt: now });
       }
+      // Mục bị ẩn thì bỏ map với buổi học (R17); mục xoá hẳn thì FK CASCADE.
+      if (hidden.length > 0) {
+        await manager
+          .getRepository(ClassSessionLink)
+          .delete({ classItemId: In(hidden.map((item) => item.id)) });
+      }
       if (deleted.length > 0) {
         await itemRepository.delete({ id: In(deleted.map((item) => item.id)) });
       }
@@ -342,7 +349,7 @@ export async function copyCurriculumIntoClassroom(
 }
 
 /** Bài học/đề thi của các mục (kể cả đã xoá mềm, để vẫn hiện được tên). */
-async function loadContents(
+export async function loadContents(
   manager: EntityManager,
   items: Pick<ClassItem, 'lessonId' | 'examId'>[],
 ): Promise<Map<string, CurriculumContentRef>> {

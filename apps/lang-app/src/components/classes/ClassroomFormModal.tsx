@@ -132,19 +132,16 @@ export function ClassroomFormModal({
         code: code.trim(),
         name: name.trim(),
         description: description.trim() || null,
-        startDate,
         maxStudents: maxStudents ? Number(maxStudents) : null,
         location: location.trim() || null,
       };
       onSaved(
         classroom
-          ? await updateClassroom(slug, classroom.id, {
-              ...common,
-              plannedSessions: Number(plannedSessions),
-            })
+          ? await updateClassroom(slug, classroom.id, common)
           : await createClassroom(slug, {
               ...common,
               courseId,
+              startDate,
               plannedSessions: plannedSessions ? Number(plannedSessions) : null,
               sourceCurriculumId: curriculumId || null,
             }),
@@ -259,29 +256,32 @@ export function ClassroomFormModal({
         <p className="-mt-2 text-[12px] text-[var(--muted)]">{text.codeHint}</p>
 
         <div className="grid gap-4 sm:grid-cols-3">
-          <label className={labelClass}>
-            <span className={labelTextClass}>{text.startDate}</span>
-            <input
-              type="date"
-              value={startDate}
-              required
-              onChange={(event) => setStartDate(event.target.value)}
-              className={inputClass}
-            />
-          </label>
-          <label className={labelClass}>
-            <span className={labelTextClass}>{text.plannedSessions}</span>
-            <input
-              type="number"
-              min={1}
-              max={COURSE_MAX_PLANNED_SESSIONS}
-              value={plannedSessions}
-              required={classroom !== null}
-              placeholder={course?.plannedSessions?.toString()}
-              onChange={(event) => setPlannedSessions(event.target.value)}
-              className={inputClass}
-            />
-          </label>
+          {!classroom && (
+            <>
+              <label className={labelClass}>
+                <span className={labelTextClass}>{text.startDate}</span>
+                <input
+                  type="date"
+                  value={startDate}
+                  required
+                  onChange={(event) => setStartDate(event.target.value)}
+                  className={inputClass}
+                />
+              </label>
+              <label className={labelClass}>
+                <span className={labelTextClass}>{text.plannedSessions}</span>
+                <input
+                  type="number"
+                  min={1}
+                  max={COURSE_MAX_PLANNED_SESSIONS}
+                  value={plannedSessions}
+                  placeholder={course?.plannedSessions?.toString()}
+                  onChange={(event) => setPlannedSessions(event.target.value)}
+                  className={inputClass}
+                />
+              </label>
+            </>
+          )}
           <label className={labelClass}>
             <span className={labelTextClass}>{text.maxStudents}</span>
             <input
@@ -299,6 +299,7 @@ export function ClassroomFormModal({
           {!classroom && course
             ? `${text.plannedSessionsHint(course.plannedSessions)} `
             : ''}
+          {classroom ? `${text.scheduleFieldsHint} ` : ''}
           {text.maxStudentsHint}
         </p>
 

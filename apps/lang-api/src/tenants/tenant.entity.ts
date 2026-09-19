@@ -1,4 +1,8 @@
-import { TenantStatus } from '@lang/shared';
+import {
+  DEFAULT_LATE_WEIGHT,
+  DEFAULT_WARNING_THRESHOLD,
+  TenantStatus,
+} from '@lang/shared';
 import {
   Check,
   Column,
@@ -11,7 +15,7 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
-import { sqlInList } from '../common/sql';
+import { numericTransformer, sqlInList } from '../common/sql';
 import { ServicePlan } from '../plans/service-plan.entity';
 import { User } from '../users/user.entity';
 
@@ -23,6 +27,11 @@ import { User } from '../users/user.entity';
 })
 @Check('CHK_tenants_slug_format', `"slug" ~ '^[a-z0-9]+(-[a-z0-9]+)*$'`)
 @Check('CHK_tenants_status', sqlInList('status', TenantStatus))
+@Check('CHK_tenants_late_weight', '"late_weight" >= 0 AND "late_weight" <= 1')
+@Check(
+  'CHK_tenants_warning_threshold',
+  '"warning_threshold" >= 0 AND "warning_threshold" <= 100',
+)
 export class Tenant {
   @PrimaryGeneratedColumn('uuid', { primaryKeyConstraintName: 'PK_tenants' })
   id: string;
@@ -105,6 +114,26 @@ export class Tenant {
 
   @Column({ name: 'reviewed_at', type: 'timestamptz', nullable: true })
   reviewedAt: Date | null;
+
+  /** Hệ số nộp muộn k của chuyên cần (R11.1), lớp ghi đè được (Step 11). */
+  @Column({
+    name: 'late_weight',
+    type: 'numeric',
+    precision: 3,
+    scale: 2,
+    // Viết dạng biểu thức: số thường làm migration:generate luôn báo lệch.
+    default: () => String(DEFAULT_LATE_WEIGHT),
+    transformer: numericTransformer,
+  })
+  lateWeight: number;
+
+  /** Ngưỡng cảnh báo chuyên cần X% (R11.2). */
+  @Column({
+    name: 'warning_threshold',
+    type: 'int',
+    default: DEFAULT_WARNING_THRESHOLD,
+  })
+  warningThreshold: number;
 
   @CreateDateColumn({ name: 'created_at', type: 'timestamptz' })
   createdAt: Date;

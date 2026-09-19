@@ -14,6 +14,7 @@ import {
 import { ClassCurriculumEditor } from '@/components/classes/ClassCurriculumEditor';
 import { ClassLogList } from '@/components/classes/ClassLogList';
 import { ClassMembersPanel } from '@/components/classes/ClassMembersPanel';
+import { ClassSchedulePanel } from '@/components/classes/ClassSchedulePanel';
 import { ClassroomFormModal } from '@/components/classes/ClassroomFormModal';
 import { ClassroomStatusBadge } from '@/components/classes/classes-ui';
 import { useTenantDashboard } from '@/components/dashboard/TenantDashboardShell';
@@ -34,14 +35,19 @@ import { errorMessage } from '@/lib/error-message';
 import { formatDate, formatDateTime } from '@/lib/format';
 import { courseDetailPath, curriculumDetailPath } from '@/lib/training-api';
 
-type Tab = 'info' | 'members' | 'curriculum' | 'logs';
-const TABS: Tab[] = ['info', 'members', 'curriculum', 'logs'];
+type Tab = 'info' | 'schedule' | 'members' | 'curriculum' | 'logs';
+const TABS: Tab[] = ['info', 'schedule', 'members', 'curriculum', 'logs'];
 
-/** Trang lớp: Thông tin · Giáo viên & Học viên · Giáo trình · Nhật ký. */
+/**
+ * Trang lớp: Thông tin · Thời khoá biểu · Giáo viên & Học viên · Giáo trình ·
+ * Nhật ký. `?tab=` mở sẵn một tab (vd. quay lại từ trang buổi học).
+ */
 export default function ClassDetailPage({
   params,
+  searchParams,
 }: {
   params: { id: string };
+  searchParams: { tab?: string };
 }) {
   const router = useRouter();
   const { tenant } = useTenantDashboard();
@@ -50,7 +56,9 @@ export default function ClassDetailPage({
 
   const [classroom, setClassroom] = useState<ClassroomDetail | null>(null);
   const [curriculum, setCurriculum] = useState<ClassCurriculum | null>(null);
-  const [tab, setTab] = useState<Tab>('info');
+  const [tab, setTab] = useState<Tab>(
+    TABS.includes(searchParams.tab as Tab) ? (searchParams.tab as Tab) : 'info',
+  );
   const [error, setError] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
   const [editing, setEditing] = useState(false);
@@ -312,6 +320,16 @@ export default function ClassDetailPage({
             ))}
           </dl>
         </section>
+      )}
+      {tab === 'schedule' && (
+        <ClassSchedulePanel
+          slug={slug}
+          classroom={classroom}
+          onChanged={() => {
+            reload();
+            setLogKey((key) => key + 1);
+          }}
+        />
       )}
       {tab === 'members' && (
         <ClassMembersPanel
