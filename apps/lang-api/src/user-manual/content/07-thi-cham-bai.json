@@ -20,7 +20,7 @@
         },
         {
           "type": "paragraph",
-          "text": "**Mọi thành viên** đang hoạt động của trung tâm đều làm được đề đã publish, bất kể vai trò."
+          "text": "**Mọi thành viên** đang hoạt động của trung tâm đều làm được đề đã publish có hiển thị **Công khai trong trung tâm**, bất kể vai trò. Đề **Chỉ qua lớp** không hiện ở đây."
         },
         { "type": "heading", "level": 2, "text": "Chọn đề" },
         {
@@ -174,7 +174,7 @@
             },
             {
               "title": "Đọc từng câu cần chấm",
-              "text": "Nội dung part (passage), **Đề bài**, **Bài làm**: bài viết kèm số ký tự/từ, hoặc nút **Tải ghi âm** để nghe. Câu bỏ trống ghi rõ “Học viên bỏ trống câu này.”"
+              "text": "Nội dung part (passage), **Đề bài**, **Giải thích (học viên không thấy)** nếu người soạn có viết Explanation cho câu đó, **Bài làm**: bài viết kèm số ký tự/từ, hoặc nút **Tải ghi âm** để nghe. Câu bỏ trống ghi rõ “Học viên bỏ trống câu này.”"
             },
             {
               "title": "Nhập Điểm và Nhận xét",

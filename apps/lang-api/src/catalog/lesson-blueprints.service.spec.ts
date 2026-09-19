@@ -8,7 +8,10 @@ import {
 import { plainToInstance } from 'class-transformer';
 import { validate } from 'class-validator';
 import { InMemoryDataSource } from '../testing/in-memory-data-source';
-import { InMemoryRepository } from '../testing/in-memory-repository';
+import {
+  InMemoryRepository,
+  stubQueryBuilderRepository,
+} from '../testing/in-memory-repository';
 import { Category } from './category.entity';
 import {
   CreateLessonBlueprintDto,
@@ -24,7 +27,8 @@ const TENANT_B = 'tenant-b';
 const vocabulary: LessonModuleInputDto = { name: 'Từ vựng', code: 'TU-VUNG' };
 const grammar: LessonModuleInputDto = { name: 'Ngữ pháp', code: 'NGU-PHAP' };
 
-function setup() {
+/** `lessonCounts`: dòng đếm bài học theo mẫu mà truy vấn giả trả về. */
+function setup(lessonCounts: { blueprintId: string; count: number }[] = []) {
   const timestamps = () => ({ updatedAt: new Date() });
   const categories = new InMemoryRepository<Category>(timestamps);
   const blueprints = new InMemoryRepository<LessonBlueprint>(timestamps);
@@ -38,6 +42,7 @@ function setup() {
     blueprints.asRepository(),
     categories.asRepository(),
     modules.asRepository(),
+    stubQueryBuilderRepository(lessonCounts),
   );
 
   const addCategory = async (
@@ -55,7 +60,7 @@ function setup() {
       }),
     );
 
-  return { service, blueprints, modules, addCategory };
+  return { service, blueprints, modules, categories, addCategory };
 }
 
 describe('LessonBlueprintsService', () => {
@@ -258,6 +263,60 @@ describe('LessonBlueprintsService', () => {
     expect((await service.list(null)).map((row) => row.code)).toEqual([
       'MINNA',
     ]);
+  });
+
+  it('findUsable: chỉ mẫu nhìn thấy được, còn dùng, danh mục còn dùng; phần theo thứ tự', async () => {
+    const { service, addCategory, categories } = setup();
+    const system = await addCategory(null, 'JA');
+    const tenantB = await addCategory(TENANT_B, 'ZH');
+    const minna = await service.create(null, 'o', {
+      categoryId: system.id,
+      code: 'MINNA',
+      name: 'Minna',
+      modules: [grammar, vocabulary],
+    });
+    const other = await service.create(TENANT_B, 'b', {
+      categoryId: tenantB.id,
+      code: 'HSK',
+      name: 'HSK',
+      modules: [vocabulary],
+    });
+
+    const usable = await service.findUsable(TENANT_A, minna.id);
+    expect(usable.modules.map((module) => module.code)).toEqual([
+      'NGU-PHAP',
+      'TU-VUNG',
+    ]);
+    await expect(service.findUsable(TENANT_A, other.id)).rejects.toBeInstanceOf(
+      BadRequestException,
+    );
+
+    await service.update(null, 'o', minna.id, { isActive: false });
+    await expect(service.findUsable(TENANT_A, minna.id)).rejects.toThrow(
+      'Mẫu bài học đã ngừng dùng, hãy chọn mẫu khác',
+    );
+
+    await service.update(null, 'o', minna.id, { isActive: true });
+    await categories.update(system.id, { isActive: false });
+    await expect(service.findUsable(TENANT_A, minna.id)).rejects.toThrow(
+      'Danh mục của mẫu bài học đã ngừng dùng',
+    );
+  });
+
+  it('kèm số bài học dùng mẫu (lessonCount)', async () => {
+    const counts: { blueprintId: string; count: number }[] = [];
+    const { service, addCategory } = setup(counts);
+    const system = await addCategory(null, 'JA');
+    const minna = await service.create(null, 'o', {
+      categoryId: system.id,
+      code: 'MINNA',
+      name: 'Minna',
+      modules: [vocabulary],
+    });
+    expect(minna.lessonCount).toBe(0);
+
+    counts.push({ blueprintId: minna.id, count: 3 });
+    expect((await service.list(TENANT_A))[0].lessonCount).toBe(3);
   });
 });
 

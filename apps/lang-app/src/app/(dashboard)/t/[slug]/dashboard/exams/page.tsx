@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import {
   Archive,
+  Copy,
   Eye,
   FilePlus2,
   History,
@@ -13,6 +14,7 @@ import {
   Trash2,
 } from 'lucide-react';
 import {
+  ContentVisibility,
   ExamStatus,
   type ExamBlueprintItem,
   type ExamContentIssue,
@@ -25,6 +27,7 @@ import { CategoryIcon } from '@/components/catalog/catalog-ui';
 import { ExamFormModal } from '@/components/exams/ExamFormModal';
 import { ExamStatusBadge } from '@/components/exams/ExamStatusBadge';
 import {
+  Badge,
   ConfirmDialog,
   DataTable,
   FormAlert,
@@ -40,6 +43,7 @@ import { api } from '@/lib/api';
 import { errorMessage } from '@/lib/error-message';
 import {
   archiveExam,
+  cloneExam,
   contentIssuesOf,
   deleteExam,
   examEditPath,
@@ -57,7 +61,16 @@ const GRID =
 
 const text = vi.exams;
 
-type PendingAction = { kind: 'archive' | 'delete'; exam: ExamListItem };
+const PENDING_LABEL = {
+  archive: text.archive,
+  delete: text.delete,
+  clone: text.clone,
+};
+
+type PendingAction = {
+  kind: 'archive' | 'delete' | 'clone';
+  exam: ExamListItem;
+};
 
 /** Danh sách đề của trung tâm (Owner/Admin/Teacher). */
 export default function TenantExamsPage() {
@@ -168,6 +181,16 @@ export default function TenantExamsPage() {
   async function runPending() {
     if (!pending) return;
     const { kind, exam } = pending;
+    if (kind === 'clone') {
+      let cloneId: string | null = null;
+      await run(exam, async () => {
+        cloneId = (await cloneExam(slug, exam.id)).id;
+      });
+      setPending(null);
+      // Bản sao là đề nháp của mình: mở luôn trình soạn.
+      if (cloneId) router.push(examEditPath(slug, cloneId));
+      return;
+    }
     const done = await run(exam, () =>
       kind === 'archive'
         ? archiveExam(slug, exam.id)
@@ -203,6 +226,18 @@ export default function TenantExamsPage() {
         >
           <History size={16} />
         </Link>
+        {(row.canEdit || row.status === ExamStatus.PUBLISHED) && (
+          <button
+            type="button"
+            title={text.clone}
+            aria-label={text.clone}
+            disabled={busy}
+            onClick={() => setPending({ kind: 'clone', exam: row })}
+            className={iconButtonClass}
+          >
+            <Copy size={16} />
+          </button>
+        )}
         {row.canEdit && (
           <>
             {row.status === ExamStatus.PUBLISHED ? (
@@ -278,6 +313,11 @@ export default function TenantExamsPage() {
               {row.blueprint.name} · {row.blueprint.category.name}
             </span>
           </span>
+          {row.clonedFrom && (
+            <span className="block truncate text-[12px] text-[var(--muted)]">
+              {text.clonedFrom(row.clonedFrom.title)}
+            </span>
+          )}
         </>
       ),
     },
@@ -296,7 +336,14 @@ export default function TenantExamsPage() {
     },
     {
       header: text.statusColumn,
-      render: (row) => <ExamStatusBadge status={row.status} />,
+      render: (row) => (
+        <span className="flex flex-wrap gap-1">
+          <ExamStatusBadge status={row.status} />
+          {row.visibility === ContentVisibility.PRIVATE && (
+            <Badge tone="accent">{text.privateBadge}</Badge>
+          )}
+        </span>
+      ),
     },
     {
       header: text.creator,
@@ -425,15 +472,17 @@ export default function TenantExamsPage() {
       />
       <ConfirmDialog
         open={pending !== null}
-        title={pending?.kind === 'archive' ? text.archive : text.delete}
+        title={pending ? PENDING_LABEL[pending.kind] : ''}
         message={
           pending
-            ? pending.kind === 'archive'
-              ? text.archiveConfirm(pending.exam.title)
-              : text.deleteConfirm(pending.exam.title)
+            ? {
+                archive: text.archiveConfirm,
+                delete: text.deleteConfirm,
+                clone: text.cloneConfirm,
+              }[pending.kind](pending.exam.title)
             : ''
         }
-        confirmLabel={pending?.kind === 'archive' ? text.archive : text.delete}
+        confirmLabel={pending ? PENDING_LABEL[pending.kind] : ''}
         tone={pending?.kind === 'delete' ? 'danger' : 'default'}
         loading={busyId !== null}
         onConfirm={() => void runPending()}

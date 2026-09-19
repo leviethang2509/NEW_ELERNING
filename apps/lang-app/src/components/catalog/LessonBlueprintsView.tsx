@@ -31,9 +31,9 @@ import {
 
 // Viết nguyên văn để Tailwind sinh class.
 const SYSTEM_GRID =
-  'sm:grid-cols-[120px_minmax(0,1.2fr)_minmax(0,1fr)_minmax(0,1.4fr)_110px_90px]';
+  'sm:grid-cols-[120px_minmax(0,1.2fr)_minmax(0,1fr)_minmax(0,1.4fr)_80px_110px_90px]';
 const TENANT_GRID =
-  'sm:grid-cols-[120px_minmax(0,1.2fr)_minmax(0,1fr)_minmax(0,1.4fr)_110px_100px_90px]';
+  'sm:grid-cols-[120px_minmax(0,1.2fr)_minmax(0,1fr)_minmax(0,1.4fr)_80px_110px_100px_90px]';
 
 type StatusFilter = 'active' | 'inactive';
 
@@ -170,6 +170,17 @@ export function LessonBlueprintsView({
       ),
     },
     {
+      header: text.lessonCount,
+      render: (row) => (
+        <span
+          className="text-[13.5px] font-medium text-[var(--body)]"
+          title={isTenant ? text.lessonCountTenantHint : text.lessonCountHint}
+        >
+          {row.lessonCount}
+        </span>
+      ),
+    },
+    {
       header: common.status,
       render: (row) => <ActiveBadge active={row.isActive} />,
     },
@@ -199,8 +210,9 @@ export function LessonBlueprintsView({
             </button>
             <button
               type="button"
-              title={text.delete}
+              title={row.lessonCount > 0 ? text.inUse : text.delete}
               aria-label={text.delete}
+              disabled={row.lessonCount > 0}
               onClick={() => setDeleting(row)}
               className={iconButtonClass}
             >

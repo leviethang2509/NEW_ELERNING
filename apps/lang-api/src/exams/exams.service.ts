@@ -7,6 +7,9 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import {
+  CLONE_TITLE_SUFFIX,
+  ContentVisibility,
+  EXAM_TITLE_MAX_LENGTH,
   ExamSectionStatus,
   ExamStatus,
   type ExamDetail,
@@ -39,7 +42,7 @@ import { Exam } from './exam.entity';
 import {
   emptySectionContent,
   hasContentErrors,
-  insertable,
+  insertPreparedSections,
   prepareSection,
   sectionIssues,
 } from './section-content';
@@ -48,6 +51,8 @@ export const EXAM_NOT_FOUND = 'Không tìm thấy đề thi';
 const EDIT_FORBIDDEN = 'Bạn chỉ sửa được đề do mình tạo';
 const ALREADY_PUBLISHED = 'Đề đã được publish';
 const NOT_PUBLISHED = 'Chỉ lưu trữ được đề đang publish';
+const CLONE_FORBIDDEN =
+  'Chỉ nhân bản được đề đã publish hoặc đề bạn có quyền sửa';
 export const CONTENT_HAS_ERRORS =
   'Đề còn lỗi nội dung, hãy sửa hết lỗi trong bảng kiểm tra';
 
@@ -191,6 +196,7 @@ export class ExamsService {
           title: dto.title,
           description: dto.description ?? null,
           status: ExamStatus.DRAFT,
+          visibility: dto.visibility ?? ContentVisibility.TENANT,
           currentVersion: 1,
           contentRevision: 1,
           createdBy: actorId,
@@ -208,9 +214,7 @@ export class ExamsService {
           { examId: exam.id, version: 1, sortOrder, createdBy: actorId },
         ),
       );
-      await manager
-        .getRepository(ExamSection)
-        .insert(insertable(prepared.map((item) => item.section)));
+      await insertPreparedSections(manager, prepared);
       return exam.id;
     });
     return this.getDetail(ctx, actorId, id);
@@ -269,9 +273,69 @@ export class ExamsService {
       }
       if (dto.title !== undefined) changes.title = dto.title;
       if (dto.description !== undefined) changes.description = dto.description;
+      if (dto.visibility !== undefined) changes.visibility = dto.visibility;
       await manager.getRepository(Exam).update(id, changes);
     });
     return this.getDetail(ctx, actorId, id);
+  }
+
+  /**
+   * Nhân bản đề (R4): đề đã publish, hoặc đề mình sửa được (kể cả nháp/lưu
+   * trữ) → đề nháp mới của người nhân bản, version 1 chép nội dung version hiện
+   * tại (media dùng chung URL), giữ loại đề và hiển thị; không chép bài làm,
+   * lịch sử version.
+   */
+  async clone(
+    ctx: TenantContext,
+    actorId: string,
+    id: string,
+  ): Promise<ExamDetail> {
+    const cloneId = await this.dataSource.transaction(async (manager) => {
+      // Khoá chia sẻ: không chạy song song với lần lưu nội dung đề gốc.
+      const source = await manager.getRepository(Exam).findOne({
+        where: { id, tenantId: ctx.tenantId },
+        lock: { mode: 'pessimistic_read' },
+      });
+      if (!source) throw new NotFoundException(EXAM_NOT_FOUND);
+      if (
+        source.status !== ExamStatus.PUBLISHED &&
+        !canEditExam(ctx, actorId, source)
+      ) {
+        throw new ForbiddenException(CLONE_FORBIDDEN);
+      }
+      const sections = await currentSections(manager, source);
+
+      const repository = manager.getRepository(Exam);
+      const exam = await repository.save(
+        repository.create({
+          tenantId: ctx.tenantId,
+          blueprintId: source.blueprintId,
+          title: cloneTitle(source.title),
+          description: source.description,
+          status: ExamStatus.DRAFT,
+          visibility: source.visibility,
+          clonedFromId: source.id,
+          currentVersion: 1,
+          contentRevision: 1,
+          createdBy: actorId,
+          updatedBy: actorId,
+        }),
+      );
+      const prepared = sections.map((section, sortOrder) =>
+        prepareSection(
+          {
+            moduleId: section.moduleId,
+            name: section.name,
+            durationMinutes: section.durationMinutes,
+            rawData: section.rawData,
+          },
+          { examId: exam.id, version: 1, sortOrder, createdBy: actorId },
+        ),
+      );
+      await insertPreparedSections(manager, prepared);
+      return exam.id;
+    });
+    return this.getDetail(ctx, actorId, cloneId);
   }
 
   /** Nháp hoặc lưu trữ → publish, khi mọi section không còn lỗi (422). */
@@ -368,7 +432,12 @@ export class ExamsService {
         exams.flatMap((exam) => (exam.createdBy ? [exam.createdBy] : [])),
       ),
     ];
-    const [blueprints, users, sections] = await Promise.all([
+    const sourceIds = [
+      ...new Set(
+        exams.flatMap((exam) => (exam.clonedFromId ? [exam.clonedFromId] : [])),
+      ),
+    ];
+    const [blueprints, users, sections, sources] = await Promise.all([
       this.blueprints.findBy({ id: In(blueprintIds) }),
       creatorIds.length > 0
         ? this.users.findBy({ id: In(creatorIds) })
@@ -389,7 +458,15 @@ export class ExamsService {
               status: ExamSectionStatus.ACTIVE,
             },
           }),
+      sourceIds.length > 0
+        ? this.exams.find({
+            select: { id: true, title: true },
+            where: { id: In(sourceIds) },
+            withDeleted: true,
+          })
+        : Promise.resolve([]),
     ]);
+    const sourceById = new Map(sources.map((row) => [row.id, row]));
     const categories = await this.categories.findBy({
       id: In([...new Set(blueprints.map((row) => row.categoryId))]),
     });
@@ -410,8 +487,17 @@ export class ExamsService {
               section.version === exam.currentVersion,
           ),
         creator: exam.createdBy ? userById.get(exam.createdBy) : undefined,
+        clonedFrom: exam.clonedFromId
+          ? sourceById.get(exam.clonedFromId)
+          : undefined,
         canEdit: canEditExam(ctx, actorId, exam),
       });
     });
   }
+}
+
+/** Tên bản nhân bản: thêm hậu tố, cắt bớt tên gốc cho vừa độ dài tối đa. */
+export function cloneTitle(title: string): string {
+  const room = EXAM_TITLE_MAX_LENGTH - CLONE_TITLE_SUFFIX.length;
+  return `${title.slice(0, room).trimEnd()}${CLONE_TITLE_SUFFIX}`;
 }

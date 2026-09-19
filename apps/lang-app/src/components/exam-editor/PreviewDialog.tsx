@@ -13,7 +13,8 @@ import {
 export interface PreviewSection {
   key: string;
   name: string;
-  durationMinutes: number;
+  /** Không có ở bài học. */
+  durationMinutes?: number;
   value: readonly unknown[];
 }
 
@@ -23,6 +24,8 @@ interface PreviewDialogProps {
   /** Section mở sẵn (thường là tab đang soạn). */
   initialKey?: string;
   onClose: () => void;
+  /** Chú thích cạnh bài làm (mặc định của đề thi). */
+  aside?: string;
 }
 
 /** Giả lập bài làm từng section, chấm ngay ở trình duyệt (không tạo bài làm). */
@@ -31,6 +34,7 @@ export function PreviewDialog({
   sections,
   initialKey,
   onClose,
+  aside,
 }: PreviewDialogProps) {
   if (!open || sections.length === 0) return null;
   return (
@@ -38,6 +42,7 @@ export function PreviewDialog({
       sections={sections}
       initialKey={initialKey}
       onClose={onClose}
+      aside={aside}
     />
   );
 }
@@ -47,6 +52,7 @@ function PreviewBody({
   sections,
   initialKey,
   onClose,
+  aside,
 }: Omit<PreviewDialogProps, 'open'>) {
   const text = vi.examEditor.preview;
   const [key, setKey] = useState(
@@ -98,7 +104,7 @@ function PreviewBody({
             ))}
           </div>
         )}
-        <ExamSimulator plan={plan} aside={text.aside} />
+        <ExamSimulator plan={plan} aside={aside ?? text.aside} />
       </Modal>
     </SimulatorProvider>
   );

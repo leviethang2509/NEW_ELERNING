@@ -30,6 +30,16 @@ const emptyParagraph = (): TElement => ({
   children: [{ text: '' }],
 });
 
+/** Vị trí (cấp ngoài cùng) mà `insertIndicator` sẽ chèn nếu gọi lúc này. */
+export function indicatorInsertIndex(editor: PlateEditor): number {
+  const entry = editor.api.block();
+  if (!entry) return editor.children.length;
+  const [blockNode, blockPath] = entry;
+  const replaceHere =
+    !isIndicator(blockNode) && NodeApi.string(blockNode) === '';
+  return replaceHere ? blockPath[0] : blockPath[0] + 1;
+}
+
 /**
  * Chèn indicator thành một block riêng. Nếu ngay dưới indicator không có dữ
  * liệu (hết tài liệu hoặc lại là indicator) thì tạo thêm dòng trống và đặt con

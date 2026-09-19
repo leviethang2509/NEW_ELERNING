@@ -16,7 +16,10 @@ import {
   Highlighter,
   Image as ImageIcon,
   Indent,
+  Info,
   Italic as ItalicIcon,
+  Languages,
+  ListCollapse,
   List as ListIcon,
   ListChecks,
   ListOrdered,
@@ -35,14 +38,20 @@ import {
   Video,
 } from 'lucide-react';
 import {
+  CALLOUT_COLORS,
+  CALLOUT_VARIANTS,
   INDICATORS,
   ORDERING_STYLE,
   TODO_STYLE,
   type IndicatorKind,
 } from '@lang/exam-core';
 import type { MediaKind } from '@lang/shared';
-import { TextApi } from 'platejs';
-import { useEditorRef, useEditorSelector } from 'platejs/react';
+import { RangeApi, TextApi, type TRange } from 'platejs';
+import {
+  useEditorRef,
+  useEditorSelector,
+  type PlateEditor,
+} from 'platejs/react';
 import { indent, outdent } from '@platejs/indent';
 import { ListStyleType, toggleList } from '@platejs/list';
 import {
@@ -57,6 +66,12 @@ import { isBlankActive, toggleBlank } from '@/components/plate/exam/blank';
 import { MARK_KEYS } from '@/components/plate/exam/marks';
 import { togglePair } from '@/components/plate/exam/pair';
 import {
+  activeRuby,
+  applyRuby,
+  toggleCallout,
+  toggleToggleBlock,
+} from '@/components/plate/exam/rich-blocks';
+import {
   AlignButton,
   LinkButton,
   ListButton,
@@ -64,9 +79,11 @@ import {
   ToolbarBtn,
   ToolbarSep,
 } from '@/components/plate/toolbar';
+import { PromptDialog } from '@/components/ui';
 import { vi } from '@/i18n/vi';
 
 const text = vi.examEditor.toolbar;
+const richText = vi.examEditor.rich;
 
 const BLOCK_TYPES = [
   'p',
@@ -287,6 +304,59 @@ function BlankButton() {
   );
 }
 
+function RubyButton() {
+  const editor = useEditorRef();
+  const ruby = useEditorSelector(
+    (ed) => activeRuby(ed as PlateEditor)?.rt ?? null,
+    [],
+  );
+  const [open, setOpen] = useState(false);
+  const [initial, setInitial] = useState('');
+  const [warning, setWarning] = useState(false);
+  // Popup chiếm focus nên giữ lại vùng chọn để gắn đúng chỗ.
+  const saved = useRef<TRange | null>(null);
+
+  return (
+    <>
+      <ToolbarBtn
+        title={warning ? richText.rubyNeedSelection : richText.ruby}
+        pressed={ruby !== null}
+        onClick={() => {
+          const selection = editor.selection;
+          if (
+            ruby === null &&
+            (!selection || RangeApi.isCollapsed(selection))
+          ) {
+            setWarning(true);
+            return;
+          }
+          setWarning(false);
+          saved.current = selection;
+          setInitial(ruby ?? '');
+          setOpen(true);
+        }}
+      >
+        <Languages size={15} />
+      </ToolbarBtn>
+      <PromptDialog
+        open={open}
+        title={richText.rubyTitle}
+        label={richText.rubyLabel}
+        defaultValue={initial}
+        hint={ruby !== null ? richText.rubyHint : undefined}
+        required={ruby === null}
+        confirmLabel={richText.rubySave}
+        onCancel={() => setOpen(false)}
+        onSubmit={(value) => {
+          setOpen(false);
+          if (saved.current) editor.tf.select(saved.current);
+          applyRuby(editor, value);
+        }}
+      />
+    </>
+  );
+}
+
 interface ExamToolbarProps {
   onOpenMedia: (kind: MediaKind) => void;
   onInsertIndicator: (kind: IndicatorKind) => void;
@@ -399,6 +469,32 @@ export function ExamToolbar({
       <ToolbarBtn title={text.pair} onClick={() => togglePair(editor)}>
         <Columns2 size={15} />
       </ToolbarBtn>
+      <Dropdown title={richText.callout} icon={<Info size={15} />}>
+        {(close) =>
+          CALLOUT_VARIANTS.map((variant) => (
+            <MenuItem
+              key={variant}
+              onClick={() => {
+                toggleCallout(editor, variant);
+                close();
+              }}
+            >
+              <span
+                className="h-2 w-2 shrink-0 rounded-full"
+                style={{ backgroundColor: CALLOUT_COLORS[variant] }}
+              />
+              {richText.callouts[variant]}
+            </MenuItem>
+          ))
+        }
+      </Dropdown>
+      <ToolbarBtn
+        title={richText.toggle}
+        onClick={() => toggleToggleBlock(editor)}
+      >
+        <ListCollapse size={15} />
+      </ToolbarBtn>
+      <RubyButton />
       <ToolbarBtn title={text.indent} onClick={run(() => indent(editor))}>
         <Indent size={15} />
       </ToolbarBtn>

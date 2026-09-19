@@ -38,7 +38,7 @@ export interface PreviewPart {
   indicator: TIndicatorElement | null;
   /** Nội dung ngay dưới indicator part — passage, hiện ở cột trái. */
   passage: ExamElement[];
-  /** Subpart và question thuộc part, hiện ở cột phải. */
+  /** Subpart, question và explanation thuộc part, hiện ở cột phải. */
   items: Segment[];
   /** Mọi số thứ tự nằm trong part, tăng dần. */
   numbers: number[];

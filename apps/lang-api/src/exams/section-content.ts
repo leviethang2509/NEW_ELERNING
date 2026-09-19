@@ -1,17 +1,20 @@
 import { randomInt, randomUUID } from 'node:crypto';
 import {
+  extractExplanations,
   extractStructure,
   stripAnswers,
   validateSection,
   validateSectionShape,
   type ExamValue,
+  type ValidateSectionOptions,
 } from '@lang/exam-core';
 import { ExamSectionStatus, type ExamContentIssue } from '@lang/shared';
 import { BadRequestException } from '@nestjs/common';
+import type { EntityManager } from 'typeorm';
 import type { QueryDeepPartialEntity } from 'typeorm/query-builder/QueryPartialEntity';
-import type { ExamPart } from './exam-part.entity';
-import type { ExamQuestion } from './exam-question.entity';
-import type { ExamSection } from './exam-section.entity';
+import { ExamPart } from './exam-part.entity';
+import { ExamQuestion } from './exam-question.entity';
+import { ExamSection } from './exam-section.entity';
 
 /** Nội dung một section trước khi lưu (từ request hoặc version cũ). */
 export interface SectionDraft {
@@ -33,8 +36,11 @@ export const emptySectionContent = (): ExamValue => [
   { type: 'p', children: [{ text: '' }] },
 ];
 
+/** Phần của section mà các bước kiểm tra nội dung cần (dùng chung với bài học). */
+type SectionText = Pick<SectionDraft, 'name' | 'rawData'>;
+
 /** Lỗi khiến không lưu được (định dạng, id indicator, data: URI) → 400. */
-export function assertSectionShapes(sections: readonly SectionDraft[]): void {
+export function assertSectionShapes(sections: readonly SectionText[]): void {
   const errors = sections.flatMap((section) =>
     validateSectionShape(section.rawData).map(
       (message) => `Section "${section.name}": ${message}`,
@@ -45,10 +51,11 @@ export function assertSectionShapes(sections: readonly SectionDraft[]): void {
 
 /** Mọi lỗi/cảnh báo nội dung, dùng khi publish và khi lưu đề không còn nháp. */
 export function sectionIssues(
-  sections: readonly SectionDraft[],
+  sections: readonly SectionText[],
+  options?: ValidateSectionOptions,
 ): ExamContentIssue[] {
   return sections.flatMap((section, sectionIndex) =>
-    validateSection(section.rawData).map((issue) => ({
+    validateSection(section.rawData, options).map((issue) => ({
       sectionIndex,
       sectionName: section.name,
       indicatorId: issue.indicatorId,
@@ -136,9 +143,29 @@ export function prepareSection(
     // Thứ tự xáo lưu sẵn chỉ để content_public không lộ đáp án; mỗi lượt làm
     // xáo lại theo `order_seed` riêng (Step 13).
     contentPublic: stripAnswers(value, randomInt(2 ** 31)),
+    explanations: extractExplanations(value),
     questionCount: questions.length,
     createdBy: target.createdBy,
   } as ExamSection;
 
   return { section, parts, questions };
+}
+
+/** Ghi section + part + câu hỏi đã `prepareSection` (part cha trước subpart). */
+export async function insertPreparedSections(
+  manager: EntityManager,
+  prepared: readonly PreparedSection[],
+): Promise<void> {
+  if (prepared.length === 0) return;
+  await manager
+    .getRepository(ExamSection)
+    .insert(insertable(prepared.map((item) => item.section)));
+  const parts = prepared.flatMap((item) => item.parts);
+  if (parts.length > 0) {
+    await manager.getRepository(ExamPart).insert(insertable(parts));
+  }
+  const questions = prepared.flatMap((item) => item.questions);
+  if (questions.length > 0) {
+    await manager.getRepository(ExamQuestion).insert(insertable(questions));
+  }
 }

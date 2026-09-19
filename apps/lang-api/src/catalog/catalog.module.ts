@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Exam } from '../exams/exam.entity';
+import { Lesson } from '../lessons/lesson.entity';
 import { TenantsModule } from '../tenants/tenants.module';
 import {
   AdminCategoriesController,
@@ -35,6 +36,7 @@ import {
       LessonBlueprint,
       LessonModule,
       Exam,
+      Lesson,
     ]),
   ],
   controllers: [

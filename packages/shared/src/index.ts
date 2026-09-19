@@ -6,6 +6,7 @@ export * from './exam';
 export * from './catalog';
 export * from './exam-content';
 export * from './grading';
+export * from './lesson-content';
 export * from './media';
 export * from './pagination';
 export * from './roles';

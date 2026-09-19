@@ -9,6 +9,7 @@ import {
 import {
   AttemptSectionStatus,
   AttemptStatus,
+  ContentVisibility,
   ExamStatus,
   TenantRole,
   TenantStatus,
@@ -73,6 +74,7 @@ const orderingItem = (label: string, num: number) =>
 
 const BLANK_ANSWER = 'riverbank';
 const PAIR_ANSWER = 'Not Given';
+const EXPLANATION = 'Giải thích bí mật';
 
 // Section 1 (30 phút): 1 MC, 2 pick-n, 1 blank, 1 TFNG, 1 ordering = 6 câu.
 const listening: ExamValue = [
@@ -98,6 +100,8 @@ const listening: ExamValue = [
   },
   indicator('q-tfng', 'question', { qtype: 'tfng' }),
   { type: 'pair', id: 'pair-1', answer: PAIR_ANSWER, children: [t('Ý 1')] },
+  indicator('e-tfng', 'explanation'),
+  p(EXPLANATION),
   indicator('q-order', 'question', { qtype: 'ordering' }),
   orderingItem('Thứ hai', 2),
   orderingItem('Thứ nhất', 1),
@@ -153,7 +157,10 @@ function correctResponses(
 
 // --- Dựng service ---------------------------------------------------------------
 
-function setup({ status = ExamStatus.PUBLISHED as ExamStatus } = {}) {
+function setup({
+  status = ExamStatus.PUBLISHED as ExamStatus,
+  visibility = ContentVisibility.TENANT as ContentVisibility,
+} = {}) {
   const timestamps = () => ({ createdAt: new Date(), updatedAt: new Date() });
   const exams = new InMemoryRepository<Exam>(timestamps);
   const sections = new InMemoryRepository<ExamSection>();
@@ -177,6 +184,8 @@ function setup({ status = ExamStatus.PUBLISHED as ExamStatus } = {}) {
     blueprintId: 'blueprint',
     title: 'Đề thử',
     description: null,
+    visibility,
+    clonedFromId: null,
     status,
     currentVersion: 1,
     contentRevision: 1,
@@ -279,7 +288,7 @@ describe('AttemptsService', () => {
     expect(attemptSections.rows).toHaveLength(2);
   });
 
-  it('mỗi đề chỉ một lượt làm dở; đề lưu trữ 409, đề nháp 404', async () => {
+  it('mỗi đề chỉ một lượt làm dở; đề lưu trữ 409, đề nháp/private 404', async () => {
     const { service } = setup();
     await service.create(ctx, STUDENT, EXAM);
     await expect(service.create(ctx, STUDENT, EXAM)).rejects.toBeInstanceOf(
@@ -293,6 +302,14 @@ describe('AttemptsService', () => {
     ).rejects.toBeInstanceOf(ConflictException);
     await expect(
       setup({ status: ExamStatus.DRAFT }).service.create(ctx, STUDENT, EXAM),
+    ).rejects.toBeInstanceOf(NotFoundException);
+    // Đề `private` chỉ làm qua lớp.
+    await expect(
+      setup({ visibility: ContentVisibility.PRIVATE }).service.create(
+        ctx,
+        STUDENT,
+        EXAM,
+      ),
     ).rejects.toBeInstanceOf(NotFoundException);
   });
 
@@ -345,6 +362,7 @@ describe('AttemptsService', () => {
     const json = JSON.stringify(view);
     expect(json).not.toContain(BLANK_ANSWER);
     expect(json).not.toContain(PAIR_ANSWER);
+    expect(json).not.toContain(EXPLANATION);
     // Dòng ordering có `key` (chỉ số gốc) và không theo thứ tự đúng.
     const content = (view.current as { content: ExamElement[] }).content;
     const keys = content

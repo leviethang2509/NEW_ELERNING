@@ -12,6 +12,7 @@ import {
   CreditCard,
   FileText,
   FolderTree,
+  GraduationCap,
   Images,
   Layers,
   LayoutTemplate,
@@ -117,6 +118,7 @@ function tenantNavigation(
         icon: LayoutTemplate,
       },
       { label: vi.nav.exams, href: `${base}/exams`, icon: FileText },
+      { label: vi.nav.lessons, href: `${base}/lessons`, icon: GraduationCap },
       { label: vi.nav.media, href: `${base}/media`, icon: Images },
     );
   }

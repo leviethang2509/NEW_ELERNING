@@ -1,3 +1,4 @@
+import type { SectionExplanation } from '@lang/exam-core';
 import { ExamSectionStatus } from '@lang/shared';
 import {
   Check,
@@ -64,6 +65,13 @@ export class ExamSection {
   /** Nội dung gửi người làm bài: đã bỏ đáp án (`stripAnswers`). */
   @Column({ name: 'content_public', type: 'jsonb' })
   contentPublic: unknown[];
+
+  /**
+   * Giải thích tách từ `raw_data` (`extractExplanations`): content_public chỉ
+   * giữ indicator rỗng, học viên không nhận được nội dung này.
+   */
+  @Column({ type: 'jsonb', default: () => "'[]'" })
+  explanations: SectionExplanation[];
 
   @Column({ name: 'question_count', type: 'int', default: 0 })
   questionCount: number;

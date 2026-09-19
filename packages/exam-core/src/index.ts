@@ -4,6 +4,7 @@
 // platejs/React; plugin và giao diện editor ở lại lang-app.
 export * from './answer';
 export * from './blank';
+export * from './explanation';
 export * from './grading';
 export * from './id';
 export * from './indicator';
@@ -14,6 +15,7 @@ export * from './node';
 export * from './outline';
 export * from './pair';
 export * from './plan';
+export * from './rich';
 export * from './scope';
 export * from './strip';
 export * from './structure';

@@ -85,6 +85,7 @@ export function toLessonBlueprintItem(
   blueprint: LessonBlueprint,
   category: Category,
   modules: LessonModule[],
+  lessonCount: number,
 ): LessonBlueprintItem {
   return {
     id: blueprint.id,
@@ -97,6 +98,7 @@ export function toLessonBlueprintItem(
     modules: [...modules]
       .sort((a, b) => a.sortOrder - b.sortOrder)
       .map(toLessonModuleItem),
+    lessonCount,
     updatedAt: blueprint.updatedAt.toISOString(),
   };
 }

@@ -346,11 +346,12 @@ t/:slug:
 
 ### Step 4 – Soạn bài học
 - Migration `lessons`, `lesson_sections`, `lesson_parts`, `lesson_questions`; `LessonsModule`: `LessonsService` + `LessonContentService` (chép từ exams, bỏ duration, thêm `explanations`), version/khôi phục/publish/lưu trữ/xoá/nhân bản/hiển thị.
-- lang-app: `components/lesson-editor` (chép `ExamEditor`, không có ô thời lượng, bản nháp `lesson:{id}:draft`), trang danh sách/soạn/version bài học, `lib/lesson-api.ts`; xem trước bằng `LessonViewer` (Step 5) chấm ở client.
+- lang-app: `components/lesson-editor` (chép `ExamEditor`, không có ô thời lượng, bản nháp `lesson:{id}:draft`), trang danh sách/soạn/version bài học, `lib/lesson-api.ts`; xem trước tạm dùng `ExamSimulator` (chấm ở client, giải thích hiện sau khi Nộp), Step 5 đổi sang `LessonViewer` (người dùng chốt 2026-09-19). Version: chưa có `lesson_attempts` nên mọi lần lưu ghi đè version hiện tại; kiểm "có lượt học" qua `LessonAttemptLookup` để Step 5 nối vào (người dùng chốt 2026-09-19).
 - Unit test như đề thi (version, quyền Teacher, publish lỗi 422, nhân bản).
 - **Nghiệm thu:** tạo bài học từ mẫu Minna → 5 tab; soạn, lưu, publish; Teacher khác mở chỉ xem và nhân bản được.
 
 ### Step 5 – Học bài học & chấm tay bài học
+- `LessonAttemptLookup` đọc `lesson_attempts` (Save có lượt học → version mới, xoá bài có lượt học → xoá mềm); xem trước trong trình soạn đổi sang `LessonViewer`.
 - Migration `lesson_attempts`, `lesson_attempt_sections`, `lesson_attempt_answers`; `LessonAttemptsService` (mở section, autosave câu trả lời, nộp section → chấm + đáp án + giải thích, làm lại, học xong, ghi âm).
 - Learner: danh sách bài học `tenant` ở `/t/{slug}`, trang bài học, màn hình học `LessonViewer` (tab, nội dung liền mạch, "Nộp phần này", "Làm lại", đáp án/đúng sai/giải thích sau khi nộp).
 - Chấm bài: trang "Chấm bài" thêm lọc Đề thi | Bài học, chấm câu Speaking/Writing của bài học (quyền như hiện tại, đổi ở Step 10); nộp lại → lượt chấm cũ bỏ.

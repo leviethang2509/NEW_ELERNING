@@ -2,16 +2,21 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
+  CALLOUT_COLORS,
+  CALLOUT_VARIANTS,
   INDICATORS,
   ORDERING_STYLE,
   TODO_STYLE,
   buildOutline,
+  createIndicator,
+  extractExplanations,
   isIndicator,
   validateSection,
   type ExamElement,
   type IndicatorKind,
   type IndicatorProps,
   type TIndicatorElement,
+  type ValidateSectionOptions,
 } from '@lang/exam-core';
 import type { MediaKind } from '@lang/shared';
 import { NodeApi, RangeApi, type Value } from 'platejs';
@@ -25,17 +30,23 @@ import { toggleList } from '@platejs/list';
 import { insertTable } from '@platejs/table';
 import { MediaDialog } from '@/components/media/MediaDialog';
 import {
+  indicatorInsertIndex,
   insertIndicator,
   updateIndicatorById,
 } from '@/components/plate/exam/indicator';
 import { insertMedia } from '@/components/plate/exam/media';
 import { togglePair } from '@/components/plate/exam/pair';
+import {
+  toggleCallout,
+  toggleToggleBlock,
+} from '@/components/plate/exam/rich-blocks';
 import { EXAM_EDITOR_PLUGINS } from '@/components/plate/exam/plugins';
 import { toEditorValue } from '@/components/plate/value';
 import { FormAlert } from '@/components/ui';
 import { vi } from '@/i18n/vi';
 import { downloadJson, pickTextFile } from '@/lib/json-file';
 import { ExamToolbar } from './ExamToolbar';
+import { ExplanationDialog } from './ExplanationDialog';
 import { IndicatorDialog } from './IndicatorDialog';
 import { IssuePanel } from './IssuePanel';
 import { Minimap } from './Minimap';
@@ -67,6 +78,8 @@ interface SectionEditorProps {
   active: boolean;
   /** Tên file khi xuất JSON. */
   exportName: string;
+  /** Bài học: không cảnh báo section không có câu hỏi. */
+  validateOptions?: ValidateSectionOptions;
   onChange: (value: Value) => void;
   onEditor: (editor: PlateEditor | null) => void;
 }
@@ -79,6 +92,7 @@ export function SectionEditor({
   readOnly,
   active,
   exportName,
+  validateOptions,
   onChange,
   onEditor,
 }: SectionEditorProps) {
@@ -88,6 +102,10 @@ export function SectionEditor({
   const [indicatorDialog, setIndicatorDialog] =
     useState<IndicatorDialogState | null>(null);
   const [importError, setImportError] = useState<string | null>(null);
+  /** Số câu Explanation sẽ gắn (tính lúc mở hộp hướng dẫn); `null` = đóng. */
+  const [explanationTarget, setExplanationTarget] = useState<number[] | null>(
+    null,
+  );
 
   const editor = usePlateEditor({
     plugins: EXAM_EDITOR_PLUGINS,
@@ -107,17 +125,34 @@ export function SectionEditor({
 
   const examValue = value as unknown as ExamElement[];
   const outline = useMemo(() => buildOutline(examValue), [examValue]);
-  const issues = useMemo(() => validateSection(examValue), [examValue]);
+  const issues = useMemo(
+    () => validateSection(examValue, validateOptions),
+    [examValue, validateOptions],
+  );
 
   // --- Slash menu ----------------------------------------------------------
   const [slash, setSlash] = useState<SlashState | null>(null);
   const [slashIndex, setSlashIndex] = useState(0);
 
-  // Chèn Question thì phải chọn dạng trước; Part/Subpart chèn thẳng.
+  // Chèn Question thì phải chọn dạng trước; Explanation hiện hướng dẫn kèm câu
+  // sẽ được gắn; Part/Subpart chèn thẳng.
   const insertIndicatorOrAsk = useCallback(
     (kind: IndicatorKind) => {
       if (kind === 'question') {
         setIndicatorDialog({});
+        return;
+      }
+      if (kind === 'explanation') {
+        const current = editor.children as unknown as ExamElement[];
+        const at = indicatorInsertIndex(editor);
+        const probe = createIndicator('explanation', undefined, 'probe');
+        const numbers =
+          extractExplanations([
+            ...current.slice(0, at),
+            probe,
+            ...current.slice(at),
+          ]).find((item) => item.nodeId === probe.id)?.numbers ?? [];
+        setExplanationTarget(numbers);
         return;
       }
       insertIndicator(editor, kind);
@@ -140,6 +175,19 @@ export function SectionEditor({
         hint: 'heading',
         run: () => editor.tf.toggleBlock(type),
       })),
+      ...CALLOUT_VARIANTS.map((variant) => ({
+        key: `callout-${variant}`,
+        label: text.rich.callouts[variant],
+        hint: 'callout',
+        color: CALLOUT_COLORS[variant],
+        run: () => toggleCallout(editor, variant),
+      })),
+      {
+        key: 'toggle',
+        label: text.rich.toggle,
+        hint: 'toggle',
+        run: () => toggleToggleBlock(editor),
+      },
       {
         key: 'ul',
         label: text.toolbar.bulletList,
@@ -429,6 +477,18 @@ export function SectionEditor({
           onInsert={(url, name) => {
             insertMedia(editor, mediaKind, url, name);
             setMediaKind(null);
+          }}
+        />
+      )}
+
+      {explanationTarget && (
+        <ExplanationDialog
+          open
+          numbers={explanationTarget}
+          onClose={() => setExplanationTarget(null)}
+          onInsert={() => {
+            setExplanationTarget(null);
+            insertIndicator(editor, 'explanation');
           }}
         />
       )}

@@ -61,6 +61,9 @@ export const saveExamContent = (
   input: SaveExamContentInput,
 ) => api.put<ExamDetail>(`${examsPath(slug)}/${id}/content`, input);
 
+export const cloneExam = (slug: string, id: string) =>
+  api.post<ExamDetail>(`${examsPath(slug)}/${id}/clone`);
+
 export const publishExam = (slug: string, id: string) =>
   api.post<ExamDetail>(`${examsPath(slug)}/${id}/publish`);
 

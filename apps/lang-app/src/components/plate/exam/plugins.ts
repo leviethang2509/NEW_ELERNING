@@ -37,6 +37,7 @@ import { IndicatorPlugin } from './indicator';
 import { ExamListPlugin } from './list-render';
 import { AudioElement, ImageElement, VideoElement } from './media';
 import { PairPlugin } from './pair';
+import { CalloutPlugin, RubyPlugin, TogglePlugin } from './rich-blocks';
 import {
   TableCellElement,
   TableCellHeaderElement,
@@ -44,7 +45,18 @@ import {
   TableRowElement,
 } from './table';
 
-const ALIGN_TARGETS = ['p', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'blockquote'];
+const ALIGN_TARGETS = [
+  'p',
+  'h1',
+  'h2',
+  'h3',
+  'h4',
+  'h5',
+  'h6',
+  'blockquote',
+  'callout',
+  'toggle',
+];
 
 // Alignment ghi vào node prop `align` để bản giả lập đọc lại được.
 const AlignPlugin = TextAlignPlugin.configure({
@@ -63,7 +75,7 @@ const ExamIndentPlugin = IndentPlugin.configure({
   inject: { targetPlugins: ALIGN_TARGETS },
 });
 
-/** Plugin của trình soạn đề (cùng bộ với lightc-general). */
+/** Plugin của trình soạn đề (bộ của lightc-general + callout, gập/mở, furigana). */
 export const EXAM_EDITOR_PLUGINS = [
   BoldPlugin,
   ItalicPlugin,
@@ -97,6 +109,9 @@ export const EXAM_EDITOR_PLUGINS = [
   ImagePlugin.withComponent(ImageElement),
   AudioPlugin.withComponent(AudioElement),
   VideoPlugin.withComponent(VideoElement),
+  CalloutPlugin,
+  TogglePlugin,
+  RubyPlugin,
   BlankPlugin,
   PairPlugin,
   IndicatorPlugin,

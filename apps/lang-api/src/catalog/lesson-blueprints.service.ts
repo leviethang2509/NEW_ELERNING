@@ -19,6 +19,7 @@ import {
   ownedBy,
   type CatalogOwner,
 } from './catalog-scope';
+import { Lesson } from '../lessons/lesson.entity';
 import { compareCategories, toLessonBlueprintItem } from './catalog.mapper';
 import { Category } from './category.entity';
 import type {
@@ -36,6 +37,17 @@ const CATEGORY_INACTIVE = 'Danh mục đã ngừng dùng, hãy chọn danh mục
 const MODULE_NOT_FOUND = 'Phần không thuộc mẫu bài học này, hãy tải lại trang';
 const BLUEPRINT_IN_USE =
   'Mẫu bài học đang có bài học sử dụng, chỉ có thể ngừng dùng thay vì xoá';
+const BLUEPRINT_UNAVAILABLE = 'Mẫu bài học không tồn tại';
+const BLUEPRINT_INACTIVE = 'Mẫu bài học đã ngừng dùng, hãy chọn mẫu khác';
+const BLUEPRINT_CATEGORY_INACTIVE =
+  'Danh mục của mẫu bài học đã ngừng dùng, hãy chọn mẫu khác';
+
+/** Mẫu bài học chọn được cho bài học, kèm phần theo thứ tự. */
+export interface UsableLessonBlueprint {
+  blueprint: LessonBlueprint;
+  category: Category;
+  modules: LessonModule[];
+}
 
 /**
  * Mẫu bài học kèm phần (module) cho 2 phạm vi, chép từ `ExamBlueprintsService`
@@ -53,6 +65,8 @@ export class LessonBlueprintsService {
     private readonly categories: Repository<Category>,
     @InjectRepository(LessonModule)
     private readonly modules: Repository<LessonModule>,
+    @InjectRepository(Lesson)
+    private readonly lessons: Repository<Lesson>,
   ) {}
 
   /** Mục hệ thống trước; theo danh mục rồi tên mẫu. */
@@ -77,13 +91,48 @@ export class LessonBlueprintsService {
     const ids = blueprints.map((blueprint) => blueprint.id);
     const modules =
       ids.length > 0 ? await this.modules.findBy({ blueprintId: In(ids) }) : [];
+    const lessonCounts = await this.countLessons(owner, ids);
     return blueprints.map((blueprint) =>
       toLessonBlueprintItem(
         blueprint,
         categories.get(blueprint.categoryId)!,
         modules.filter((module) => module.blueprintId === blueprint.id),
+        lessonCounts.get(blueprint.id) ?? 0,
       ),
     );
+  }
+
+  /**
+   * Mẫu tenant chọn được khi tạo/đổi mẫu của bài học: nhìn thấy được, còn dùng
+   * và danh mục còn dùng (400 nếu không).
+   */
+  async findUsable(
+    tenantId: string,
+    id: string,
+    manager: EntityManager = this.dataSource.manager,
+  ): Promise<UsableLessonBlueprint> {
+    const blueprint = await manager
+      .getRepository(LessonBlueprint)
+      .findOneBy({ id });
+    if (!blueprint || !isVisibleTo(blueprint, tenantId)) {
+      throw new BadRequestException(BLUEPRINT_UNAVAILABLE);
+    }
+    if (!blueprint.isActive) throw new BadRequestException(BLUEPRINT_INACTIVE);
+    const category = await manager
+      .getRepository(Category)
+      .findOneBy({ id: blueprint.categoryId });
+    if (!category) throw new BadRequestException(BLUEPRINT_UNAVAILABLE);
+    if (!category.isActive) {
+      throw new BadRequestException(BLUEPRINT_CATEGORY_INACTIVE);
+    }
+    const modules = await manager
+      .getRepository(LessonModule)
+      .findBy({ blueprintId: id });
+    return {
+      blueprint,
+      category,
+      modules: modules.sort((a, b) => a.sortOrder - b.sortOrder),
+    };
   }
 
   async create(
@@ -167,10 +216,7 @@ export class LessonBlueprintsService {
     return this.getItem(owner, id);
   }
 
-  /**
-   * Xoá cứng kèm phần (CASCADE). Bài học tham chiếu mẫu (Step 4) chặn bằng
-   * khoá ngoại.
-   */
+  /** Xoá cứng kèm phần (CASCADE). Bài học tham chiếu mẫu chặn bằng khoá ngoại. */
   async remove(owner: CatalogOwner, id: string): Promise<void> {
     await findOwned(this.blueprints, owner, id, BLUEPRINT_NOT_FOUND);
     try {
@@ -198,7 +244,29 @@ export class LessonBlueprintsService {
       blueprint,
       category,
       await this.modules.findBy({ blueprintId: id }),
+      (await this.countLessons(owner, [id])).get(id) ?? 0,
     );
+  }
+
+  /** Số bài học theo mẫu, kể cả bài đã xoá mềm (vẫn chặn xoá mẫu bằng khoá ngoại). */
+  private async countLessons(
+    owner: CatalogOwner,
+    blueprintIds: string[],
+  ): Promise<Map<string, number>> {
+    if (blueprintIds.length === 0) return new Map();
+    const query = this.lessons
+      .createQueryBuilder('lesson')
+      .withDeleted()
+      .select('lesson.blueprintId', 'blueprintId')
+      .addSelect('COUNT(*)::int', 'count')
+      .where('lesson.blueprintId IN (:...blueprintIds)', { blueprintIds })
+      .groupBy('lesson.blueprintId');
+    if (owner !== null) query.andWhere('lesson.tenantId = :owner', { owner });
+    const rows = await query.getRawMany<{
+      blueprintId: string;
+      count: number;
+    }>();
+    return new Map(rows.map((row) => [row.blueprintId, row.count]));
   }
 
   private async onCodeConflict<T>(run: () => Promise<T>): Promise<T> {

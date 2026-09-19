@@ -140,8 +140,8 @@
               "text": "Dùng loại đề hệ thống có sẵn hoặc tạo loại đề riêng. Xem [Danh mục, loại đề & mẫu bài học của trung tâm](page:danh-muc-loai-de-trung-tam)."
             },
             {
-              "title": "Soạn đề hoặc giao cho giáo viên",
-              "text": "Xem [Vòng đời đề thi](page:vong-doi-de-thi)."
+              "title": "Soạn đề, bài học hoặc giao cho giáo viên",
+              "text": "Xem [Vòng đời đề thi](page:vong-doi-de-thi) và [Bài học](page:bai-hoc)."
             }
           ]
         },
@@ -170,7 +170,8 @@
             "Dashboard trung tâm đầy đủ số liệu – [Dashboard trung tâm](page:dashboard-trung-tam).",
             "Thêm thành viên, phân vai trò (kể cả Quản trị viên khác), ngừng kích hoạt, xoá khỏi trung tâm, gắn phụ huynh – [Thành viên](page:thanh-vien).",
             "Tạo, sửa, xoá danh mục, loại đề & mẫu bài học riêng của trung tâm – [Danh mục, loại đề & mẫu bài học của trung tâm](page:danh-muc-loai-de-trung-tam).",
-            "Tạo đề; sửa, publish, lưu trữ, xoá, khôi phục version **mọi đề** (kể cả đề giáo viên tạo).",
+            "Tạo đề; sửa, đổi hiển thị, publish, lưu trữ, xoá, khôi phục version, nhân bản **mọi đề** (kể cả đề giáo viên tạo).",
+            "Tương tự với **mọi bài học** – [Bài học](page:bai-hoc).",
             "Upload/xoá media – [Thư viện media](page:thu-vien-media).",
             "Chấm bài – [Chấm bài](page:cham-bai).",
             "Làm bài thi như mọi thành viên."
@@ -197,7 +198,7 @@
         { "type": "roles", "roles": ["TEACHER"] },
         {
           "type": "paragraph",
-          "text": "Giáo viên vào dashboard trung tâm với menu **Tổng quan** (số liệu rút gọn) và nhóm **Đề thi & Bài học**: Danh mục, Loại đề, Mẫu bài học, Đề thi, Thư viện media, Chấm bài."
+          "text": "Giáo viên vào dashboard trung tâm với menu **Tổng quan** (số liệu rút gọn) và nhóm **Đề thi & Bài học**: Danh mục, Loại đề, Mẫu bài học, Đề thi, Bài học, Thư viện media, Chấm bài."
         },
         { "type": "heading", "level": 2, "text": "Được làm" },
         {
@@ -205,7 +206,8 @@
           "items": [
             "Xem danh mục, loại đề & mẫu bài học (hệ thống và trung tâm) – chỉ xem.",
             "Xem mọi đề của trung tâm (đề người khác mở ở chế độ **Chỉ xem**, vẫn xem trước và xem version được).",
-            "Tạo đề mới; sửa nội dung, thông tin, publish, lưu trữ, xoá, khôi phục version **đề do mình tạo** – [Vòng đời đề thi](page:vong-doi-de-thi).",
+            "Tạo đề mới; sửa nội dung, thông tin, hiển thị, publish, lưu trữ, xoá, khôi phục version **đề do mình tạo**; nhân bản đề đã publish của người khác thành đề nháp của mình – [Vòng đời đề thi](page:vong-doi-de-thi).",
+            "Tương tự với bài học: xem mọi bài, tạo bài, sửa/publish/xoá **bài do mình tạo**, nhân bản bài đã publish của người khác – [Bài học](page:bai-hoc).",
             "Upload/xoá media của trung tâm – [Thư viện media](page:thu-vien-media).",
             "Chấm Writing/Speaking của mọi bài đã nộp, trừ bài của chính mình – [Chấm bài](page:cham-bai).",
             "Làm bài thi như mọi thành viên."
@@ -217,7 +219,7 @@
           "items": [
             "Quản lý thành viên.",
             "Tạo/sửa/xoá danh mục, loại đề & mẫu bài học (cần nhờ Chủ sở hữu/Quản trị viên nếu chưa có loại đề phù hợp).",
-            "Sửa đề do người khác tạo."
+            "Sửa đề, bài học do người khác tạo."
           ]
         },
         {

@@ -18,7 +18,8 @@ import { structureFromPlan, type GradableQuestion } from './structure';
 // - bỏ `checked` (MC), `answer` (cặp ghép), `num` (ordering / polytomous);
 // - blank giữ nguyên ô (để đếm số câu) nhưng làm rỗng chữ;
 // - dòng ordering / polytomous có `key` = chỉ số gốc trong câu hỏi và bị xáo:
-//   thứ tự soạn thường chính là đáp án. Câu trả lời gửi lên dùng `key`.
+//   thứ tự soạn thường chính là đáp án. Câu trả lời gửi lên dùng `key`;
+// - giải thích chỉ còn indicator rỗng (nội dung lưu riêng, `extractExplanations`).
 //
 // Bỏ đáp án làm mất thông tin mà cách đánh số cần, nên ghi bù lên indicator:
 // `maxPicks` của pick-n (đề cũ đếm số ô tick) và `options` của matching đời cũ
@@ -78,6 +79,7 @@ export function stripAnswers(
       content.push({ ...copy, ...extras.get(node) });
       continue;
     }
+    if (current?.kind === 'explanation') continue;
     if (hasOrderingInput(current) && isOrderingItem(node)) {
       copy.key = nextKey;
       nextKey += 1;

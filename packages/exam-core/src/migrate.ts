@@ -12,6 +12,7 @@ const LEGACY: Record<string, { kind: IndicatorKind; qtype?: QuestionType }> = {
   // `question` cũ dùng chung cho nhiều dạng nên để trống `qtype`: editor sẽ báo
   // "chưa chọn dạng" thay vì đoán bừa.
   question: { kind: 'question' },
+  explanation: { kind: 'explanation' },
   matching: { kind: 'question', qtype: 'matching' },
   'polytomous-scoring': { kind: 'question', qtype: 'polytomous' },
   speaking: { kind: 'question', qtype: 'speaking' },

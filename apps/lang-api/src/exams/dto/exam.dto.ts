@@ -5,6 +5,7 @@ import {
   EXAM_MIN_SECTIONS,
   EXAM_SECTION_NAME_MAX_LENGTH,
   EXAM_TITLE_MAX_LENGTH,
+  ContentVisibility,
   ExamStatus,
   isValidDurationMinutes,
   type CreateExamInput,
@@ -71,6 +72,11 @@ const DescriptionField = () =>
     }),
   );
 
+const VisibilityField = () =>
+  IsIn(Object.values(ContentVisibility), {
+    message: 'Chế độ hiển thị không hợp lệ',
+  });
+
 const RevisionField = () =>
   composeDecorators(
     IsInt({ message: 'Phiên bản nội dung không hợp lệ' }),
@@ -111,6 +117,10 @@ export class CreateExamDto implements CreateExamInput {
 
   @DescriptionField()
   description?: string | null;
+
+  @IsOptional()
+  @VisibilityField()
+  visibility?: ContentVisibility;
 }
 
 /** PATCH metadata: bỏ trường nào thì giữ nguyên. Không tạo version. */
@@ -125,6 +135,10 @@ export class UpdateExamDto implements UpdateExamInput {
 
   @DescriptionField()
   description?: string | null;
+
+  @ValidateIf(isPresent)
+  @VisibilityField()
+  visibility?: ContentVisibility;
 }
 
 export class ExamSectionInputDto implements ExamSectionInput {

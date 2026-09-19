@@ -6,18 +6,22 @@ import type { ExamElement } from './node';
 // vào được — mọi thao tác đi qua menu chèn và popup sửa tham số (plugin Plate
 // nằm ở lang-app).
 //
-// Hai chiều tách bạch: `kind` là cấu trúc đề (part / subpart / question), còn
-// dạng câu hỏi nằm ở `qtype`. Nhờ vậy thêm một dạng câu hỏi mới chỉ là thêm một
-// giá trị `qtype`, không phình danh sách `kind`.
+// Hai chiều tách bạch: `kind` là cấu trúc đề (part / subpart / question /
+// explanation), còn dạng câu hỏi nằm ở `qtype`. Nhờ vậy thêm một dạng câu hỏi
+// mới chỉ là thêm một giá trị `qtype`, không phình danh sách `kind`.
+//
+// `explanation`: giải thích cho câu hỏi ngay phía trên (xem `explanation.ts`),
+// không tính vào đánh số, server bỏ nội dung khỏi content_public.
 
 export const INDICATOR_KEY = 'indicator';
 
-export type IndicatorKind = 'part' | 'subpart' | 'question';
+export type IndicatorKind = 'part' | 'subpart' | 'question' | 'explanation';
 
 export const INDICATOR_KINDS: readonly IndicatorKind[] = [
   'part',
   'subpart',
   'question',
+  'explanation',
 ];
 
 /** Kiểu nội dung mà một dạng câu hỏi cần soạn. */
@@ -84,6 +88,12 @@ const STRUCTURE_BASE: Omit<IndicatorMeta, 'soft'>[] = [
     label: 'Question',
     hint: 'Một câu hỏi — chọn dạng khi chèn',
     color: '#0ca678',
+  },
+  {
+    kind: 'explanation',
+    label: 'Explanation',
+    hint: 'Giải thích cho câu hỏi ngay phía trên',
+    color: '#b58900',
   },
 ];
 

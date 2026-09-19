@@ -62,3 +62,38 @@ export const blank = (answer: string): ExamElement => ({
   type: 'blank',
   children: [text(answer)],
 });
+
+export const explanation = (id: string): ExamElement => ({
+  type: 'indicator',
+  id,
+  kind: 'explanation',
+  children: [text('')],
+});
+
+/**
+ * Chèn một giải thích sau mỗi câu hỏi. Nội dung cố tình có checkbox đã tick,
+ * blank, cặp ghép, dòng đánh số — không được ảnh hưởng đánh số hay chấm điểm.
+ */
+export function withExplanations(value: readonly ExamElement[]): ExamElement[] {
+  const out: ExamElement[] = [];
+  const flush = (id: string) =>
+    out.push(
+      explanation(`${id}-explain`),
+      p([text('Vì '), blank('bí mật'), text(' nên đúng.')]),
+      todo('Lựa chọn trong giải thích', true),
+      pair('Cặp trong giải thích', 'A'),
+      orderingItem('Dòng trong giải thích', 1),
+    );
+  let pending: string | null = null;
+  for (const node of value) {
+    const isIndicatorNode = node.type === 'indicator';
+    if (isIndicatorNode && pending) {
+      flush(pending);
+      pending = null;
+    }
+    if (isIndicatorNode && node.kind === 'question') pending = String(node.id);
+    out.push(node);
+  }
+  if (pending) flush(pending);
+  return out;
+}

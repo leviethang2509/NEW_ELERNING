@@ -341,7 +341,10 @@
           "type": "list",
           "items": [
             "Mã mẫu không trùng trong phạm vi hệ thống (được trùng mã loại đề).",
-            "Mẫu **ngừng dùng** không chọn được khi tạo bài học mới."
+            "Mẫu **ngừng dùng** không chọn được khi tạo bài học mới.",
+            "Khi tạo bài học từ mẫu, mỗi phần sinh một section; sửa/xoá phần sau đó không ảnh hưởng bài học đã tạo.",
+            "Cột **Số bài học** đếm bài học của mọi trung tâm dùng mẫu (trang của trung tâm chỉ đếm bài học của trung tâm).",
+            "Chỉ **xoá** được mẫu chưa có bài học; ngược lại chỉ ngừng dùng."
           ]
         }
       ]

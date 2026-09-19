@@ -4,6 +4,7 @@ import {
   ATTEMPT_GRACE_SECONDS,
   AttemptSectionStatus,
   AttemptStatus,
+  ContentVisibility,
   ExamStatus,
   QuestionGrading,
   RECORDING_MAX_BYTES,
@@ -149,7 +150,12 @@ export class AttemptsService {
           where: { id: examId, tenantId: ctx.tenantId },
           lock: { mode: 'pessimistic_read' },
         });
-        if (!exam || exam.status === ExamStatus.DRAFT) {
+        // Đề `private` chỉ làm qua lớp (Step 9), ở đây coi như không có.
+        if (
+          !exam ||
+          exam.status === ExamStatus.DRAFT ||
+          exam.visibility !== ContentVisibility.TENANT
+        ) {
           throw new NotFoundException(EXAM_NOT_FOUND);
         }
         if (exam.status !== ExamStatus.PUBLISHED) {

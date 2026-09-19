@@ -236,7 +236,7 @@
         {
           "type": "heading",
           "level": 2,
-          "text": "Danh mục, loại đề, mẫu bài học, đề thi"
+          "text": "Danh mục, loại đề, mẫu bài học, đề thi, bài học"
         },
         {
           "type": "table",
@@ -254,6 +254,11 @@
             ["Thời lượng module / section", "5–180 phút, bội số 5"],
             ["Section mỗi đề", "1–20; tên section tối đa 100 ký tự"],
             ["Tên đề / mô tả đề", "Tối đa 200 / 2000 ký tự"],
+            [
+              "Section mỗi bài học",
+              "1–20 (không có thời lượng); tên section tối đa 100 ký tự"
+            ],
+            ["Tên bài học / mô tả bài học", "Tối đa 200 / 2000 ký tự"],
             ["Speaking: thời gian nói", "1–300 giây"],
             ["Writing: giới hạn ký tự", "1–3000"],
             ["Pick-n: số đáp án cần chọn", "1–20"],
@@ -426,7 +431,7 @@
             ["Trung tâm", "Chuyển quyền Chủ sở hữu, tự xin tham gia trung tâm"],
             [
               "Học tập",
-              "Khoá học/lớp, giao đề theo lớp, vai trò theo khoá học, bài học"
+              "Khoá học/lớp, giao đề/bài học theo lớp, vai trò theo khoá học, màn hình học bài học"
             ],
             ["Phụ huynh", "Trang phụ huynh xem kết quả học tập của con"],
             [

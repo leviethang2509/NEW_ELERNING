@@ -150,6 +150,11 @@ export interface LessonBlueprintItem {
   isActive: boolean;
   /** Theo `sortOrder`. */
   modules: LessonModuleItem[];
+  /**
+   * Số bài học dùng mẫu (kể cả bài đã xoá mềm vì vẫn chặn xoá mẫu). Trang hệ
+   * thống đếm bài học mọi tenant; trang tenant đếm bài học của tenant.
+   */
+  lessonCount: number;
   updatedAt: string;
 }
 

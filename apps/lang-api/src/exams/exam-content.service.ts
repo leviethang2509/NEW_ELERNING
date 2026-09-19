@@ -18,8 +18,6 @@ import { ExamAttempt } from '../attempts/exam-attempt.entity';
 import type { TenantContext } from '../tenants/tenant-context';
 import { User } from '../users/user.entity';
 import type { RestoreExamVersionDto, SaveExamContentDto } from './dto/exam.dto';
-import { ExamPart } from './exam-part.entity';
-import { ExamQuestion } from './exam-question.entity';
 import { ExamSection } from './exam-section.entity';
 import { bySortOrder, sum, toExamSectionItem, toUserRef } from './exam.mapper';
 import { Exam } from './exam.entity';
@@ -32,7 +30,7 @@ import {
 import {
   assertSectionShapes,
   hasContentErrors,
-  insertable,
+  insertPreparedSections,
   prepareSection,
   sectionIssues,
   type SectionDraft,
@@ -257,14 +255,7 @@ async function replaceContent(
       createdBy: actorId,
     }),
   );
-  await sections.insert(insertable(prepared.map((item) => item.section)));
-  const parts = prepared.flatMap((item) => item.parts);
-  if (parts.length > 0)
-    await manager.getRepository(ExamPart).insert(insertable(parts));
-  const questions = prepared.flatMap((item) => item.questions);
-  if (questions.length > 0) {
-    await manager.getRepository(ExamQuestion).insert(insertable(questions));
-  }
+  await insertPreparedSections(manager, prepared);
   await manager.getRepository(Exam).update(exam.id, {
     currentVersion: version,
     contentRevision: exam.contentRevision + 1,

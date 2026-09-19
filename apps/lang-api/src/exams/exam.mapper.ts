@@ -42,6 +42,7 @@ export function toExamListItem(
     category: Category;
     sections: readonly SectionStats[];
     creator: User | undefined;
+    clonedFrom: Pick<Exam, 'id' | 'title'> | undefined;
     canEdit: boolean;
   },
 ): ExamListItem {
@@ -51,6 +52,7 @@ export function toExamListItem(
     title: exam.title,
     description: exam.description,
     status: exam.status,
+    visibility: exam.visibility,
     blueprint: {
       id: blueprint.id,
       scope: scopeOf(blueprint),
@@ -66,6 +68,9 @@ export function toExamListItem(
     ),
     currentVersion: exam.currentVersion,
     creator: toUserRef(refs.creator),
+    clonedFrom: refs.clonedFrom
+      ? { id: refs.clonedFrom.id, title: refs.clonedFrom.title }
+      : null,
     canEdit: refs.canEdit,
     publishedAt: exam.publishedAt?.toISOString() ?? null,
     updatedAt: exam.updatedAt.toISOString(),

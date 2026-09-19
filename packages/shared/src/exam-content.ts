@@ -1,5 +1,5 @@
 // Đề thi (exams), section theo version và API trình soạn đề (Step 12).
-import type { ExamStatus } from './exam';
+import type { ContentVisibility, ExamStatus } from './exam';
 import type { CatalogScope, CategoryRef } from './catalog';
 
 export const EXAM_TITLE_MAX_LENGTH = 200;
@@ -40,12 +40,15 @@ export interface ExamListItem {
   title: string;
   description: string | null;
   status: ExamStatus;
+  visibility: ContentVisibility;
   blueprint: ExamBlueprintRef;
   sectionCount: number;
   questionCount: number;
   totalDurationMinutes: number;
   currentVersion: number;
   creator: ExamUserRef | null;
+  /** Đề gốc khi đề này là bản nhân bản; `null` nếu đề gốc đã bị xoá hẳn. */
+  clonedFrom: { id: string; title: string } | null;
   /** Owner/Admin sửa mọi đề; Teacher chỉ đề mình tạo. */
   canEdit: boolean;
   publishedAt: string | null;
@@ -79,14 +82,20 @@ export interface CreateExamInput {
   blueprintId: string;
   title: string;
   description?: string | null;
+  /** Mặc định `tenant`. */
+  visibility?: ContentVisibility;
 }
 
-/** Sửa metadata, không tạo version. */
+/** Sửa metadata (kể cả hiển thị), không tạo version. */
 export interface UpdateExamInput {
   blueprintId?: string;
   title?: string;
   description?: string | null;
+  visibility?: ContentVisibility;
 }
+
+/** Hậu tố tên của bản nhân bản (`POST t/:slug/exams/:id/clone`). */
+export const CLONE_TITLE_SUFFIX = ' (bản sao)';
 
 export interface ExamSectionInput {
   moduleId?: string | null;

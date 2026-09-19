@@ -569,6 +569,10 @@ export const vi = {
         'Chưa có danh mục đang dùng. Hãy tạo danh mục trước khi tạo mẫu bài học.',
       modules: 'Phần',
       moduleCount: (count: number) => `${count} phần`,
+      lessonCount: 'Số bài học',
+      lessonCountHint: 'Số bài học của mọi trung tâm dùng mẫu này',
+      lessonCountTenantHint: 'Số bài học của trung tâm dùng mẫu này',
+      inUse: 'Mẫu đang có bài học, chỉ có thể ngừng dùng',
       activeHint:
         'Mẫu ngừng dùng không chọn được khi tạo bài học mới; bài học đã tạo giữ nguyên.',
       empty: 'Chưa có mẫu bài học.',
@@ -611,6 +615,16 @@ export const vi = {
       `${questions} câu · version ${version}`,
     edit: 'Soạn đề',
     view: 'Xem đề',
+    clone: 'Nhân bản',
+    cloneConfirm: (title: string) =>
+      `Nhân bản đề ${title}? Bản sao là đề nháp mới của bạn, chép nội dung version hiện tại (media dùng chung với đề gốc), không chép bài làm.`,
+    cloned: (title: string) => `Đã nhân bản thành ${title}.`,
+    visibility: {
+      tenant: 'Công khai trong trung tâm',
+      private: 'Chỉ qua lớp',
+    },
+    privateBadge: 'Chỉ qua lớp',
+    clonedFrom: (title: string) => `Bản sao của ${title}`,
     versions: 'Các version',
     publish: 'Publish',
     republish: 'Publish lại',
@@ -643,6 +657,13 @@ export const vi = {
       title: 'Tên đề',
       titlePlaceholder: 'VD: IELTS Mock Test 01',
       description: 'Mô tả',
+      visibility: 'Hiển thị',
+      visibilityHint: {
+        tenant:
+          'Mọi thành viên thấy đề ở trang trung tâm và làm tự do (khi đề đã publish).',
+        private:
+          'Không hiện ở trang trung tâm; học viên chỉ làm khi đề được giao qua lớp. Bài làm tự do cũ vẫn xem lại được.',
+      },
     },
     versionsPage: {
       back: 'Về trình soạn',
@@ -663,6 +684,80 @@ export const vi = {
       restored: (version: number, current: number) =>
         `Đã khôi phục nội dung version ${version} thành version ${current}.`,
       empty: 'Chưa có version nào.',
+    },
+  },
+  // Bài học (req-3 Step 4): chuỗi riêng, phần giống đề thi dùng `exams`.
+  lessons: {
+    subtitle:
+      'Tạo bài học từ mẫu bài học, soạn nội dung từng phần (tab) và publish. Teacher sửa được bài học do mình tạo, xem và nhân bản được mọi bài đã publish.',
+    create: 'Tạo bài học',
+    column: 'Bài học',
+    empty: 'Chưa có bài học nào.',
+    searchPlaceholder: 'Tìm theo tên bài học',
+    allBlueprints: 'Mọi mẫu bài học',
+    contentSummary: (sections: number) => `${sections} section`,
+    edit: 'Soạn bài học',
+    view: 'Xem bài học',
+    delete: 'Xoá bài học',
+    cloneConfirm: (title: string) =>
+      `Nhân bản bài học ${title}? Bản sao là bài nháp mới của bạn, chép nội dung version hiện tại (media dùng chung với bài gốc), không chép lượt học.`,
+    publishedNotice: (title: string) => `Đã publish bài học ${title}.`,
+    archived: (title: string) => `Đã lưu trữ bài học ${title}.`,
+    deleted: (title: string) => `Đã xoá bài học ${title}.`,
+    archiveConfirm: (title: string) =>
+      `Lưu trữ bài học ${title}? Không giao được vào giáo trình nữa; bạn vẫn sửa và publish lại được.`,
+    deleteConfirm: (title: string) =>
+      `Xoá bài học ${title}? Bài chưa có lượt học bị xoá hẳn; bài đã có lượt học được ẩn đi để giữ kết quả.`,
+    form: {
+      createTitle: 'Tạo bài học',
+      editTitle: 'Thông tin bài học',
+      create: 'Tạo và soạn bài học',
+      save: 'Lưu thông tin',
+      blueprint: 'Mẫu bài học',
+      chooseBlueprint: 'Chọn mẫu bài học',
+      noBlueprint:
+        'Chưa có mẫu bài học đang dùng. Hãy nhờ Owner/Admin tạo mẫu bài học trước.',
+      blueprintOption: (name: string, modules: number, scope: string) =>
+        `${name} · ${modules} phần · ${scope}`,
+      sectionsFromModules: (modules: string) =>
+        `Bài học sẽ có các section: ${modules}. Sau khi tạo vẫn thêm/xoá/đổi được.`,
+      blueprintChangeHint:
+        'Đổi mẫu không đổi các section đang có; dùng "Thêm section → từ phần của mẫu" để thêm section của mẫu mới.',
+      title: 'Tên bài học',
+      titlePlaceholder: 'VD: Minna no Nihongo – Bài 1',
+      visibilityHint: {
+        tenant:
+          'Mọi thành viên thấy bài ở trang trung tâm và học tự do (khi bài đã publish).',
+        private:
+          'Không hiện ở trang trung tâm; học viên chỉ học khi bài được giao qua lớp.',
+      },
+    },
+    versionsPage: {
+      subtitle:
+        'Version mới chỉ được tạo khi lưu bài học mà version hiện tại đã có lượt học. Khôi phục = lưu lại nội dung version đó theo cùng quy tắc.',
+      attempts: 'Lượt học',
+      restoreOverwrite: (version: number, current: number) =>
+        `Nội dung version ${current} (chưa có lượt học) sẽ bị ghi đè bằng nội dung version ${version}. Tiếp tục?`,
+      restoreAsNew: (version: number, next: number) =>
+        `Version hiện tại đã có lượt học nên sẽ tạo version ${next} với nội dung version ${version}. Tiếp tục?`,
+    },
+  },
+  lessonEditor: {
+    backToList: 'Về danh sách bài học',
+    readOnlyHint:
+      'Bạn chỉ xem được bài học này (Teacher chỉ sửa bài do mình tạo). Vẫn xem trước, xem các version và nhân bản bài đã publish được.',
+    summary: (sections: number, questions: number) =>
+      `${sections} section · ${questions} câu hỏi`,
+    metadata: 'Thông tin bài học',
+    published: 'Đã publish bài học.',
+    archived: 'Đã lưu trữ bài học.',
+    newVersionConfirm: (version: number) =>
+      `Version hiện tại đã có lượt học nên lần lưu này sẽ tạo version ${version}. Lượt học cũ giữ nguyên nội dung version cũ. Tiếp tục?`,
+    previewAside:
+      'Xem trước tạm dùng màn hình làm bài · bấm Nộp để thấy đáp án và giải thích · không lưu',
+    tabs: {
+      cannotRemove: 'Bài học phải có ít nhất 1 section',
+      fromModule: 'Từ phần của mẫu bài học',
     },
   },
   examEditor: {
@@ -787,6 +882,20 @@ export const vi = {
       pair: 'Cặp ghép',
       table: 'Bảng 3×3',
     },
+    rich: {
+      callout: 'Callout — Lưu ý / Ví dụ / Mẹo',
+      callouts: { note: 'Lưu ý', example: 'Ví dụ', tip: 'Mẹo' },
+      calloutVariant: 'Loại callout',
+      toggle: 'Khối gập/mở',
+      toggleHint:
+        'Khối gập/mở: các dòng thụt vào bên dưới là nội dung, người học bấm tiêu đề để mở',
+      ruby: 'Furigana — bôi đen chữ rồi nhập cách đọc',
+      rubyTitle: 'Furigana',
+      rubyLabel: 'Cách đọc',
+      rubySave: 'Lưu',
+      rubyHint: 'Để trống rồi lưu để gỡ furigana.',
+      rubyNeedSelection: 'Bôi đen chữ cần gắn furigana trước.',
+    },
     pair: {
       answer: 'Đáp án',
       chooseAnswer: '— chọn đáp án —',
@@ -836,11 +945,30 @@ export const vi = {
         'Mỗi dòng một option, gồm cả đáp án nhiễu. Cần ít nhất 2 option.',
       duplicatedOptions: 'Có option bị trùng.',
     },
+    explanationDialog: {
+      title: 'Chèn Explanation (giải thích)',
+      intro:
+        'Explanation là phần giải thích đáp án. Học viên không thấy nội dung này khi làm bài.',
+      rules: [
+        'Đặt Explanation ngay sau nội dung câu hỏi (sau danh sách lựa chọn, cặp ghép, ô trống…). Nó gắn với Question ngay phía trên.',
+        'Nếu giữa câu hỏi và Explanation có Part/Subpart, hoặc phía trên không có Question nào, thì Explanation không gắn câu nào.',
+        'Nội dung giải thích là mọi dòng bên dưới indicator cho tới indicator kế tiếp. Muốn viết nội dung khác sau đó, hãy chèn indicator mới (Part, Subpart hoặc Question).',
+        'Một câu hỏi có thể có nhiều Explanation. Giải thích không tính vào số câu và không được chấm điểm.',
+        'Khi nào hiện: bài học hiện sau khi học viên nộp phần; đề thi không bao giờ hiện cho học viên, chỉ người chấm thấy; Xem trước hiện sau khi bấm Nộp.',
+      ],
+      target: 'Tại vị trí con trỏ, Explanation sẽ gắn với:',
+      targetNumbers: (first: number, last: number) =>
+        first === last ? `Câu ${first}` : `Câu ${first}–${last}`,
+      targetNone: 'Không gắn câu nào',
+      insert: 'Chèn',
+    },
     preview: {
       title: 'Giả lập bài làm',
       sections: 'Chọn section',
-      sectionLabel: (index: number, name: string, minutes: number) =>
-        `${index}. ${name} · ${minutes} phút`,
+      sectionLabel: (index: number, name: string, minutes?: number) =>
+        minutes === undefined
+          ? `${index}. ${name}`
+          : `${index}. ${name} · ${minutes} phút`,
       aside:
         'Đáp án soạn trong editor được ẩn · câu trả lời ở đây không được lưu',
     },
@@ -998,6 +1126,7 @@ export const vi = {
     autoSubmitted: 'Hết giờ, tự nộp',
     passage: 'Nội dung part',
     prompt: 'Đề bài',
+    explanations: 'Giải thích (học viên không thấy)',
     response: 'Bài làm',
     blank: 'Học viên bỏ trống câu này.',
     noRecording: 'Học viên không ghi âm câu này.',
@@ -1062,6 +1191,8 @@ export const vi = {
       `Phần nói${seconds !== undefined ? ` — ${seconds} giây` : ''}. Bản xem trước chưa ghi âm.`,
     charCount: (count: number, max?: number) =>
       `${count}${max !== undefined ? ` / ${max}` : ''} ký tự`,
+    explanation: 'Giải thích',
+    callouts: { note: 'Lưu ý', example: 'Ví dụ', tip: 'Mẹo' },
   },
   media: {
     title: 'Thư viện media',
@@ -1138,6 +1269,7 @@ export const vi = {
     examBlueprints: 'Loại đề',
     lessonBlueprints: 'Mẫu bài học',
     exams: 'Đề thi',
+    lessons: 'Bài học',
     media: 'Thư viện media',
     grading: 'Chấm bài',
     userManual: 'Tài liệu nội bộ',

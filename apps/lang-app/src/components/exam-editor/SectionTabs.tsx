@@ -7,48 +7,61 @@ import {
   EXAM_MAX_SECTIONS,
   EXAM_MIN_SECTIONS,
   EXAM_SECTION_NAME_MAX_LENGTH,
-  type ExamModuleItem,
 } from '@lang/shared';
 import { ConfirmDialog, PromptDialog } from '@/components/ui';
 import { vi } from '@/i18n/vi';
 
-const text = vi.examEditor.tabs;
-
 export interface SectionTab {
   key: string;
   name: string;
-  durationMinutes: number;
+  /** Không có ở bài học (section không có thời lượng). */
+  durationMinutes?: number;
   /** Số lỗi soạn thảo trong section. */
   errorCount: number;
 }
 
-interface SectionTabsProps {
+/** Module của loại đề hoặc phần của mẫu bài học (không có thời lượng). */
+export interface SectionTabModule {
+  id: string;
+  name: string;
+  referenceDurationMinutes?: number;
+}
+
+interface SectionTabsProps<M extends SectionTabModule> {
   tabs: SectionTab[];
   activeKey: string;
   readOnly: boolean;
   /** Module của loại đề hiện tại, cho mục "Thêm section từ module". */
-  modules: ExamModuleItem[];
+  modules: M[];
+  /** `lesson`: bài học – chữ "bài học/phần của mẫu", không có ô thời lượng. */
+  variant?: 'exam' | 'lesson';
   onSelect: (key: string) => void;
-  onAdd: (module: ExamModuleItem | null) => void;
+  onAdd: (module: M | null) => void;
   onRename: (key: string, name: string) => void;
-  onDuration: (key: string, minutes: number) => void;
+  /** Bỏ trống thì không có ô chọn thời lượng. */
+  onDuration?: (key: string, minutes: number) => void;
   onRemove: (key: string) => void;
   onMove: (from: number, to: number) => void;
 }
 
 /** Thanh tab section: chọn, thêm, đổi tên, đổi thời lượng, xoá, kéo sắp xếp. */
-export function SectionTabs({
+export function SectionTabs<M extends SectionTabModule>({
   tabs,
   activeKey,
   readOnly,
   modules,
+  variant = 'exam',
   onSelect,
   onAdd,
   onRename,
   onDuration,
   onRemove,
   onMove,
-}: SectionTabsProps) {
+}: SectionTabsProps<M>) {
+  const text =
+    variant === 'lesson'
+      ? { ...vi.examEditor.tabs, ...vi.lessonEditor.tabs }
+      : vi.examEditor.tabs;
   const [renaming, setRenaming] = useState<SectionTab | null>(null);
   const [removing, setRemoving] = useState<SectionTab | null>(null);
   const [addOpen, setAddOpen] = useState(false);
@@ -126,9 +139,11 @@ export function SectionTabs({
                 }`}
               >
                 <span className="max-w-[180px] truncate">{tab.name}</span>
-                <span className="text-[12px] font-normal text-[var(--muted)]">
-                  {text.minutes(tab.durationMinutes)}
-                </span>
+                {tab.durationMinutes !== undefined && (
+                  <span className="text-[12px] font-normal text-[var(--muted)]">
+                    {text.minutes(tab.durationMinutes)}
+                  </span>
+                )}
                 {tab.errorCount > 0 && (
                   <span
                     title={text.errors(tab.errorCount)}
@@ -145,21 +160,23 @@ export function SectionTabs({
 
       {!readOnly && active && (
         <div className="mb-1 flex shrink-0 flex-wrap items-center gap-1.5">
-          <select
-            value={active.durationMinutes}
-            aria-label={text.duration}
-            title={text.duration}
-            onChange={(event) =>
-              onDuration(active.key, Number(event.target.value))
-            }
-            className="h-8 rounded-lg border border-[var(--border-strong)] bg-[var(--bg)] px-2 text-[13px] text-[var(--body)] outline-none"
-          >
-            {DURATION_OPTIONS_MINUTES.map((minutes) => (
-              <option key={minutes} value={minutes}>
-                {text.minutes(minutes)}
-              </option>
-            ))}
-          </select>
+          {onDuration && active.durationMinutes !== undefined && (
+            <select
+              value={active.durationMinutes}
+              aria-label={text.duration}
+              title={text.duration}
+              onChange={(event) =>
+                onDuration(active.key, Number(event.target.value))
+              }
+              className="h-8 rounded-lg border border-[var(--border-strong)] bg-[var(--bg)] px-2 text-[13px] text-[var(--body)] outline-none"
+            >
+              {DURATION_OPTIONS_MINUTES.map((minutes) => (
+                <option key={minutes} value={minutes}>
+                  {text.minutes(minutes)}
+                </option>
+              ))}
+            </select>
+          )}
           <button
             type="button"
             title={text.rename}
@@ -220,9 +237,11 @@ export function SectionTabs({
                     className="flex w-full items-center justify-between gap-2 rounded-lg px-2.5 py-1.5 text-left text-[13.5px] text-[var(--body)] hover:bg-[var(--hover)]"
                   >
                     <span className="truncate">{module.name}</span>
-                    <span className="shrink-0 text-[12px] text-[var(--muted)]">
-                      {text.minutes(module.referenceDurationMinutes)}
-                    </span>
+                    {module.referenceDurationMinutes !== undefined && (
+                      <span className="shrink-0 text-[12px] text-[var(--muted)]">
+                        {text.minutes(module.referenceDurationMinutes)}
+                      </span>
+                    )}
                   </button>
                 ))}
               </div>

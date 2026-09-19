@@ -52,6 +52,8 @@ export interface GradingQuestion {
   partIndex: number | null;
   /** Đề bài: hướng dẫn subpart ngay trước câu + nội dung câu (`ExamValue`, không đáp án). */
   prompt: unknown[];
+  /** Giải thích gắn với câu (mỗi phần tử là một `ExamValue`), chỉ người chấm thấy. */
+  explanations: unknown[][];
   /** Bài viết; `null` khi bỏ trống hoặc là câu Speaking. */
   text: string | null;
   hasRecording: boolean;

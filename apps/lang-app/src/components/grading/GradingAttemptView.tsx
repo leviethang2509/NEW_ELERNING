@@ -398,6 +398,15 @@ function QuestionPanel({
         <ExamBlocks blocks={question.prompt as ExamElement[]} />
       </section>
 
+      {question.explanations.length > 0 && (
+        <section className={cardClass}>
+          <h3 className={headingClass}>{text.explanations}</h3>
+          {question.explanations.map((blocks, index) => (
+            <ExamBlocks key={index} blocks={blocks as ExamElement[]} />
+          ))}
+        </section>
+      )}
+
       <section className={cardClass}>
         <h3 className={headingClass}>{text.response}</h3>
         {question.qtype === 'speaking' ? (

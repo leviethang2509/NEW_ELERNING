@@ -1,4 +1,4 @@
-import { ExamStatus } from '@lang/shared';
+import { ContentVisibility, ExamStatus } from '@lang/shared';
 import {
   Check,
   Column,
@@ -23,6 +23,7 @@ import { User } from '../users/user.entity';
 @Entity('exams')
 @Check('CHK_exams_status', sqlInList('status', ExamStatus))
 @Check('CHK_exams_current_version', '"current_version" >= 1')
+@Check('CHK_exams_visibility', sqlInList('visibility', ContentVisibility))
 export class Exam {
   @PrimaryGeneratedColumn('uuid', { primaryKeyConstraintName: 'PK_exams' })
   id: string;
@@ -59,6 +60,25 @@ export class Exam {
 
   @Column({ type: 'varchar', length: 16, default: ExamStatus.DRAFT })
   status: ExamStatus;
+
+  /** `tenant`: hiện ở danh sách của học viên; `private`: chỉ làm qua lớp. */
+  @Column({
+    type: 'varchar',
+    length: 16,
+    default: ContentVisibility.TENANT,
+  })
+  visibility: ContentVisibility;
+
+  /** Đề gốc khi nhân bản; đề gốc bị xoá hẳn thì thành `null`. */
+  @Column({ name: 'cloned_from_id', type: 'uuid', nullable: true })
+  clonedFromId: string | null;
+
+  @ManyToOne(() => Exam, { onDelete: 'SET NULL' })
+  @JoinColumn({
+    name: 'cloned_from_id',
+    foreignKeyConstraintName: 'FK_exams_cloned_from_id',
+  })
+  clonedFrom?: Exam | null;
 
   @Column({ name: 'current_version', type: 'int', default: 1 })
   currentVersion: number;

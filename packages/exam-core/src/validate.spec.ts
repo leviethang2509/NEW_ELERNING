@@ -120,6 +120,10 @@ describe('validateSectionShape / validateSection', () => {
       }),
     ]);
     expect(hasErrors(issues)).toBe(false);
+    // Bài học: section lý thuyết không có câu hỏi là bình thường.
+    expect(
+      validateSection([p('Chỉ có lý thuyết')], { requireQuestions: false }),
+    ).toEqual([]);
   });
 });
 

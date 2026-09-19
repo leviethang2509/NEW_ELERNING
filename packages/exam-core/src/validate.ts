@@ -1,4 +1,5 @@
 import { blanksIn } from './blank';
+import { explanationsFromPlan } from './explanation';
 import { INDICATOR_KINDS, isIndicator, questionTypeMeta } from './indicator';
 import { isOrderingItem, isTodo } from './list';
 import { collectDataUrls } from './media';
@@ -32,6 +33,9 @@ const isEmptyText = (node: unknown) => plainText(node).trim() === '';
 
 const STANDALONE = new Set(['img', 'audio', 'video', 'hr', 'table']);
 
+const hasContent = (blocks: readonly ExamElement[]) =>
+  blocks.some((b) => !isEmptyText(b) || STANDALONE.has(b.type ?? ''));
+
 export function validateExam(value: readonly ExamElement[]): Issue[] {
   const issues: Issue[] = [];
 
@@ -53,10 +57,7 @@ export function validateExam(value: readonly ExamElement[]): Issue[] {
     }
 
     const blocks = value.slice(scope.from, scope.to);
-    const hasContent = blocks.some(
-      (b) => !isEmptyText(b) || STANDALONE.has(b.type ?? ''),
-    );
-    if (!hasContent) {
+    if (!hasContent(blocks)) {
       add('Câu hỏi rỗng — chưa có nội dung nào.');
       continue;
     }
@@ -194,8 +195,19 @@ export function validateSectionShape(value: unknown): string[] {
   return errors;
 }
 
+export interface ValidateSectionOptions {
+  /**
+   * Cảnh báo section không có câu hỏi (mặc định bật). Bài học tắt vì section
+   * lý thuyết không có câu hỏi là bình thường.
+   */
+  requireQuestions?: boolean;
+}
+
 /** Toàn bộ vấn đề của section; publish được khi không có `error`. */
-export function validateSection(value: unknown): Issue[] {
+export function validateSection(
+  value: unknown,
+  { requireQuestions = true }: ValidateSectionOptions = {},
+): Issue[] {
   const issues: Issue[] = validateSectionShape(value).map((message, i) => ({
     key: `section:${i}`,
     indicatorId: null,
@@ -205,7 +217,20 @@ export function validateSection(value: unknown): Issue[] {
   if (!isExamValue(value)) return issues;
 
   issues.push(...validateExam(value));
-  if (buildPlan(value).parts.every((part) => part.numbers.length === 0)) {
+  const plan = buildPlan(value);
+  for (const explanation of explanationsFromPlan(plan)) {
+    if (hasContent(explanation.blocks)) continue;
+    issues.push({
+      key: `${explanation.nodeId}:empty`,
+      indicatorId: explanation.nodeId,
+      message: 'Giải thích rỗng — chưa có nội dung nào.',
+      severity: 'warning',
+    });
+  }
+  if (
+    requireQuestions &&
+    plan.parts.every((part) => part.numbers.length === 0)
+  ) {
     issues.push({
       key: 'section:no-question',
       indicatorId: null,

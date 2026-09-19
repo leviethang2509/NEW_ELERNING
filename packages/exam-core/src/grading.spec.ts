@@ -15,6 +15,7 @@ import {
   question,
   text,
   todo,
+  withExplanations,
 } from './testing/builders';
 import { loadFixture } from './testing/fixtures';
 import { lcGradeExam } from './testing/lc-grading';
@@ -45,6 +46,20 @@ describe.each(['exam-editor-sample', 'exam-draft-2'] as const)(
         expect(gradeResponses(stored, responses)).toEqual(expected);
         // Câu trả lời lưu jsonb có khoá số câu dạng chuỗi.
         expect(gradeResponses(stored, roundTrip(responses))).toEqual(expected);
+      }
+    });
+
+    it('giải thích sau mỗi câu không đổi đánh số và kết quả chấm', () => {
+      const explained = withExplanations(value);
+      const explainedPlan = buildPlan(explained);
+      const explainedStored = roundTrip(extractStructure(explained).questions);
+      expect(explainedStored).toEqual(stored);
+      const random = seededRandom(`${name}:explained`);
+      for (let i = 0; i < 100; i += 1) {
+        const responses = simulateResponses(plan, 'random', random);
+        const expected = lcGradeExam(plan, responses);
+        expect(gradeExam(explainedPlan, responses)).toEqual(expected);
+        expect(gradeResponses(explainedStored, responses)).toEqual(expected);
       }
     });
   },

@@ -1,4 +1,4 @@
-import type { ExamElement } from '@lang/exam-core';
+import { explanationsFor, type ExamElement } from '@lang/exam-core';
 import {
   AttemptStatus,
   QuestionGrading,
@@ -220,6 +220,10 @@ export class GradingService {
               maxChars: numberParam(question.params, 'maxChars'),
               partIndex: prompt?.partIndex ?? null,
               prompt: prompt?.prompt ?? [],
+              explanations: explanationsFor(
+                examSection.explanations ?? [],
+                question.number,
+              ).map((item) => item.blocks),
               text:
                 typeof answer.response === 'string' ? answer.response : null,
               hasRecording: answer.recordingKey !== null,

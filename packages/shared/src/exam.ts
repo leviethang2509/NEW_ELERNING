@@ -5,6 +5,17 @@ export const ExamStatus = {
 } as const;
 export type ExamStatus = (typeof ExamStatus)[keyof typeof ExamStatus];
 
+/**
+ * Hiển thị của đề thi (và bài học từ Step 4): `tenant` hiện ở danh sách công
+ * khai `/t/{slug}` cho mọi thành viên làm tự do; `private` chỉ làm qua lớp.
+ */
+export const ContentVisibility = {
+  TENANT: 'tenant',
+  PRIVATE: 'private',
+} as const;
+export type ContentVisibility =
+  (typeof ContentVisibility)[keyof typeof ContentVisibility];
+
 /** Chỉ các section thuộc `exams.current_version` là `active`. */
 export const ExamSectionStatus = {
   ACTIVE: 'active',

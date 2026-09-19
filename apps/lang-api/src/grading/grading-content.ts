@@ -1,4 +1,9 @@
-import { buildPlan, segmentQtype, type ExamElement } from '@lang/exam-core';
+import {
+  buildPlan,
+  isExplanation,
+  segmentQtype,
+  type ExamElement,
+} from '@lang/exam-core';
 
 // Tách đề bài của câu chấm tay từ content_public của section (không đáp án)
 // để người chấm đọc cạnh bài làm.
@@ -27,6 +32,9 @@ export function sectionPrompts(
     let lead: ExamElement[] = [];
     let afterQuestion = false;
     for (const segment of part.items) {
+      // Giải thích (content_public chỉ còn indicator rỗng) không cắt ngang
+      // hướng dẫn subpart của các câu sau nó.
+      if (isExplanation(segment.indicator)) continue;
       if (!segmentQtype(segment)) {
         if (afterQuestion) lead = [];
         lead.push(...segment.blocks);

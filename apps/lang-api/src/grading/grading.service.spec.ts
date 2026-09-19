@@ -2,6 +2,7 @@ import 'reflect-metadata';
 import type { ExamElement, ExamValue } from '@lang/exam-core';
 import {
   AttemptStatus,
+  ContentVisibility,
   ExamStatus,
   TenantRole,
   TenantStatus,
@@ -79,6 +80,9 @@ const productive: ExamValue = [
   p('Trả lời các câu sau'),
   indicator('q-write', 'question', { qtype: 'writing', maxChars: 500 }),
   p('Mô tả biểu đồ'),
+  // Giải thích không cắt hướng dẫn subpart của câu sau.
+  indicator('e-write', 'explanation'),
+  p('Gợi ý: nêu xu hướng chính'),
   indicator('q-speak', 'question', { qtype: 'speaking', seconds: 60 }),
   p('Nói về gia đình'),
 ];
@@ -107,6 +111,8 @@ function setup() {
     blueprintId: 'blueprint',
     title: 'Đề thử',
     description: null,
+    visibility: ContentVisibility.TENANT,
+    clonedFromId: null,
     status: ExamStatus.PUBLISHED,
     currentVersion: 1,
     contentRevision: 1,
@@ -220,6 +226,7 @@ describe('GradingService', () => {
         seconds: null,
         partIndex: 0,
         prompt: [p('Trả lời các câu sau'), p('Mô tả biểu đồ')],
+        explanations: [[p('Gợi ý: nêu xu hướng chính')]],
         text: 'Dân số tăng đều',
         hasRecording: false,
         score: null,
@@ -230,6 +237,7 @@ describe('GradingService', () => {
         qtype: 'speaking',
         seconds: 60,
         prompt: [p('Trả lời các câu sau'), p('Nói về gia đình')],
+        explanations: [],
         text: null,
         hasRecording: true,
       }),

@@ -11,6 +11,7 @@ import { EnvironmentVariables, validateEnv } from './config/env.validation';
 import { buildDataSourceOptions } from './database/database.config';
 import { CatalogModule } from './catalog/catalog.module';
 import { ExamsModule } from './exams/exams.module';
+import { LessonsModule } from './lessons/lessons.module';
 import { GradingModule } from './grading/grading.module';
 import { HealthModule } from './health/health.module';
 import { MembershipsModule } from './memberships/memberships.module';
@@ -54,6 +55,7 @@ import { UsersModule } from './users/users.module';
     StorageModule,
     CatalogModule,
     ExamsModule,
+    LessonsModule,
     AttemptsModule,
     GradingModule,
     AdminModule,

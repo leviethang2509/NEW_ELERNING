@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import {
+  ContentVisibility,
   EXAM_DESCRIPTION_MAX_LENGTH,
   EXAM_TITLE_MAX_LENGTH,
   type ExamBlueprintItem,
@@ -34,7 +35,7 @@ interface ExamFormModalProps {
   onSaved: (exam: ExamDetail) => void;
 }
 
-/** Tạo đề (chọn loại đề) hoặc sửa tên, mô tả, loại đề của đề. */
+/** Tạo đề (chọn loại đề) hoặc sửa tên, mô tả, loại đề, hiển thị của đề. */
 export function ExamFormModal({
   open,
   slug,
@@ -47,6 +48,9 @@ export function ExamFormModal({
   const [blueprintId, setBlueprintId] = useState('');
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
+  const [visibility, setVisibility] = useState<ContentVisibility>(
+    ContentVisibility.TENANT,
+  );
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -55,6 +59,7 @@ export function ExamFormModal({
     setBlueprintId(exam?.blueprint.id ?? '');
     setTitle(exam?.title ?? '');
     setDescription(exam?.description ?? '');
+    setVisibility(exam?.visibility ?? ContentVisibility.TENANT);
     setError(null);
   }, [open, exam]);
 
@@ -94,6 +99,7 @@ export function ExamFormModal({
         blueprintId,
         title: title.trim(),
         description: description.trim() || null,
+        visibility,
       };
       onSaved(
         exam
@@ -212,6 +218,41 @@ export function ExamFormModal({
             className={inputClass}
           />
         </label>
+
+        <fieldset className={labelClass}>
+          <legend className={`${labelTextClass} mb-1.5`}>
+            {text.visibility}
+          </legend>
+          <div className="grid gap-1.5">
+            {Object.values(ContentVisibility).map((value) => (
+              <label
+                key={value}
+                className={`flex cursor-pointer items-start gap-2.5 rounded-xl border px-3 py-2 transition ${
+                  visibility === value
+                    ? 'border-[var(--accent)] bg-[var(--accent-soft)]'
+                    : 'border-[var(--border)] hover:bg-[var(--hover)]'
+                }`}
+              >
+                <input
+                  type="radio"
+                  name="visibility"
+                  value={value}
+                  checked={visibility === value}
+                  onChange={() => setVisibility(value)}
+                  className="mt-[5px] accent-[var(--accent)]"
+                />
+                <span className="min-w-0 flex-1">
+                  <span className="block text-[14px] font-semibold text-[var(--heading)]">
+                    {vi.exams.visibility[value]}
+                  </span>
+                  <span className="block text-[12.5px] text-[var(--muted)]">
+                    {text.visibilityHint[value]}
+                  </span>
+                </span>
+              </label>
+            ))}
+          </div>
+        </fieldset>
 
         {error && <FormAlert tone="error">{error}</FormAlert>}
       </form>

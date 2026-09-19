@@ -10,18 +10,25 @@ import {
 } from 'react';
 import { ChevronDown, ChevronUp, GripVertical } from 'lucide-react';
 import {
+  CALLOUT_COLORS,
+  calloutVariant,
   isBlank,
+  isCallout,
+  isExplanation,
   isIndicator,
   isOrderingItem,
   isPair,
+  isRuby,
   isText,
   isTodo,
+  isToggle,
   numberingMode,
   pairChoices,
   plainText,
   questionTypeMeta,
   range,
   segmentQtype,
+  toggleEnd,
   type ExamElement,
   type ExamNode,
   type NumberingMode,
@@ -49,6 +56,9 @@ import {
 // Nội dung có thể là `raw_data` (xem trước) hoặc content_public (thi thật):
 // dòng ordering/polytomous của content_public đã được server xáo và mang `key`
 // là chỉ số gốc, nên dùng `key` làm khoá chấm và không xáo lại.
+//
+// Giải thích (indicator `explanation`) chỉ hiện sau khi nộp ở bản xem trước;
+// content_public không còn nội dung giải thích nên thi thật không có gì để hiện.
 
 const text = vi.simulator;
 
@@ -150,6 +160,14 @@ function renderInline(node: ExamNode, key: string, ctx: Ctx): ReactNode {
   }
 
   const children = renderInlines(node.children, key, ctx);
+  if (isRuby(node)) {
+    return (
+      <ruby key={key}>
+        {children}
+        <rt>{stringProp(node, 'rt')}</rt>
+      </ruby>
+    );
+  }
   if (node.type === 'a') {
     return (
       <a
@@ -361,6 +379,22 @@ function renderBlock(
       </Tag>
     );
   }
+  if (isCallout(node)) {
+    const variant = calloutVariant(node);
+    const color = CALLOUT_COLORS[variant];
+    return (
+      <div
+        key={key}
+        style={{ ...padded, borderColor: color, backgroundColor: `${color}14` }}
+        className="my-3 whitespace-pre-wrap rounded-lg border-l-4 px-3 py-2"
+      >
+        <div className="text-[12px] font-semibold" style={{ color }}>
+          {text.callouts[variant]}
+        </div>
+        {content}
+      </div>
+    );
+  }
   if (type === 'blockquote') {
     return (
       <blockquote
@@ -379,17 +413,67 @@ function renderBlock(
   );
 }
 
+/** Khối gập/mở: tiêu đề + nội dung, mặc định đang gập. */
+function ToggleBlock({
+  node,
+  summary,
+  children,
+}: {
+  node: ExamElement;
+  summary: ReactNode;
+  children: ReactNode;
+}) {
+  const indent = numberProp(node, 'indent') ?? 0;
+  return (
+    <details
+      style={{ ...alignStyle(node), paddingLeft: indent * 24 }}
+      className="group my-2"
+    >
+      <summary className="flex cursor-pointer list-none items-start gap-1.5 font-semibold [&::-webkit-details-marker]:hidden">
+        <ChevronDown
+          size={15}
+          aria-hidden
+          className="mt-[7px] shrink-0 -rotate-90 text-[var(--muted)] transition group-open:rotate-0"
+        />
+        <span className="min-w-0 flex-1">{summary}</span>
+      </summary>
+      <div>{children}</div>
+    </details>
+  );
+}
+
 /** Khối không thuộc câu hỏi (passage, phần hướng dẫn của subpart…). */
 function renderPlain(
   blocks: readonly ExamElement[],
   keyPrefix: string,
+  ctx: Ctx = { next: 0 },
 ): ReactNode[] {
-  const ctx: Ctx = { next: 0 };
   // Danh sách đánh số dùng bộ đếm riêng theo từng mức thụt lề, reset khi gặp
   // block không phải list — giống cách plugin list hiển thị trong editor.
   let counters: Record<number, number> = {};
+  const out: ReactNode[] = [];
 
-  return blocks.map((node, i) => {
+  let i = 0;
+  while (i < blocks.length) {
+    const node = blocks[i];
+    const key = `${keyPrefix}.${i}`;
+
+    if (isToggle(node)) {
+      const end = toggleEnd(blocks, i);
+      out.push(
+        <ToggleBlock
+          key={key}
+          node={node}
+          summary={blockContent(node, key, ctx)}
+        >
+          {renderPlain(blocks.slice(i + 1, end), `${key}.t`, ctx)}
+        </ToggleBlock>,
+      );
+      counters = {};
+      i = end;
+      continue;
+    }
+
     const indent = numberProp(node, 'indent') ?? 0;
     let listIndex: number | undefined;
 
@@ -405,8 +489,30 @@ function renderPlain(
       counters = {};
     }
 
-    return renderBlock(node, `${keyPrefix}.${i}`, ctx, listIndex);
-  });
+    out.push(renderBlock(node, key, ctx, listIndex));
+    i += 1;
+  }
+  return out;
+}
+
+/** Giải thích: chỉ hiện sau khi nộp (xem trước), không có nội dung thì thôi. */
+function ExplanationReveal({
+  blocks,
+  keyPrefix,
+}: {
+  blocks: readonly ExamElement[];
+  keyPrefix: string;
+}) {
+  const { result } = useSimulator();
+  if (!result || blocks.length === 0) return null;
+  return (
+    <aside className="my-3 rounded-lg border border-dashed border-[#b58900] bg-[rgba(181,137,0,0.06)] px-3 py-2">
+      <div className="text-[12px] font-semibold text-[#b58900]">
+        {text.explanation}
+      </div>
+      {renderPlain(blocks, keyPrefix)}
+    </aside>
+  );
 }
 
 // --- Các nhóm tương tác -----------------------------------------------------
@@ -761,6 +867,29 @@ function renderQuestion(
 
     if (!inGroup(node)) {
       const key = `${keyPrefix}.${i}`;
+      if (isToggle(node)) {
+        if (leadPending && plainText(node).trim() !== '') {
+          out.push(badgeLine(`${keyPrefix}.lead`));
+          leadPending = false;
+        }
+        // Nội dung gập/mở dừng trước nhóm lựa chọn/cặp ghép/dòng đánh số.
+        const end = toggleEnd(blocks, i, (next) =>
+          inGroup(next as ExamElement),
+        );
+        out.push(
+          <ToggleBlock
+            key={key}
+            node={node}
+            summary={blockContent(node, key, ctx)}
+          >
+            {blocks
+              .slice(i + 1, end)
+              .map((child, k) => renderBlock(child, `${key}.t${k}`, ctx))}
+          </ToggleBlock>,
+        );
+        i = end;
+        continue;
+      }
       if (leadPending && canLead(node)) {
         out.push(
           renderBlock(
@@ -893,6 +1022,11 @@ export function ExamSimulator({
       const passage = renderPlain(part.passage, `p${p}`);
       const items: ReactNode[] = part.items.map((seg, s) => {
         const key = `p${p}.s${s}`;
+        if (isExplanation(seg.indicator)) {
+          return (
+            <ExplanationReveal key={key} blocks={seg.blocks} keyPrefix={key} />
+          );
+        }
         const qtype = segmentQtype(seg);
         return (
           <Fragment key={key}>

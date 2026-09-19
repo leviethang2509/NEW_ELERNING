@@ -1,6 +1,7 @@
 import {
   AttemptSectionStatus,
   AttemptStatus,
+  ContentVisibility,
   ExamStatus,
   type ExamListItem,
   type LearnerAttemptItem,
@@ -47,7 +48,7 @@ const byName = (a: LearnerExamFilterOption, b: LearnerExamFilterOption) =>
 
 /**
  * Đề thi ở khu vực chính (Step 13): mọi thành viên tenant xem được đề đang
- * publish và lịch sử lượt làm của chính mình. Đề đã lưu trữ/xoá chỉ còn xem
+ * publish có hiển thị `tenant` và lịch sử lượt làm của chính mình. Đề đã lưu trữ/xoá chỉ còn xem
  * được khi mình từng làm.
  */
 @Injectable()
@@ -114,7 +115,11 @@ export class LearnerExamsService {
     const attempts = (
       await this.attempts.findBy({ tenantId: ctx.tenantId, examId: id, userId })
     ).sort((a, b) => b.startedAt.getTime() - a.startedAt.getTime());
-    const isOpen = exam.status === ExamStatus.PUBLISHED && !exam.deletedAt;
+    // Đề `private` chỉ làm qua lớp; lượt làm tự do cũ vẫn xem lại được (R5).
+    const isOpen =
+      exam.status === ExamStatus.PUBLISHED &&
+      exam.visibility === ContentVisibility.TENANT &&
+      !exam.deletedAt;
     if (!isOpen && attempts.length === 0) {
       throw new NotFoundException(EXAM_NOT_FOUND);
     }
@@ -179,7 +184,10 @@ export class LearnerExamsService {
       .createQueryBuilder('exam')
       .innerJoin('exam.blueprint', 'blueprint')
       .where('exam.tenantId = :tenantId', { tenantId: ctx.tenantId })
-      .andWhere('exam.status = :status', { status: ExamStatus.PUBLISHED });
+      .andWhere('exam.status = :status', { status: ExamStatus.PUBLISHED })
+      .andWhere('exam.visibility = :visibility', {
+        visibility: ContentVisibility.TENANT,
+      });
   }
 
   /** Danh mục / loại đề có ít nhất một đề đang publish. */

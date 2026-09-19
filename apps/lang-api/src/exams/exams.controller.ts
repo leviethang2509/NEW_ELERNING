@@ -138,6 +138,16 @@ export class ExamsController {
     return this.content.restore(ctx, actor.id, id, version, dto);
   }
 
+  /** Đề đã publish hoặc đề mình sửa được → bản nháp mới của người nhân bản. */
+  @Post(':id/clone')
+  clone(
+    @TenantCtx() ctx: TenantContext,
+    @CurrentUser() actor: RequestUser,
+    @Param('id', ParseIdPipe()) id: string,
+  ): Promise<ExamDetail> {
+    return this.exams.clone(ctx, actor.id, id);
+  }
+
   @Post(':id/publish')
   @HttpCode(HttpStatus.OK)
   publish(

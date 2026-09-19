@@ -8,6 +8,7 @@ import {
 } from '@nestjs/common';
 import {
   AttemptStatus,
+  ContentVisibility,
   ExamSectionStatus,
   ExamStatus,
   TenantRole,
@@ -30,13 +31,13 @@ import {
 } from '../testing/in-memory-repository';
 import { validationMessages } from '../common/validation';
 import { User } from '../users/user.entity';
-import { SaveExamContentDto } from './dto/exam.dto';
+import { SaveExamContentDto, UpdateExamDto } from './dto/exam.dto';
 import { ExamContentService } from './exam-content.service';
 import { ExamPart } from './exam-part.entity';
 import { ExamQuestion } from './exam-question.entity';
 import { ExamSection } from './exam-section.entity';
 import { Exam } from './exam.entity';
-import { ExamsService } from './exams.service';
+import { ExamsService, cloneTitle } from './exams.service';
 
 const TENANT = 'tenant-a';
 const OWNER = 'user-owner';
@@ -217,7 +218,23 @@ async function setup() {
     createExam,
     addAttempt,
     questionsOf,
+    attempts,
   };
+}
+
+/** Giải thích gắn câu `questionId`, kèm lựa chọn đã tick để kiểm không lộ. */
+function explanation(id: string, content: string) {
+  return [
+    { type: 'indicator', id, kind: 'explanation', children: [{ text: '' }] },
+    { type: 'p', children: [{ text: content }] },
+    {
+      type: 'p',
+      listStyleType: 'todo',
+      indent: 1,
+      checked: true,
+      children: [{ text: 'Lựa chọn trong giải thích' }],
+    },
+  ];
 }
 
 async function expectIssues(
@@ -458,6 +475,175 @@ describe('ExamContentService.save', () => {
         ],
       }),
     ).rejects.toBeInstanceOf(BadRequestException);
+  });
+});
+
+describe('Giải thích', () => {
+  it('lưu riêng ở explanations, content_public chỉ còn indicator rỗng, không đổi số câu', async () => {
+    const { contentService, createExam, sections, questionsOf } = await setup();
+    const exam = await createExam();
+    const saved = await contentService.save(ownerCtx, OWNER, exam.id, {
+      baseRevision: 1,
+      sections: [
+        section(
+          'Reading',
+          part(
+            'p1',
+            mcQuestion('q1'),
+            explanation('e1', 'Vì A đúng'),
+            mcQuestion('q2'),
+          ),
+        ),
+      ],
+    });
+    expect(saved.questionCount).toBe(2);
+    expect(
+      questionsOf([saved.sections[0].id]).map((q) => [q.nodeId, q.number]),
+    ).toEqual([
+      ['q1', 1],
+      ['q2', 2],
+    ]);
+    const row = sections.rows[0];
+    expect(row.explanations).toEqual([
+      {
+        nodeId: 'e1',
+        numbers: [1],
+        blocks: explanation('e1', 'Vì A đúng').slice(1),
+      },
+    ]);
+    const publicJson = JSON.stringify(row.contentPublic);
+    expect(publicJson).toContain('"kind":"explanation"');
+    expect(publicJson).not.toContain('Vì A đúng');
+    expect(publicJson).not.toContain('Lựa chọn trong giải thích');
+  });
+});
+
+describe('ExamsService: hiển thị', () => {
+  it('mặc định tenant; người sửa được đề đổi được, Teacher đề người khác 403', async () => {
+    const { examsService, createExam } = await setup();
+    const exam = await createExam();
+    expect(exam.visibility).toBe(ContentVisibility.TENANT);
+
+    const changed = await examsService.update(ownerCtx, OWNER, exam.id, {
+      visibility: ContentVisibility.PRIVATE,
+    });
+    expect(changed).toMatchObject({
+      visibility: ContentVisibility.PRIVATE,
+      title: 'IELTS thử',
+    });
+    await expect(
+      examsService.update(teacherCtx, TEACHER, exam.id, {
+        visibility: ContentVisibility.TENANT,
+      }),
+    ).rejects.toBeInstanceOf(ForbiddenException);
+  });
+
+  it('DTO chặn giá trị lạ', async () => {
+    const errors = await validate(
+      plainToInstance(UpdateExamDto, { visibility: 'public' }),
+    );
+    expect(validationMessages(errors)).toEqual([
+      'Chế độ hiển thị không hợp lệ',
+    ]);
+  });
+});
+
+describe('ExamsService.clone', () => {
+  it('đề đã publish → bản nháp version 1 của người nhân bản, chép nội dung version hiện tại', async () => {
+    const {
+      examsService,
+      contentService,
+      createExam,
+      addAttempt,
+      exams,
+      sections,
+      questionsOf,
+      attempts,
+    } = await setup();
+    const source = await createExam();
+    await contentService.save(ownerCtx, OWNER, source.id, {
+      baseRevision: 1,
+      sections: [
+        section(
+          'Reading',
+          part('p1', mcQuestion('q1'), explanation('e1', 'x')),
+        ),
+      ],
+    });
+    await addAttempt(source.id, 1);
+    // Version 2 (version 1 đã có bài làm) mới là nội dung được chép.
+    await contentService.save(ownerCtx, OWNER, source.id, {
+      baseRevision: 2,
+      sections: [
+        section('Reading', part('p1', mcQuestion('q1'), mcQuestion('q2'))),
+        section('Writing', [], 60),
+      ],
+    });
+    await examsService.update(ownerCtx, OWNER, source.id, {
+      visibility: ContentVisibility.PRIVATE,
+    });
+    await examsService.publish(ownerCtx, OWNER, source.id);
+
+    const clone = await examsService.clone(teacherCtx, TEACHER, source.id);
+    expect(clone).toMatchObject({
+      title: 'IELTS thử (bản sao)',
+      status: ExamStatus.DRAFT,
+      visibility: ContentVisibility.PRIVATE,
+      currentVersion: 1,
+      contentRevision: 1,
+      hasAttempts: false,
+      canEdit: true,
+      creator: null,
+      clonedFrom: { id: source.id, title: 'IELTS thử' },
+      sectionCount: 2,
+      questionCount: 2,
+    });
+    expect(exams.rows.find((row) => row.id === clone.id)?.createdBy).toBe(
+      TEACHER,
+    );
+    const original = (await examsService.getDetail(ownerCtx, OWNER, source.id))
+      .sections;
+    expect(clone.sections.map((s) => [s.name, s.rawData])).toEqual(
+      original.map((s) => [s.name, s.rawData]),
+    );
+    // Section/câu hỏi mới, không đụng đề gốc; không chép bài làm.
+    const cloneSectionIds = clone.sections.map((s) => s.id);
+    expect(cloneSectionIds).not.toContain(original[0].id);
+    expect(questionsOf(cloneSectionIds)).toHaveLength(2);
+    expect(sections.rows.filter((row) => row.examId === clone.id)).toHaveLength(
+      2,
+    );
+    expect(attempts.rows.filter((row) => row.examId === clone.id)).toEqual([]);
+  });
+
+  it('nháp/lưu trữ chỉ người sửa được đề mới nhân bản được; đề tenant khác 404', async () => {
+    const { examsService, createExam } = await setup();
+    const ownerDraft = await createExam();
+    await expect(
+      examsService.clone(teacherCtx, TEACHER, ownerDraft.id),
+    ).rejects.toBeInstanceOf(ForbiddenException);
+    expect(
+      (await examsService.clone(ownerCtx, OWNER, ownerDraft.id)).status,
+    ).toBe(ExamStatus.DRAFT);
+
+    const teacherDraft = await createExam(teacherCtx, TEACHER);
+    expect(
+      (await examsService.clone(teacherCtx, TEACHER, teacherDraft.id)).title,
+    ).toBe('IELTS thử (bản sao)');
+
+    await expect(
+      examsService.clone(
+        { ...ownerCtx, tenantId: 'tenant-b' },
+        OWNER,
+        ownerDraft.id,
+      ),
+    ).rejects.toBeInstanceOf(NotFoundException);
+  });
+
+  it('tên dài bị cắt cho vừa hậu tố', () => {
+    const title = cloneTitle('x'.repeat(200));
+    expect(title).toHaveLength(200);
+    expect(title.endsWith(' (bản sao)')).toBe(true);
   });
 });
 

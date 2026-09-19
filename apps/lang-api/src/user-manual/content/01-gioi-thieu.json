@@ -170,6 +170,10 @@
               "Khuôn bài học như Minna no Nihongo – 1 bài, thuộc một danh mục, gồm các **phần** (module không có thời lượng)."
             ],
             [
+              "Bài học (lesson)",
+              "Bài học cụ thể của trung tâm, tạo từ một mẫu bài học; mỗi phần sinh một section (tab, không có thời lượng). Trạng thái và version như đề thi, mặc định **Chỉ qua lớp**."
+            ],
+            [
               "Đề thi (exam)",
               "Đề cụ thể của trung tâm, tạo từ một loại đề. Trạng thái **Nháp → Đã publish → Lưu trữ**."
             ],
@@ -183,7 +187,7 @@
             ],
             [
               "Indicator",
-              "Khối đánh dấu ranh giới Part / Subpart / Question trong trình soạn đề."
+              "Khối đánh dấu ranh giới Part / Subpart / Question / Explanation (giải thích) trong trình soạn đề."
             ],
             [
               "Câu hỏi & dạng câu hỏi",
@@ -196,6 +200,18 @@
             [
               "Publish",
               "Mở đề cho thành viên trung tâm làm bài; chỉ publish được khi nội dung không còn lỗi."
+            ],
+            [
+              "Hiển thị",
+              "**Công khai trong trung tâm** (hiện ở trang trung tâm, làm tự do) hoặc **Chỉ qua lớp**."
+            ],
+            [
+              "Giải thích (Explanation)",
+              "Lời giải thích đặt sau câu hỏi; học viên không thấy khi thi, người chấm thấy."
+            ],
+            [
+              "Nhân bản",
+              "Chép đề đã publish (hoặc đề mình sửa được) thành đề nháp mới của mình."
             ]
           ]
         },
@@ -392,12 +408,36 @@
               "✘"
             ],
             ["Tạo đề", "✔", "✔", "✔", "✘", "✘"],
+            [
+              "Nhân bản đề đã publish (và đề mình sửa được)",
+              "✔",
+              "✔",
+              "✔",
+              "✘",
+              "✘"
+            ],
             ["Xem mọi đề trong dashboard", "✔", "✔", "✔", "✘", "✘"],
             [
-              "Sửa nội dung, publish, lưu trữ, xoá, khôi phục version",
+              "Sửa nội dung, hiển thị, publish, lưu trữ, xoá, khôi phục version",
               "mọi đề",
               "mọi đề",
               "đề mình tạo",
+              "✘",
+              "✘"
+            ],
+            [
+              "Tạo bài học, nhân bản bài học đã publish (và bài mình sửa được), xem mọi bài học",
+              "✔",
+              "✔",
+              "✔",
+              "✘",
+              "✘"
+            ],
+            [
+              "Sửa nội dung, hiển thị, publish, lưu trữ, xoá, khôi phục version bài học",
+              "mọi bài",
+              "mọi bài",
+              "bài mình tạo",
               "✘",
               "✘"
             ],
@@ -410,7 +450,14 @@
               "✘",
               "✘"
             ],
-            ["Xem đề đã publish và làm bài", "✔", "✔", "✔", "✔", "✔"],
+            [
+              "Xem đề đã publish (công khai trong trung tâm) và làm bài",
+              "✔",
+              "✔",
+              "✔",
+              "✔",
+              "✔"
+            ],
             ["Xem lịch sử & kết quả lượt làm của mình", "✔", "✔", "✔", "✔", "✔"]
           ]
         },
@@ -426,7 +473,7 @@
             ["Tổng quan", "Chủ sở hữu, Quản trị viên, Giáo viên"],
             ["Quản lý → Thành viên", "Chủ sở hữu, Quản trị viên"],
             [
-              "Đề thi & Bài học → Danh mục, Loại đề, Mẫu bài học, Đề thi, Thư viện media",
+              "Đề thi & Bài học → Danh mục, Loại đề, Mẫu bài học, Đề thi, Bài học, Thư viện media",
               "Chủ sở hữu, Quản trị viên, Giáo viên"
             ],
             [
