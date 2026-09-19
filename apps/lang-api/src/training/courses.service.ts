@@ -12,6 +12,7 @@ import {
 } from '@lang/shared';
 import { DataSource, In, type EntityManager, type Repository } from 'typeorm';
 import { isVisibleTo } from '../catalog/catalog-scope';
+import { Classroom } from '../classrooms/classroom.entity';
 import { toCategoryRef } from '../catalog/catalog.mapper';
 import { Category } from '../catalog/category.entity';
 import {
@@ -38,6 +39,7 @@ const CATEGORY_NOT_FOUND = 'Không tìm thấy danh mục';
 const CATEGORY_INACTIVE = 'Danh mục đã ngừng dùng';
 const ALREADY_ATTACHED = 'Giáo trình đã được gắn vào khoá học này';
 const NOT_ATTACHED = 'Giáo trình chưa được gắn vào khoá học này';
+const HAS_CLASSES = 'Khoá học đã có lớp học, chỉ lưu trữ được, không xoá được';
 
 /** Khoá học thuộc tenant; khoá dòng khi đọc trong transaction ghi. */
 export async function findCourse(
@@ -193,12 +195,25 @@ export class CoursesService {
   }
 
   /**
-   * Xoá hẳn, chỉ bỏ gắn giáo trình (giáo trình giữ trong thư viện). Step 7:
-   * khoá học đã có lớp thì chỉ lưu trữ được (B3).
+   * Xoá hẳn, chỉ bỏ gắn giáo trình (giáo trình giữ trong thư viện). Khoá học
+   * đã có lớp thì chỉ lưu trữ được (B3).
    */
   async remove(ctx: TenantContext, id: string): Promise<void> {
-    await findCourse(this.dataSource.manager, ctx.tenantId, id);
-    await this.courses.delete({ id, tenantId: ctx.tenantId });
+    try {
+      await this.dataSource.transaction(async (manager) => {
+        await findCourse(manager, ctx.tenantId, id, true);
+        if (await manager.getRepository(Classroom).existsBy({ courseId: id })) {
+          throw new ConflictException(HAS_CLASSES);
+        }
+        await manager.getRepository(Course).delete({ id });
+      });
+    } catch (error) {
+      // Lớp vừa được tạo ngay sau lúc kiểm tra (FK NO ACTION).
+      if (isForeignKeyViolation(error)) {
+        throw new ConflictException(HAS_CLASSES);
+      }
+      throw error;
+    }
   }
 
   /** Gắn giáo trình tham khảo (chỉ Owner/Admin, R6). */
@@ -252,12 +267,16 @@ export class CoursesService {
     const categoryIds = [
       ...new Set(courses.flatMap((row) => row.categoryId ?? [])),
     ];
-    const [categories, links] = await Promise.all([
+    const courseIds = courses.map((row) => row.id);
+    const [categories, links, classrooms] = await Promise.all([
       categoryIds.length > 0
         ? this.categories.findBy({ id: In(categoryIds) })
         : Promise.resolve([]),
-      knownLinks ??
-        this.links.findBy({ courseId: In(courses.map((row) => row.id)) }),
+      knownLinks ?? this.links.findBy({ courseId: In(courseIds) }),
+      this.dataSource.manager.getRepository(Classroom).find({
+        select: { id: true, courseId: true },
+        where: { courseId: In(courseIds) },
+      }),
     ]);
     const categoryById = new Map(categories.map((row) => [row.id, row]));
     return courses.map((course) => {
@@ -267,6 +286,8 @@ export class CoursesService {
       return toCourseListItem(course, {
         category: category ? toCategoryRef(category) : null,
         curriculumCount: links.filter((link) => link.courseId === course.id)
+          .length,
+        classCount: classrooms.filter((row) => row.courseId === course.id)
           .length,
       });
     });

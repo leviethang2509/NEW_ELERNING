@@ -89,6 +89,8 @@ export interface CourseListItem {
   plannedSessions: number | null;
   status: CourseStatus;
   curriculumCount: number;
+  /** Số lớp của khoá học; có lớp thì không xoá được, chỉ lưu trữ (B3). */
+  classCount: number;
   updatedAt: string;
 }
 

@@ -372,6 +372,7 @@ t/:slug:
 - Migration `classrooms`, `classroom_teachers`, `classroom_students`, `class_groups`, `class_items`, `class_change_logs`, cột mới `exam_attempts` (+ đổi index in_progress).
 - Tạo lớp (chép giáo trình), sửa thông tin, chuyển trạng thái (chốt lượt dở khi `finished`, có số người đang làm), xoá/huỷ; giáo viên, học viên (sĩ số khoá dòng lớp, xoá mềm); giáo trình lớp (thêm/xoá/sắp xếp, nhãn, ngày mở, deadline, nhận bài quá hạn, ngưỡng đậu, thi lại cho, nhập từ giáo trình, `revision`, nhật ký).
 - lang-app: danh sách lớp, trang lớp các tab Thông tin, Giáo viên & Học viên, Giáo trình, Nhật ký.
+- Người dùng chốt 2026-09-19: mã lớp theo quy tắc mã khoá học (`CATALOG_CODE_PATTERN`, tự in hoa, unique `(tenant_id, code)`); chuyển trạng thái tự do giữa `upcoming`/`ongoing`/`finished` (không nhảy `upcoming → finished`), `upcoming`/`ongoing → cancelled`, `cancelled` là trạng thái cuối; lớp `finished`/`cancelled` khoá giáo trình lớp và thêm/xoá giáo viên, học viên (thông tin + trạng thái vẫn sửa được); xoá mục giáo trình lớp chưa có bài làm → xoá hẳn, có bài làm → ẩn (`removed_at`, khôi phục được); "Nhập từ giáo trình" chèn vào bản đang sửa ở client rồi Lưu (không có route `import`).
 - Unit test: sĩ số, quyền giáo viên lớp, thi lại phải sau mục gốc, trùng đề chỉ khi thi lại, chuyển `finished` chốt lượt.
 - **Nghiệm thu:** lớp từ khoá N5 chép đúng giáo trình; giáo viên lớp sửa giáo trình, Teacher ngoài lớp 403; đủ sĩ số thì chặn thêm.
 

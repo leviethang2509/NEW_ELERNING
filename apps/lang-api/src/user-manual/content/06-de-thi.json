@@ -79,7 +79,7 @@
             ],
             [
               "**Chỉ qua lớp**",
-              "Không hiện ở trang trung tâm; mở đề hoặc bắt đầu lượt làm tự do đều báo không tìm thấy. Học viên chỉ làm khi đề được giao qua lớp (có từ giai đoạn Khoá học & lớp)"
+              "Không hiện ở trang trung tâm; mở đề hoặc bắt đầu lượt làm tự do đều báo không tìm thấy. Dùng cho đề giao qua [giáo trình lớp](page:giao-trinh-lop); học viên làm đề trong lớp có ở giai đoạn sau"
             ]
           ]
         },
@@ -114,7 +114,7 @@
             ],
             [
               "**Xoá đề** (đang nằm trong giáo trình)",
-              "Không xoá được, chỉ lưu trữ được – xem [Giáo trình](page:giao-trinh)"
+              "Không xoá được, chỉ lưu trữ được – áp dụng cho [giáo trình tham khảo](page:giao-trinh) và [giáo trình lớp](page:giao-trinh-lop) (kể cả mục đã xoá khỏi lớp nhưng còn giữ vì có bài làm)"
             ],
             ["**Xoá đề** (chưa có bài làm)", "Xoá hẳn"],
             [
@@ -557,7 +557,7 @@
             "**Nháp → Đã publish → Lưu trữ**, lưu trữ rồi **Publish lại** được, không quay về Nháp – như [Vòng đời đề thi](page:vong-doi-de-thi).",
             "Publish phải lưu hết thay đổi trước; nội dung còn lỗi (vd. câu chưa tick đáp án) thì không publish được và bảng lỗi liệt kê theo section. Bài đã publish/lưu trữ không lưu được nội dung còn lỗi.",
             "**Xoá bài học** chưa có lượt học: xoá hẳn. Đã có lượt học: ẩn đi (xoá mềm) để giữ kết quả; học viên vẫn xem lại được lượt học cũ.",
-            "Bài học đang nằm trong [giáo trình](page:giao-trinh) không xoá được, chỉ lưu trữ được.",
+            "Bài học đang nằm trong [giáo trình tham khảo](page:giao-trinh) hoặc [giáo trình lớp](page:giao-trinh-lop) (kể cả mục đã xoá khỏi lớp nhưng còn giữ vì có bài làm) không xoá được, chỉ lưu trữ được.",
             "Bài **Lưu trữ**, xoá hoặc chuyển **Chỉ qua lớp**: biến khỏi trang trung tâm, lượt học đã có chỉ còn xem lại."
           ]
         },
@@ -568,7 +568,7 @@
           "rows": [
             [
               "**Chỉ qua lớp** (mặc định)",
-              "Học viên chỉ học khi bài được giao qua lớp (có từ giai đoạn Khoá học & lớp)"
+              "Dùng cho bài giao qua [giáo trình lớp](page:giao-trinh-lop); học viên học bài trong lớp có ở giai đoạn sau"
             ],
             [
               "**Công khai trong trung tâm**",

@@ -770,6 +770,7 @@ export const vi = {
     plannedSessions: 'Số buổi dự kiến',
     sessions: (count: number) => `${count} buổi`,
     curriculumCount: 'Giáo trình',
+    classCount: 'Lớp',
     empty: 'Chưa có khoá học nào.',
     searchPlaceholder: 'Tìm theo tên hoặc mã khoá học',
     allStatuses: 'Mọi trạng thái',
@@ -786,8 +787,13 @@ export const vi = {
       `Lưu trữ khoá học ${name}? Không tạo được lớp mới từ khoá học này; lớp đang có vẫn học bình thường.`,
     deleteConfirm: (name: string) =>
       `Xoá khoá học ${name}? Các giáo trình đang gắn chỉ bị bỏ gắn, vẫn còn trong thư viện Giáo trình.`,
+    deleteBlocked: 'Khoá học đã có lớp học, chỉ lưu trữ được.',
     backToList: 'Về danh sách khoá học',
-    tabs: { info: 'Thông tin', curricula: 'Giáo trình tham khảo' },
+    tabs: {
+      info: 'Thông tin',
+      curricula: 'Giáo trình tham khảo',
+      classes: 'Lớp',
+    },
     noValue: '—',
     noCategory: 'Không có danh mục',
     readOnlyHint: 'Teacher chỉ xem khoá học; Owner/Admin quản lý khoá học.',
@@ -903,6 +909,255 @@ export const vi = {
       description: 'Mô tả',
       create: 'Tạo giáo trình',
       save: 'Lưu',
+    },
+  },
+  // Lớp học & giáo trình lớp (req-3 Step 7).
+  classes: {
+    subtitle:
+      'Lớp học tạo từ khoá học. Owner/Admin tạo lớp, đổi trạng thái, thêm giáo viên và học viên; giáo viên của lớp sửa giáo trình lớp. Teacher chỉ thấy lớp mình phụ trách.',
+    teacherSubtitle:
+      'Các lớp bạn phụ trách. Bạn sửa được giáo trình của lớp; Owner/Admin quản lý thông tin, giáo viên và học viên.',
+    create: 'Tạo lớp',
+    column: 'Lớp học',
+    course: 'Khoá học',
+    startDate: 'Bắt đầu',
+    teachers: 'Giáo viên',
+    students: 'Học viên',
+    studentCount: (count: number, max: number | null) =>
+      max === null ? `${count}` : `${count}/${max}`,
+    noTeacher: 'Chưa có giáo viên',
+    empty: 'Chưa có lớp học nào.',
+    emptyForTeacher: 'Bạn chưa phụ trách lớp nào.',
+    searchPlaceholder: 'Tìm theo tên hoặc mã lớp',
+    allStatuses: 'Mọi trạng thái',
+    allCourses: 'Mọi khoá học',
+    status: {
+      upcoming: 'Sắp mở',
+      ongoing: 'Đang học',
+      finished: 'Đã kết thúc',
+      cancelled: 'Đã huỷ',
+    },
+    view: 'Mở lớp',
+    edit: 'Sửa thông tin',
+    delete: 'Xoá lớp',
+    deleteConfirm: (name: string) =>
+      `Xoá lớp ${name}? Giáo trình lớp, danh sách giáo viên/học viên và nhật ký bị xoá theo. Chỉ xoá được khi chưa có bài làm.`,
+    deleted: (name: string) => `Đã xoá lớp ${name}.`,
+    deleteBlocked:
+      'Lớp đã có bài làm của học viên nên không xoá được, chỉ chuyển sang "Đã huỷ".',
+    backToList: 'Về danh sách lớp',
+    tabs: {
+      info: 'Thông tin',
+      members: 'Giáo viên & Học viên',
+      curriculum: 'Giáo trình',
+      logs: 'Nhật ký thay đổi',
+    },
+    noValue: '—',
+    endDate: 'Ngày kết thúc',
+    endDatePending: 'Tính khi có thời khoá biểu',
+    sessions: (count: number) => `${count} buổi`,
+    unlimited: 'Không giới hạn',
+    sourceCurriculum: 'Giáo trình đã chép',
+    noSourceCurriculum: 'Không chép giáo trình nào',
+    readOnlyHint:
+      'Owner/Admin sửa thông tin lớp, đổi trạng thái, thêm/xoá giáo viên và học viên.',
+    closedHint:
+      'Lớp đã kết thúc hoặc đã huỷ: chỉ xem, không sửa giáo trình và danh sách giáo viên/học viên.',
+    noTeacherWarning:
+      'Lớp chưa có giáo viên. Hãy thêm giáo viên ở tab "Giáo viên & Học viên".',
+    overCapacity: (count: number, max: number) =>
+      `Lớp đang vượt sĩ số: ${count}/${max} học viên.`,
+    courseTabHint:
+      'Các lớp mở từ khoá học này. Tạo lớp mới sẽ chép 1 giáo trình tham khảo của khoá học sang lớp.',
+    statusActions: {
+      title: 'Đổi trạng thái',
+      to: {
+        upcoming: 'Chuyển về "Sắp mở"',
+        ongoing: 'Bắt đầu học',
+        finished: 'Kết thúc lớp',
+        cancelled: 'Huỷ lớp',
+      },
+      reopen: 'Mở lại lớp',
+      confirm: {
+        upcoming: (name: string) => `Chuyển lớp ${name} về "Sắp mở"?`,
+        ongoing: (name: string) =>
+          `Chuyển lớp ${name} sang "Đang học"? Học viên vào học được các mục đã mở.`,
+        finished: (name: string) =>
+          `Kết thúc lớp ${name}? Học viên không nộp bài được nữa; giáo trình và danh sách giáo viên/học viên bị khoá. Mở lại được sau.`,
+        cancelled: (name: string) =>
+          `Huỷ lớp ${name}? Lớp đã huỷ chỉ xem được và không mở lại được nữa.`,
+      },
+      inProgress: (count: number) =>
+        `Có ${count} lượt thi đang làm dở: các lượt này sẽ bị chốt ngay (câu đã trả lời được chấm, phần chưa làm tính 0) và không mở lại khi lớp mở lại.`,
+      done: (status: string) => `Lớp đã chuyển sang "${status}".`,
+    },
+    form: {
+      createTitle: 'Tạo lớp học',
+      editTitle: 'Sửa thông tin lớp',
+      course: 'Khoá học',
+      coursePlaceholder: 'Chọn khoá học đang dùng',
+      courseFixed: 'Không đổi khoá học sau khi tạo lớp.',
+      curriculum: 'Giáo trình tham khảo',
+      noCurriculum: 'Không chép giáo trình',
+      curriculumHint:
+        'Chép chương và mục của giáo trình sang giáo trình lớp. Sau đó giáo viên sửa giáo trình lớp tự do, không ảnh hưởng giáo trình gốc.',
+      code: 'Mã lớp',
+      codeHint:
+        'Chữ in hoa không dấu, số và dấu "-" hoặc "_" ở giữa, vd. N5-2026-01.',
+      name: 'Tên lớp',
+      namePlaceholder: 'VD: N5 tối thứ 2–4',
+      description: 'Mô tả',
+      startDate: 'Ngày bắt đầu',
+      plannedSessions: 'Số buổi',
+      plannedSessionsHint: (count: number | null) =>
+        count === null
+          ? 'Khoá học chưa có số buổi dự kiến, hãy nhập số buổi.'
+          : `Bỏ trống = ${count} buổi (số buổi dự kiến của khoá học).`,
+      maxStudents: 'Sĩ số tối đa',
+      maxStudentsHint:
+        'Bỏ trống = không giới hạn. Đủ sĩ số thì không thêm được học viên.',
+      location: 'Phòng học / link online',
+      create: 'Tạo lớp',
+      save: 'Lưu',
+    },
+    members: {
+      teachersTitle: 'Giáo viên',
+      teachersHint:
+        'Thành viên có vai trò Giáo viên. Mọi giáo viên của lớp có quyền như nhau: xem lớp, sửa giáo trình lớp.',
+      studentsTitle: 'Học viên',
+      studentsHint:
+        'Thành viên có vai trò Học viên. Xoá khỏi lớp thì bài làm vẫn giữ; thêm lại thì khôi phục.',
+      addTeachers: 'Thêm giáo viên',
+      addStudents: 'Thêm học viên',
+      noTeachers: 'Chưa có giáo viên.',
+      noStudents: 'Chưa có học viên.',
+      removeTeacher: 'Bỏ khỏi lớp',
+      removeStudent: 'Xoá khỏi lớp',
+      removeTeacherConfirm: (name: string) =>
+        `Bỏ ${name} khỏi danh sách giáo viên của lớp?`,
+      removeStudentConfirm: (name: string) =>
+        `Xoá ${name} khỏi lớp? Bài làm và kết quả trong lớp vẫn được giữ; thêm lại thì khôi phục.`,
+      removed: 'Đã rời lớp',
+      removedAt: (date: string) => `Rời lớp ${date}`,
+      addedAt: (date: string) => `Vào lớp ${date}`,
+      inactive: 'Đã ngừng',
+      otherClasses: (codes: string) => `Đang học lớp khác cùng khoá: ${codes}`,
+      capacity: (count: number, max: number | null) =>
+        max === null
+          ? `${count} học viên (không giới hạn sĩ số)`
+          : `${count}/${max} học viên`,
+      showRemoved: (count: number) => `Học viên đã rời lớp (${count})`,
+      pickerTitleTeachers: 'Thêm giáo viên vào lớp',
+      pickerTitleStudents: 'Thêm học viên vào lớp',
+      pickerHint:
+        'Chỉ hiện thành viên đang hoạt động có đúng vai trò. Chọn nhiều người rồi bấm Thêm.',
+      pickerSearch: 'Tìm theo họ tên hoặc email',
+      pickerEmpty: 'Không có thành viên phù hợp.',
+      inClass: 'Đã trong lớp',
+      addSelected: (count: number) => `Thêm ${count} người`,
+      added: (count: number) => `Đã thêm ${count} người.`,
+      removedDone: (name: string) => `Đã bỏ ${name} khỏi lớp.`,
+      room: (room: number) => `Còn ${room} chỗ`,
+    },
+    curriculum: {
+      hint: 'Giáo trình riêng của lớp: giáo viên của lớp và Owner/Admin thêm bài học/đề thi đã publish, sắp xếp, đặt ngày mở, deadline. Không ảnh hưởng giáo trình tham khảo.',
+      readOnly: 'Chỉ xem: lớp đã kết thúc hoặc đã huỷ.',
+      save: 'Lưu giáo trình lớp',
+      saved: 'Đã lưu giáo trình lớp.',
+      leaveConfirm: 'Giáo trình lớp có thay đổi chưa lưu. Rời trang?',
+      importFrom: 'Nhập từ giáo trình',
+      importTitle: 'Nhập từ giáo trình tham khảo',
+      importHint:
+        'Chép chương và mục của giáo trình vào bản đang sửa (bỏ qua bài/đề đã có trong lớp hoặc chưa publish). Xem lại rồi bấm Lưu.',
+      importCourseGroup: 'Giáo trình của khoá học',
+      importOtherGroup: 'Giáo trình khác',
+      importPlaceholder: 'Chọn giáo trình',
+      importButton: 'Nhập',
+      imported: (added: number, skipped: number) =>
+        skipped > 0
+          ? `Đã nhập ${added} mục (bỏ qua ${skipped} mục đã có hoặc chưa publish). Bấm Lưu để ghi lại.`
+          : `Đã nhập ${added} mục. Bấm Lưu để ghi lại.`,
+      details: 'Ngày mở, deadline & ghi chú',
+      opensAt: 'Ngày mở',
+      opensAtHint:
+        'Trước lúc này học viên thấy mục nhưng chưa vào được. Bỏ trống = mở ngay.',
+      groupOpensAt: 'Mở chương lúc',
+      deadlineAt: 'Deadline',
+      deadlineLessonHint: 'Bài học: deadline chỉ để nhắc.',
+      deadlineExamHint:
+        'Đề thi: hạn bắt đầu làm; bắt đầu trước hạn thì được làm hết giờ.',
+      acceptLate: 'Nhận bài quá hạn',
+      acceptLateHint: 'Tắt thì sau deadline học viên không bắt đầu được nữa.',
+      passThreshold: 'Ngưỡng đậu (%)',
+      retakeOf: 'Thi lại cho',
+      notRetake: 'Không phải lần thi lại',
+      retakeHint:
+        'Lần thi lại của một mục đề thi đứng trước. Nhóm thi = mục gốc + các lần thi lại; chỉ cần đậu một lần.',
+      sameExamWarning:
+        'Cùng đề với mục gốc: học viên đã làm đề này ở lần trước.',
+      retakeBadge: (title: string) => `Thi lại cho: ${title}`,
+      addRetake: 'Thêm lần thi lại (cùng đề)',
+      hasRetakes:
+        'Mục này đang có lần thi lại gắn vào. Hãy bỏ hoặc đổi "Thi lại cho" của các lần thi lại trước.',
+      opensBadge: (date: string) => `Mở ${date}`,
+      deadlineBadge: (date: string) => `Hạn ${date}`,
+      noLate: 'Không nhận quá hạn',
+      passBadge: (value: number) => `Đậu ≥ ${value}%`,
+      learners: (count: number) => `${count} học viên đã làm`,
+      removeWithWork: (count: number) =>
+        `Đã có ${count} học viên làm mục này. Xoá sẽ ẩn mục với học viên, bài làm vẫn giữ và không tính vào thống kê. Khôi phục được ở "Mục đã xoá".`,
+      removedTitle: (count: number) => `Mục đã xoá (${count})`,
+      removedHint:
+        'Mục đã có bài làm nên chỉ ẩn khỏi học viên. Khôi phục để hiện lại (thêm vào "Chưa xếp chương").',
+      restore: 'Khôi phục',
+      pendingHide: 'Sẽ ẩn khi lưu',
+    },
+    logs: {
+      empty: 'Chưa có thay đổi nào.',
+      system: 'Hệ thống',
+      created: (curriculum: string | null) =>
+        curriculum
+          ? `Tạo lớp, chép giáo trình ${curriculum}`
+          : 'Tạo lớp (không chép giáo trình)',
+      updated: (fields: string) => `Sửa thông tin lớp: ${fields}`,
+      statusChanged: (from: string, to: string) =>
+        `Đổi trạng thái: ${from} → ${to}`,
+      finalized: (count: number) => `chốt ${count} lượt thi đang làm dở`,
+      teachersAdded: (names: string) => `Thêm giáo viên: ${names}`,
+      teacherRemoved: (names: string) => `Bỏ giáo viên: ${names}`,
+      studentsAdded: (names: string) => `Thêm học viên: ${names}`,
+      studentRemoved: (names: string) => `Xoá học viên khỏi lớp: ${names}`,
+      curriculumSaved: 'Lưu giáo trình lớp',
+      added: 'Thêm',
+      removed: 'Xoá',
+      hidden: 'Ẩn (đã có bài làm)',
+      restored: 'Khôi phục',
+      changed: 'Sửa',
+      groupsAdded: 'Thêm chương',
+      groupsRemoved: 'Xoá chương',
+      groupsChanged: 'Sửa chương',
+      reordered: 'Sắp xếp lại thứ tự',
+      noChange: 'Không có thay đổi nội dung',
+      fields: {
+        code: 'mã lớp',
+        name: 'tên lớp',
+        description: 'mô tả',
+        startDate: 'ngày bắt đầu',
+        plannedSessions: 'số buổi',
+        maxStudents: 'sĩ số tối đa',
+        location: 'phòng học/link',
+      } as Record<string, string>,
+      itemFields: {
+        title: 'tên hiển thị',
+        label: 'nhãn',
+        note: 'ghi chú',
+        opensAt: 'ngày mở',
+        deadlineAt: 'deadline',
+        acceptLate: 'nhận bài quá hạn',
+        passThreshold: 'ngưỡng đậu',
+        retakeOf: 'thi lại cho',
+        group: 'chương',
+      },
     },
   },
   examEditor: {
@@ -1506,6 +1761,7 @@ export const vi = {
     grading: 'Chấm bài',
     courses: 'Khoá học',
     curricula: 'Giáo trình',
+    classes: 'Lớp học',
     userManual: 'Tài liệu nội bộ',
     sectionManagement: 'Quản lý',
     sectionExam: 'Đề thi & Bài học',

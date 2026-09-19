@@ -237,6 +237,7 @@ function setup({
   };
   return {
     service,
+    dataSource,
     r2,
     exams,
     attempts,
@@ -286,6 +287,46 @@ describe('AttemptsService', () => {
       intro: [p('Hướng dẫn phần nghe')],
     });
     expect(attemptSections.rows).toHaveLength(2);
+  });
+
+  it('lớp kết thúc: chốt lượt thi trong lớp, câu đã trả lời được chấm, section chưa làm tính 0', async () => {
+    const { service, dataSource, attempts, attemptSections, questionsOf } =
+      setup();
+    const created = await service.create(ctx, STUDENT, EXAM);
+    const [first] = sectionIds(created);
+    await service.start(ctx, STUDENT, created.id, first);
+    await service.saveResponses(
+      ctx,
+      STUDENT,
+      created.id,
+      first,
+      correctResponses(questionsOf(0)),
+    );
+    // Giả lập lượt làm trong lớp (luồng bắt đầu từ mục lớp có ở Step 9).
+    attempts.rows[0].classItemId = 'item-1';
+    const free = await service.create(ctx, OTHER, EXAM);
+
+    const closed = await service.finalizeForClassItems(dataSource.manager, [
+      'item-1',
+    ]);
+
+    expect(closed).toBe(1);
+    const attempt = attempts.rows.find((row) => row.id === created.id)!;
+    // Section Writing có câu chấm tay → chờ chấm.
+    expect(attempt.status).toBe(AttemptStatus.SUBMITTED);
+    expect(attempt.autoCorrect).toBe(6);
+    expect(
+      attemptSections.rows
+        .filter((row) => row.attemptId === created.id)
+        .map((row) => [row.status, row.autoSubmitted, row.correct]),
+    ).toEqual([
+      [AttemptSectionStatus.SUBMITTED, true, 6],
+      [AttemptSectionStatus.SUBMITTED, true, 0],
+    ]);
+    // Lượt tự do không bị ảnh hưởng.
+    expect(attempts.rows.find((row) => row.id === free.id)!.status).toBe(
+      AttemptStatus.IN_PROGRESS,
+    );
   });
 
   it('mỗi đề chỉ một lượt làm dở; đề lưu trữ 409, đề nháp/private 404', async () => {

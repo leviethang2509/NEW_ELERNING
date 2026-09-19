@@ -37,7 +37,11 @@ export function toCourseRef(course: Course): CourseRef {
 
 export function toCourseListItem(
   course: Course,
-  extra: { category: CategoryRef | null; curriculumCount: number },
+  extra: {
+    category: CategoryRef | null;
+    curriculumCount: number;
+    classCount: number;
+  },
 ): CourseListItem {
   return {
     ...toCourseRef(course),
@@ -47,6 +51,7 @@ export function toCourseListItem(
     level: course.level,
     plannedSessions: course.plannedSessions,
     curriculumCount: extra.curriculumCount,
+    classCount: extra.classCount,
     updatedAt: course.updatedAt.toISOString(),
   };
 }

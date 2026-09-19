@@ -237,6 +237,30 @@
               "Nhóm 1 cấp các mục trong giáo trình; mục không thuộc chương nào nằm ở “Chưa xếp chương”."
             ],
             [
+              "Lớp học",
+              "Lớp mở từ một khoá học: mã, tên, ngày bắt đầu, số buổi, sĩ số tối đa; trạng thái **Sắp mở → Đang học → Đã kết thúc** hoặc **Đã huỷ**. Xem [Lớp học](page:lop-hoc)."
+            ],
+            [
+              "Giáo viên của lớp",
+              "Thành viên vai trò Giáo viên được thêm vào lớp; mọi giáo viên của lớp có quyền như nhau (xem lớp, sửa giáo trình lớp)."
+            ],
+            [
+              "Giáo trình lớp",
+              "Bản giáo trình riêng của lớp, chép từ giáo trình tham khảo rồi sửa độc lập; mục có thêm ngày mở, deadline. Xem [Giáo trình lớp](page:giao-trinh-lop)."
+            ],
+            [
+              "Ngày mở",
+              "Thời điểm mục (hoặc chương) của giáo trình lớp mở cho học viên; trước đó học viên thấy nhưng chưa vào được."
+            ],
+            [
+              "Deadline",
+              "Hạn của mục giáo trình lớp: bài học chỉ để nhắc; đề thi là hạn bắt đầu làm (tuỳ chọn **Nhận bài quá hạn**)."
+            ],
+            [
+              "Lần thi lại / Nhóm thi",
+              "Mục đề thi đánh dấu **Thi lại cho** một mục đề thi đứng trước; nhóm thi = mục gốc + các lần thi lại (cách tính điểm nhóm có ở giai đoạn sau)."
+            ],
+            [
               "Nhãn mục",
               "**Bài học**/**Bài tập** (mục bài học), **Bài kiểm tra**/**Bài thi** (mục đề thi); chỉ để hiển thị và lọc."
             ]
@@ -487,6 +511,30 @@
               "✘",
               "✘"
             ],
+            [
+              "Xem lớp học, danh sách giáo viên/học viên, nhật ký thay đổi",
+              "mọi lớp",
+              "mọi lớp",
+              "lớp mình phụ trách",
+              "✘",
+              "✘"
+            ],
+            [
+              "Tạo lớp, sửa thông tin, đổi trạng thái, xoá lớp; thêm/bỏ giáo viên, học viên",
+              "✔",
+              "✔",
+              "✘",
+              "✘",
+              "✘"
+            ],
+            [
+              "Sửa giáo trình lớp",
+              "mọi lớp",
+              "mọi lớp",
+              "lớp mình phụ trách",
+              "✘",
+              "✘"
+            ],
             ["Học bài học công khai trong trung tâm", "✔", "✔", "✔", "✔", "✔"],
             [
               "Chấm bài Writing/Speaking – đề thi và bài học (trừ bài của mình)",
@@ -527,8 +575,8 @@
               "Chủ sở hữu, Quản trị viên, Giáo viên"
             ],
             [
-              "Đào tạo → Khoá học, Giáo trình",
-              "Chủ sở hữu, Quản trị viên, Giáo viên (khoá học chỉ xem)"
+              "Đào tạo → Khoá học, Giáo trình, Lớp học",
+              "Chủ sở hữu, Quản trị viên, Giáo viên (khoá học chỉ xem; lớp học chỉ thấy lớp mình phụ trách)"
             ]
           ]
         },

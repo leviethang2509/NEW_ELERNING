@@ -10,6 +10,7 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
+import { ClassItem } from '../classrooms/class-item.entity';
 import { sqlInList } from '../common/sql';
 import { Lesson } from '../lessons/lesson.entity';
 import { Membership } from '../memberships/membership.entity';
@@ -85,9 +86,18 @@ export class LessonAttempt {
   })
   membership?: Membership;
 
-  /** Mục giáo trình lớp (Step 9); `null` = học tự do. Khoá ngoại thêm ở Step 7. */
+  /** Mục giáo trình lớp (Step 9); `null` = học tự do. */
+  @Index('IDX_lesson_attempts_class_item_id')
   @Column({ name: 'class_item_id', type: 'uuid', nullable: true })
   classItemId: string | null;
+
+  // Mục đã có lượt học chỉ ẩn (E3), lớp đã có lượt học không xoá được (NO ACTION).
+  @ManyToOne(() => ClassItem, { onDelete: 'NO ACTION' })
+  @JoinColumn({
+    name: 'class_item_id',
+    foreignKeyConstraintName: 'FK_lesson_attempts_class_item_id',
+  })
+  classItem?: ClassItem | null;
 
   @Column({
     type: 'varchar',

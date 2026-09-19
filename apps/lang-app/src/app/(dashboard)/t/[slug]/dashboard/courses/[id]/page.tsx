@@ -11,6 +11,7 @@ import {
   type CurriculumListItem,
 } from '@lang/shared';
 import { CategoryIcon } from '@/components/catalog/catalog-ui';
+import { CourseClassesPanel } from '@/components/classes/CourseClassesPanel';
 import { useTenantDashboard } from '@/components/dashboard/TenantDashboardShell';
 import { CourseFormModal } from '@/components/training/CourseFormModal';
 import { CourseStatusBadge } from '@/components/training/training-ui';
@@ -35,9 +36,9 @@ import {
   listCurricula,
 } from '@/lib/training-api';
 
-type Tab = 'info' | 'curricula';
+type Tab = 'info' | 'curricula' | 'classes';
 
-/** Chi tiết khoá học: Thông tin · Giáo trình tham khảo (Lớp, Lịch ở Step 7–8). */
+/** Chi tiết khoá học: Thông tin · Giáo trình tham khảo · Lớp (Lịch ở Step 8). */
 export default function CourseDetailPage({
   params,
 }: {
@@ -188,7 +189,7 @@ export default function CourseDetailPage({
       </header>
 
       <nav className="flex gap-1 border-b border-[var(--border)]">
-        {(['info', 'curricula'] as const).map((value) => (
+        {(['info', 'curricula', 'classes'] as const).map((value) => (
           <button
             key={value}
             type="button"
@@ -201,6 +202,7 @@ export default function CourseDetailPage({
           >
             {text.tabs[value]}
             {value === 'curricula' && ` (${course.curricula.length})`}
+            {value === 'classes' && ` (${course.classCount})`}
           </button>
         ))}
       </nav>
@@ -208,7 +210,9 @@ export default function CourseDetailPage({
       {notice && <FormAlert tone="success">{notice}</FormAlert>}
       {error && <FormAlert tone="error">{error}</FormAlert>}
 
-      {tab === 'info' ? (
+      {tab === 'classes' ? (
+        <CourseClassesPanel slug={slug} course={course} canManage={canManage} />
+      ) : tab === 'info' ? (
         <section className="rounded-2xl border border-[var(--border)] bg-[var(--card)] p-4 sm:p-5">
           {!canManage && (
             <p className="mb-4 text-[13px] text-[var(--muted)]">

@@ -10,6 +10,7 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
+import { ClassItem } from '../classrooms/class-item.entity';
 import { sqlInList } from '../common/sql';
 import { Exam } from '../exams/exam.entity';
 import { Membership } from '../memberships/membership.entity';
@@ -19,13 +20,18 @@ import { User } from '../users/user.entity';
 /**
  * Lượt làm bài (plan 4.5). Tạo bảng ở Step 12 vì quy tắc version cần biết
  * version hiện tại đã có bài làm chưa; luồng làm bài ở Step 13. Mỗi người chỉ
- * có tối đa 1 lượt đang làm dở cho mỗi đề.
+ * có tối đa 1 lượt đang làm dở cho mỗi đề khi làm tự do, và cho mỗi mục lớp
+ * khi làm trong lớp (req-3 Step 7, E9: 2 lớp giao cùng đề tính riêng).
  */
 @Entity('exam_attempts')
 @Index('IDX_exam_attempts_exam_version', ['examId', 'examVersion'])
-@Index('UQ_exam_attempts_in_progress', ['examId', 'userId'], {
+@Index('UQ_exam_attempts_in_progress_free', ['examId', 'userId'], {
   unique: true,
-  where: `"status" = '${AttemptStatus.IN_PROGRESS}'`,
+  where: `"status" = '${AttemptStatus.IN_PROGRESS}' AND "class_item_id" IS NULL`,
+})
+@Index('UQ_exam_attempts_in_progress_class', ['classItemId', 'userId'], {
+  unique: true,
+  where: `"status" = '${AttemptStatus.IN_PROGRESS}' AND "class_item_id" IS NOT NULL`,
 })
 @Check('CHK_exam_attempts_status', sqlInList('status', AttemptStatus))
 export class ExamAttempt {
@@ -80,6 +86,32 @@ export class ExamAttempt {
     foreignKeyConstraintName: 'FK_exam_attempts_membership_id',
   })
   membership?: Membership;
+
+  /** Mục giáo trình lớp (Step 9); `null` = làm tự do. */
+  @Index('IDX_exam_attempts_class_item_id')
+  @Column({ name: 'class_item_id', type: 'uuid', nullable: true })
+  classItemId: string | null;
+
+  @ManyToOne(() => ClassItem, { onDelete: 'NO ACTION' })
+  @JoinColumn({
+    name: 'class_item_id',
+    foreignKeyConstraintName: 'FK_exam_attempts_class_item_id',
+  })
+  classItem?: ClassItem | null;
+
+  /** "Cho làm lại" (giả định 8): lượt không tính điểm, chuyên cần, nhóm thi. */
+  @Column({ name: 'voided_at', type: 'timestamptz', nullable: true })
+  voidedAt: Date | null;
+
+  @Column({ name: 'voided_by', type: 'uuid', nullable: true })
+  voidedBy: string | null;
+
+  @ManyToOne(() => User, { onDelete: 'SET NULL' })
+  @JoinColumn({
+    name: 'voided_by',
+    foreignKeyConstraintName: 'FK_exam_attempts_voided_by',
+  })
+  voider?: User | null;
 
   @Column({ type: 'varchar', length: 16, default: AttemptStatus.IN_PROGRESS })
   status: AttemptStatus;

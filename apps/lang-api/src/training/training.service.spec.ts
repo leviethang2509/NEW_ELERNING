@@ -19,6 +19,8 @@ import { validate } from 'class-validator';
 import type { EntityManager } from 'typeorm';
 import { Category } from '../catalog/category.entity';
 import { validationMessages } from '../common/validation';
+import { ClassItem } from '../classrooms/class-item.entity';
+import { Classroom } from '../classrooms/classroom.entity';
 import { Exam } from '../exams/exam.entity';
 import { Lesson } from '../lessons/lesson.entity';
 import type { TenantContext } from '../tenants/tenant-context';
@@ -70,13 +72,16 @@ function setup() {
   const exams = new InMemoryRepository<Exam>(() => ({ deletedAt: null }));
   const users = new InMemoryRepository<User>(timestamps);
   const categories = new InMemoryRepository<Category>(timestamps);
+  const classrooms = new InMemoryRepository<Classroom>(timestamps);
 
   const dataSource = new InMemoryDataSource()
     .register(Curriculum, curricula)
     .register(CurriculumGroup, groups)
     .register(CurriculumItem, items)
+    .register(ClassItem, new InMemoryRepository<ClassItem>())
     .register(CourseCurriculum, links)
     .register(Course, courses)
+    .register(Classroom, classrooms)
     .register(Lesson, lessons)
     .register(Exam, exams)
     .asDataSource();

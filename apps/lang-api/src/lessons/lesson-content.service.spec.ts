@@ -29,6 +29,7 @@ import {
   InMemoryRepository,
   stubQueryBuilderRepository,
 } from '../testing/in-memory-repository';
+import { ClassItem } from '../classrooms/class-item.entity';
 import { CurriculumItem } from '../training/curriculum-item.entity';
 import { User } from '../users/user.entity';
 import {
@@ -191,6 +192,7 @@ async function setup() {
     .register(LessonQuestion, questions)
     .register(User, users)
     .register(CurriculumItem, curriculumItems)
+    .register(ClassItem, new InMemoryRepository<ClassItem>())
     .asDataSource();
   const blueprintsService = new LessonBlueprintsService(
     dataSource,

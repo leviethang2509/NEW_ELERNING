@@ -165,6 +165,7 @@ export class AttemptsService {
         const open = await attempts.existsBy({
           examId,
           userId,
+          classItemId: IsNull(),
           status: AttemptStatus.IN_PROGRESS,
         });
         if (open) throw new ConflictException(ATTEMPT_IN_PROGRESS);
@@ -179,6 +180,9 @@ export class AttemptsService {
             examVersion: exam.currentVersion,
             userId,
             membershipId: ctx.membershipId,
+            classItemId: null,
+            voidedAt: null,
+            voidedBy: null,
             status: AttemptStatus.IN_PROGRESS,
             startedAt: now,
             submittedAt: null,
@@ -598,6 +602,47 @@ export class AttemptsService {
       }
     }
     return closed;
+  }
+
+  /**
+   * Lớp chuyển "Đã kết thúc" (T6, R10.4): chốt ngay mọi lượt thi đang làm dở
+   * của các mục lớp – câu đã trả lời chấm như hết giờ, section chưa bắt đầu
+   * tính 0. Chạy trong transaction của lần đổi trạng thái lớp (đã khoá dòng
+   * lớp). Trả về số lượt đã chốt.
+   */
+  async finalizeForClassItems(
+    manager: EntityManager,
+    classItemIds: string[],
+    now = new Date(),
+  ): Promise<number> {
+    if (classItemIds.length === 0) return 0;
+    const open = await manager.getRepository(ExamAttempt).find({
+      select: { id: true },
+      where: {
+        classItemId: In(classItemIds),
+        status: AttemptStatus.IN_PROGRESS,
+      },
+    });
+    for (const { id } of open) {
+      const attempt = await this.lockAttempt(manager, { id });
+      const sections = await this.lockSections(manager, id);
+      await this.submitSections(
+        manager,
+        attempt,
+        sections,
+        sections
+          .filter(
+            (section) => section.status !== AttemptSectionStatus.SUBMITTED,
+          )
+          .map((section) => ({
+            section,
+            responses: normalizeResponses(section.responses),
+            autoSubmitted: true,
+          })),
+        now,
+      );
+    }
+    return open.length;
   }
 
   // --- Nội bộ ---------------------------------------------------------------

@@ -15,8 +15,8 @@
 | 1 | 3 | Editor: khối mới & giải thích | ✅ | 2026-09-19 | Commit ce4dc75 (dữ liệu thử `step3-test` còn giữ) |
 | 1 | 4 | Soạn bài học | ✅ | 2026-09-19 | Commit ce4dc75 (dữ liệu thử `step4-test` còn giữ) |
 | 1 | 5 | Học bài học & chấm tay bài học | ✅ | 2026-09-19 | Commit db18cb7, đã push `main` (deploy giai đoạn 1) |
-| 2 | 6 | Khoá học & giáo trình tham khảo | ✅ | 2026-09-19 | Chưa commit; chờ người dùng bấm thử giao diện (dữ liệu thử ở `step4-test`) |
-| 2 | 7 | Lớp học & giáo trình lớp | ⬜ | | |
+| 2 | 6 | Khoá học & giáo trình tham khảo | ✅ | 2026-09-19 | Commit d5cf255 (chưa push) |
+| 2 | 7 | Lớp học & giáo trình lớp | ✅ | 2026-09-19 | Chưa commit; dữ liệu thử lớp `N5-2026-01` ở `step4-test` |
 | 2 | 8 | Thời khoá biểu, ngày nghỉ, lịch | ⬜ | | |
 | 2 | 9 | Học viên trong lớp | ⬜ | | |
 | 2 | 10 | Chấm theo lớp & chuyển giao | ⬜ | | Deploy giai đoạn 2 |
@@ -27,14 +27,15 @@
 
 ## Bàn giao cho phiên tiếp theo
 
-- Giai đoạn 1 (Step 1–5) xong, đã push `main` (`db18cb7`). Giai đoạn 2: Step 6 xong trên local, **chưa commit** (deploy cùng cả giai đoạn 2 sau Step 10; migration `CreateCoursesCurricula` chạy lúc container khởi động; không có env mới).
-- **Tiếp theo: Step 7 – Lớp học & giáo trình lớp** (plan mục 7, DB mục 4.5, phân quyền mục 5, route mục 6). Xem "Lưu ý cho step sau" của Step 5, Step 6 và prompt ở cuối file.
-- Máy dev: `apps/lang-api/.env` trỏ Postgres local `lang_simulator_dev`. DB local có 15 migration, 1 System Owner, mẫu bài học hệ thống **Minna no Nihongo – 1 bài**. **Còn giữ dữ liệu thử** để người dùng bấm giao diện:
+- Giai đoạn 1 (Step 1–5) xong, đã push `main` (`db18cb7`). Giai đoạn 2: Step 6 đã commit `d5cf255` (chưa push), Step 7 xong trên local, **chưa commit** (deploy cùng cả giai đoạn 2 sau Step 10; migration `CreateCoursesCurricula`, `CreateClassrooms` chạy lúc container khởi động; không có env mới).
+- **Tiếp theo: Step 8 – Thời khoá biểu, ngày nghỉ, lịch** (plan mục 1.3, 4.6, 5, 6, 7). Xem "Lưu ý cho step sau" của Step 7 và prompt ở cuối file.
+- Máy dev: `apps/lang-api/.env` trỏ Postgres local `lang_simulator_dev`. DB local có 16 migration, 1 System Owner, mẫu bài học hệ thống **Minna no Nihongo – 1 bài**. **Còn giữ dữ liệu thử** để người dùng bấm giao diện:
   - Step 3: tenant `step3-test` (4 đề, 1 lượt làm chờ chấm) + `step3-teacher|student|student2@example.com`.
   - Step 4–5: tenant `step4-test` (System Owner là Chủ sở hữu). Bài **Minna bài 1** của `step4-teacher` (công khai, **version 2**; tab Từ vựng có furigana/callout/khối gập mở, tab Luyện tập có Writing + Speaking, tab Bài tập 2 câu MC + 1 giải thích) và bản sao nháp **Bản của GV2** của `step4-teacher2`. `step4-student@example.com` có 2 lượt học: version 1 (đã học xong, chỉ xem lại, phần Luyện tập vừa nộp lại → **chờ chấm** ở trang Chấm bài → Bài học) và version 2 (mới mở, chưa làm gì).
   - Step 6 (cũng ở `step4-test`): khoá **Tiếng Nhật N5** (`N5`, 24 buổi) và **Tiếng Nhật N5 – lớp tối** (`N5-TOI`), cả hai gắn giáo trình **Giáo trình N5 – Minna no Nihongo** của `step4-teacher` (3 chương, 7 mục: Minna bài 1–4, Kiểm tra chương 1–2, Thi cuối khoá N5); bản sao **… (bản sao)** của `step4-teacher2` (rút còn 1 mục). Bài Minna bài 2–4 và 3 đề JLPT_N2 (hiển thị Chỉ qua lớp) do `step4-teacher` tạo cho giáo trình.
-  - Dọn dẹp (đã thử trong transaction, chạy được với bảng lượt học): `delete from tenants where slug in ('step3-test','step4-test'); delete from users where email like 'step3-%@example.com' or email like 'step4-%@example.com';`. File ghi âm thử nằm trên bucket R2 private (prefix `tenants/{id tenant step4-test}/lesson-attempts/`), xoá DB không xoá file. Còn schema rỗng `lang_simulator` sót lại (không ảnh hưởng).
-- Chạy thử: API `node dist/main.js` (:3101, sau `pnpm build`), app `pnpm start` (:3100); **đang chạy** bản build Step 6 (log ở scratchpad phiên Step 6). Dừng Next bằng `pkill -f next-server`; trước khi chạy API mới kiểm `lsof -iTCP:3101 -sTCP:LISTEN`. Kiểm trang qua curl cần cookie `ls_rt=x`. Nghiệm thu API không cần mật khẩu: ký JWT `{ sub, tv }` bằng `JWT_SECRET` trong `.env` (mẫu: `accept6.js` trong scratchpad phiên Step 6 – `tokenOf(email)` đọc `token_version` từ DB; Chủ sở hữu `step4-test` là `admin@lang-simulator.com`). Không có công cụ trình duyệt – nhờ người dùng bấm thử; kiểm render không cần trình duyệt: bundle bằng esbuild (`node_modules/.pnpm/esbuild@*/node_modules/esbuild/bin/esbuild --bundle --platform=node --jsx=automatic --packages=external --alias:@=./src`, chạy trong `apps/lang-app`) rồi `renderToStaticMarkup`, chạy với `NODE_PATH=apps/lang-app/node_modules` (component có `Modal`/portal không render được kiểu này).
+  - Step 7 (cũng ở `step4-test`): lớp **N5 tối thứ 2–4** (`N5-2026-01`, khoá N5, **Đang học**, sĩ số tối đa 3, Phòng 202) chép giáo trình N5; giáo viên lớp `step4-teacher` (`step4-teacher2` là Teacher ngoài lớp); 3 học viên `step4-student`, `step7-student1|2@example.com` (mật khẩu `Step7-Passw0rd`). Giáo trình lớp: Kiểm tra chương 1 có ngày mở/deadline/ngưỡng 70%/không nhận quá hạn, chương "Thi lại" có lần thi lại cùng đề, chương 1 có "Mở chương lúc", mục chưa xếp chương **Ôn tập riêng lớp N5-2026-01** (bài học chỉ có trong lớp → không xoá được). Nhật ký lớp có đủ loại dòng. Không có bài làm trong lớp (lượt thi thử đã xoá).
+  - Dọn dẹp (đã thử trong transaction rồi rollback). **Xoá thẳng tenant không chạy được** vì FK NO ACTION `curriculum_items → exams/lessons` có từ Step 6 (xem lưu ý Step 7), phải xoá theo thứ tự: `delete from exam_attempts where tenant_id in (select id from tenants where slug in ('step3-test','step4-test'));` rồi cùng điều kiện cho `lesson_attempts`, `classrooms`, `courses`, `curricula`; sau đó `delete from tenants where slug in ('step3-test','step4-test'); delete from users where email like 'step3-%@example.com' or email like 'step4-%@example.com' or email like 'step7-%@example.com';`. File ghi âm thử nằm trên bucket R2 private (prefix `tenants/{id tenant step4-test}/lesson-attempts/`), xoá DB không xoá file. Còn schema rỗng `lang_simulator` sót lại (không ảnh hưởng).
+- Chạy thử: API `node dist/main.js` (:3101, sau `pnpm build`), app `pnpm start` (:3100); **đang chạy** bản build Step 7 (log ở scratchpad phiên Step 7). Dừng Next bằng `pkill -f next-server`; trước khi chạy API mới kiểm `lsof -iTCP:3101 -sTCP:LISTEN`. Kiểm trang qua curl cần cookie `ls_rt=x`. Nghiệm thu API không cần mật khẩu: ký JWT `{ sub, tv }` bằng `JWT_SECRET` trong `.env` (mẫu: `accept7.js` trong scratchpad phiên Step 7 – `tokenOf(email)` đọc `token_version` từ DB, `payload(curriculum, change)` dựng body lưu giáo trình lớp; Chủ sở hữu `step4-test` là `admin@lang-simulator.com`). Không có công cụ trình duyệt – nhờ người dùng bấm thử; kiểm render không cần trình duyệt: bundle bằng esbuild (`node_modules/.pnpm/esbuild@*/node_modules/esbuild/bin/esbuild --bundle --platform=node --jsx=automatic --packages=external --alias:@=./src`, chạy trong `apps/lang-app`) rồi `renderToStaticMarkup`, chạy với `NODE_PATH=apps/lang-app/node_modules` (component có `Modal`/portal không render được kiểu này).
 
 ## Nhật ký
 
@@ -222,13 +223,124 @@
 - Giáo trình lớp (Step 7) cho thêm bài/đề đã publish bất kỳ như giáo trình tham khảo; có thể dùng lại `ContentPickerDialog`, `curriculum-draft.ts` (thêm trường ngày mở, deadline… cho mục lớp).
 - Giới hạn 300 mục/100 chương đặt ở `@lang/shared` (`CURRICULUM_MAX_*`).
 
-## Prompt cho Step 7
+### Step 7 – Lớp học & giáo trình lớp (2026-09-19)
+
+**Đã làm**
+- Người dùng chốt đầu phiên (ghi vào plan Step 7):
+  - Mã lớp theo quy tắc mã khoá học (in hoa).
+  - Chuyển trạng thái tự do giữa Sắp mở/Đang học/Đã kết thúc, trừ nhảy thẳng Sắp mở → Đã kết thúc. Sắp mở/Đang học → Đã huỷ; Đã huỷ là trạng thái cuối.
+  - Lớp kết thúc/huỷ khoá giáo trình lớp và thêm/xoá giáo viên, học viên; thông tin và trạng thái vẫn sửa được.
+  - Xoá mục chưa có bài làm → xoá hẳn; có bài làm → ẩn (khôi phục được).
+  - "Nhập từ giáo trình" gộp ở client rồi Lưu.
+- Migration `1789833902308-CreateClassrooms` (sinh bằng `migration:generate`, `down` rút gọn):
+  - `classrooms`: unique `(tenant_id, code)` + CHECK mã in hoa, FK `courses` NO ACTION, `source_curriculum_id` SET NULL, `curriculum_revision`.
+  - `classroom_teachers` (PK kép); `classroom_students` (unique `(classroom_id, membership_id)`, `removed_at`); `class_groups` (`opens_at`).
+  - `class_items`: CHECK nội dung/nhãn/ngưỡng đậu 0–100, FK bài/đề NO ACTION, `retake_of_item_id` tự trỏ SET NULL, `removed_at`.
+  - `class_change_logs` (`detail jsonb`).
+  - `exam_attempts` thêm `class_item_id` (FK NO ACTION), `voided_at`, `voided_by`. `UQ_exam_attempts_in_progress` tách thành `_free` (theo đề, `class_item_id IS NULL`) và `_class` (theo mục).
+  - FK `lesson_attempts.class_item_id`.
+- lang-api `classrooms/`:
+  - `ClassroomsService`: danh sách (Teacher chỉ thấy lớp mình); chi tiết kèm `canManage`, `canEditCurriculum`, `inProgressAttemptCount`, `hasActivity`; tạo từ khoá học đang dùng và chép giáo trình tham khảo đang gắn khoá học; sửa thông tin; đổi trạng thái; xoá khi chưa có bài làm; nhật ký.
+  - `ClassMembersService`: chỉ thành viên đang hoạt động đúng role; kiểm sĩ số khi đã khoá dòng lớp; xoá mềm/khôi phục học viên; cảnh báo học viên đang học lớp khác cùng khoá.
+  - `ClassCurriculumService`:
+    - Lưu với `baseRevision`; mục mới giữ uuid client gửi.
+    - Mục bỏ đi: có bài làm thì ẩn, chưa có thì xoá.
+    - Thi lại; trùng bài/đề chỉ khi là lần thi lại; ngày mở phải trước deadline.
+    - Nhật ký so sánh trước/sau.
+  - `classroom-access.ts` (`loadClassroomAccess`, `assertClassroomOpen`), `class-activity.ts` (`learnerCountsByItem`, `countInProgressAttempts`).
+  - `AttemptsService.finalizeForClassItems` chốt lượt thi dở trong transaction đổi trạng thái; `AttemptsService.create` chỉ xét lượt tự do.
+  - `CoursesService.remove` → 409 khi khoá học có lớp; danh sách khoá học có `classCount`; `content-usage.ts` kiểm cả `class_items`. `ROUTES` thêm 14 dòng.
+- `@lang/shared` `classroom.ts`:
+  - `ClassroomStatus`, `CLASSROOM_STATUS_TRANSITIONS`, `isClassroomClosed`.
+  - `TRAINING_UTC_OFFSET` + `trainingLocalToIso`/`isoToTrainingLocal`/`isValidCalendarDate`.
+  - Giới hạn `CLASSROOM_*`, `DEFAULT_PASS_THRESHOLD`; kiểu lớp/thành viên/giáo trình lớp/nhật ký (`ClassLogAction`, `ClassLogDetail`).
+  - `CourseListItem.classCount`.
+- lang-app:
+  - Menu **Đào tạo → Lớp học**; trang `/t/{slug}/dashboard/classes` (lọc trạng thái/khoá học; Teacher chỉ thấy lớp mình).
+  - Trang `/classes/{id}`: nút đổi trạng thái có xác nhận kèm số lượt thi dở; Sửa thông tin; Xoá lớp (khoá khi đã có bài làm). Tab Thông tin · Giáo viên & Học viên · Giáo trình · Nhật ký thay đổi.
+  - Trang khoá học thêm tab **Lớp** (Tạo lớp chọn sẵn khoá); danh sách khoá học thêm cột **Lớp**; nút xoá khoá khi khoá học có lớp.
+  - `components/classes`: `ClassroomFormModal`, `ClassMembersPanel` + `MemberPickerDialog`, `ImportCurriculumDialog`, `ClassLogList`, `class-curriculum-draft.ts`.
+  - `ClassCurriculumEditor`: như giáo trình tham khảo, thêm ngày mở mục/chương, deadline, nhận bài quá hạn, ngưỡng đậu, "Thi lại cho", nút **Thêm lần thi lại (cùng đề)**, khung "Mục đã xoá" + Khôi phục. Chọn nội dung trùng mục đang ẩn thì khôi phục mục đó.
+  - `curriculum-draft.ts` đổi sang generic (`DraftTree`) để dùng chung.
+- Tài liệu:
+  - `/user-manual`: trang **Lớp học** và **Giáo trình lớp** trong nhóm Đào tạo; sửa các trang Khoá học, Giáo trình, Đề thi & Bài học (chặn xoá theo lớp); thuật ngữ, ma trận quyền, menu, vai trò, Ngoài phạm vi.
+  - CLAUDE.md: lớp học API + lang-app.
+
+**Sai khác so với plan**
+- Chưa thêm cột `classrooms.apply_tenant_holidays` (Step 8) và `late_weight`/`warning_threshold` (Step 11): chưa dùng tới, thêm ở step cần. `end_date` để NULL tới khi có thời khoá biểu.
+- `classrooms` unique `(tenant_id, code)` thường (mã luôn in hoa, như khoá học) thay vì `lower(code)`.
+- Không có route `POST curriculum/import/:curriculumId` (nhập ở client, người dùng chốt).
+- Giáo viên/học viên đọc chung `GET :id/members` (plan ghi GET riêng); chưa có `GET :id/conflicts` (trùng lịch ở Step 8).
+- Chuyển sang **Đã huỷ** cũng chốt lượt thi dở như Đã kết thúc, vì lớp huỷ cũng không nộp bài được.
+- Teacher ngoài lớp nhận **403** (không phải 404) ở mọi route lớp.
+- `class_change_logs.action` không có CHECK (thêm loại nhật ký không cần migration).
+- `exam_attempts.voided_*` thêm luôn ở Step 7 (plan 4.5), tới Step 9 mới dùng.
+
+**Nghiệm thu (local)**
+- 5 lệnh kiểm tra pass: shared 61, exam-core 63, lang-api 258 test.
+  - Thêm 11 test `classrooms.service.spec.ts`:
+    - Tạo lớp chép giáo trình; khoá học lưu trữ / giáo trình không gắn / mã trùng.
+    - Teacher ngoài lớp 403, giáo viên lớp sửa được, `baseRevision` 409.
+    - Mục mới phải publish, deadline sau ngày mở, nhãn đúng loại.
+    - Thi lại sau mục gốc, không thi lại của thi lại, chỉ đề thi; trùng đề chỉ khi thi lại.
+    - Ẩn/xoá/khôi phục mục + nhật ký.
+    - Sĩ số, xoá mềm, khôi phục, sai role; cảnh báo lớp khác cùng khoá.
+    - Đổi trạng thái chốt lượt, khoá sửa, mở lại, huỷ là cuối.
+    - Chặn xoá lớp/khoá học/bài học; DTO.
+  - Thêm 1 test `attempts.service.spec.ts`: chốt lượt thi của lớp.
+- Migration: chạy → "No changes" → revert → chạy lại OK.
+- API thật (:3101), `accept7.js` **55/55 mục đạt** trên `step4-test`:
+  - Lớp `N5-2026-01` tạo từ khoá N5 chép **đúng** "Giáo trình N5 – Minna no Nihongo" (3 chương, 7 mục; nhãn, tên, ghi chú, thứ tự).
+  - Quyền: Teacher chưa thuộc lớp 403; thêm vào lớp thì xem và sửa giáo trình lớp được; **Teacher ngoài lớp xem/sửa 403**; Student 403.
+  - Giáo trình lớp:
+    - Thi lại đứng trước mục gốc / thi lại của thi lại / bài học làm thi lại → 400; cùng đề mà không gắn thi lại → 400.
+    - Lưu được thi lại cùng đề + deadline, ngày mở, ngưỡng, không nhận quá hạn, chương mở lúc; revision cũ → 409.
+    - Bài học mới chỉ có trong lớp → xoá bài học 409.
+  - Sĩ số 2: **thêm 3 → 409, thêm 2 → được, thêm tiếp → 409**. Xoá mềm rồi thêm người khác được; tăng sĩ số và thêm lại người cũ → khôi phục.
+  - Lớp thứ 2 cùng khoá: có cảnh báo học viên, xoá được (chưa có bài làm).
+  - Trạng thái: Sắp mở → Đã kết thúc 409. Kết thúc → giáo trình/học viên 409, thông tin vẫn sửa được; mở lại được.
+  - Xoá khoá học có lớp → 409. Nhật ký đủ loại dòng + chi tiết lần lưu giáo trình.
+- `accept7b.js` **9/9 mục đạt**. Lượt thi dở được gắn vào mục lớp bằng SQL, vì luồng học viên làm bài trong lớp là Step 9.
+  - Chi tiết lớp đếm 1 lượt dở; xoá lớp → 409.
+  - Bỏ mục có bài làm → ẩn; gửi lại → khôi phục.
+  - **Kết thúc lớp chốt lượt thi** (mọi section nộp tự động); nhật ký ghi số lượt bị chốt; mở lại không mở lại lượt.
+  - Đã xoá lượt thi thử.
+- lang-app (`next start`, cookie `ls_rt`):
+  - Danh sách lớp, trang lớp, trang khoá học (tab Lớp), danh sách khoá học/giáo trình đều trả 200.
+  - Render `ClassCurriculumEditor` bằng `react-dom/server` với dữ liệu thật: chế độ sửa (4 chương, 9 mục, badge "Mở 18:00 19/10/2026 · Hạn 20:00 20/10/2026 · Không nhận quá hạn · Đậu ≥ 70%", ô Mở chương lúc) và chế độ chỉ xem ("Thi lại cho: Kiểm tra chương 1").
+  - Hàm `class-curriculum-draft.ts` kiểm bằng script: giữ ngày giờ ISO, đích thi lại, nhập lại giáo trình bỏ qua mục đã có, mục thiếu vào đúng chương cùng tên, mục ẩn trùng nội dung được khôi phục, uuid v4.
+- **Chưa bấm giao diện bằng trình duyệt**:
+  - Tạo lớp (chọn khoá → giáo trình), sửa thông tin, nút đổi trạng thái + hộp xác nhận.
+  - Thêm/xoá giáo viên, học viên qua hộp chọn.
+  - Giáo trình lớp: kéo thả, ô ngày giờ, thi lại, bỏ mục có bài làm, khôi phục, nhập từ giáo trình, lưu + báo 409.
+  - Nhật ký; tab Lớp của khoá học.
+
+**Lưu ý cho step sau**
+- ⚠️ Lỗi có từ Step 6: xoá hẳn tenant bằng SQL (`delete from tenants …`) lỗi FK NO ACTION `curriculum_items → exams/lessons`, vì cascade xoá đề trước mục giáo trình. `class_items`, `classrooms → courses` và lượt làm → `class_items` cũng là FK NO ACTION như vậy.
+  - App không có luồng xoá hẳn tenant, nên hiện chỉ ảnh hưởng lệnh dọn dữ liệu thử (đã đổi thứ tự xoá ở phần bàn giao).
+  - Nếu cần xoá hẳn tenant: đổi các FK này sang `DEFERRABLE INITIALLY DEFERRED` bằng migration mới – hỏi người dùng trước.
+  - Chú thích "NO ACTION để xoá cứng tenant vẫn CASCADE được" ở `curriculum-item.entity.ts` và các entity lượt làm (trỏ `exams`/`lessons`) chưa đúng.
+- Step 8:
+  - `classrooms.start_date`/`planned_sessions` đã sửa được qua `PATCH` nhưng chưa tính lại gì → gọi `recomputeSchedule` khi hai trường này đổi. Thêm `apply_tenant_holidays`; tính `end_date`.
+  - Tab **Thời khoá biểu** ở trang lớp (thêm vào `TABS`), tab **Lịch** ở trang khoá học.
+  - Map buổi ↔ `class_items`/`class_groups`: mục đã ẩn xử lý thế nào thì quyết định khi làm.
+- Step 9:
+  - Bắt đầu mục lớp đi đường riêng theo `class_item_id`, không dùng `AttemptsService.create` (chỉ cho lượt tự do). Đề `private` làm được qua lớp.
+  - Ngày mở hiệu lực khi cả chương và mục đều có ngày mở chưa chốt (đề xuất lấy mốc muộn hơn) – hỏi người dùng.
+  - `acceptLate = false` → sau deadline không bắt đầu được; deadline đề thi là hạn **bắt đầu**.
+  - Chặn nộp khi lớp `isClassroomClosed`: lượt thi đã bị chốt lúc đổi trạng thái; lượt học bài học vẫn mở nhưng không nộp được.
+  - Học viên đã `removed_at` không vào được lớp. `learnerCountsByItem` đếm cả lượt `voided`. `retake_of_item_id` + `pass_threshold` là dữ liệu cho nhóm thi.
+- Step 10: `canGrade` dùng `classroom_teachers` (giáo viên của lớp chấm bài trong lớp).
+- Step 11: thêm `late_weight`/`warning_threshold` cho lớp. Mục đã ẩn (`removed_at`) không tính chuyên cần/bảng điểm; học viên có `removed_at` ẩn khỏi bảng (giả định 15).
+- Step 12: sự kiện "thêm mục mới vào giáo trình lớp" lấy từ `detail.added` trong `ClassCurriculumService.save` → chuông cho học viên.
+
+## Prompt cho Step 8
 
 ```
-Bắt đầu Step 7 của req-3 (Lớp học & giáo trình lớp).
+Bắt đầu Step 8 của req-3 (Thời khoá biểu, ngày nghỉ, lịch).
 
-1. Làm theo mục "Bắt đầu phiên làm việc" trong CLAUDE.md: đọc docs/requirements/req-3-progress.md (phần "Bàn giao cho phiên tiếp theo" và "Lưu ý cho step sau" của Step 5, Step 6), rồi đọc trong docs/requirements/req-3-plan.md: mục 1.2 (Lớp, Thành viên lớp, Quyền xem, Giáo trình lớp, Nhãn mục, Ngày mở/deadline, Kiểm tra/thi, Lớp kết thúc, Bài làm trong lớp), giả định 3, 4, 7 ở mục 2, thiết kế DB mục 4.5, phân quyền mục 5 (các dòng Lớp), route mục 6 (dashboard classes; API classes: list/POST/GET/PATCH/status/DELETE, teachers/students, curriculum, logs) và Step 7 ở mục 7. Chỉ mở req-3-question*.md (D1–D11, E1–E5, E9, R6, R7, R9, R10, T1, T6, U1) khi cần lý do của một quyết định.
-2. Trước khi code, tóm tắt ngắn cho tôi cách làm: migration và entity (classrooms, classroom_teachers, classroom_students, class_groups, class_items, class_change_logs, cột mới exam_attempts + đổi index in_progress, FK lesson_attempts.class_item_id), service lớp (tạo từ khoá học active + chép giáo trình tham khảo, sửa thông tin, chuyển trạng thái upcoming/ongoing/finished/cancelled kể cả finished → ongoing, chốt lượt dở khi finished, xoá/huỷ theo giả định 4), giáo viên/học viên (chọn từ thành viên đúng role, sĩ số khoá dòng lớp, xoá mềm học viên), giáo trình lớp (thêm/xoá ẩn/sắp xếp, nhãn, ngày mở, deadline, nhận bài quá hạn, ngưỡng đậu, thi lại cho – phải sau mục gốc, trùng đề chỉ khi thi lại, nhập từ giáo trình, revision, nhật ký), helper quyền ClassroomAccess, chặn xoá khoá học đã có lớp và xoá bài/đề đang nằm trong giáo trình lớp, route API + dòng ROUTES mới, màn hình lang-app (danh sách lớp, trang lớp với tab Thông tin, Giáo viên & Học viên, Giáo trình, Nhật ký; tab Lớp ở trang khoá học), menu Đào tạo → Lớp học. Có chỗ nào chưa rõ hoặc mâu thuẫn thì hỏi tôi, không tự đoán.
-3. Làm lần lượt: migration + service + controller kèm unit test (sĩ số, quyền giáo viên lớp, thi lại phải sau mục gốc, trùng đề chỉ khi thi lại, chuyển finished chốt lượt, baseRevision 409) → lang-app → tài liệu. Sau mỗi phần chạy test.
-4. Nghiệm thu thật theo tiêu chí của plan: lớp từ khoá N5 chép đúng giáo trình "Giáo trình N5 – Minna no Nihongo" (dữ liệu Step 6 ở step4-test); giáo viên lớp sửa giáo trình lớp, Teacher ngoài lớp 403; đủ sĩ số thì chặn thêm. Cập nhật /user-manual, CLAUDE.md, req-3-progress.md và ghi prompt cho Step 8 ở cuối file. Chưa commit, chờ tôi yêu cầu.
+1. Làm theo mục "Bắt đầu phiên làm việc" trong CLAUDE.md: đọc docs/requirements/req-3-progress.md (phần "Bàn giao cho phiên tiếp theo" và "Lưu ý cho step sau" của Step 7), rồi đọc trong docs/requirements/req-3-plan.md: mục 1.3 (Thời khoá biểu), giả định 1, 6, 12 ở mục 2, thiết kế DB mục 4.6 (kể cả thuật toán recomputeSchedule), phân quyền mục 5 (lịch lặp, huỷ/khôi phục buổi, buổi bù, giáo viên buổi, map nội dung, xem buổi dạy thế, cài đặt tenant), route mục 6 (dashboard schedule, sessions/[sessionId], settings, tab Thời khoá biểu của lớp, tab Lịch của khoá học; API classes/:id/schedule, sessions, courses/:id/sessions, schedule mine/center, settings + holidays) và Step 8 ở mục 7. Chỉ mở req-3-question*.md (D3, D4, R13–R17, T4, U1–U6, V1) khi cần lý do của một quyết định.
+2. Trước khi code, tóm tắt ngắn cho tôi cách làm: migration (class_schedule_slots, class_sessions, class_session_teachers, class_session_links, tenant_holidays, tenants.late_weight/warning_threshold, classrooms.apply_tenant_holidays), hàm thuần trong @lang/shared (sinh ô lặp theo +07:00, recomputeSchedule, chồng giờ) kèm unit test, API lịch lặp + xem trước, huỷ/khôi phục buổi, buổi bù, giáo viên buổi (dạy thế + cảnh báo dời), map nội dung, cảnh báo trùng, cài đặt tenant (ngày nghỉ + ảnh hưởng), components/calendar (tuần/tháng/danh sách), lịch lớp/khoá học/trung tâm/"Lịch dạy của tôi", chi tiết buổi, trang Cài đặt, menu. Có chỗ nào chưa rõ hoặc mâu thuẫn thì hỏi tôi, không tự đoán.
+3. Làm lần lượt: hàm thuần + unit test kỹ (ngày nghỉ nhiều ngày, thêm/xoá ngày nghỉ, buổi huỷ, buổi đã qua, đổi số buổi, 2 ô/tuần giờ khác nhau) → migration + service + controller kèm unit test → lang-app → tài liệu. Sau mỗi phần chạy test.
+4. Nghiệm thu thật theo tiêu chí của plan trên lớp N5-2026-01 của step4-test (hoặc lớp mới): lớp T2+T4 10 buổi; thêm ngày nghỉ T4 → các buổi dời đúng, ngày kết thúc lùi; xoá ngày nghỉ → về như cũ; huỷ buổi 5 + buổi bù; giáo viên dạy thế thấy buổi trong lịch; trùng giờ hiện đỏ. Cập nhật /user-manual, CLAUDE.md, req-3-progress.md và ghi prompt cho Step 9 ở cuối file. Chưa commit, chờ tôi yêu cầu.
 ```

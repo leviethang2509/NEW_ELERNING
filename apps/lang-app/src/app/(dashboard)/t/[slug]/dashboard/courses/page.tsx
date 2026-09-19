@@ -48,7 +48,7 @@ import { useDebouncedValue } from '@/lib/use-debounced-value';
 
 const PAGE_SIZE = 20;
 const GRID =
-  'sm:grid-cols-[minmax(0,2fr)_minmax(0,1fr)_100px_100px_110px_130px]';
+  'sm:grid-cols-[minmax(0,2fr)_minmax(0,1fr)_100px_90px_70px_110px_130px]';
 
 type PendingAction = { kind: 'archive' | 'delete'; course: CourseListItem };
 
@@ -208,9 +208,9 @@ export default function TenantCoursesPage() {
             )}
             <button
               type="button"
-              title={text.delete}
+              title={row.classCount > 0 ? text.deleteBlocked : text.delete}
               aria-label={text.delete}
-              disabled={busy}
+              disabled={busy || row.classCount > 0}
               onClick={() => setPending({ kind: 'delete', course: row })}
               className={iconButtonClass}
             >
@@ -273,6 +273,14 @@ export default function TenantCoursesPage() {
       render: (row) => (
         <span className="text-[13px] text-[var(--body)]">
           {formatNumber(row.curriculumCount)}
+        </span>
+      ),
+    },
+    {
+      header: text.classCount,
+      render: (row) => (
+        <span className="text-[13px] text-[var(--body)]">
+          {formatNumber(row.classCount)}
         </span>
       ),
     },

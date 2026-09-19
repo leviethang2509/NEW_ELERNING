@@ -9,9 +9,25 @@ import type {
 
 // Bản đang sửa của giáo trình (chương + mục) và các phép biến đổi thuần dùng
 // cho kéo thả / nút di chuyển. `key` ổn định cho React; `id` chỉ có ở mục/chương
-// đã lưu (gửi lại để server giữ id).
+// đã lưu (gửi lại để server giữ id). Các phép biến đổi generic theo loại mục/
+// chương để giáo trình lớp (`components/classes`) dùng chung.
 
 export const UNGROUPED = '__ungrouped';
+
+export interface KeyedItem {
+  key: string;
+}
+
+export interface KeyedGroup<I extends KeyedItem> {
+  key: string;
+  items: I[];
+}
+
+/** Cây chương + mục: mục chưa xếp chương rồi các chương theo thứ tự. */
+export interface DraftTree<I extends KeyedItem, G extends KeyedGroup<I>> {
+  ungrouped: I[];
+  groups: G[];
+}
 
 export interface ItemDraft {
   key: string;
@@ -33,10 +49,7 @@ export interface GroupDraft {
   items: ItemDraft[];
 }
 
-export interface CurriculumDraft {
-  ungrouped: ItemDraft[];
-  groups: GroupDraft[];
-}
+export type CurriculumDraft = DraftTree<ItemDraft, GroupDraft>;
 
 let counter = 0;
 export const newKey = () => `new-${Date.now().toString(36)}-${counter++}`;
@@ -97,29 +110,44 @@ export const draftSnapshot = (draft: CurriculumDraft) =>
 export const contentKey = (type: CurriculumItemType, id: string) =>
   `${type}:${id}`;
 
-export function contentKeys(draft: CurriculumDraft): Set<string> {
+type ContentItem = KeyedItem & {
+  itemType: CurriculumItemType;
+  contentId: string;
+};
+
+/** Mọi mục của cây theo thứ tự hiển thị. */
+export function allItems<I extends KeyedItem, G extends KeyedGroup<I>>(
+  draft: DraftTree<I, G>,
+): I[] {
+  return [...draft.ungrouped, ...draft.groups.flatMap((group) => group.items)];
+}
+
+export function contentKeys<I extends ContentItem, G extends KeyedGroup<I>>(
+  draft: DraftTree<I, G>,
+): Set<string> {
   return new Set(
-    [...draft.ungrouped, ...draft.groups.flatMap((group) => group.items)].map(
-      (item) => contentKey(item.itemType, item.contentId),
-    ),
+    allItems(draft).map((item) => contentKey(item.itemType, item.contentId)),
   );
 }
 
-export const itemCount = (draft: CurriculumDraft) =>
-  draft.ungrouped.length +
-  draft.groups.reduce((sum, group) => sum + group.items.length, 0);
+export const itemCount = <I extends KeyedItem, G extends KeyedGroup<I>>(
+  draft: DraftTree<I, G>,
+) => allItems(draft).length;
 
-function itemsOf(draft: CurriculumDraft, groupKey: string): ItemDraft[] {
+function itemsOf<I extends KeyedItem, G extends KeyedGroup<I>>(
+  draft: DraftTree<I, G>,
+  groupKey: string,
+): I[] {
   return groupKey === UNGROUPED
     ? draft.ungrouped
     : (draft.groups.find((group) => group.key === groupKey)?.items ?? []);
 }
 
-function withItems(
-  draft: CurriculumDraft,
+function withItems<I extends KeyedItem, G extends KeyedGroup<I>>(
+  draft: DraftTree<I, G>,
   groupKey: string,
-  items: ItemDraft[],
-): CurriculumDraft {
+  items: I[],
+): DraftTree<I, G> {
   return groupKey === UNGROUPED
     ? { ...draft, ungrouped: items }
     : {
@@ -131,7 +159,10 @@ function withItems(
 }
 
 /** Chương (hoặc `UNGROUPED`) đang chứa mục. */
-export function groupKeyOf(draft: CurriculumDraft, itemKey: string): string {
+export function groupKeyOf<I extends KeyedItem, G extends KeyedGroup<I>>(
+  draft: DraftTree<I, G>,
+  itemKey: string,
+): string {
   if (draft.ungrouped.some((item) => item.key === itemKey)) return UNGROUPED;
   return (
     draft.groups.find((group) =>
@@ -144,12 +175,12 @@ export function groupKeyOf(draft: CurriculumDraft, itemKey: string): string {
  * Chuyển mục tới vị trí `index` của chương đích (tính trên danh sách trước khi
  * gỡ mục ra); `index` bỏ trống = cuối chương.
  */
-export function moveItem(
-  draft: CurriculumDraft,
+export function moveItem<I extends KeyedItem, G extends KeyedGroup<I>>(
+  draft: DraftTree<I, G>,
   itemKey: string,
   targetGroupKey: string,
   index?: number,
-): CurriculumDraft {
+): DraftTree<I, G> {
   const sourceKey = groupKeyOf(draft, itemKey);
   const source = itemsOf(draft, sourceKey);
   const from = source.findIndex((item) => item.key === itemKey);
@@ -170,11 +201,11 @@ export function moveItem(
   return next;
 }
 
-export function updateItem(
-  draft: CurriculumDraft,
+export function updateItem<I extends KeyedItem, G extends KeyedGroup<I>>(
+  draft: DraftTree<I, G>,
   itemKey: string,
-  patch: Partial<ItemDraft>,
-): CurriculumDraft {
+  patch: Partial<I>,
+): DraftTree<I, G> {
   const groupKey = groupKeyOf(draft, itemKey);
   return withItems(
     draft,
@@ -185,10 +216,10 @@ export function updateItem(
   );
 }
 
-export function removeItem(
-  draft: CurriculumDraft,
+export function removeItem<I extends KeyedItem, G extends KeyedGroup<I>>(
+  draft: DraftTree<I, G>,
   itemKey: string,
-): CurriculumDraft {
+): DraftTree<I, G> {
   const groupKey = groupKeyOf(draft, itemKey);
   return withItems(
     draft,
@@ -197,20 +228,20 @@ export function removeItem(
   );
 }
 
-export function addItems(
-  draft: CurriculumDraft,
+export function addItems<I extends KeyedItem, G extends KeyedGroup<I>>(
+  draft: DraftTree<I, G>,
   groupKey: string,
-  items: ItemDraft[],
-): CurriculumDraft {
+  items: I[],
+): DraftTree<I, G> {
   return withItems(draft, groupKey, [...itemsOf(draft, groupKey), ...items]);
 }
 
 /** Đổi chỗ chương `from` sang vị trí `to`. */
-export function moveGroup(
-  draft: CurriculumDraft,
+export function moveGroup<I extends KeyedItem, G extends KeyedGroup<I>>(
+  draft: DraftTree<I, G>,
   from: number,
   to: number,
-): CurriculumDraft {
+): DraftTree<I, G> {
   if (from === to || to < 0 || to >= draft.groups.length) return draft;
   const groups = [...draft.groups];
   const [group] = groups.splice(from, 1);
@@ -219,13 +250,14 @@ export function moveGroup(
 }
 
 /** Xoá chương; các mục của chương chuyển về cuối "Chưa xếp chương". */
-export function removeGroup(
-  draft: CurriculumDraft,
+export function removeGroup<I extends KeyedItem, G extends KeyedGroup<I>>(
+  draft: DraftTree<I, G>,
   groupKey: string,
-): CurriculumDraft {
+): DraftTree<I, G> {
   const group = draft.groups.find((row) => row.key === groupKey);
   if (!group) return draft;
   return {
+    ...draft,
     ungrouped: [...draft.ungrouped, ...group.items],
     groups: draft.groups.filter((row) => row.key !== groupKey),
   };

@@ -18,6 +18,7 @@ import {
   LayoutTemplate,
   LayoutDashboard,
   ListTree,
+  Presentation,
   School,
   Users,
   type LucideIcon,
@@ -134,13 +135,14 @@ function tenantNavigation(
   if (examItems.length > 0) {
     sections.push({ label: vi.nav.sectionExam, items: examItems });
   }
-  // Lớp học, Lịch thêm ở Step 7–8.
+  // Lịch thêm ở Step 8.
   if (hasAnyRole(roles, EXAM_AUTHOR_ROLES)) {
     sections.push({
       label: vi.nav.sectionTraining,
       items: [
         { label: vi.nav.courses, href: `${base}/courses`, icon: School },
         { label: vi.nav.curricula, href: `${base}/curricula`, icon: ListTree },
+        { label: vi.nav.classes, href: `${base}/classes`, icon: Presentation },
       ],
     });
   }

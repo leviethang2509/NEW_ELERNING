@@ -588,12 +588,13 @@ function toContentColumns(input: CurriculumItemInputDto) {
 
 /**
  * Bài/đề phải thuộc tenant, chưa xoá; mục mới (bài/đề chưa có trong giáo trình)
- * phải đã publish. Khoá chia sẻ dòng bài/đề để không bị xoá giữa chừng.
+ * phải đã publish. Khoá chia sẻ dòng bài/đề để không bị xoá giữa chừng. Dùng
+ * chung cho giáo trình lớp.
  */
-async function assertContentsUsable(
+export async function assertContentsUsable(
   manager: EntityManager,
   tenantId: string,
-  inputs: CurriculumItemInputDto[],
+  inputs: Pick<CurriculumItemInputDto, 'itemType' | 'contentId'>[],
   existingContentIds: Set<string>,
 ): Promise<void> {
   const idsOf = (type: CurriculumItemType) =>
