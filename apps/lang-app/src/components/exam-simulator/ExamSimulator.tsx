@@ -8,9 +8,10 @@ import {
   type CSSProperties,
   type ReactNode,
 } from 'react';
-import { ChevronDown, ChevronUp, GripVertical } from 'lucide-react';
+import { Check, ChevronDown, ChevronUp, GripVertical } from 'lucide-react';
 import {
   CALLOUT_COLORS,
+  bestWeightIndex,
   calloutVariant,
   isBlank,
   isCallout,
@@ -43,6 +44,7 @@ import {
   ResultSummary,
   SimulatorProvider,
   useSimulator,
+  type ReviewAnswer,
 } from './SimulatorState';
 
 // Bản giả lập như người làm bài nhìn thấy (chuyển từ lightc-general).
@@ -59,6 +61,7 @@ import {
 //
 // Giải thích (indicator `explanation`) chỉ hiện sau khi nộp ở bản xem trước;
 // content_public không còn nội dung giải thích nên thi thật không có gì để hiện.
+// Bài học đã nộp (`review`) nhận giải thích + đáp án từ server theo id indicator.
 
 const text = vi.simulator;
 
@@ -83,6 +86,38 @@ const stringProp = (node: ExamNode, key: string): string | undefined =>
 
 const numberProp = (node: ExamNode, key: string): number | undefined =>
   typeof node[key] === 'number' ? (node[key] as number) : undefined;
+
+const keyField = (answer: ReviewAnswer | undefined, field: string): unknown =>
+  answer && typeof answer.answerKey === 'object' && answer.answerKey !== null
+    ? (answer.answerKey as Record<string, unknown>)[field]
+    : undefined;
+
+/** Chỉ số lựa chọn đúng của câu MC / pick-n / polytomous (mọi dòng điểm cao nhất). */
+function correctChoices(answer: ReviewAnswer | undefined): Set<number> | null {
+  if (!answer) return null;
+  if (answer.qtype === 'polytomous') {
+    const weights = keyField(answer, 'weights');
+    if (!Array.isArray(weights)) return null;
+    const best = bestWeightIndex(weights as (number | null)[]);
+    return new Set(
+      best < 0
+        ? []
+        : weights.flatMap((w, i) => (w === weights[best] ? [i] : [])),
+    );
+  }
+  const indexes = keyField(answer, 'indexes');
+  return Array.isArray(indexes) ? new Set(indexes as number[]) : null;
+}
+
+/** Dòng "Đáp án: …" sau câu trả lời sai. */
+function CorrectAnswer({ children }: { children: ReactNode }) {
+  return (
+    <span className="ml-1.5 inline-flex items-baseline gap-1 text-[13.5px] font-semibold text-[#859900]">
+      <Check size={13} className="self-center" aria-hidden />
+      {text.correctAnswer}: {children}
+    </span>
+  );
+}
 
 // --- Nội dung inline --------------------------------------------------------
 
@@ -120,7 +155,7 @@ function renderLeaf(leaf: ExamNode, key: string): ReactNode {
 }
 
 function BlankField({ no }: { no?: number }) {
-  const { mark, respond, initial, locked } = useSimulator();
+  const { mark, respond, initial, locked, review, result } = useSimulator();
   const saved = no !== undefined ? (initial.value[no] ?? '') : '';
   useEffect(() => {
     if (no !== undefined && saved.trim() !== '') mark({ [no]: true });
@@ -147,8 +182,16 @@ function BlankField({ no }: { no?: number }) {
         }
         className="exam-preview-input"
       />
+      {no !== undefined && result?.verdicts[no] === 'wrong' && (
+        <BlankAnswer accepted={keyField(review?.answers.get(no), 'accepted')} />
+      )}
     </>
   );
+}
+
+function BlankAnswer({ accepted }: { accepted: unknown }) {
+  if (!Array.isArray(accepted) || accepted.length === 0) return null;
+  return <CorrectAnswer>{accepted.join(' / ')}</CorrectAnswer>;
 }
 
 function renderInline(node: ExamNode, key: string, ctx: Ctx): ReactNode {
@@ -495,15 +538,24 @@ function renderPlain(
   return out;
 }
 
-/** Giải thích: chỉ hiện sau khi nộp (xem trước), không có nội dung thì thôi. */
+/**
+ * Giải thích: chỉ hiện sau khi nộp, không có nội dung thì thôi. `raw_data` có
+ * sẵn nội dung; content_public chỉ còn indicator, nội dung lấy từ `review`.
+ */
 function ExplanationReveal({
-  blocks,
+  nodeId,
+  blocks: own,
   keyPrefix,
 }: {
+  nodeId: string | undefined;
   blocks: readonly ExamElement[];
   keyPrefix: string;
 }) {
-  const { result } = useSimulator();
+  const { result, review } = useSimulator();
+  const blocks =
+    own.length > 0
+      ? own
+      : ((nodeId ? review?.explanations.get(nodeId) : undefined) ?? []);
   if (!result || blocks.length === 0) return null;
   return (
     <aside className="my-3 rounded-lg border border-dashed border-[#b58900] bg-[rgba(181,137,0,0.06)] px-3 py-2">
@@ -541,7 +593,8 @@ function ChoiceGroup({
   /** Pick-n: số ô được tick tối đa. */
   max?: number;
 }) {
-  const { mark, respond, initial, locked } = useSimulator();
+  const { mark, respond, initial, locked, review } = useSimulator();
+  const correct = correctChoices(review?.answers.get(nos[0]));
   const [picked, setPicked] = useState<ReadonlySet<number>>(() => {
     const valid = new Set(rows.map((row) => row.index));
     const saved = nos.length > 0 ? (initial.picks[nos[0]] ?? []) : [];
@@ -579,10 +632,18 @@ function ChoiceGroup({
         {rows.map((row) => {
           const checked = picked.has(row.index);
           const disabled = locked || (full && !checked);
+          const isAnswer = correct?.has(row.index) ?? false;
+          const tone = !correct
+            ? ''
+            : isAnswer
+              ? 'bg-[rgba(133,153,0,0.12)]'
+              : checked
+                ? 'bg-[rgba(220,50,47,0.1)]'
+                : '';
           return (
             <label
               key={row.key}
-              className={`flex items-start gap-2 rounded-lg px-1.5 py-1 transition ${
+              className={`flex items-start gap-2 rounded-lg px-1.5 py-1 transition ${tone} ${
                 disabled
                   ? 'cursor-default'
                   : 'cursor-pointer hover:bg-[var(--hover)]'
@@ -597,6 +658,11 @@ function ChoiceGroup({
                 className="mt-[5px] h-[15px] w-[15px] shrink-0 accent-[var(--accent)]"
               />
               <span className="min-w-0 flex-1">{row.content}</span>
+              {isAnswer && (
+                <span className="mt-[3px] inline-flex shrink-0 items-center gap-1 text-[12px] font-semibold text-[#859900]">
+                  <Check size={13} aria-hidden /> {text.correctAnswer}
+                </span>
+              )}
             </label>
           );
         })}
@@ -606,7 +672,7 @@ function ChoiceGroup({
 }
 
 function PairGroup({ rows, options }: { rows: Row[]; options: string[] }) {
-  const { mark, respond, initial, locked } = useSimulator();
+  const { mark, respond, initial, locked, review, result } = useSimulator();
   const savedOf = (no: number | undefined) => {
     const saved = no !== undefined ? initial.value[no] : undefined;
     return saved !== undefined && options.includes(saved) ? saved : '';
@@ -631,6 +697,11 @@ function PairGroup({ rows, options }: { rows: Row[]; options: string[] }) {
           <div className="min-w-0 flex-1">
             {row.no !== undefined && <QuestionBadge nos={[row.no]} />}
             {row.content}
+            {row.no !== undefined && result?.verdicts[row.no] === 'wrong' && (
+              <PairAnswer
+                answer={keyField(review?.answers.get(row.no), 'answer')}
+              />
+            )}
           </div>
           <select
             defaultValue={savedOf(row.no)}
@@ -659,8 +730,19 @@ function PairGroup({ rows, options }: { rows: Row[]; options: string[] }) {
   );
 }
 
+function PairAnswer({ answer }: { answer: unknown }) {
+  if (typeof answer !== 'string' || answer === '') return null;
+  return (
+    <div>
+      <CorrectAnswer>{answer}</CorrectAnswer>
+    </div>
+  );
+}
+
 function OrderingGroup({ rows, nos }: { rows: Row[]; nos: number[] }) {
-  const { mark, respond, initial, locked, exam } = useSimulator();
+  const { mark, respond, initial, locked, exam, review, result } =
+    useSimulator();
+  const answerOrder = keyField(review?.answers.get(nos[0]), 'order');
   const [saved] = useState(() => {
     const order = initial.order[nos[0]];
     const indexes = rows.map((row) => row.index);
@@ -750,12 +832,59 @@ function OrderingGroup({ rows, nos }: { rows: Row[]; nos: number[] }) {
           </div>
         );
       })}
+      {result?.verdicts[nos[0]] === 'wrong' && Array.isArray(answerOrder) && (
+        <div className="rounded-lg border border-[#859900] bg-[rgba(133,153,0,0.08)] px-3 py-2">
+          <div className="mb-1 inline-flex items-center gap-1 text-[12.5px] font-semibold text-[#859900]">
+            <Check size={13} aria-hidden /> {text.correctOrder}
+          </div>
+          {(answerOrder as number[]).map((index, i) => {
+            const row = byIndex.get(index);
+            if (!row) return null;
+            return (
+              <div key={row.key} className="flex items-start gap-2">
+                <span className="w-[1.4em] shrink-0 text-[13px] font-semibold text-[var(--muted)]">
+                  {i + 1}
+                </span>
+                <div className="min-w-0 flex-1">{row.content}</div>
+              </div>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+}
+
+/** Điểm + nhận xét của câu chấm tay (bài học đã nộp). */
+function ManualScore({ no }: { no?: number }) {
+  const { review } = useSimulator();
+  const manual = no !== undefined ? review?.manual?.get(no) : undefined;
+  if (!manual) return null;
+  return (
+    <div className="my-2 rounded-lg border border-[var(--border)] bg-[var(--sidebar)] px-3 py-2 text-[13.5px]">
+      {manual.score === null ? (
+        <span className="text-[var(--muted)]">{text.awaitingGrading}</span>
+      ) : (
+        <>
+          <span className="font-semibold text-[var(--heading)]">
+            {text.manualScore(manual.score, manual.maxScore)}
+          </span>
+          {manual.comment && (
+            <p className="mt-1 whitespace-pre-wrap text-[var(--body)]">
+              {manual.comment}
+            </p>
+          )}
+        </>
+      )}
     </div>
   );
 }
 
 function SpeakingBox({ seconds, no }: { seconds?: number; no?: number }) {
-  const { exam } = useSimulator();
+  const { exam, review } = useSimulator();
+  if (review?.renderSpeaking && no !== undefined) {
+    return <>{review.renderSpeaking(no)}</>;
+  }
   if (exam?.renderSpeaking && no !== undefined) {
     return <>{exam.renderSpeaking(no, seconds)}</>;
   }
@@ -994,6 +1123,9 @@ function renderQuestion(
       />,
     );
   }
+  if (qtype === 'speaking' || qtype === 'writing') {
+    out.push(<ManualScore key={`${keyPrefix}.score`} no={questionNos[0]} />);
+  }
 
   return out;
 }
@@ -1001,6 +1133,44 @@ function renderQuestion(
 // --- Thành phần chính -------------------------------------------------------
 
 const BODY_CLASS = 'text-[15px] leading-[1.9] text-[var(--heading)]';
+
+/** Cây nội dung theo plan: phần mở đầu + passage/câu hỏi của từng part. */
+function renderPlan(plan: PreviewPlan) {
+  const intro = renderPlain(plan.intro, 'intro');
+  const hasIntro = plan.intro.some(
+    (node) => plainText(node).trim() !== '' || (node.type ?? 'p') !== 'p',
+  );
+  const parts = plan.parts.map((part, p) => {
+    const passage = renderPlain(part.passage, `p${p}`);
+    const items: ReactNode[] = part.items.map((seg, s) => {
+      const key = `p${p}.s${s}`;
+      if (isExplanation(seg.indicator)) {
+        return (
+          <ExplanationReveal
+            key={key}
+            nodeId={seg.indicator?.id}
+            blocks={seg.blocks}
+            keyPrefix={key}
+          />
+        );
+      }
+      const qtype = segmentQtype(seg);
+      return (
+        <Fragment key={key}>
+          {qtype
+            ? renderQuestion(seg, qtype, key)
+            : renderPlain(seg.blocks, key)}
+        </Fragment>
+      );
+    });
+    // Nội dung đứng trước part đầu tiên đi kèm tab đầu.
+    if (p === 0 && hasIntro) {
+      (part.passage.length > 0 ? passage : items).unshift(...intro);
+    }
+    return { passage, items };
+  });
+  return { intro, parts };
+}
 
 export function ExamSimulator({
   plan,
@@ -1013,37 +1183,7 @@ export function ExamSimulator({
   const { tab, setTab, attempt } = useSimulator();
 
   // Dựng cây một lần theo plan; đổi tab hay trả lời chỉ render lại badge.
-  const rendered = useMemo(() => {
-    const intro = renderPlain(plan.intro, 'intro');
-    const hasIntro = plan.intro.some(
-      (node) => plainText(node).trim() !== '' || (node.type ?? 'p') !== 'p',
-    );
-    const parts = plan.parts.map((part, p) => {
-      const passage = renderPlain(part.passage, `p${p}`);
-      const items: ReactNode[] = part.items.map((seg, s) => {
-        const key = `p${p}.s${s}`;
-        if (isExplanation(seg.indicator)) {
-          return (
-            <ExplanationReveal key={key} blocks={seg.blocks} keyPrefix={key} />
-          );
-        }
-        const qtype = segmentQtype(seg);
-        return (
-          <Fragment key={key}>
-            {qtype
-              ? renderQuestion(seg, qtype, key)
-              : renderPlain(seg.blocks, key)}
-          </Fragment>
-        );
-      });
-      // Nội dung đứng trước part đầu tiên đi kèm tab đầu.
-      if (p === 0 && hasIntro) {
-        (part.passage.length > 0 ? passage : items).unshift(...intro);
-      }
-      return { passage, items };
-    });
-    return { intro, parts };
-  }, [plan]);
+  const rendered = useMemo(() => renderPlan(plan), [plan]);
 
   if (plan.parts.length === 0) {
     return (
@@ -1121,6 +1261,27 @@ export function ExamSimulator({
           );
         })}
       </Fragment>
+    </div>
+  );
+}
+
+/**
+ * Nội dung liền mạch như một tài liệu (màn hình học bài): không tab Part,
+ * passage đứng trước câu hỏi của part. Nằm trong `SimulatorProvider`.
+ */
+export function ExamDocument({ plan }: { plan: PreviewPlan }) {
+  const { attempt } = useSimulator();
+  const rendered = useMemo(() => renderPlan(plan), [plan]);
+  return (
+    <div key={attempt} className={BODY_CLASS}>
+      {plan.parts.length === 0
+        ? rendered.intro
+        : rendered.parts.map((part, p) => (
+            <Fragment key={plan.parts[p].key}>
+              {part.passage}
+              {part.items}
+            </Fragment>
+          ))}
     </div>
   );
 }

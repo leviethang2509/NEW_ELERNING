@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { ClipboardCheck, Eye } from 'lucide-react';
 import {
@@ -10,6 +11,7 @@ import {
   type GradingAttemptStatus,
 } from '@lang/shared';
 import { useTenantDashboard } from '@/components/dashboard/TenantDashboardShell';
+import type { GradingKind } from '@/components/grading/GradingAttemptView';
 import {
   Badge,
   DataTable,
@@ -23,7 +25,13 @@ import {
 import { vi } from '@/i18n/vi';
 import { errorMessage } from '@/lib/error-message';
 import { formatDateTime } from '@/lib/format';
-import { gradingAttemptPath, listGradingAttempts } from '@/lib/grading-api';
+import {
+  gradingAttemptPath,
+  gradingLessonAttemptPath,
+  gradingListPath,
+  listGradingAttempts,
+  listLessonGradingAttempts,
+} from '@/lib/grading-api';
 import { useDebouncedValue } from '@/lib/use-debounced-value';
 
 const PAGE_SIZE = 20;
@@ -43,30 +51,72 @@ function parseStatus(value: string | undefined): GradingAttemptStatus | '' {
   return STATUSES.find((status) => status === value) ?? AttemptStatus.SUBMITTED;
 }
 
-/** Danh sách bài có câu Writing/Speaking đã nộp hết (Owner/Admin/Teacher). */
+const KINDS: GradingKind[] = ['exam', 'lesson'];
+
+/** Danh sách lượt học bài học, cùng dạng với lượt làm đề thi để dùng chung bảng. */
+function listLessons(
+  slug: string,
+  query: Parameters<typeof listGradingAttempts>[1],
+): Promise<GradingAttemptList> {
+  const { examId, ...rest } = query;
+  return listLessonGradingAttempts(slug, { ...rest, lessonId: examId }).then(
+    ({ lessons, items, ...page }) => ({
+      ...page,
+      exams: lessons,
+      items: items.map(({ lesson, lessonVersion: _version, ...item }) => ({
+        ...item,
+        exam: lesson,
+      })),
+    }),
+  );
+}
+
+/**
+ * Danh sách bài có câu Writing/Speaking cần chấm (Owner/Admin/Teacher): lượt
+ * làm đề thi đã nộp hết hoặc lượt học bài học có phần đã nộp (`?kind=lesson`).
+ */
 export default function GradingPage({
   searchParams,
 }: {
-  searchParams: { status?: string };
+  searchParams: { status?: string; kind?: string };
 }) {
   const { tenant } = useTenantDashboard();
   const slug = tenant.slug;
+  const router = useRouter();
 
+  const [kind, setKind] = useState<GradingKind>(
+    searchParams.kind === 'lesson' ? 'lesson' : 'exam',
+  );
   const [query, setQuery] = useState('');
   const q = useDebouncedValue(query.trim());
   const [status, setStatus] = useState(parseStatus(searchParams.status));
+  // Đề thi hoặc bài học đang lọc (theo `kind`).
   const [examId, setExamId] = useState('');
   const [page, setPage] = useState(1);
   const [data, setData] = useState<GradingAttemptList | null>(null);
+  const attemptPath =
+    kind === 'lesson' ? gradingLessonAttemptPath : gradingAttemptPath;
+
+  function changeKind(next: GradingKind) {
+    if (next === kind) return;
+    setKind(next);
+    setExamId('');
+    setData(null);
+    router.replace(
+      next === 'lesson'
+        ? `${gradingListPath(slug)}?kind=lesson`
+        : gradingListPath(slug),
+    );
+  }
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => setPage(1), [q, status, examId]);
+  useEffect(() => setPage(1), [q, status, examId, kind]);
 
   useEffect(() => {
     let cancelled = false;
     setLoading(true);
-    listGradingAttempts(slug, {
+    (kind === 'lesson' ? listLessons : listGradingAttempts)(slug, {
       page,
       pageSize: PAGE_SIZE,
       q,
@@ -89,7 +139,7 @@ export default function GradingPage({
     return () => {
       cancelled = true;
     };
-  }, [slug, page, q, status, examId]);
+  }, [slug, page, q, status, examId, kind]);
 
   const columns: DataColumn<GradingAttemptItem>[] = [
     {
@@ -97,7 +147,7 @@ export default function GradingPage({
       render: (row) => (
         <>
           <Link
-            href={gradingAttemptPath(slug, row.id)}
+            href={attemptPath(slug, row.id)}
             className="block truncate text-[14px] font-semibold text-[var(--heading)] hover:text-[var(--accent)]"
           >
             {row.student.fullName}
@@ -109,7 +159,7 @@ export default function GradingPage({
       ),
     },
     {
-      header: text.columns.exam,
+      header: kind === 'lesson' ? text.columns.lesson : text.columns.exam,
       render: (row) => (
         <>
           <span className="block truncate text-[13.5px] text-[var(--body)]">
@@ -154,7 +204,7 @@ export default function GradingPage({
           row.status === AttemptStatus.GRADED ? text.view : text.open;
         return (
           <Link
-            href={gradingAttemptPath(slug, row.id)}
+            href={attemptPath(slug, row.id)}
             title={label}
             aria-label={label}
             className={iconButtonClass}
@@ -172,8 +222,30 @@ export default function GradingPage({
 
   return (
     <div className="flex h-full flex-col gap-4 p-4 sm:p-6">
+      <div
+        role="tablist"
+        className="flex shrink-0 gap-1 self-start rounded-xl bg-[var(--sidebar)] p-1"
+      >
+        {KINDS.map((item) => (
+          <button
+            key={item}
+            type="button"
+            role="tab"
+            aria-selected={item === kind}
+            onClick={() => changeKind(item)}
+            className={`rounded-lg px-3.5 py-1.5 text-[13px] font-semibold transition ${
+              item === kind
+                ? 'bg-[var(--card)] text-[var(--heading)] shadow-sm'
+                : 'text-[var(--muted)] hover:text-[var(--body)]'
+            }`}
+          >
+            {text.kinds[item]}
+          </button>
+        ))}
+      </div>
+
       <p className="max-w-3xl shrink-0 text-[13.5px] text-[var(--body)]">
-        {text.subtitle}
+        {kind === 'lesson' ? text.lessonSubtitle : text.subtitle}
       </p>
 
       <div className="flex shrink-0 flex-wrap items-center gap-2.5">
@@ -193,7 +265,7 @@ export default function GradingPage({
         />
         <SelectFilter
           value={examId}
-          allLabel={text.allExams}
+          allLabel={kind === 'lesson' ? text.allLessons : text.allExams}
           options={(data?.exams ?? []).map((exam) => ({
             value: exam.id,
             label: exam.title,

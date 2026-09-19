@@ -232,7 +232,7 @@
     {
       "id": "student",
       "title": "Học viên",
-      "summary": "Student: làm đề đã publish và xem kết quả của mình.",
+      "summary": "Student: học bài học, làm đề đã publish và xem kết quả của mình.",
       "roles": ["STUDENT"],
       "blocks": [
         { "type": "roles", "roles": ["STUDENT"] },
@@ -251,6 +251,10 @@
             {
               "title": "Đăng nhập",
               "text": "Chỉ thuộc 1 trung tâm thì vào thẳng `/t/{slug}`; nhiều trung tâm thì chọn ở `/me`."
+            },
+            {
+              "title": "Học bài học",
+              "text": "Mục **Bài học** ở trang trung tâm: học từng phần, nộp bài tập để xem đáp án và giải thích. Xem [Học bài học](page:hoc-bai-hoc)."
             },
             {
               "title": "Chọn đề",

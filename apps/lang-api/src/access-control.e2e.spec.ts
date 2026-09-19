@@ -184,6 +184,10 @@ const ROUTES: Record<string, Access> = {
   'GET /t/:slug/grading/attempts/:id': STAFF,
   'GET /t/:slug/grading/attempts/:id/recordings/:answerId/url': STAFF,
   'PUT /t/:slug/grading/answers/:answerId': STAFF,
+  'GET /t/:slug/grading/lesson-attempts': STAFF,
+  'GET /t/:slug/grading/lesson-attempts/:id': STAFF,
+  'GET /t/:slug/grading/lesson-attempts/:id/recordings/:answerId/url': STAFF,
+  'PUT /t/:slug/grading/lesson-answers/:answerId': STAFF,
 
   // Mọi thành viên đều được thi (quyền trên lượt làm kiểm trong service).
   'GET /t/:slug/learner/exams': MEMBER,
@@ -198,6 +202,21 @@ const ROUTES: Record<string, Access> = {
   'POST /t/:slug/learner/attempts/:id/recordings': MEMBER,
   'GET /t/:slug/learner/attempts/:id/recordings/:answerId/url': MEMBER,
   'GET /t/:slug/learner/attempts/:id/result': MEMBER,
+  'GET /t/:slug/learner/lessons': MEMBER,
+  'GET /t/:slug/learner/lessons/:id': MEMBER,
+  'POST /t/:slug/learner/lessons/:id/attempts': MEMBER,
+  'GET /t/:slug/learner/lesson-attempts/:id': MEMBER,
+  'PUT /t/:slug/learner/lesson-attempts/:id/sections/:sectionId/view': MEMBER,
+  'PUT /t/:slug/learner/lesson-attempts/:id/sections/:sectionId/responses':
+    MEMBER,
+  'POST /t/:slug/learner/lesson-attempts/:id/sections/:sectionId/submit':
+    MEMBER,
+  'POST /t/:slug/learner/lesson-attempts/:id/sections/:sectionId/retry': MEMBER,
+  'POST /t/:slug/learner/lesson-attempts/:id/recordings': MEMBER,
+  'GET /t/:slug/learner/lesson-attempts/:id/sections/:sectionId/recordings/:number/url':
+    MEMBER,
+  'GET /t/:slug/learner/lesson-attempts/:id/answers/:answerId/recording-url':
+    MEMBER,
 };
 
 interface ModuleLike {

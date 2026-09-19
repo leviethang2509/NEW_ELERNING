@@ -24,5 +24,7 @@ export const config = {
     '/t/:slug/dashboard/:path*',
     '/t/:slug/exams/:path*',
     '/t/:slug/attempts/:path*',
+    '/t/:slug/lessons/:path*',
+    '/t/:slug/lesson-attempts/:path*',
   ],
 };

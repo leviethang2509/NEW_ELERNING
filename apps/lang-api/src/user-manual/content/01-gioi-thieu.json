@@ -174,6 +174,10 @@
               "Bài học cụ thể của trung tâm, tạo từ một mẫu bài học; mỗi phần sinh một section (tab, không có thời lượng). Trạng thái và version như đề thi, mặc định **Chỉ qua lớp**."
             ],
             [
+              "Lượt học",
+              "Một lần học một phiên bản bài học của một người: mỗi phần lưu bài làm, **lần nộp gần nhất** và số lần nộp; **Đã học xong** khi đã mở mọi phần và nộp mọi phần có câu hỏi."
+            ],
+            [
               "Đề thi (exam)",
               "Đề cụ thể của trung tâm, tạo từ một loại đề. Trạng thái **Nháp → Đã publish → Lưu trữ**."
             ],
@@ -442,8 +446,9 @@
               "✘"
             ],
             ["Thư viện media (upload, xoá)", "✔", "✔", "✔", "✘", "✘"],
+            ["Học bài học công khai trong trung tâm", "✔", "✔", "✔", "✔", "✔"],
             [
-              "Chấm bài Writing/Speaking (trừ bài của mình)",
+              "Chấm bài Writing/Speaking – đề thi và bài học (trừ bài của mình)",
               "✔",
               "✔",
               "✔",

@@ -60,12 +60,13 @@ const ownerCtx = context([TenantRole.TENANT_OWNER]);
 const adminCtx = context([TenantRole.TENANT_ADMIN]);
 const teacherCtx = context([TenantRole.TEACHER]);
 
-/**
- * Lượt học giả (bảng `lesson_attempts` có từ Step 5): đánh dấu version nào đã
- * có lượt học.
- */
+/** Lượt học giả: đánh dấu version nào đã có lượt học. */
 class FakeAttemptLookup extends LessonAttemptLookup {
   readonly versions: { lessonId: string; version: number }[] = [];
+
+  constructor() {
+    super(null as never);
+  }
 
   override hasAttempts(
     _manager: EntityManager,

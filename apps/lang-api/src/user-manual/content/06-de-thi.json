@@ -504,7 +504,7 @@
         {
           "type": "callout",
           "tone": "info",
-          "text": "Hiện mới có phần **soạn** bài học. Màn hình học bài cho học viên (nộp từng phần, xem đáp án và giải thích) có ở bước tiếp theo; tới lúc đó học viên chưa mở được bài học."
+          "text": "Bài học **Công khai trong trung tâm** đã publish hiện ở trang trung tâm cho mọi thành viên học – xem [Học bài học](page:hoc-bai-hoc). Câu Writing/Speaking trong bài tập được chấm ở [Chấm bài](page:cham-bai) (lọc **Bài học**)."
         },
         { "type": "heading", "level": 2, "text": "Tạo bài học" },
         {
@@ -540,7 +540,7 @@
         { "type": "heading", "level": 2, "text": "Xem trước" },
         {
           "type": "paragraph",
-          "text": "Nút **Xem trước** mở bài học trong màn hình làm bài (tạm dùng của đề thi cho tới khi có màn hình học bài): làm thử, bấm **Nộp** để thấy chấm điểm, đáp án và giải thích. Chấm ngay trên trình duyệt, không lưu, không tạo lượt học."
+          "text": "Nút **Xem trước** (trình soạn và trang Version) mở bài học trong **màn hình học bài** như học viên thấy: mỗi phần là một tab, nội dung liền mạch; bấm **Nộp phần này** để thấy đúng/sai, đáp án đúng và giải thích; thử **Làm lại** và **Xem kết quả lần trước**. Chấm ngay trên trình duyệt, không lưu, không tạo lượt học; câu Speaking không ghi âm được ở đây."
         },
         {
           "type": "heading",
@@ -552,7 +552,8 @@
           "items": [
             "**Nháp → Đã publish → Lưu trữ**, lưu trữ rồi **Publish lại** được, không quay về Nháp – như [Vòng đời đề thi](page:vong-doi-de-thi).",
             "Publish phải lưu hết thay đổi trước; nội dung còn lỗi (vd. câu chưa tick đáp án) thì không publish được và bảng lỗi liệt kê theo section. Bài đã publish/lưu trữ không lưu được nội dung còn lỗi.",
-            "**Xoá bài học** chưa có lượt học: xoá hẳn. Đã có lượt học: ẩn đi (xoá mềm) để giữ kết quả."
+            "**Xoá bài học** chưa có lượt học: xoá hẳn. Đã có lượt học: ẩn đi (xoá mềm) để giữ kết quả; học viên vẫn xem lại được lượt học cũ.",
+            "Bài **Lưu trữ**, xoá hoặc chuyển **Chỉ qua lớp**: biến khỏi trang trung tâm, lượt học đã có chỉ còn xem lại."
           ]
         },
         { "type": "heading", "level": 2, "text": "Hiển thị" },
@@ -566,7 +567,7 @@
             ],
             [
               "**Công khai trong trung tâm**",
-              "Bài đã publish sẽ hiện ở trang trung tâm `/t/{slug}` để mọi thành viên học tự do (khi có màn hình học bài)"
+              "Bài đã publish hiện ở trang trung tâm `/t/{slug}` để mọi thành viên học tự do – xem [Học bài học](page:hoc-bai-hoc)"
             ]
           ]
         },
@@ -586,7 +587,7 @@
         { "type": "heading", "level": 2, "text": "Version" },
         {
           "type": "paragraph",
-          "text": "Nút **Version** (hoặc biểu tượng lịch sử ở danh sách) mở `/t/{slug}/dashboard/lessons/{id}/versions`: xem nội dung từng version, **Khôi phục version** = lưu lại nội dung version đó. Cơ chế giống [Version đề thi](page:version-de-thi): version mới chỉ được tạo khi lưu mà version hiện tại **đã có lượt học**; chưa có thì lưu ghi đè version hiện tại. Khi chưa có màn hình học bài, mọi lần lưu đều ghi đè nên bài học chỉ có version 1."
+          "text": "Nút **Version** (hoặc biểu tượng lịch sử ở danh sách) mở `/t/{slug}/dashboard/lessons/{id}/versions`: xem nội dung từng version, **Khôi phục version** = lưu lại nội dung version đó. Cơ chế giống [Version đề thi](page:version-de-thi): version mới chỉ được tạo khi lưu mà version hiện tại **đã có lượt học**; chưa có thì lưu ghi đè version hiện tại. Trang Version có cột **Lượt học** của từng version; khôi phục version khi version hiện tại đã có lượt học cũng tạo version mới. Học viên đang học version cũ thì lượt đó **chỉ còn xem lại**; mở bài sẽ học version mới."
         },
         { "type": "heading", "level": 2, "text": "Quyền trên bài học" },
         {

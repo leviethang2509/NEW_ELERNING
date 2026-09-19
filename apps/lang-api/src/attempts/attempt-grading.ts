@@ -13,7 +13,14 @@ import type { ExamQuestion } from '../exams/exam-question.entity';
 
 // Chấm một section của lượt làm bằng dòng `exam_questions` (cùng hàm
 // `gradeResponses` với preview ở client) và tách câu trả lời theo từng câu để
-// ghi `exam_attempt_answers`.
+// ghi `exam_attempt_answers`. Bài học dùng chung với dòng `lesson_questions`
+// (cùng các cột).
+
+/** Các cột của `exam_questions` / `lesson_questions` cần để chấm. */
+export type QuestionRow = Pick<
+  ExamQuestion,
+  'id' | 'number' | 'nodeId' | 'qtype' | 'grading' | 'answerKey' | 'maxScore'
+>;
 
 export const emptyAttemptResponses = (): AttemptResponses => ({
   value: {},
@@ -21,7 +28,9 @@ export const emptyAttemptResponses = (): AttemptResponses => ({
   order: {},
 });
 
-export function toGradable(question: ExamQuestion): GradableQuestion {
+export function toGradable(
+  question: Omit<QuestionRow, 'id' | 'grading' | 'maxScore'>,
+): GradableQuestion {
   return {
     number: question.number,
     nodeId: question.nodeId,
@@ -130,7 +139,7 @@ export interface GradedSection {
 }
 
 export function gradeSection(
-  questions: readonly ExamQuestion[],
+  questions: readonly QuestionRow[],
   responses: AttemptResponses,
 ): GradedSection {
   const result = gradeResponses(

@@ -753,8 +753,6 @@ export const vi = {
     archived: 'Đã lưu trữ bài học.',
     newVersionConfirm: (version: number) =>
       `Version hiện tại đã có lượt học nên lần lưu này sẽ tạo version ${version}. Lượt học cũ giữ nguyên nội dung version cũ. Tiếp tục?`,
-    previewAside:
-      'Xem trước tạm dùng màn hình làm bài · bấm Nộp để thấy đáp án và giải thích · không lưu',
     tabs: {
       cannotRemove: 'Bài học phải có ít nhất 1 section',
       fromModule: 'Từ phần của mẫu bài học',
@@ -974,6 +972,82 @@ export const vi = {
     },
   },
   // Khu vực chính: đề đang mở, lịch sử lượt làm, kết quả (Step 13).
+  lessonLearning: {
+    heading: 'Bài học',
+    searchPlaceholder: 'Tìm bài học',
+    allBlueprints: 'Mọi mẫu bài học',
+    noLessons: 'Trung tâm chưa có bài học nào mở cho mọi thành viên.',
+    noMatch: 'Không có bài học nào khớp bộ lọc.',
+    lessonStats: (sections: number, questions: number) =>
+      questions > 0
+        ? `${sections} phần · ${questions} câu hỏi`
+        : `${sections} phần`,
+    status: {
+      in_progress: 'Đang học',
+      completed: 'Đã học xong',
+    },
+    backToTenant: 'Về trang trung tâm',
+    backToLesson: 'Về trang bài học',
+    sectionsHeading: 'Nội dung bài học',
+    theory: 'Lý thuyết',
+    questions: (value: number) => `${value} câu hỏi`,
+    start: 'Bắt đầu học',
+    continue: 'Học tiếp',
+    review: 'Xem lại',
+    starting: 'Đang mở bài học…',
+    startHint:
+      'Học theo từng phần, không giới hạn thời gian. Phần có câu hỏi bấm "Nộp phần này" để xem đáp án và giải thích; làm lại bao nhiêu lần cũng được.',
+    completeHint:
+      'Bài học được tính là học xong khi bạn đã mở mọi phần và nộp mọi phần có câu hỏi.',
+    closed: 'Bài học đã ngừng mở, bạn chỉ xem lại được lượt học cũ.',
+    historyHeading: 'Lượt học của tôi',
+    noAttempts: 'Bạn chưa học bài này.',
+    version: (value: number) => `Phiên bản ${value}`,
+    oldVersion: 'Phiên bản cũ · chỉ xem lại',
+    progress: (
+      viewed: number,
+      sections: number,
+      submitted: number,
+      total: number,
+    ) =>
+      total > 0
+        ? `Đã mở ${viewed}/${sections} phần · đã nộp ${submitted}/${total} phần bài tập`
+        : `Đã mở ${viewed}/${sections} phần`,
+    autoScore: (correct: number, total: number) =>
+      `Đúng ${correct}/${total} câu`,
+    manualProgress: (graded: number, total: number) =>
+      `Đã chấm ${graded}/${total} câu tự luận`,
+    readOnly:
+      'Lượt học này chỉ còn xem lại: bài học đã có phiên bản mới hoặc không còn mở.',
+    completedBanner: 'Bạn đã học xong bài này. Vẫn có thể làm lại bài tập.',
+    submitSection: 'Nộp phần này',
+    submitting: 'Đang nộp…',
+    confirmSubmit: 'Nộp phần này? Bạn sẽ thấy đáp án và có thể làm lại sau.',
+    unanswered: (count: number) => `Còn ${count} câu chưa làm — vẫn nộp?`,
+    retry: 'Làm lại',
+    retrying: 'Đang mở lại…',
+    viewPrevious: 'Xem kết quả lần trước',
+    backToDraft: 'Quay lại làm bài',
+    previousHint: 'Kết quả lần nộp trước, sẽ được thay khi bạn nộp lần mới.',
+    submittedAt: (value: string) => `Nộp lúc ${value}`,
+    submitCount: (count: number) => `Đã nộp ${count} lần`,
+    resultSummary: (correct: number, total: number) =>
+      `Đúng ${correct}/${total} câu`,
+    manualPending: (count: number) => `${count} câu chờ giáo viên chấm`,
+    manualDone: (graded: number, total: number) =>
+      `Đã chấm ${graded}/${total} câu tự luận`,
+    noSubmitNeeded: 'Phần này không có câu hỏi, chỉ cần đọc.',
+    listenSubmitted: 'Nghe lại bài nói',
+    noRecording: 'Không có ghi âm.',
+    saveState: {
+      saved: 'Đã lưu',
+      dirty: 'Chưa lưu',
+      saving: 'Đang lưu…',
+      error: 'Lưu thất bại, đang thử lại',
+    },
+    previewTitle: 'Xem trước bài học',
+    previewAside: 'Xem trước · chấm ngay trên trình duyệt, không lưu',
+  },
   learner: {
     searchPlaceholder: 'Tìm đề thi',
     allCategories: 'Mọi danh mục',
@@ -1100,13 +1174,18 @@ export const vi = {
   grading: {
     subtitle:
       'Chấm các câu Writing/Speaking của bài đã nộp. Không chấm được bài của chính mình; phần chấm tự động giữ nguyên.',
+    lessonSubtitle:
+      'Chấm các câu Writing/Speaking trong bài tập của bài học. Chỉ chấm lần nộp gần nhất: học viên nộp lại thì điểm cũ bị bỏ và cần chấm lại.',
+    kinds: { exam: 'Đề thi', lesson: 'Bài học' },
     searchPlaceholder: 'Tìm theo tên hoặc email học viên',
     allStatuses: 'Mọi trạng thái',
     allExams: 'Mọi đề thi',
+    allLessons: 'Mọi bài học',
     status: { submitted: 'Chờ chấm', graded: 'Đã chấm' },
     columns: {
       student: 'Học viên',
       exam: 'Đề thi',
+      lesson: 'Bài học',
       submittedAt: 'Nộp lúc',
       progress: 'Chấm tay',
       status: 'Trạng thái',
@@ -1127,6 +1206,7 @@ export const vi = {
     passage: 'Nội dung part',
     prompt: 'Đề bài',
     explanations: 'Giải thích (học viên không thấy)',
+    lessonExplanations: 'Giải thích (học viên thấy sau khi nộp)',
     response: 'Bài làm',
     blank: 'Học viên bỏ trống câu này.',
     noRecording: 'Học viên không ghi âm câu này.',
@@ -1193,6 +1273,11 @@ export const vi = {
       `${count}${max !== undefined ? ` / ${max}` : ''} ký tự`,
     explanation: 'Giải thích',
     callouts: { note: 'Lưu ý', example: 'Ví dụ', tip: 'Mẹo' },
+    correctAnswer: 'Đáp án đúng',
+    correctOrder: 'Thứ tự đúng',
+    awaitingGrading: 'Chờ giáo viên chấm',
+    manualScore: (score: number, max: number) =>
+      `Điểm: ${String(score).replace('.', ',')}/${max}`,
   },
   media: {
     title: 'Thư viện media',

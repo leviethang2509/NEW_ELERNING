@@ -36,6 +36,25 @@ export class ListGradingAttemptsQueryDto extends PaginationQueryDto {
   q?: string | null;
 }
 
+export class ListLessonGradingAttemptsQueryDto extends PaginationQueryDto {
+  @IsOptional()
+  @IsIn([AttemptStatus.SUBMITTED, AttemptStatus.GRADED], {
+    message: 'Trạng thái không hợp lệ',
+  })
+  status?: GradingAttemptStatus;
+
+  @IsOptional()
+  @IsUUID('all', { message: 'Bài học không hợp lệ' })
+  lessonId?: string;
+
+  /** Tên hoặc email học viên. */
+  @IsOptional()
+  @Transform(trimToNull)
+  @IsString({ message: 'Từ khoá không hợp lệ' })
+  @MaxLength(100, { message: 'Từ khoá tối đa 100 ký tự' })
+  q?: string | null;
+}
+
 export class GradeAnswerDto implements GradeAnswerInput {
   // Điểm tối đa theo từng câu kiểm lại trong service.
   @ValidateBy({

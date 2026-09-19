@@ -12,6 +12,7 @@ import {
 } from '@lang/shared';
 import { useAuth } from '@/components/auth/AuthProvider';
 import { LearnerExamList } from '@/components/learner/LearnerExamList';
+import { LearnerLessonList } from '@/components/lesson-learning/LearnerLessonList';
 import { MyRecentAttempts } from '@/components/learner/MyRecentAttempts';
 import { TenantAvatar } from '@/components/tenant/TenantAvatar';
 import { TenantNotice } from '@/components/tenant/TenantNotice';
@@ -175,6 +176,12 @@ export function TenantHome({ slug: rawSlug }: { slug: string }) {
             ))}
           </div>
           <MyRecentAttempts slug={tenant.slug} />
+          <section className="mt-10">
+            <h2 className="mb-3 text-[12px] font-semibold uppercase tracking-[0.09em] text-[var(--muted)]">
+              {vi.lessonLearning.heading}
+            </h2>
+            <LearnerLessonList slug={tenant.slug} />
+          </section>
           <section className="mt-10">
             <h2 className="mb-3 text-[12px] font-semibold uppercase tracking-[0.09em] text-[var(--muted)]">
               {vi.tenantPage.examsHeading}

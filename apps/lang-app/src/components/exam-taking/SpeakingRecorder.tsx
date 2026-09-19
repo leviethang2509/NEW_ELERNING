@@ -2,13 +2,11 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { Headphones, Mic, RotateCcw, Square, Upload } from 'lucide-react';
-import type { AttemptRecording } from '@lang/shared';
 import { useSimulator } from '@/components/exam-simulator/SimulatorState';
 import { secondaryButtonClass } from '@/components/ui';
 import { vi } from '@/i18n/vi';
 import { errorMessage } from '@/lib/error-message';
 import { formatDateTime } from '@/lib/format';
-import { getRecordingUrl, uploadRecording } from '@/lib/learner-api';
 
 const text = vi.examTaking.recorder;
 
@@ -27,30 +25,34 @@ function canRecord(): boolean {
   );
 }
 
+/** Bản ghi đã lưu trên server. */
+export interface SavedRecording {
+  uploadedAt: string;
+}
+
 /**
  * Ghi âm câu Speaking: ghi tối đa `seconds` giây, nghe lại, ghi lại (bản cũ bị
- * thay trên server). Bản ghi tải lên ngay khi dừng.
+ * thay trên server). Bản ghi tải lên ngay khi dừng. Trang thi và trang học bài
+ * truyền hàm tải lên / lấy link nghe riêng.
  */
 export function SpeakingRecorder({
-  slug,
-  attemptId,
-  sectionId,
   no,
   seconds,
   initial,
+  upload: uploadFile,
+  getUrl,
 }: {
-  slug: string;
-  attemptId: string;
-  sectionId: string;
   no: number;
   seconds?: number;
-  initial?: AttemptRecording;
+  initial?: SavedRecording;
+  upload: (file: File) => Promise<SavedRecording>;
+  getUrl: () => Promise<{ url: string }>;
 }) {
   const { mark, locked } = useSimulator();
   const [supported] = useState(canRecord);
   const [phase, setPhase] = useState<Phase>('idle');
   const [elapsed, setElapsed] = useState(0);
-  const [saved, setSaved] = useState<AttemptRecording | null>(initial ?? null);
+  const [saved, setSaved] = useState<SavedRecording | null>(initial ?? null);
   const [pendingFile, setPendingFile] = useState<File | null>(null);
   const [audioUrl, setAudioUrl] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -91,13 +93,7 @@ export function SpeakingRecorder({
     setPendingFile(file);
     setError(null);
     try {
-      const recording = await uploadRecording(
-        slug,
-        attemptId,
-        sectionId,
-        no,
-        file,
-      );
+      const recording = await uploadFile(file);
       setSaved(recording);
       setPendingFile(null);
       mark({ [no]: true });
@@ -161,7 +157,7 @@ export function SpeakingRecorder({
     if (!saved) return;
     setError(null);
     try {
-      const { url } = await getRecordingUrl(slug, attemptId, saved.answerId);
+      const { url } = await getUrl();
       setAudioUrl(url);
     } catch (err) {
       setError(errorMessage(err, vi.common.loadFailed));

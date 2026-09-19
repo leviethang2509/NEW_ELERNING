@@ -26,7 +26,7 @@ import {
 } from '@lang/shared';
 import type { Value } from 'platejs';
 import type { PlateEditor } from 'platejs/react';
-import { PreviewDialog } from '@/components/exam-editor/PreviewDialog';
+import { LessonPreviewDialog } from '@/components/lesson-viewer/LessonPreviewDialog';
 import { SectionEditor } from '@/components/exam-editor/SectionEditor';
 import { SectionTabs } from '@/components/exam-editor/SectionTabs';
 import { newSectionKey } from '@/components/exam-editor/editor-sections';
@@ -507,11 +507,10 @@ export function LessonEditor({
         />
       ))}
 
-      <PreviewDialog
+      <LessonPreviewDialog
         open={previewOpen}
         sections={sections}
         initialKey={activeKey}
-        aside={text.previewAside}
         onClose={() => setPreviewOpen(false)}
       />
       <LessonFormModal

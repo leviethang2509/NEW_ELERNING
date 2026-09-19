@@ -355,6 +355,7 @@ t/:slug:
 - Migration `lesson_attempts`, `lesson_attempt_sections`, `lesson_attempt_answers`; `LessonAttemptsService` (mở section, autosave câu trả lời, nộp section → chấm + đáp án + giải thích, làm lại, học xong, ghi âm).
 - Learner: danh sách bài học `tenant` ở `/t/{slug}`, trang bài học, màn hình học `LessonViewer` (tab, nội dung liền mạch, "Nộp phần này", "Làm lại", đáp án/đúng sai/giải thích sau khi nộp).
 - Chấm bài: trang "Chấm bài" thêm lọc Đề thi | Bài học, chấm câu Speaking/Writing của bài học (quyền như hiện tại, đổi ở Step 10); nộp lại → lượt chấm cũ bỏ.
+- Người dùng chốt 2026-09-19: "học xong" **tự động** (chỉ hiện nhãn, không có nút bấm tay); sau "Làm lại" học viên vẫn mở được **"Xem kết quả lần trước"** tới khi nộp lần mới; bài học có version mới thì lượt học version cũ **chỉ xem lại** (không nộp/làm lại), bấm Học tạo lượt trên version mới.
 - **Nghiệm thu:** học viên học bài Minna: mở hết tab, nộp bài tập, thấy đáp án + giải thích, làm lại, "học xong"; Speaking nộp và được chấm.
 - **Deploy giai đoạn 1.**
 

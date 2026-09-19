@@ -25,6 +25,8 @@ function matches<T>(row: T, where: Where<T>): boolean {
           } as Where<T>);
         case 'lessThan':
           return (actual as number | Date) < (expected.value as number | Date);
+        case 'moreThan':
+          return (actual as number | Date) > (expected.value as number | Date);
         case 'in':
           return (expected.value as unknown[]).includes(actual);
         case 'like':
@@ -42,7 +44,7 @@ function matches<T>(row: T, where: Where<T>): boolean {
 
 /**
  * Repository giả trong bộ nhớ cho unit test service, chỉ hỗ trợ các hàm và
- * FindOperator (IsNull, Not, LessThan, In, Like) đang dùng. Bỏ qua `relations`,
+ * FindOperator (IsNull, Not, LessThan, MoreThan, In, Like) đang dùng. Bỏ qua `relations`,
  * `order`, `lock`, không tự loại bản ghi đã xoá mềm. Trả bản sao như khi đọc DB.
  */
 export class InMemoryRepository<T extends object> {

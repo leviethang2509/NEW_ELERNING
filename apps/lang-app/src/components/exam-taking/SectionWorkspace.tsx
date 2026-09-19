@@ -14,7 +14,12 @@ import { FormAlert, compactPrimaryButtonClass } from '@/components/ui';
 import { vi } from '@/i18n/vi';
 import { ApiError } from '@/lib/api';
 import { errorMessage } from '@/lib/error-message';
-import { saveAttemptResponses, submitAttemptSection } from '@/lib/learner-api';
+import {
+  getRecordingUrl,
+  saveAttemptResponses,
+  submitAttemptSection,
+  uploadRecording,
+} from '@/lib/learner-api';
 import { Countdown } from './Countdown';
 import { ExamHeader } from './ExamHeader';
 import { SpeakingRecorder } from './SpeakingRecorder';
@@ -205,15 +210,32 @@ export function SectionWorkspace({
     () => new Map(current.recordings.map((item) => [item.number, item])),
     [current.recordings],
   );
+  const answerIds = useRef(new Map<number, string>());
   const renderSpeaking = useCallback(
     (no: number, seconds: number | undefined) => (
       <SpeakingRecorder
-        slug={slug}
-        attemptId={attemptId}
-        sectionId={sectionId}
         no={no}
         seconds={seconds}
         initial={recordings.get(no)}
+        upload={async (file) => {
+          const recording = await uploadRecording(
+            slug,
+            attemptId,
+            sectionId,
+            no,
+            file,
+          );
+          // Nghe lại bản vừa tải lên cần id câu trả lời mới.
+          answerIds.current.set(no, recording.answerId);
+          return recording;
+        }}
+        getUrl={() =>
+          getRecordingUrl(
+            slug,
+            attemptId,
+            answerIds.current.get(no) ?? recordings.get(no)?.answerId ?? '',
+          )
+        }
       />
     ),
     [slug, attemptId, sectionId, recordings],

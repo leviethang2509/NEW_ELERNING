@@ -14,7 +14,7 @@
 | 1 | 2 | Mẫu bài học | ✅ | 2026-09-19 | Commit 38d6470 (chưa push; deploy cùng giai đoạn 1) |
 | 1 | 3 | Editor: khối mới & giải thích | ✅ | 2026-09-19 | Chưa commit; chờ người dùng bấm thử giao diện (dữ liệu thử `step3-test` còn giữ) |
 | 1 | 4 | Soạn bài học | ✅ | 2026-09-19 | Chưa commit; dữ liệu thử `step4-test` còn giữ để bấm thử giao diện |
-| 1 | 5 | Học bài học & chấm tay bài học | ⬜ | | Deploy giai đoạn 1 |
+| 1 | 5 | Học bài học & chấm tay bài học | ✅ | 2026-09-19 | Chưa commit; chờ người dùng bấm thử giao diện rồi commit/push để deploy giai đoạn 1 |
 | 2 | 6 | Khoá học & giáo trình tham khảo | ⬜ | | |
 | 2 | 7 | Lớp học & giáo trình lớp | ⬜ | | |
 | 2 | 8 | Thời khoá biểu, ngày nghỉ, lịch | ⬜ | | |
@@ -27,17 +27,13 @@
 
 ## Bàn giao cho phiên tiếp theo
 
-- Step 1 ✅ (đã deploy :3001). Step 2 ✅, commit `38d6470` trên `main`, **chưa push**. Step 3 ✅ và Step 4 ✅ **chưa commit** (chờ người dùng yêu cầu). Plan chỉ yêu cầu deploy lại cuối giai đoạn 1 (sau Step 5).
-- **Tiếp theo: Step 5 – Học bài học & chấm tay bài học** (plan mục 7, DB mục 4.3, route learner/grading mục 6.2). Điểm xuất phát:
-  - `lessons/lesson-attempt-lookup.ts` (`LessonAttemptLookup.hasAttempts`/`countByVersion`) đang luôn trả "chưa có lượt học": đổi sang đọc `lesson_attempts`, khi đó Save/khôi phục bài có lượt học tạo version mới, xoá bài có lượt học thành xoá mềm, trang Version có số lượt học. Unit test `lesson-content.service.spec.ts` đã kiểm các nhánh này bằng lookup giả.
-  - Chép luồng lượt làm của đề thi (`attempts/`: `LearnerController`, `AttemptsService`, `attempt-grading.ts`, ghi âm) nhưng bài học không có đồng hồ; chấm bằng `lesson_questions` của section; giải thích lấy từ `lesson_sections.explanations` (`explanationsFor`) và **chỉ trả sau khi nộp section**.
-  - Xem trước trong trình soạn (`LessonEditor`, trang version) hiện tạm dùng `PreviewDialog`/`ExamSimulator` với `aside={vi.lessonEditor.previewAside}`: đổi sang `LessonViewer`.
-  - Học viên chỉ thấy bài `visibility = tenant` đã publish (như đề thi: bài `private` → 404 trừ khi đã có lượt học).
-- Máy dev: `apps/lang-api/.env` trỏ Postgres local `lang_simulator_dev` (cấu hình VPS để comment `# VPS:`). DB local có 13 migration, 1 System Owner, mẫu bài học hệ thống **Minna no Nihongo – 1 bài** (`MINNA-1-BAI`, 5 phần). **Còn giữ dữ liệu thử** để người dùng bấm giao diện:
+- Giai đoạn 1 (Step 1–5) xong. Step 1 đã deploy :3001. Step 2 commit `38d6470`, Step 3–4 commit `ce4dc75` (**chưa push**). Step 5 **chưa commit**. Cuối giai đoạn 1: người dùng bấm thử giao diện, rồi yêu cầu commit + push `main` để deploy (migration `CreateLessonAttempts` chạy lúc container khởi động; không có env mới).
+- **Tiếp theo: Step 6 – Khoá học & giáo trình tham khảo** (plan mục 7, DB mục 4.4, phân quyền mục 5, route mục 6). Xem "Lưu ý cho step sau" của Step 5 và prompt ở cuối file.
+- Máy dev: `apps/lang-api/.env` trỏ Postgres local `lang_simulator_dev`. DB local có 14 migration, 1 System Owner, mẫu bài học hệ thống **Minna no Nihongo – 1 bài**. **Còn giữ dữ liệu thử** để người dùng bấm giao diện:
   - Step 3: tenant `step3-test` (4 đề, 1 lượt làm chờ chấm) + `step3-teacher|student|student2@example.com`.
-  - Step 4: tenant `step4-test` (System Owner là Chủ sở hữu) với bài học **Minna bài 1** của `step4-teacher` (đã publish, hiển thị công khai; tab Từ vựng có furigana/callout/khối gập mở, tab Bài tập có 2 câu + 1 giải thích) và bản sao **Bản của GV2** của `step4-teacher2` + `step4-student@example.com`.
-  - Kiểm xong thì xoá: `delete from tenants where slug in ('step3-test','step4-test'); delete from users where email like 'step3-%@example.com' or email like 'step4-%@example.com';`. Còn schema rỗng `lang_simulator` sót lại (không ảnh hưởng).
-- Chạy thử: API `node dist/main.js` (:3101, sau `pnpm build`), app `pnpm start` (:3100); **đang chạy** bản build Step 4. Dừng Next bằng `pkill -f next-server`; trước khi chạy API mới kiểm `lsof -iTCP:3101 -sTCP:LISTEN` (tiến trình cũ còn giữ cổng thì API mới thoát ngay, request vẫn tới bản cũ). Kiểm trang qua curl cần cookie `ls_rt=x` (không có thì middleware 307 về `/login`). Nghiệm thu API không cần mật khẩu System Owner: ký JWT `{ sub, tv }` bằng `JWT_SECRET` trong `.env` (script mẫu `accept4.js` trong scratchpad phiên Step 4: tạo tenant qua `POST /tenants` + `POST /admin/tenants/:id/approve`, thành viên qua `POST /t/:slug/memberships/create-account` rồi SQL tắt `must_change_password`). So nội dung jsonb phải so với bản đọc lại từ API (Postgres sắp lại thứ tự key). Không có công cụ trình duyệt – nhờ người dùng bấm thử giao diện; kiểm render không cần trình duyệt: bundle bằng esbuild (`node_modules/.pnpm/esbuild@*/node_modules/esbuild/bin/esbuild --bundle --platform=node --jsx=automatic --packages=external --alias:@=./src`) rồi `renderToStaticMarkup`, chạy với `NODE_PATH=apps/lang-app/node_modules`.
+  - Step 4–5: tenant `step4-test` (System Owner là Chủ sở hữu). Bài **Minna bài 1** của `step4-teacher` (công khai, **version 2**; tab Từ vựng có furigana/callout/khối gập mở, tab Luyện tập có Writing + Speaking, tab Bài tập 2 câu MC + 1 giải thích) và bản sao nháp **Bản của GV2** của `step4-teacher2`. `step4-student@example.com` có 2 lượt học: version 1 (đã học xong, chỉ xem lại, phần Luyện tập vừa nộp lại → **chờ chấm** ở trang Chấm bài → Bài học) và version 2 (mới mở, chưa làm gì).
+  - Dọn dẹp (đã thử trong transaction, chạy được với bảng lượt học): `delete from tenants where slug in ('step3-test','step4-test'); delete from users where email like 'step3-%@example.com' or email like 'step4-%@example.com';`. File ghi âm thử nằm trên bucket R2 private (prefix `tenants/{id tenant step4-test}/lesson-attempts/`), xoá DB không xoá file. Còn schema rỗng `lang_simulator` sót lại (không ảnh hưởng).
+- Chạy thử: API `node dist/main.js` (:3101, sau `pnpm build`), app `pnpm start` (:3100); **đang chạy** bản build Step 5 (log ở scratchpad phiên Step 5). Dừng Next bằng `pkill -f next-server`; trước khi chạy API mới kiểm `lsof -iTCP:3101 -sTCP:LISTEN`. Kiểm trang qua curl cần cookie `ls_rt=x`. Nghiệm thu API không cần mật khẩu: ký JWT `{ sub, tv }` bằng `JWT_SECRET` trong `.env` (mẫu: `accept5.js` trong scratchpad phiên Step 5 – `tokenOf(email)` đọc `token_version` từ DB). Không có công cụ trình duyệt – nhờ người dùng bấm thử; kiểm render không cần trình duyệt: bundle bằng esbuild (`node_modules/.pnpm/esbuild@*/node_modules/esbuild/bin/esbuild --bundle --platform=node --jsx=automatic --packages=external --alias:@=./src`, chạy trong `apps/lang-app`) rồi `renderToStaticMarkup`, chạy với `NODE_PATH=apps/lang-app/node_modules` (component có `Modal`/portal không render được kiểu này).
 
 ## Nhật ký
 
@@ -159,15 +155,51 @@
 - `ExamStatusBadge` dùng cho cả bài học (cùng giá trị trạng thái).
 - Nội dung bài học trả cho học viên phải là `content_public` (không phải `raw_data`); giải thích chỉ sau khi nộp section.
 
-## Prompt cho Step 5
+### Step 5 – Học bài học & chấm tay bài học (2026-09-19)
+
+**Đã làm**
+- Người dùng chốt đầu phiên (ghi vào plan Step 5): "học xong" **tự động**, không có nút bấm tay; sau "Làm lại" vẫn mở được **Xem kết quả lần trước**; bài có version mới thì lượt version cũ **chỉ xem lại**.
+- Migration `1789828790860-CreateLessonAttempts` (sinh bằng `migration:generate`, `down` rút gọn): `lesson_attempts` (2 index unique một phần theo `class_item_id`, FK `lessons` NO ACTION), `lesson_attempt_sections` (FK `lesson_sections` NO ACTION), `lesson_attempt_answers` (unique `(attempt_section_id, question_id)`, FK `lesson_questions` NO ACTION).
+- lang-api `lesson-attempts/`: `LessonAttemptsService` (mở lượt/dùng lại lượt của version hiện tại, mở tab, autosave, nộp → chấm + đáp án + giải thích, làm lại, ghi âm bản đang làm, nghe lại bản đang làm/đã nộp), `LearnerLessonsService` (danh sách `tenant` + bộ lọc, trang bài học + các lượt học), `LearnerLessonsController`. `LessonAttemptLookup` đọc `lesson_attempts` (Save có lượt học → version mới, xoá → xoá mềm, trang Version có số lượt học). `gradeSection` của `attempts/attempt-grading.ts` nhận kiểu `QuestionRow` để dùng chung.
+- Chấm bài học: `LessonGradingService` + `LessonGradingController` (`grading/lesson-attempts`, `…/:id`, `…/:id/recordings/:answerId/url`, `grading/lesson-answers/:answerId`), cùng quyền đề thi (`GRADER_ROLES`, không chấm bài mình). `ROUTES` thêm 15 dòng. Repository giả hỗ trợ thêm `MoreThan`.
+- `@lang/shared`: `lesson-attempt.ts` (`LessonAttemptStatus`, `LessonAttemptSectionStatus`, `LearnerLesson*`, `LessonAttemptView`, `LessonSectionResult`, `LessonGrading*`…).
+- lang-app:
+  - `SimulatorProvider` thêm `review` (kết quả + đáp án + giải thích theo id indicator + điểm chấm tay) và `flags`. `ExamSimulator`: lựa chọn đúng có nhãn **Đáp án đúng**, ô trống/cặp ghép sai hiện đáp án, sắp xếp sai hiện **Thứ tự đúng**, điểm/nhận xét câu chấm tay, giải thích lấy từ `review` khi content_public chỉ còn indicator. `ExamDocument` = nội dung liền mạch (không tab Part). `renderPlan` tách ra dùng chung.
+  - `components/lesson-viewer`: `LessonViewer` (tab section có dấu ✓, "Nộp phần này" hỏi lại khi còn câu chưa làm, "Làm lại", "Xem kết quả lần trước"/"Quay lại làm bài"), `lesson-review.ts`, `LessonPreviewDialog` (thay `PreviewDialog` ở trình soạn bài học và trang Version).
+  - `components/lesson-learning`: `LearnerLessonList` (mục **Bài học** ở `/t/{slug}`), `LearnerLessonDetailView` (`/t/{slug}/lessons/{id}`), `LessonAttemptScreen` (`/t/{slug}/lesson-attempts/{id}`, autosave 2 giây/khi đổi tab/ẩn trang, trạng thái lưu), `SubmittedRecording`. Middleware chặn thêm `/t/:slug/lessons`, `/t/:slug/lesson-attempts`.
+  - `SpeakingRecorder` nhận `upload`/`getUrl` (trang thi đề truyền hàm cũ).
+  - Trang Chấm bài: bộ chọn **Đề thi | Bài học** (`?kind=lesson`), trang `/grading/lessons/{attemptId}`; `GradingAttemptView` nhận `kind` (tiêu đề giải thích "học viên thấy sau khi nộp" với bài học).
+- Tài liệu: `/user-manual` nhóm **Học, thi & chấm bài** thêm trang **Học bài học**; sửa trang Bài học (xem trước, hiển thị, version, xoá), Chấm bài (Đề thi | Bài học, nộp lại bỏ điểm cũ), thuật ngữ **Lượt học**, ma trận quyền (học bài học công khai: mọi vai trò), vai trò Học viên. CLAUDE.md (lesson-attempts, chấm bài học, lang-app học bài).
+
+**Sai khác so với plan**
+- Module riêng `lesson-attempts/` (không nằm trong `lessons/`); entity lượt học đăng ký thêm ở `LessonsModule` cho `LessonAttemptLookup` (tránh import vòng).
+- Thêm cột so với plan 4.3: `lesson_attempts` có `submitted_at`, `graded_at`, `auto_correct/auto_total`, `manual_count/manual_graded_count` (tổng lần nộp gần nhất, để lọc/sắp xếp trang Chấm bài); `lesson_attempt_sections` có `status` (open/submitted), `responses` = bản đang làm, `submitted_responses` = lần nộp gần nhất, `recordings` jsonb = ghi âm bản đang làm (answers bị xoá/tạo lại mỗi lần nộp nên không giữ ghi âm nháp ở đó), `order_seed`.
+- `class_item_id` chưa có khoá ngoại (bảng `class_items` có ở Step 7).
+- Danh sách chấm bài học là endpoint riêng `GET grading/lesson-attempts` (plan ghi `attempts?kind=`) vì dữ liệu khác loại; route thêm: `POST …/sections/:sid/retry`, `GET …/sections/:sid/recordings/:number/url`, `GET …/answers/:answerId/recording-url`, `GET grading/lesson-attempts/:id/recordings/:answerId/url`.
+- `POST lessons/:id/attempts` trả lượt đã có của version hiện tại (200) thay vì 409 như đề thi.
+- `gradeSection` dùng chung với đề thi thay vì chép sang `lessons/`.
+- Nộp phần không có câu hỏi → 409 (phần lý thuyết chỉ cần mở).
+
+**Nghiệm thu (local)**
+- 5 lệnh kiểm tra pass (shared 61, exam-core 63, lang-api 235 test – thêm 10 test `lesson-attempts.service.spec.ts`: mở lượt/không lộ đáp án, private/nháp 404, lưu trữ 409, nộp từ autosave + đáp án + giải thích, làm lại giữ kết quả cũ, phần lý thuyết không nộp, học xong, version mới chỉ xem lại, bài chuyển private, ghi âm nháp → answer, chấm tay đếm lại + nộp lại bỏ điểm cũ + không chấm bài mình).
+- Migration: chạy → "No changes" → revert → chạy lại OK. Lệnh dọn dữ liệu thử chạy được (thử trong transaction rồi rollback).
+- API thật (:3101), `accept5.js` **47/47 mục đạt** trên bài Minna của `step4-test`: thêm Writing + Speaking vào tab Luyện tập (chưa có lượt học → vẫn version 1); học viên thấy bài ở danh sách, bản nháp 404; mở lượt (mở lại cùng lượt); response trước khi nộp không có giải thích/đáp án; autosave → nộp → 1/2 kèm đáp án + giải thích câu 1; nộp lại khi chưa Làm lại 409; Làm lại giữ kết quả cũ; nộp đúng 2/2, DB chỉ giữ answers lần gần nhất; ghi âm lên R2 thật, nghe lại bản nháp/đã nộp; mở hết tab → **Đã học xong**; Teacher thấy lượt chờ chấm, chấm 2 câu (Teacher khác chấm được) → graded, học viên thấy điểm + nhận xét; nộp lại → chờ chấm lại, answer cũ 404, vẫn học xong; lưu bài có lượt học → version 2, trang Version đếm 1 lượt ở v1; lượt v1 chỉ xem lại (Làm lại 409), mở bài → lượt mới trên v2.
+- lang-app (`next start`, cookie `ls_rt`): `/t/step4-test`, trang bài học, màn hình học, Chấm bài (cả `?kind=lesson`), trang chấm bài học, trình soạn + trang version bài học đều 200. Render `LessonViewer` bằng `react-dom/server` với dữ liệu thật: phần đã nộp có "Đáp án đúng", giải thích, "Đúng 2/2 câu"; lượt chỉ xem lại không có nút Làm lại; phần nộp lại hiện "Chờ giáo viên chấm"; lượt mới không lộ giải thích, có nút "Nộp phần này". **Chưa bấm giao diện bằng trình duyệt**: danh sách Bài học ở trang trung tâm, trang bài học, màn hình học (tab, autosave, nộp, làm lại, xem kết quả lần trước, ghi âm – cần HTTPS/localhost), xem trước trong trình soạn, trang Chấm bài (Đề thi | Bài học) và chấm bài học.
+
+**Lưu ý cho step sau**
+- Step 7: thêm FK `lesson_attempts.class_item_id` → `class_items`. Step 9: lượt học trong lớp đi đường riêng (theo `class_item_id`, 1 lượt/mục/version); `canSubmitAttempt` hiện đòi `class_item_id IS NULL` và bài `visibility = tenant` – phải mở rộng cho lượt trong lớp (bài `private` học qua lớp được), lớp không `ongoing` thì chặn nộp.
+- Step 10: `LessonGradingService` hiện cho mọi `GRADER_ROLES` chấm (trừ bài mình); đổi sang `canGrade` (plan 4.7) cùng lúc với đề thi.
+- Step 11: bảng điểm bài học = `% đúng` lần gần nhất (`lesson_attempts.auto_correct/auto_total` đã là tổng lần nộp gần nhất) + ✔ học xong lấy từ **bất kỳ** lượt `completed` (giả định 2).
+- Step 12: sự kiện "chấm xong bài học" → chuông; điểm gọi là `LessonGradingService.grade` (khi `graded_at` vừa có).
+- Nhân bản đề/bài/giáo trình không chép lượt học; xoá bài học có lượt học vẫn là xoá mềm.
+
+## Prompt cho Step 6
 
 ```
-Bắt đầu Step 5 của req-3 (Học bài học & chấm tay bài học).
+Bắt đầu Step 6 của req-3 (Khoá học & giáo trình tham khảo) – bước đầu giai đoạn 2.
 
-1. Làm theo mục "Bắt đầu phiên làm việc" trong CLAUDE.md: đọc docs/requirements/req-3-progress.md (phần "Bàn giao cho phiên tiếp theo" và nhật ký Step 3–4), rồi đọc trong docs/requirements/req-3-plan.md: mục 1.1 (dòng Học bài, Học xong, Giải thích, Xem trước), mục 1.4 (dòng Chấm tay), giả định 2 và 10 ở mục 2, thiết kế DB mục 4.3, phân quyền mục 5, route mục 6 (learner lessons/lesson-attempts, grading lesson-attempts/lesson-answers, trang (site)/t/[slug]/lessons và lesson-attempts) và Step 5 ở mục 7. Chỉ mở req-3-question*.md (A5–A7, A9, R3, R20, R21) khi cần lý do của một quyết định.
-2. Trước khi code, tóm tắt ngắn cho tôi cách làm: migration và entity (lesson_attempts, lesson_attempt_sections, lesson_attempt_answers), nối LessonAttemptLookup, những gì chép từ attempts/ và khác biệt (không đồng hồ, nộp theo section, làm lại không giới hạn chỉ giữ lần gần nhất, học xong, giải thích sau khi nộp), ghi âm, route API + dòng ROUTES mới, màn hình lang-app (danh sách bài học ở /t/{slug}, trang bài học, LessonViewer, xem trước trong trình soạn đổi sang LessonViewer, trang Chấm bài lọc Đề thi | Bài học). Có chỗ nào chưa rõ hoặc mâu thuẫn thì hỏi tôi, không tự đoán.
-3. Làm lần lượt: migration + LessonAttemptsService/learner controller + chấm tay bài học kèm unit test (mở section, autosave, nộp → chấm + đáp án + giải thích, làm lại xoá chấm tay cũ, học xong, bài private 404, quyền chấm, không lộ giải thích trước khi nộp) → lib/learner-api + LessonViewer + trang học viên + trang Chấm bài → tài liệu. Sau mỗi phần chạy test.
-4. Nghiệm thu thật theo tiêu chí của plan: học viên học bài Minna (mở hết tab, nộp bài tập, thấy đáp án + giải thích, làm lại, "học xong"); Speaking nộp và được chấm; kiểm response API (không có giải thích/đáp án trước khi nộp). Cập nhật /user-manual, CLAUDE.md, req-3-progress.md. Step 5 là cuối giai đoạn 1: nhắc tôi commit/push để deploy (không tự push). Chưa commit, chờ tôi yêu cầu.
-
-Sau khi xong step 5 hãy ghi prompt cho step 6 ở cuối file req-3-progress.
+1. Làm theo mục "Bắt đầu phiên làm việc" trong CLAUDE.md: đọc docs/requirements/req-3-progress.md (phần "Bàn giao cho phiên tiếp theo" và "Lưu ý cho step sau" của Step 5), rồi đọc trong docs/requirements/req-3-plan.md: mục 1.2 (dòng Khoá học, Giáo trình, Mục giáo trình, Nhãn mục), giả định 5 ở mục 2, thiết kế DB mục 4.4, phân quyền mục 5 (Khoá học, Giáo trình tham khảo, Gắn/bỏ giáo trình), route mục 6 (dashboard courses, curricula; API courses, curricula) và Step 6 ở mục 7. Chỉ mở req-3-question*.md (B1–B4, C1–C6, R4, R6, T1) khi cần lý do của một quyết định.
+2. Trước khi code, tóm tắt ngắn cho tôi cách làm: migration và entity (courses, curricula, course_curricula, curriculum_groups, curriculum_items), TrainingModule (service khoá học, service giáo trình), quyền (Owner/Admin CRUD khoá học; Teacher xem khoá học, tạo/sửa giáo trình của mình; gắn/bỏ giáo trình chỉ Owner/Admin), lưu cả danh sách chương + mục bằng PUT :id/items với baseRevision, nhân bản giáo trình, chặn xoá bài học/đề thi đang nằm trong giáo trình (409, lưu trữ vẫn được), route API + dòng ROUTES mới, màn hình lang-app (danh sách/chi tiết khoá học với tab Giáo trình tham khảo, danh sách/chi tiết giáo trình với chương + mục kéo thả, chọn bài học/đề đã publish, nhãn, ghi chú), menu nhóm Đào tạo. Có chỗ nào chưa rõ hoặc mâu thuẫn thì hỏi tôi, không tự đoán.
+3. Làm lần lượt: migration + service + controller kèm unit test (quyền Teacher, trùng mục trong giáo trình, baseRevision 409, xoá giáo trình đang gắn khoá học bị chặn, xoá bài/đề đang dùng bị chặn, nhân bản) → lang-app → tài liệu. Sau mỗi phần chạy test.
+4. Nghiệm thu thật theo tiêu chí của plan: tạo khoá "Tiếng Nhật N5", giáo trình 3 chương (bài học + kiểm tra + thi cuối khoá), gắn vào 2 khoá học; Teacher sửa giáo trình người khác → 403. Cập nhật /user-manual, CLAUDE.md, req-3-progress.md và ghi prompt cho Step 7 ở cuối file. Chưa commit, chờ tôi yêu cầu.
 ```

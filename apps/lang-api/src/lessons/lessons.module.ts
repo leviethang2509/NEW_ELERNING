@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { CatalogModule } from '../catalog/catalog.module';
+import { LessonAttempt } from '../lesson-attempts/lesson-attempt.entity';
 import { TenantsModule } from '../tenants/tenants.module';
 import { User } from '../users/user.entity';
 import { LessonAttemptLookup } from './lesson-attempt-lookup';
@@ -22,6 +23,7 @@ import { LessonsService } from './lessons.service';
       LessonSection,
       LessonPart,
       LessonQuestion,
+      LessonAttempt,
       User,
     ]),
   ],

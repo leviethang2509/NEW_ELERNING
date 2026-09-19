@@ -8,6 +8,7 @@ import {
   AttemptStatus,
   GRADING_COMMENT_MAX_LENGTH,
   isValidManualScore,
+  type GradeAnswerInput,
   type GradeAnswerResult,
   type GradingAttemptDetail,
   type GradingQuestion,
@@ -28,12 +29,63 @@ import { formatDateTime } from '@/lib/format';
 import {
   getGradingAttempt,
   getGradingRecordingUrl,
+  getLessonGradingAttempt,
+  getLessonGradingRecordingUrl,
   gradeAnswer,
+  gradeLessonAnswer,
   gradingAttemptPath,
+  gradingLessonAttemptPath,
+  gradingLessonListPath,
   gradingListPath,
 } from '@/lib/grading-api';
 
 const text = vi.grading;
+
+/** Lượt làm đề thi hoặc lượt học bài học, cùng dạng để chấm. */
+type Detail = Omit<GradingAttemptDetail, 'exam'> & { title: string };
+
+export type GradingKind = 'exam' | 'lesson';
+
+interface GradingApi {
+  load: (slug: string, id: string) => Promise<Detail>;
+  grade: (
+    slug: string,
+    answerId: string,
+    input: GradeAnswerInput,
+  ) => Promise<GradeAnswerResult>;
+  recordingUrl: (
+    slug: string,
+    attemptId: string,
+    answerId: string,
+  ) => Promise<{ url: string }>;
+  listPath: (slug: string) => string;
+  attemptPath: (slug: string, id: string) => string;
+}
+
+const APIS: Record<GradingKind, GradingApi> = {
+  exam: {
+    load: (slug, id) =>
+      getGradingAttempt(slug, id).then(({ exam, ...rest }) => ({
+        ...rest,
+        title: exam.title,
+      })),
+    grade: gradeAnswer,
+    recordingUrl: getGradingRecordingUrl,
+    listPath: gradingListPath,
+    attemptPath: gradingAttemptPath,
+  },
+  lesson: {
+    load: (slug, id) =>
+      getLessonGradingAttempt(slug, id).then(({ lesson, ...rest }) => ({
+        ...rest,
+        title: lesson.title,
+      })),
+    grade: gradeLessonAnswer,
+    recordingUrl: getLessonGradingRecordingUrl,
+    listPath: gradingLessonListPath,
+    attemptPath: gradingLessonAttemptPath,
+  },
+};
 
 interface Item {
   section: GradingSection;
@@ -65,15 +117,21 @@ const countWords = (value: string) =>
 
 const qtypeLabel = (qtype: string) => vi.learner.qtypes[qtype] ?? qtype;
 
-/** Chấm một lượt làm: đề bài + bài làm từng câu Writing/Speaking, lưu từng câu. */
+/**
+ * Chấm một lượt làm đề thi / lượt học bài học: đề bài + bài làm từng câu
+ * Writing/Speaking, lưu từng câu.
+ */
 export function GradingAttemptView({
   slug,
   attemptId,
+  kind = 'exam',
 }: {
   slug: string;
   attemptId: string;
+  kind?: GradingKind;
 }) {
-  const [detail, setDetail] = useState<GradingAttemptDetail | null>(null);
+  const gradingApi = APIS[kind];
+  const [detail, setDetail] = useState<Detail | null>(null);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [drafts, setDrafts] = useState<Record<string, Draft>>({});
@@ -85,7 +143,7 @@ export function GradingAttemptView({
     let cancelled = false;
     setDetail(null);
     setDrafts({});
-    getGradingAttempt(slug, attemptId).then(
+    gradingApi.load(slug, attemptId).then(
       (data) => {
         if (cancelled) return;
         setDetail(data);
@@ -102,7 +160,7 @@ export function GradingAttemptView({
     return () => {
       cancelled = true;
     };
-  }, [slug, attemptId]);
+  }, [slug, attemptId, gradingApi]);
 
   const items = useMemo<Item[]>(
     () =>
@@ -159,7 +217,7 @@ export function GradingAttemptView({
     setSaveError(null);
     setSavedId(null);
     try {
-      const result = await gradeAnswer(slug, question.answerId, {
+      const result = await gradingApi.grade(slug, question.answerId, {
         score,
         comment: draft.comment.trim() || null,
       });
@@ -176,7 +234,7 @@ export function GradingAttemptView({
     }
   }
 
-  const listHref = gradingListPath(slug);
+  const listHref = gradingApi.listPath(slug);
 
   if (loadError) {
     return (
@@ -232,7 +290,7 @@ export function GradingAttemptView({
             {detail.student.email}
           </p>
           <p className="mt-1.5 text-[14px] text-[var(--body)]">
-            {detail.exam.title}
+            {detail.title}
           </p>
         </div>
         <div className="flex flex-col items-start gap-1 text-[13px] text-[var(--body)] sm:items-end">
@@ -253,7 +311,7 @@ export function GradingAttemptView({
             <span>{text.allGraded}</span>
             {detail.nextAttemptId && (
               <Link
-                href={gradingAttemptPath(slug, detail.nextAttemptId)}
+                href={gradingApi.attemptPath(slug, detail.nextAttemptId)}
                 className="inline-flex items-center gap-1 font-semibold underline"
               >
                 {text.nextAttempt} <ArrowRight size={14} />
@@ -317,8 +375,10 @@ export function GradingAttemptView({
         {current && draft && (
           <QuestionPanel
             key={current.question.answerId}
-            slug={slug}
-            attemptId={detail.id}
+            kind={kind}
+            recordingUrl={(answerId) =>
+              gradingApi.recordingUrl(slug, detail.id, answerId)
+            }
             item={current}
             draft={draft}
             onDraft={setDraft}
@@ -335,8 +395,8 @@ export function GradingAttemptView({
 }
 
 function QuestionPanel({
-  slug,
-  attemptId,
+  kind,
+  recordingUrl,
   item: { section, question },
   draft,
   onDraft,
@@ -346,8 +406,8 @@ function QuestionPanel({
   hasNext,
   onSave,
 }: {
-  slug: string;
-  attemptId: string;
+  kind: GradingKind;
+  recordingUrl: (answerId: string) => Promise<{ url: string }>;
   item: Item;
   draft: Draft;
   onDraft: (patch: Partial<Draft>) => void;
@@ -400,7 +460,9 @@ function QuestionPanel({
 
       {question.explanations.length > 0 && (
         <section className={cardClass}>
-          <h3 className={headingClass}>{text.explanations}</h3>
+          <h3 className={headingClass}>
+            {kind === 'lesson' ? text.lessonExplanations : text.explanations}
+          </h3>
           {question.explanations.map((blocks, index) => (
             <ExamBlocks key={index} blocks={blocks as ExamElement[]} />
           ))}
@@ -410,11 +472,7 @@ function QuestionPanel({
       <section className={cardClass}>
         <h3 className={headingClass}>{text.response}</h3>
         {question.qtype === 'speaking' ? (
-          <SpeakingAnswer
-            slug={slug}
-            attemptId={attemptId}
-            question={question}
-          />
+          <SpeakingAnswer recordingUrl={recordingUrl} question={question} />
         ) : question.text === null ? (
           <p className="text-[14px] italic text-[var(--muted)]">{text.blank}</p>
         ) : (
@@ -523,12 +581,10 @@ function QuestionPanel({
 
 /** Ghi âm của học viên: lấy presigned URL khi mở câu, thử lại khi hết hạn/lỗi. */
 function SpeakingAnswer({
-  slug,
-  attemptId,
+  recordingUrl,
   question,
 }: {
-  slug: string;
-  attemptId: string;
+  recordingUrl: (answerId: string) => Promise<{ url: string }>;
   question: GradingQuestion;
 }) {
   const [url, setUrl] = useState<string | null>(null);
@@ -539,7 +595,7 @@ function SpeakingAnswer({
     if (!question.hasRecording) return;
     let cancelled = false;
     setFailed(false);
-    getGradingRecordingUrl(slug, attemptId, question.answerId).then(
+    recordingUrl(question.answerId).then(
       (result) => {
         if (!cancelled) setUrl(result.url);
       },
@@ -550,7 +606,9 @@ function SpeakingAnswer({
     return () => {
       cancelled = true;
     };
-  }, [slug, attemptId, question.answerId, question.hasRecording, attempt]);
+    // `recordingUrl` đổi mỗi lần render; chỉ tải lại khi đổi câu hoặc thử lại.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [question.answerId, question.hasRecording, attempt]);
 
   if (!question.hasRecording) {
     return (

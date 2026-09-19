@@ -14,11 +14,13 @@ import { Flag, RotateCcw, Send } from 'lucide-react';
 import {
   emptyResponses,
   gradeExam,
+  type ExamElement,
   type GradeResult,
   type PreviewPlan,
   type Responses,
   type Verdict,
 } from '@lang/exam-core';
+import type { QuestionType } from '@lang/shared';
 import { vi } from '@/i18n/vi';
 
 // Trạng thái làm bài của bản giả lập: câu nào đã trả lời, câu nào gắn cờ, đang
@@ -56,6 +58,37 @@ export interface SimulatorExamMode {
   flagStorageKey?: string;
 }
 
+/** Đáp án của một số câu (`AnswerKey` của exam-core) để hiện sau khi nộp. */
+export interface ReviewAnswer {
+  qtype: QuestionType;
+  answerKey: unknown;
+}
+
+/** Điểm chấm tay của một câu Speaking/Writing. */
+export interface ReviewManualScore {
+  score: number | null;
+  maxScore: number;
+  comment: string | null;
+}
+
+/**
+ * Chế độ xem kết quả của bài học: mọi ô khoá, hiện câu trả lời đã nộp, đúng/sai,
+ * đáp án đúng và giải thích. Kết quả do server chấm (học thật) hoặc chấm ở
+ * client (xem trước trong trình soạn).
+ */
+export interface SimulatorReview {
+  result: GradeResult;
+  responses: Responses;
+  /** Theo số câu; câu chấm tay không có. */
+  answers: ReadonlyMap<number, ReviewAnswer>;
+  /** Giải thích theo id indicator (content_public chỉ còn indicator rỗng). */
+  explanations: ReadonlyMap<string, readonly ExamElement[]>;
+  /** Điểm chấm tay theo số câu (chưa chấm thì `score` là `null`). */
+  manual?: ReadonlyMap<number, ReviewManualScore>;
+  /** Ô nghe lại ghi âm đã nộp của câu Speaking. */
+  renderSpeaking?: (no: number) => ReactNode;
+}
+
 interface SimulatorState {
   answered: ReadonlySet<number>;
   flagged: ReadonlySet<number>;
@@ -70,8 +103,12 @@ interface SimulatorState {
   respond: Respond;
   /** Câu trả lời lúc dựng ô nhập (giá trị ban đầu của từng ô). */
   initial: Responses;
-  /** Kết quả sau khi nộp (chỉ ở xem trước); `null` khi đang làm. */
+  /** Kết quả sau khi nộp (xem trước hoặc `review`); `null` khi đang làm. */
   result: GradeResult | null;
+  /** Đáp án + giải thích của bài học đã nộp; `null` ở đề thi. */
+  review: SimulatorReview | null;
+  /** Bấm số câu để gắn cờ (bài học không dùng). */
+  flags: boolean;
   /** Có kết quả hoặc đang nộp bài thi: mọi ô bị khoá. */
   locked: boolean;
   exam: SimulatorExamMode | null;
@@ -107,10 +144,15 @@ function readFlags(key: string | undefined): ReadonlySet<number> {
 export function SimulatorProvider({
   plan,
   exam = null,
+  review = null,
+  flags = true,
   children,
 }: {
   plan: PreviewPlan;
   exam?: SimulatorExamMode | null;
+  /** Hiện kết quả đã có (chỉ đọc lúc dựng: đổi thì dựng lại provider bằng `key`). */
+  review?: SimulatorReview | null;
+  flags?: boolean;
   children: ReactNode;
 }) {
   const flagKey = exam?.flagStorageKey;
@@ -119,11 +161,18 @@ export function SimulatorProvider({
     readFlags(flagKey),
   );
   const [tab, setTabState] = useState(0);
-  const [result, setResult] = useState<GradeResult | null>(null);
+  const [reviewed] = useState(review);
+  const [result, setResult] = useState<GradeResult | null>(
+    reviewed?.result ?? null,
+  );
   const [attempt, setAttempt] = useState(0);
   // Chỉ đọc lúc dựng: trang thi truyền lại object mới mỗi lần render.
   const [initial] = useState(() =>
-    exam ? cloneResponses(exam.initialResponses) : emptyResponses(),
+    reviewed
+      ? cloneResponses(reviewed.responses)
+      : exam
+        ? cloneResponses(exam.initialResponses)
+        : emptyResponses(),
   );
   const responses = useRef<Responses>(cloneResponses(initial));
   const examRef = useRef(exam);
@@ -233,6 +282,8 @@ export function SimulatorProvider({
       respond,
       initial,
       result,
+      review: result ? reviewed : null,
+      flags,
       locked: !!result || examLocked,
       exam: examRef.current,
       attempt,
@@ -250,6 +301,8 @@ export function SimulatorProvider({
       respond,
       initial,
       result,
+      reviewed,
+      flags,
       examLocked,
       attempt,
       submit,
@@ -301,10 +354,10 @@ export function QuestionBadge({ nos }: { nos: number[] }) {
       type="button"
       data-sim-q={nos.join(' ')}
       onClick={() => {
-        if (!state.result) state.toggleFlag(nos);
+        if (!state.result && state.flags) state.toggleFlag(nos);
       }}
       title={
-        state.result
+        state.result || !state.flags
           ? text.badgeResult(label, text.status[status])
           : text.badgeFlag(label, status === 'flagged')
       }

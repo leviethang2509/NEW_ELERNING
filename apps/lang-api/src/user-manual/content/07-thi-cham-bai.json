@@ -1,6 +1,6 @@
 {
   "id": "thi-cham-bai",
-  "title": "Thi & chấm bài",
+  "title": "Học, thi & chấm bài",
   "pages": [
     {
       "id": "lam-bai-thi",
@@ -151,9 +151,120 @@
       ]
     },
     {
+      "id": "hoc-bai-hoc",
+      "title": "Học bài học",
+      "summary": "Mở bài học ở trang trung tâm, học từng phần, nộp bài tập để xem đáp án và giải thích, làm lại, học xong.",
+      "roles": ["STUDENT", "PARENT", "TEACHER", "TENANT_ADMIN", "TENANT_OWNER"],
+      "blocks": [
+        {
+          "type": "roles",
+          "roles": [
+            "STUDENT",
+            "PARENT",
+            "TEACHER",
+            "TENANT_ADMIN",
+            "TENANT_OWNER"
+          ]
+        },
+        {
+          "type": "paragraph",
+          "text": "**Mọi thành viên** đang hoạt động của trung tâm học được bài học đã publish có hiển thị **Công khai trong trung tâm**. Bài **Chỉ qua lớp** không hiện ở đây. Khác đề thi: không có đồng hồ, học các phần theo thứ tự tuỳ ý, nộp bài tập xong thấy ngay **đáp án đúng** và **giải thích**."
+        },
+        {
+          "type": "heading",
+          "level": 2,
+          "text": "Mở bài học"
+        },
+        {
+          "type": "steps",
+          "items": [
+            {
+              "title": "Mở trang trung tâm",
+              "text": "`/t/{slug}` – mục **Bài học** liệt kê bài đang mở (tìm theo tên, lọc danh mục, mẫu bài học) kèm nhãn **Đang học** / **Đã học xong** của bạn."
+            },
+            {
+              "title": "Bấm vào bài học",
+              "text": "Trang bài học (`/t/{slug}/lessons/{id}`) hiện **Nội dung bài học** (các phần, phần nào là lý thuyết, phần nào có câu hỏi) và **Lượt học của tôi**."
+            },
+            {
+              "title": "Bấm Bắt đầu học (hoặc Học tiếp)",
+              "text": "Mỗi người có **một lượt học** cho mỗi phiên bản bài học; bấm lại luôn mở đúng lượt đó."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "level": 2,
+          "text": "Màn hình học bài"
+        },
+        {
+          "type": "list",
+          "items": [
+            "Mỗi phần (section) là một tab; nội dung hiển thị liền mạch như tài liệu (furigana, callout, khối gập/mở, media), không có lưới số câu, không đồng hồ.",
+            "Tab có dấu ✓ khi phần lý thuyết đã mở, hoặc phần bài tập đã nộp ít nhất một lần.",
+            "Câu trả lời tự lưu khoảng **2 giây** sau khi thay đổi và khi chuyển tab; trạng thái lưu hiện ở cuối thanh tab.",
+            "Speaking: ghi âm như [Làm bài thi](page:lam-bai-thi) (cần HTTPS); bản ghi lưu ở kho riêng tư, nộp phần thì bản ghi đi cùng bài nộp."
+          ]
+        },
+        {
+          "type": "heading",
+          "level": 2,
+          "text": "Nộp, xem đáp án, làm lại"
+        },
+        {
+          "type": "steps",
+          "items": [
+            {
+              "title": "Bấm Nộp phần này",
+              "text": "Chỉ có ở phần có câu hỏi (hỏi lại nếu còn câu chưa làm). Server chấm ngay."
+            },
+            {
+              "title": "Xem kết quả",
+              "text": "Dải kết quả “Đúng x/y câu”, số câu chờ giáo viên chấm, thời điểm và số lần nộp. Số câu tô **xanh** (đúng) / **đỏ** (sai); lựa chọn đúng có nhãn **Đáp án đúng**, ô trống/cặp ghép sai hiện đáp án, câu sắp xếp sai hiện **Thứ tự đúng**; **Giải thích** hiện ngay dưới câu hỏi."
+            },
+            {
+              "title": "Bấm Làm lại (tuỳ chọn)",
+              "text": "Phần đó mở lại với bài làm trống. Kết quả lần trước vẫn xem được bằng **Xem kết quả lần trước** cho tới khi nộp lần mới; nộp lại thì kết quả mới **thay** kết quả cũ (chỉ lưu lần gần nhất + số lần nộp). Không giới hạn số lần."
+            }
+          ]
+        },
+        {
+          "type": "callout",
+          "tone": "info",
+          "title": "Học xong",
+          "text": "Bài học tự chuyển **Đã học xong** khi bạn đã **mở mọi phần** và **nộp mọi phần có câu hỏi** ít nhất một lần (không cần đạt điểm). Làm lại sau đó không làm mất trạng thái này."
+        },
+        {
+          "type": "heading",
+          "level": 2,
+          "text": "Writing/Speaking trong bài học"
+        },
+        {
+          "type": "list",
+          "items": [
+            "Câu Writing/Speaking hiện **Chờ giáo viên chấm** sau khi nộp; khi được chấm, điểm `x/10` và nhận xét hiện ngay dưới câu.",
+            "Nộp lại phần có câu chấm tay thì **điểm cũ bị bỏ**, giáo viên chấm lại lần nộp mới."
+          ]
+        },
+        {
+          "type": "heading",
+          "level": 2,
+          "text": "Phiên bản bài học"
+        },
+        {
+          "type": "list",
+          "items": [
+            "Người soạn sửa bài đã có lượt học sẽ tạo **phiên bản mới**. Mở bài lúc đó tạo lượt học mới trên phiên bản mới.",
+            "Lượt học của phiên bản cũ nằm trong **Lượt học của tôi** với nhãn **Phiên bản cũ · chỉ xem lại**: xem được bài làm, đáp án, giải thích và điểm, không nộp hay làm lại được.",
+            "Bài bị lưu trữ, xoá hoặc chuyển **Chỉ qua lớp**: không học tiếp được, lượt học đã có vẫn **Xem lại** được."
+          ]
+        }
+      ]
+    },
+    {
       "id": "cham-bai",
       "title": "Chấm bài",
-      "summary": "Chấm Writing/Speaking: danh sách bài, chấm từng câu, chấm lại.",
+      "summary": "Chấm Writing/Speaking của đề thi và bài học: danh sách bài, chấm từng câu, chấm lại.",
       "roles": ["TENANT_OWNER", "TENANT_ADMIN", "TEACHER"],
       "blocks": [
         {
@@ -162,7 +273,7 @@
         },
         {
           "type": "paragraph",
-          "text": "Menu **Đề thi & Bài học → Chấm bài** (`/t/{slug}/dashboard/grading`). Danh sách chỉ gồm lượt làm **đã nộp hết** và **có câu chấm tay**; tìm theo tên/email học viên, lọc **Chờ chấm / Đã chấm** và đề thi. Cột Chấm tay hiện tiến độ `đã chấm/tổng câu`."
+          "text": "Menu **Đề thi & Bài học → Chấm bài** (`/t/{slug}/dashboard/grading`). Chọn **Đề thi** hoặc **Bài học** ở đầu trang. Đề thi: chỉ lượt làm **đã nộp hết** và **có câu chấm tay**. Bài học: lượt học có phần đã nộp chứa câu Writing/Speaking (tính theo **lần nộp gần nhất** của từng phần). Tìm theo tên/email học viên, lọc **Chờ chấm / Đã chấm** và đề thi/bài học. Cột Chấm tay hiện tiến độ `đã chấm/tổng câu`."
         },
         { "type": "heading", "level": 2, "text": "Chấm một bài" },
         {
@@ -199,7 +310,8 @@
             "Chỉ chấm câu Writing/Speaking; kết quả tự động không sửa được.",
             "Câu bỏ trống vẫn cần chấm (thường cho 0) thì bài mới hoàn tất.",
             "Chấm lại được bất kỳ lúc nào: điểm mới thay điểm cũ, hiện “Chấm bởi … · thời điểm”.",
-            "Giáo viên chấm được bài của mọi đề trong trung tâm, không chỉ đề mình tạo."
+            "Giáo viên chấm được bài của mọi đề và bài học trong trung tâm, không chỉ đề/bài mình tạo.",
+            "Bài học: người chấm thấy **Giải thích (học viên thấy sau khi nộp)**. Học viên nộp lại phần có câu chấm tay thì điểm cũ bị bỏ, lượt học quay lại **Chờ chấm**; đang mở trang chấm bản cũ thì lưu điểm báo lỗi, tải lại trang để chấm lần nộp mới."
           ]
         }
       ]

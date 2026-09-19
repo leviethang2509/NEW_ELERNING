@@ -416,7 +416,7 @@ export class LessonsService {
   }
 
   /** Dòng danh sách của nhiều bài (tải mẫu, danh mục, số liệu section theo lô). */
-  private async toListItems(
+  async toListItems(
     ctx: TenantContext,
     actorId: string,
     lessons: Lesson[],

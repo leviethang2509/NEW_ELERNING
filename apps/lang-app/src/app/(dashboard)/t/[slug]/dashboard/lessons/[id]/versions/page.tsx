@@ -5,11 +5,9 @@ import Link from 'next/link';
 import { ArrowLeft, Eye, RotateCcw } from 'lucide-react';
 import type { LessonVersionItem, LessonVersionList } from '@lang/shared';
 import { useTenantDashboard } from '@/components/dashboard/TenantDashboardShell';
-import {
-  PreviewDialog,
-  type PreviewSection,
-} from '@/components/exam-editor/PreviewDialog';
+import type { PreviewSection } from '@/components/exam-editor/PreviewDialog';
 import { ExamStatusBadge } from '@/components/exams/ExamStatusBadge';
+import { LessonPreviewDialog } from '@/components/lesson-viewer/LessonPreviewDialog';
 import { emptyValue, toEditorValue } from '@/components/plate/value';
 import {
   Badge,
@@ -232,10 +230,9 @@ export default function LessonVersionsPage({
         emptyText={text.empty}
       />
 
-      <PreviewDialog
+      <LessonPreviewDialog
         open={preview !== null}
         sections={preview ?? []}
-        aside={vi.lessonEditor.previewAside}
         onClose={() => setPreview(null)}
       />
       <ConfirmDialog

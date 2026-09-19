@@ -11,3 +11,9 @@ export const VersionPipe = () =>
   new ParseIntPipe({
     exceptionFactory: () => new NotFoundException('Không tìm thấy version'),
   });
+
+/** Số câu trong URL; không phải số nguyên coi như không tìm thấy. */
+export const QuestionNumberPipe = () =>
+  new ParseIntPipe({
+    exceptionFactory: () => new NotFoundException('Không tìm thấy câu hỏi'),
+  });
