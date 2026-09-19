@@ -15,7 +15,7 @@
 | Tooling | ESLint + Prettier; Jest cho `lang-api` và `exam-core` (chỉ test logic quan trọng) |
 | Git | `git init`, repo `vunguyenquangit/lang-simulator`, image `ghcr.io/vunguyenquangit/lang-simulator` |
 | Port | Local: app `3100`, api `3101`. VPS: host `3001` → container (Next 3000, Nest 3002 nội bộ) |
-| Database | **Database riêng `lang-simulator`**, schema **`public`**, trên Postgres của VPS (user `lang_simulator`). Máy dev và container trên VPS (:3001) **dùng chung** database này. Chưa có production; database production chốt sau (đổi ngày 2026-09-15, thay cho "chung database LC, schema `lang_simulator`" và "dev Postgres local `lang_simulator_dev`") |
+| Database | **Database riêng `lang-simulator`**, schema **`public`**, trên Postgres của VPS (user `lang_simulator`). Máy dev và container trên VPS (:3001) **dùng chung** database này. Chưa có production; database production chốt sau (đổi ngày 2026-09-15, thay cho "chung database LC, schema `lang_simulator`" và "dev Postgres local `lang_simulator_dev`"). **Đổi 2026-09-19 (req-3, U7):** máy dev chuyển sang Postgres local `lang_simulator_dev`, database VPS chỉ còn container :3001 dùng |
 | Migration | TypeORM migrations, `synchronize: false` mọi môi trường, chạy migration khi container khởi động |
 | Quy ước DB | PK uuid, snake_case, `created_at/updated_at`; soft delete `deleted_at` cho users/tenants/memberships/exams; `created_by/updated_by` cho bảng nội dung |
 | Upload | R2, **bucket riêng** (bạn tạo), dùng lại account/token R2 hiện có; upload qua server như LC; quota để sau |

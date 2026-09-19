@@ -50,13 +50,13 @@
     {
       "id": "system-admin",
       "title": "System Admin",
-      "summary": "Vận hành hằng ngày: người dùng, trung tâm, gói dịch vụ, danh mục đề hệ thống.",
+      "summary": "Vận hành hằng ngày: người dùng, trung tâm, gói dịch vụ, danh mục hệ thống.",
       "roles": ["SYSTEM_ADMIN"],
       "blocks": [
         { "type": "roles", "roles": ["SYSTEM_ADMIN", "SYSTEM_OWNER"] },
         {
           "type": "paragraph",
-          "text": "Sau khi đăng nhập, System Admin (không là thành viên trung tâm nào) được đưa thẳng tới dashboard `/admin`. Menu gồm **Tổng quan**, **Quản lý** (Người dùng, Trung tâm, Gói dịch vụ), **Đề thi** (Danh mục đề, Loại đề) và **Tài liệu nội bộ**."
+          "text": "Sau khi đăng nhập, System Admin (không là thành viên trung tâm nào) được đưa thẳng tới dashboard `/admin`. Menu gồm **Tổng quan**, **Quản lý** (Người dùng, Trung tâm, Gói dịch vụ), **Đề thi** (Danh mục, Loại đề) và **Tài liệu nội bộ**."
         },
         { "type": "heading", "level": 2, "text": "Được làm" },
         {
@@ -197,7 +197,7 @@
         { "type": "roles", "roles": ["TEACHER"] },
         {
           "type": "paragraph",
-          "text": "Giáo viên vào dashboard trung tâm với menu **Tổng quan** (số liệu rút gọn) và nhóm **Đề thi**: Danh mục đề, Loại đề, Đề thi, Thư viện media, Chấm bài."
+          "text": "Giáo viên vào dashboard trung tâm với menu **Tổng quan** (số liệu rút gọn) và nhóm **Đề thi**: Danh mục, Loại đề, Đề thi, Thư viện media, Chấm bài."
         },
         { "type": "heading", "level": 2, "text": "Được làm" },
         {

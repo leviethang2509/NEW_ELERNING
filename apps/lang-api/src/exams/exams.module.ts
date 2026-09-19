@@ -1,7 +1,7 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ExamAttempt } from '../attempts/exam-attempt.entity';
-import { ExamCatalogModule } from '../exam-catalog/exam-catalog.module';
+import { CatalogModule } from '../catalog/catalog.module';
 import { TenantsModule } from '../tenants/tenants.module';
 import { User } from '../users/user.entity';
 import { ExamContentService } from './exam-content.service';
@@ -16,7 +16,7 @@ import { ExamsService } from './exams.service';
 @Module({
   imports: [
     TenantsModule,
-    ExamCatalogModule,
+    CatalogModule,
     TypeOrmModule.forFeature([
       Exam,
       ExamSection,

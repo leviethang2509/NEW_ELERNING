@@ -1,7 +1,7 @@
 'use client';
 
 import { CatalogScope } from '@lang/shared';
-import { ExamBlueprintsView } from '@/components/exam-catalog/ExamBlueprintsView';
+import { ExamBlueprintsView } from '@/components/catalog/ExamBlueprintsView';
 
 export default function AdminExamBlueprintsPage() {
   return (

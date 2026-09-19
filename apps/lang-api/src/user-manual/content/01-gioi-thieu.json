@@ -154,7 +154,7 @@
           "columns": ["Thuật ngữ", "Ý nghĩa"],
           "rows": [
             [
-              "Danh mục đề (exam category)",
+              "Danh mục (category)",
               "Nhóm loại đề theo ngôn ngữ/chương trình, vd. Tiếng Anh, Tiếng Nhật. Có phạm vi **Hệ thống** hoặc **Trung tâm**."
             ],
             [
@@ -422,7 +422,7 @@
             ["Tổng quan", "Chủ sở hữu, Quản trị viên, Giáo viên"],
             ["Quản lý → Thành viên", "Chủ sở hữu, Quản trị viên"],
             [
-              "Đề thi → Danh mục đề, Loại đề, Đề thi, Thư viện media",
+              "Đề thi → Danh mục, Loại đề, Đề thi, Thư viện media",
               "Chủ sở hữu, Quản trị viên, Giáo viên"
             ],
             ["Đề thi → Chấm bài", "Chủ sở hữu, Quản trị viên, Giáo viên"]

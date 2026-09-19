@@ -1,6 +1,6 @@
 // Đề thi (exams), section theo version và API trình soạn đề (Step 12).
 import type { ExamStatus } from './exam';
-import type { CatalogScope, ExamCategoryRef } from './exam-catalog';
+import type { CatalogScope, CategoryRef } from './catalog';
 
 export const EXAM_TITLE_MAX_LENGTH = 200;
 export const EXAM_DESCRIPTION_MAX_LENGTH = 2000;
@@ -31,7 +31,7 @@ export interface ExamBlueprintRef {
   name: string;
   code: string;
   isActive: boolean;
-  category: ExamCategoryRef;
+  category: CategoryRef;
 }
 
 /** `GET t/:slug/exams`. Số liệu tính trên section của version hiện tại. */

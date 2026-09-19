@@ -21,7 +21,7 @@ import {
   type Paginated,
 } from '@lang/shared';
 import { useTenantDashboard } from '@/components/dashboard/TenantDashboardShell';
-import { CategoryIcon } from '@/components/exam-catalog/catalog-ui';
+import { CategoryIcon } from '@/components/catalog/catalog-ui';
 import { ExamFormModal } from '@/components/exams/ExamFormModal';
 import { ExamStatusBadge } from '@/components/exams/ExamStatusBadge';
 import {

@@ -5,10 +5,10 @@ import {
   type ExamSectionItem,
   type ExamUserRef,
 } from '@lang/shared';
-import { scopeOf } from '../exam-catalog/catalog-scope';
-import type { ExamBlueprint } from '../exam-catalog/exam-blueprint.entity';
-import type { ExamCategory } from '../exam-catalog/exam-category.entity';
-import { toExamCategoryRef } from '../exam-catalog/exam-catalog.mapper';
+import { scopeOf } from '../catalog/catalog-scope';
+import type { ExamBlueprint } from '../catalog/exam-blueprint.entity';
+import type { Category } from '../catalog/category.entity';
+import { toCategoryRef } from '../catalog/catalog.mapper';
 import type { TenantContext } from '../tenants/tenant-context';
 import type { User } from '../users/user.entity';
 import type { ExamSection } from './exam-section.entity';
@@ -39,7 +39,7 @@ export function toExamListItem(
   exam: Exam,
   refs: {
     blueprint: ExamBlueprint;
-    category: ExamCategory;
+    category: Category;
     sections: readonly SectionStats[];
     creator: User | undefined;
     canEdit: boolean;
@@ -57,7 +57,7 @@ export function toExamListItem(
       name: blueprint.name,
       code: blueprint.code,
       isActive: blueprint.isActive,
-      category: toExamCategoryRef(category),
+      category: toCategoryRef(category),
     },
     sectionCount: sections.length,
     questionCount: sum(sections.map((section) => section.questionCount)),

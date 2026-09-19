@@ -55,8 +55,8 @@ function systemNavigation(): NavSection[] {
       label: vi.nav.sectionExam,
       items: [
         {
-          label: vi.nav.examCategories,
-          href: '/admin/exam-categories',
+          label: vi.nav.categories,
+          href: '/admin/categories',
           icon: FolderTree,
         },
         {
@@ -96,8 +96,8 @@ function tenantNavigation(
   if (hasAnyRole(roles, EXAM_AUTHOR_ROLES)) {
     examItems.push(
       {
-        label: vi.nav.examCategories,
-        href: `${base}/exam-categories`,
+        label: vi.nav.categories,
+        href: `${base}/categories`,
         icon: FolderTree,
       },
       {

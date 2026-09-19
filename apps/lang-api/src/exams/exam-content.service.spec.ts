@@ -18,10 +18,10 @@ import {
 import { plainToInstance } from 'class-transformer';
 import { validate } from 'class-validator';
 import { ExamAttempt } from '../attempts/exam-attempt.entity';
-import { ExamBlueprint } from '../exam-catalog/exam-blueprint.entity';
-import { ExamBlueprintsService } from '../exam-catalog/exam-blueprints.service';
-import { ExamCategory } from '../exam-catalog/exam-category.entity';
-import { ExamModule } from '../exam-catalog/exam-module.entity';
+import { ExamBlueprint } from '../catalog/exam-blueprint.entity';
+import { ExamBlueprintsService } from '../catalog/exam-blueprints.service';
+import { Category } from '../catalog/category.entity';
+import { ExamModule } from '../catalog/exam-module.entity';
 import type { TenantContext } from '../tenants/tenant-context';
 import { InMemoryDataSource } from '../testing/in-memory-data-source';
 import {
@@ -90,7 +90,7 @@ const section = (
 
 async function setup() {
   const timestamps = () => ({ createdAt: new Date(), updatedAt: new Date() });
-  const categories = new InMemoryRepository<ExamCategory>(timestamps);
+  const categories = new InMemoryRepository<Category>(timestamps);
   const blueprints = new InMemoryRepository<ExamBlueprint>(timestamps);
   const modules = new InMemoryRepository<ExamModule>(timestamps);
   const exams = new InMemoryRepository<Exam>(() => ({
@@ -114,7 +114,7 @@ async function setup() {
     );
 
   const dataSource = new InMemoryDataSource()
-    .register(ExamCategory, categories)
+    .register(Category, categories)
     .register(ExamBlueprint, blueprints)
     .register(ExamModule, modules)
     .register(Exam, exams)

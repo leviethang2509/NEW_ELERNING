@@ -471,7 +471,7 @@ export const vi = {
     footerProduct: 'Sản phẩm',
     footerAccount: 'Tài khoản',
   },
-  examCatalog: {
+  catalog: {
     scope: { system: 'Hệ thống', tenant: 'Trung tâm' },
     systemHint: 'Mục của hệ thống chỉ xem được',
     allScopes: 'Mọi phạm vi',
@@ -507,7 +507,7 @@ export const vi = {
       color: 'Màu',
       activeHint:
         'Danh mục ngừng dùng không chọn được khi tạo loại đề mới; loại đề đã có giữ nguyên.',
-      empty: 'Chưa có danh mục đề.',
+      empty: 'Chưa có danh mục.',
       searchPlaceholder: 'Tìm theo tên hoặc mã danh mục',
     },
     blueprints: {
@@ -1104,7 +1104,7 @@ export const vi = {
     tenants: 'Trung tâm',
     plans: 'Gói dịch vụ',
     members: 'Thành viên',
-    examCategories: 'Danh mục đề',
+    categories: 'Danh mục',
     examBlueprints: 'Loại đề',
     exams: 'Đề thi',
     media: 'Thư viện media',

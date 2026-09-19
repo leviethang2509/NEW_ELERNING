@@ -2,7 +2,7 @@
 
 import { CatalogScope, TENANT_MANAGER_ROLES, hasAnyRole } from '@lang/shared';
 import { useTenantDashboard } from '@/components/dashboard/TenantDashboardShell';
-import { ExamBlueprintsView } from '@/components/exam-catalog/ExamBlueprintsView';
+import { ExamBlueprintsView } from '@/components/catalog/ExamBlueprintsView';
 
 // Owner/Admin quản lý loại đề của trung tâm; Teacher chỉ xem.
 export default function TenantExamBlueprintsPage() {

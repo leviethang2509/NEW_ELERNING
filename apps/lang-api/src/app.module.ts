@@ -9,7 +9,7 @@ import { AuthModule } from './auth/auth.module';
 import { AllExceptionsFilter } from './common/filters/all-exceptions.filter';
 import { EnvironmentVariables, validateEnv } from './config/env.validation';
 import { buildDataSourceOptions } from './database/database.config';
-import { ExamCatalogModule } from './exam-catalog/exam-catalog.module';
+import { CatalogModule } from './catalog/catalog.module';
 import { ExamsModule } from './exams/exams.module';
 import { GradingModule } from './grading/grading.module';
 import { HealthModule } from './health/health.module';
@@ -52,7 +52,7 @@ import { UsersModule } from './users/users.module';
     MembershipsModule,
     TenantDashboardModule,
     StorageModule,
-    ExamCatalogModule,
+    CatalogModule,
     ExamsModule,
     AttemptsModule,
     GradingModule,

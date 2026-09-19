@@ -12,7 +12,7 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 import { sqlInList } from '../common/sql';
-import { ExamBlueprint } from '../exam-catalog/exam-blueprint.entity';
+import { ExamBlueprint } from '../catalog/exam-blueprint.entity';
 import { Tenant } from '../tenants/tenant.entity';
 import { User } from '../users/user.entity';
 

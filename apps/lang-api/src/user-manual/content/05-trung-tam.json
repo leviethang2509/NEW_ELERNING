@@ -238,7 +238,7 @@
         },
         {
           "type": "paragraph",
-          "text": "Menu **Đề thi → Danh mục đề** và **Loại đề** trong dashboard trung tâm. Danh sách gồm mục **Hệ thống** (xếp trước) và mục **Trung tâm** của riêng trung tâm; lọc được theo phạm vi và trạng thái. Trung tâm không thấy mục của trung tâm khác."
+          "text": "Menu **Đề thi → Danh mục** và **Loại đề** trong dashboard trung tâm. Danh sách gồm mục **Hệ thống** (xếp trước) và mục **Trung tâm** của riêng trung tâm; lọc được theo phạm vi và trạng thái. Trung tâm không thấy mục của trung tâm khác."
         },
         {
           "type": "table",

@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { ChevronRight } from 'lucide-react';
 import type { LearnerExamList as ExamList } from '@lang/shared';
-import { CategoryIcon } from '@/components/exam-catalog/catalog-ui';
+import { CategoryIcon } from '@/components/catalog/catalog-ui';
 import {
   FormAlert,
   Pagination,

@@ -17,9 +17,9 @@ import { DataSource, In, type EntityManager, type Repository } from 'typeorm';
 import { ExamAttempt } from '../attempts/exam-attempt.entity';
 import { toSkipTake, type Paginated } from '../common/pagination';
 import { escapeLike } from '../common/sql';
-import { ExamBlueprint } from '../exam-catalog/exam-blueprint.entity';
-import { ExamBlueprintsService } from '../exam-catalog/exam-blueprints.service';
-import { ExamCategory } from '../exam-catalog/exam-category.entity';
+import { ExamBlueprint } from '../catalog/exam-blueprint.entity';
+import { ExamBlueprintsService } from '../catalog/exam-blueprints.service';
+import { Category } from '../catalog/category.entity';
 import type { TenantContext } from '../tenants/tenant-context';
 import { User } from '../users/user.entity';
 import type {
@@ -104,8 +104,8 @@ export class ExamsService {
     private readonly sections: Repository<ExamSection>,
     @InjectRepository(ExamBlueprint)
     private readonly blueprints: Repository<ExamBlueprint>,
-    @InjectRepository(ExamCategory)
-    private readonly categories: Repository<ExamCategory>,
+    @InjectRepository(Category)
+    private readonly categories: Repository<Category>,
     @InjectRepository(ExamAttempt)
     private readonly attempts: Repository<ExamAttempt>,
     @InjectRepository(User) private readonly users: Repository<User>,

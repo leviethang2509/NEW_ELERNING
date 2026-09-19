@@ -161,7 +161,7 @@ export function ExamFormModal({
                       ? text.blueprintOption(
                           item.name,
                           item.modules.length,
-                          vi.examCatalog.scope[item.scope],
+                          vi.catalog.scope[item.scope],
                         )
                       : text.inactiveBlueprint(item.name)}
                   </option>
@@ -175,7 +175,7 @@ export function ExamFormModal({
                 selected.modules
                   .map(
                     (module) =>
-                      `${module.name} (${vi.examCatalog.blueprints.minutes(module.referenceDurationMinutes)})`,
+                      `${module.name} (${vi.catalog.blueprints.minutes(module.referenceDurationMinutes)})`,
                   )
                   .join(', '),
               )}

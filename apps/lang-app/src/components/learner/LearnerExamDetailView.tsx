@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { ArrowLeft, Clock, Play } from 'lucide-react';
 import { type LearnerExamDetail } from '@lang/shared';
-import { CategoryIcon } from '@/components/exam-catalog/catalog-ui';
+import { CategoryIcon } from '@/components/catalog/catalog-ui';
 import {
   FormAlert,
   compactPrimaryButtonClass,

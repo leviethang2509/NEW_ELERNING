@@ -2,13 +2,13 @@
 
 ## Bắt đầu phiên làm việc
 
-1. Đọc [docs/requirements/req-1-progress.md](docs/requirements/req-1-progress.md) để biết step hiện tại, việc dở dang và lưu ý.
-2. Đọc phần tương ứng trong [docs/requirements/req-1-plan.md](docs/requirements/req-1-plan.md) (quyết định mục 1, giả định mục 2, thiết kế DB mục 4, phân quyền mục 5, route mục 6, step mục 7).
-3. Chỉ mở [docs/requirements/req-1-question.md](docs/requirements/req-1-question.md) khi cần lý do của một quyết định.
+1. Đọc [docs/requirements/req-3-progress.md](docs/requirements/req-3-progress.md) để biết step hiện tại, việc dở dang và lưu ý.
+2. Đọc phần tương ứng trong [docs/requirements/req-3-plan.md](docs/requirements/req-3-plan.md) (quyết định mục 1, giả định mục 2, thiết kế DB mục 4, phân quyền mục 5, route mục 6, step mục 7). Nền tảng req-1 (tài khoản, tenant, đề thi, thi & chấm) ở [req-1-plan.md](docs/requirements/req-1-plan.md).
+3. Chỉ mở các file `req-3-question*.md` (4 vòng) khi cần lý do của một quyết định.
 
 ## Quy trình
 
-- Làm theo từng step trong plan. Kết thúc step: `pnpm build && pnpm lint && pnpm typecheck && pnpm test && pnpm format:check` phải pass, đạt tiêu chí nghiệm thu (chạy thử thật, không chỉ build), rồi **cập nhật req-1-progress.md** (trạng thái, việc đã làm, sai khác so với plan, lưu ý cho step sau).
+- Làm theo từng step trong plan. Kết thúc step: `pnpm build && pnpm lint && pnpm typecheck && pnpm test && pnpm format:check` phải pass, đạt tiêu chí nghiệm thu (chạy thử thật, không chỉ build), rồi **cập nhật req-N-progress.md** của requirement đang làm (trạng thái, việc đã làm, sai khác so với plan, lưu ý cho step sau).
 - Yêu cầu chưa rõ hoặc mâu thuẫn: **hỏi lại người dùng, không suy đoán**. Nếu thay đổi quyết định đã chốt, cập nhật cả plan.
 - Chỉ commit/push khi người dùng yêu cầu.
 
@@ -16,7 +16,7 @@
 
 - `/Users/vunguyen/Projects/lightc-general` (LC): nguồn copy giao diện, Plate exam editor, simulator, grading, R2 upload, Docker/deploy.
 - **Không copy** các tính năng không liên quan (vocabulary, jp-*, md-docs, gcp, labs) và **không copy giá trị trong `.env.example`/README của LC** (chứa mật khẩu thật).
-- Dự án này dùng database riêng `lang-simulator` (schema `public`) trên Postgres của VPS, **dùng chung** cho máy dev và container :3001 (chưa có production). Database `lang_simulator` trên Postgres local là của dự án khác — **không đụng**.
+- Database (schema `public`): máy dev dùng Postgres **local** `lang_simulator_dev` (user `lang_simulator_dev`, từ 2026-09-19); container :3001 dùng database `lang-simulator` trên Postgres của VPS (chưa có production). Máy dev **không** kết nối DB VPS (cấu hình cũ để comment `# VPS:` trong `apps/lang-api/.env`). Database `lang_simulator` trên Postgres local là của dự án khác — **không đụng**.
 
 ## Quy ước chung
 
@@ -37,7 +37,7 @@
 ## lang-api (NestJS)
 
 - Env mới: thêm vào `src/config/env.validation.ts` (kiểm tra lúc khởi động, không có giá trị dự phòng cho secret) **và** `.env.example`.
-- DB: schema theo env `DB_SCHEMA` (`public`), PK uuid (`gen_random_uuid`, không tự tạo extension), snake_case, entity đặt tên `*.entity.ts`, **chỉ dùng migrations** (không `synchronize`); không sửa migration đã chạy. DB dùng chung với bản trên VPS: migration phải tương thích ngược với code đang chạy trên :3001 (thêm cột/bảng trước, xoá sau).
+- DB: schema theo env `DB_SCHEMA` (`public`), PK uuid (`gen_random_uuid`, không tự tạo extension), snake_case, entity đặt tên `*.entity.ts`, **chỉ dùng migrations** (không `synchronize`); không sửa migration đã chạy. DB trên VPS chỉ đổi khi deploy (container chạy migration rồi mới chạy code mới) nên migration đổi tên/xoá cột làm trong 1 bước được; vẫn phải chạy được trên dữ liệu đang có ở VPS.
 - Migration: `migration:generate` rồi đọc lại; index/constraint entity không khai báo được (vd. unique `lower(email)`) thì thêm tay và gắn `@Index(name, { synchronize: false })` trên entity. Chạy migration xong, `migration:generate` lần nữa phải báo "No changes". Enum lưu `varchar` + `@Check` (tương thích ngược hơn Postgres enum).
 - Email: luôn qua `normalizeEmail` (`@lang/shared`), unique theo `lower(email)` bỏ qua user đã xoá mềm (không dùng citext).
 - Xác thực: `JwtAuthGuard` + `SystemRolesGuard` là **guard toàn cục**, route mặc định cần đăng nhập. Route công khai gắn `@Public()`; route vẫn gọi được khi user còn `must_change_password` gắn `@AllowPendingPasswordChange()`; giới hạn role hệ thống bằng `@SystemRoles(...)`. Không trả entity `User` ra client, dùng `toAuthUser`.
@@ -47,7 +47,7 @@
 - Test e2e phân quyền `src/access-control.e2e.spec.ts` (supertest, không DB): dựng mọi controller của `AppModule` + guard toàn cục của `AuthModule`, interceptor dừng ngay sau guard. **Thêm/đổi route phải thêm dòng vào bảng `ROUTES`** (viết tay theo plan mục 5), thiếu thì test báo lỗi. Quy tắc quyền trong service (đề của mình, bài của mình, bảo vệ Owner) kiểm ở unit test service.
 - Unit test service dùng `src/testing/in-memory-repository.ts` (không kết nối DB dùng chung); service có transaction dùng `in-memory-data-source.ts` (**không rollback**: chỉ kiểm lỗi xảy ra trước khi ghi; repository giả chỉ hỗ trợ các FindOperator đã liệt kê, thêm loại mới thì bổ sung helper); `jest.mock('../auth/password')` để khỏi chạy bcrypt thật. Giả giờ bằng `fakeDate()` (`src/testing/fake-clock.ts`, chỉ giả `Date` vì jsonwebtoken cần `nextTick`/`setImmediate` thật).
 - Media/R2: `StorageModule` export `R2Service` (2 bucket – `public` cho media đề & logo, `private` cho ghi âm) và `MediaService`. Thiếu biến `R2_*` thì mọi thao tác trả **501**, API vẫn khởi động. Key `tenants/{tenantId}/exam-media/…` và `users/{userId}/branding/…` (logo đặt theo user vì lúc đăng ký chưa có tenant); xoá luôn kiểm key thuộc prefix của tenant. Ảnh convert webp bằng `sharp`, audio/video giữ nguyên.
-- Danh mục/loại đề (`exam-catalog/`): service nhận `CatalogOwner` (`null` = hệ thống, uuid = tenant); đọc bằng `findVisible` (hệ thống + tenant), sửa/xoá qua `findOwned` (tenant đụng mục hệ thống 403, mục tenant khác 404). Loại đề tenant được thuộc danh mục hệ thống. `ExamBlueprintsService.findUsable` kiểm loại đề chọn được cho đề thi.
+- Danh mục/loại đề (`catalog/`, bảng `categories` dùng chung cho đề thi và bài học từ req-3): service nhận `CatalogOwner` (`null` = hệ thống, uuid = tenant); đọc bằng `findVisible` (hệ thống + tenant), sửa/xoá qua `findOwned` (tenant đụng mục hệ thống 403, mục tenant khác 404). Loại đề tenant được thuộc danh mục hệ thống. `ExamBlueprintsService.findUsable` kiểm loại đề chọn được cho đề thi.
 - Đề thi (`exams/`): `ExamsService` (danh sách, tạo, metadata, publish/lưu trữ/xoá) + `ExamContentService` (lưu nội dung theo plan 4.6, version, khôi phục). Mọi thao tác ghi: `findExam(manager, tenantId, id, lock)` rồi `assertCanEditExam` (Owner/Admin mọi đề, Teacher đề mình tạo). Lưu nội dung/khôi phục bắt buộc `baseRevision` khớp `exams.content_revision` (409); đề không còn nháp mà nội dung có lỗi → 422 `{ message, issues }` (`ExamContentIssue`, `AllExceptionsFilter` giữ trường `issues`). Tách section qua `section-content.ts` (`prepareSection` sinh sẵn uuid cho section/part/câu). Bảng `exam_attempts` (entity ở `attempts/`) đã có từ Step 12; bài làm của version hiện tại khiến lần lưu sau tạo version mới.
 - Lượt làm (`attempts/`): `LearnerController` (`t/:slug/learner/*`, mọi thành viên, chỉ lượt làm của mình) + `AttemptsService` + `LearnerExamsService`. Mọi thao tác ghi qua `mutate` (khoá lượt làm + section, chốt section quá `deadline_at + ATTEMPT_GRACE_SECONDS` rồi mới làm việc khác); cron `AttemptsScheduler` mỗi phút gọi `finalizeExpired`. Học viên chỉ nhận content_public đã `shuffleOrdering(order_seed)`; chấm bằng `gradeSection` (`attempt-grading.ts`) → `exam_attempt_answers` cho mọi câu. Mỗi (đề, người) tối đa 1 lượt `in_progress` (index unique một phần). Ghi âm: bucket private, prefix `tenants/{tenantId}/attempts/{attemptId}/`.
 - Chấm bài (`grading/`): `GradingController` (`t/:slug/grading/*`, `GRADER_ROLES`) + `GradingService`. Chỉ lượt làm đã nộp hết có câu chấm tay; bài của người chấm 403, lượt chưa nộp xong 409. Chấm trong transaction khoá lượt làm, `manual_graded_count` **đếm lại** câu có `graded_at` (chấm lại không cộng dồn), đủ `manual_count` thì `submitted → graded`. Điểm kiểm bằng `isValidManualScore(score, max_score)` (`@lang/shared`). Đề bài câu chấm tay tách từ `content_public` bằng `sectionPrompts`. Ghi âm cho người chấm qua route `grading` riêng (route learner chỉ chủ lượt làm).
@@ -63,7 +63,7 @@
 - Chuỗi UI đặt trong `src/i18n/vi.ts`. Màu dùng CSS variables Solarized trong `globals.css` (class tiền tố `ls-`).
 - API gọi qua `src/lib/api.ts` (cùng origin `/api`, access token trong bộ nhớ, tự refresh khi 401; mất mạng / 5xx không có body JSON đổi thành `ApiError` tiếng Việt). `errorMessage` (`lib/error-message.ts`) chỉ hiện message của `ApiError`, lỗi khác (TypeError, DOMException – tiếng Anh) dùng thông báo mặc định. Trang 404 / lỗi render: `app/not-found.tsx`, `app/error.tsx`, `app/global-error.tsx` (`StatusPage`).
 - Media: `lib/media-api.ts`, `MediaDialog` (upload hoặc dán URL, dùng lại ở trình soạn đề), `LogoPicker`, trang Thư viện media `/t/{slug}/dashboard/media`. Chép URL bằng `lib/clipboard.ts` (VPS chạy HTTP nên `navigator.clipboard` không có, phải có đường lùi). Ảnh từ R2 hiển thị bằng `<img>`, không dùng `next/image`.
-- Danh mục/Loại đề: `ExamCategoriesView`/`ExamBlueprintsView` trong `components/exam-catalog` dùng cho cả `/admin` và dashboard tenant (`apiBase`, `scope`, `canManage`); icon/màu danh mục qua `CategoryIcon`.
+- Danh mục/Loại đề: `CategoriesView`/`ExamBlueprintsView` trong `components/catalog` dùng cho cả `/admin` và dashboard tenant (`apiBase`, `scope`, `canManage`); icon/màu danh mục qua `CategoryIcon`.
 - Simulator (`components/exam-simulator`): `ExamSimulator` + `SimulatorProvider` dùng chung cho xem trước (đọc `raw_data`, chấm client) và trang thi (prop `exam`: câu trả lời ban đầu, `onChange` để autosave, nộp qua server, `renderSpeaking`). Nội dung content_public có dòng ordering/polytomous mang `key` → dùng `key` làm chỉ số, không xáo lại ở client. Chuỗi ở `vi.simulator`.
 - Thi & kết quả: `components/learner` (danh sách đề, trang đề, lịch sử, kết quả), `components/exam-taking` (`AttemptRunner` → `SectionIntroScreen` / `SectionWorkspace` + `Countdown` theo giờ server + `SpeakingRecorder`), API qua `lib/learner-api.ts`. Ghi âm cần HTTPS hoặc localhost.
 - Chấm bài: trang `/t/{slug}/dashboard/grading` (+ `/{attemptId}` → `components/grading/GradingAttemptView`), API qua `lib/grading-api.ts`. Nội dung đề chỉ đọc hiển thị bằng `ExamBlocks` (`exam-simulator`).

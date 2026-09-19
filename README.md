@@ -44,7 +44,7 @@ pnpm dev
 
 ### Đề thi, làm bài & chấm bài
 
-- Danh mục đề & loại đề: hệ thống (`/admin/exam-categories`, `/admin/exam-blueprints`, seed sẵn TOEIC, IELTS, JLPT N2) và riêng từng trung tâm (`/t/{slug}/dashboard/exam-categories`, `exam-blueprints`; Giáo viên chỉ xem).
+- Danh mục & loại đề: hệ thống (`/admin/categories`, `/admin/exam-blueprints`, seed sẵn TOEIC, IELTS, JLPT N2) và riêng từng trung tâm (`/t/{slug}/dashboard/categories`, `exam-blueprints`; Giáo viên chỉ xem).
 - Soạn đề (`/t/{slug}/dashboard/exams`, Owner/Admin/Giáo viên): tạo từ loại đề → mỗi module thành 1 section (tab) → soạn bằng Plate → Lưu → Publish khi không còn lỗi. Lưu khi version hiện tại đã có bài làm thì tạo version mới; khôi phục version ở trang Version. Giáo viên chỉ sửa đề mình tạo. Media của đề upload lên R2 (`/t/{slug}/dashboard/media`).
 - Làm bài (mọi thành viên): `/t/{slug}` → chọn đề → từng section có màn hình hướng dẫn và đồng hồ riêng (tính ở server, hết giờ tự nộp), câu đánh số từ 1 mỗi section. Chấm trắc nghiệm ở server, học viên không nhận đáp án; kết quả hiện số câu đúng theo section.
 - Chấm tay Writing/Speaking (`/t/{slug}/dashboard/grading`, Owner/Admin/Giáo viên, không chấm bài của mình): điểm 0–10 bước 0,5 + nhận xét, học viên thấy ngay khi chấm.

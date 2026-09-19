@@ -3,7 +3,7 @@ export * from './age';
 export * from './attempt';
 export * from './auth';
 export * from './exam';
-export * from './exam-catalog';
+export * from './catalog';
 export * from './exam-content';
 export * from './grading';
 export * from './media';
