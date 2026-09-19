@@ -160,8 +160,9 @@ lesson_attempt_answers   attempt_id, attempt_section_id CASCADE, question_id, re
 ```
 courses             tenant_id, code, name, description, category_id NULL, cover_url, level varchar(50),
                     planned_sessions int NULL, status (active/archived), created_by, updated_by
-                    UNIQUE(tenant_id, lower(code))
-curricula           tenant_id, name, description, cloned_from_id NULL, created_by, updated_by
+                    UNIQUE(tenant_id, code)   (mã in hoa theo CATALOG_CODE_PATTERN, CHECK định dạng)
+curricula           tenant_id, name, description, revision int (baseRevision của PUT items),
+                    cloned_from_id NULL, created_by, updated_by
 course_curricula    course_id, curriculum_id, created_by, created_at     PK(course_id, curriculum_id)
 curriculum_groups   curriculum_id CASCADE, title, sort_order
 curriculum_items    curriculum_id CASCADE, group_id NULL (SET NULL), sort_order,
@@ -364,6 +365,7 @@ t/:slug:
 ### Step 6 – Khoá học & giáo trình tham khảo
 - Migration `courses`, `curricula`, `course_curricula`, `curriculum_groups`, `curriculum_items`; `TrainingModule` (services riêng cho khoá học, giáo trình).
 - lang-app: danh sách/chi tiết khoá học (tab Giáo trình tham khảo: gắn/bỏ), danh sách/chi tiết giáo trình (chương + mục kéo thả, chọn bài học/đề đã publish, nhãn, ghi chú), nhân bản giáo trình. Bài/đề đang nằm trong giáo trình → xoá bị chặn (409), lưu trữ được.
+- Người dùng chốt 2026-09-19: xoá khoá học (chưa có lớp) **chỉ bỏ gắn** giáo trình, giáo trình giữ trong thư viện (B3 viết trước khi đổi sang m-m); ảnh bìa chọn bằng `MediaDialog` dùng chung (Thư viện media hoặc dán URL, không có prefix R2 riêng); danh mục đang có khoá học → xoá 409 (như loại đề/mẫu bài học); mã khoá học theo quy tắc mã danh mục (`CATALOG_CODE_PATTERN`, tự in hoa).
 - **Nghiệm thu:** tạo khoá "Tiếng Nhật N5", giáo trình 3 chương (bài học + kiểm tra + thi cuối khoá), gắn vào 2 khoá học; Teacher sửa giáo trình người khác → 403.
 
 ### Step 7 – Lớp học & giáo trình lớp

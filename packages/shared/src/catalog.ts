@@ -77,12 +77,13 @@ export interface CategoryItem {
   sortOrder: number;
   isActive: boolean;
   /**
-   * Số loại đề / mẫu bài học thuộc danh mục (có thì không xoá được danh mục).
-   * Trang hệ thống đếm mọi mục (kể cả của tenant); trang tenant đếm mục hệ
-   * thống + của tenant.
+   * Số loại đề / mẫu bài học / khoá học thuộc danh mục (có thì không xoá được
+   * danh mục). Trang hệ thống đếm mọi mục (kể cả của tenant); trang tenant đếm
+   * mục hệ thống + của tenant (khoá học chỉ của tenant).
    */
   examBlueprintCount: number;
   lessonBlueprintCount: number;
+  courseCount: number;
   updatedAt: string;
 }
 

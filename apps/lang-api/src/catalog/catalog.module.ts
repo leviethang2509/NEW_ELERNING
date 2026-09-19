@@ -3,6 +3,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { Exam } from '../exams/exam.entity';
 import { Lesson } from '../lessons/lesson.entity';
 import { TenantsModule } from '../tenants/tenants.module';
+import { Course } from '../training/course.entity';
 import {
   AdminCategoriesController,
   AdminExamBlueprintsController,
@@ -37,6 +38,7 @@ import {
       LessonModule,
       Exam,
       Lesson,
+      Course,
     ]),
   ],
   controllers: [

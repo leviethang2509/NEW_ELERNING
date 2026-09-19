@@ -5,8 +5,9 @@ import account from './content/03-tai-khoan.json';
 import system from './content/04-quan-tri-he-thong.json';
 import tenant from './content/05-trung-tam.json';
 import exams from './content/06-de-thi.json';
-import attempts from './content/07-thi-cham-bai.json';
-import operations from './content/08-van-hanh.json';
+import training from './content/07-dao-tao.json';
+import attempts from './content/08-thi-cham-bai.json';
+import operations from './content/09-van-hanh.json';
 
 // Mỗi file JSON là một nhóm trên sidebar, theo thứ tự dưới đây. Cấu trúc được
 // kiểm bằng `validateUserManual` trong `user-manual.content.spec.ts`.
@@ -17,6 +18,7 @@ const groups: unknown[] = [
   system,
   tenant,
   exams,
+  training,
   attempts,
   operations,
 ];

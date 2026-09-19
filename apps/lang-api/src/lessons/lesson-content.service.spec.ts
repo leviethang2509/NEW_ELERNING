@@ -29,6 +29,7 @@ import {
   InMemoryRepository,
   stubQueryBuilderRepository,
 } from '../testing/in-memory-repository';
+import { CurriculumItem } from '../training/curriculum-item.entity';
 import { User } from '../users/user.entity';
 import {
   CreateLessonDto,
@@ -168,6 +169,7 @@ async function setup() {
   const parts = new InMemoryRepository<LessonPart>();
   const questions = new InMemoryRepository<LessonQuestion>();
   const users = new InMemoryRepository<User>(timestamps);
+  const curriculumItems = new InMemoryRepository<CurriculumItem>();
   const attempts = new FakeAttemptLookup();
 
   // `insert` của repository giả không chạy default của cột.
@@ -188,6 +190,7 @@ async function setup() {
     .register(LessonPart, parts)
     .register(LessonQuestion, questions)
     .register(User, users)
+    .register(CurriculumItem, curriculumItems)
     .asDataSource();
   const blueprintsService = new LessonBlueprintsService(
     dataSource,
@@ -258,6 +261,7 @@ async function setup() {
   return {
     lessonsService,
     contentService,
+    curriculumItems,
     blueprints,
     categories,
     lessons,
@@ -831,6 +835,35 @@ describe('LessonsService.publish / archive / remove', () => {
     expect(
       lessons.rows.find((row) => row.id === used.id)?.deletedAt,
     ).not.toBeNull();
+  });
+
+  it('bài đang nằm trong giáo trình → 409 (cả xoá mềm), lưu trữ vẫn được', async () => {
+    const {
+      lessonsService,
+      createLesson,
+      addAttempt,
+      lessons,
+      curriculumItems,
+    } = await setup();
+    const lesson = await createLesson();
+    await lessonsService.publish(ownerCtx, OWNER, lesson.id);
+    await curriculumItems.save(
+      curriculumItems.create({ curriculumId: 'c1', lessonId: lesson.id }),
+    );
+    await expect(
+      lessonsService.remove(ownerCtx, OWNER, lesson.id),
+    ).rejects.toBeInstanceOf(ConflictException);
+    addAttempt(lesson.id, 1);
+    await expect(
+      lessonsService.remove(ownerCtx, OWNER, lesson.id),
+    ).rejects.toBeInstanceOf(ConflictException);
+    expect(
+      lessons.rows.find((row) => row.id === lesson.id)?.deletedAt,
+    ).toBeNull();
+
+    await expect(
+      lessonsService.archive(ownerCtx, OWNER, lesson.id),
+    ).resolves.toMatchObject({ status: LessonStatus.ARCHIVED });
   });
 });
 

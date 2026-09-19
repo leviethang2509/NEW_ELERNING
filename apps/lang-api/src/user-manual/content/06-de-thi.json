@@ -112,6 +112,10 @@
               "**Lưu trữ**",
               "Học viên không thấy đề nữa; vẫn sửa và publish lại được"
             ],
+            [
+              "**Xoá đề** (đang nằm trong giáo trình)",
+              "Không xoá được, chỉ lưu trữ được – xem [Giáo trình](page:giao-trinh)"
+            ],
             ["**Xoá đề** (chưa có bài làm)", "Xoá hẳn"],
             [
               "**Xoá đề** (đã có bài làm)",
@@ -553,6 +557,7 @@
             "**Nháp → Đã publish → Lưu trữ**, lưu trữ rồi **Publish lại** được, không quay về Nháp – như [Vòng đời đề thi](page:vong-doi-de-thi).",
             "Publish phải lưu hết thay đổi trước; nội dung còn lỗi (vd. câu chưa tick đáp án) thì không publish được và bảng lỗi liệt kê theo section. Bài đã publish/lưu trữ không lưu được nội dung còn lỗi.",
             "**Xoá bài học** chưa có lượt học: xoá hẳn. Đã có lượt học: ẩn đi (xoá mềm) để giữ kết quả; học viên vẫn xem lại được lượt học cũ.",
+            "Bài học đang nằm trong [giáo trình](page:giao-trinh) không xoá được, chỉ lưu trữ được.",
             "Bài **Lưu trữ**, xoá hoặc chuyển **Chỉ qua lớp**: biến khỏi trang trung tâm, lượt học đã có chỉ còn xem lại."
           ]
         },

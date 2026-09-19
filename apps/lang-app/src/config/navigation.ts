@@ -17,6 +17,8 @@ import {
   Layers,
   LayoutTemplate,
   LayoutDashboard,
+  ListTree,
+  School,
   Users,
   type LucideIcon,
 } from 'lucide-react';
@@ -131,6 +133,16 @@ function tenantNavigation(
   }
   if (examItems.length > 0) {
     sections.push({ label: vi.nav.sectionExam, items: examItems });
+  }
+  // Lớp học, Lịch thêm ở Step 7–8.
+  if (hasAnyRole(roles, EXAM_AUTHOR_ROLES)) {
+    sections.push({
+      label: vi.nav.sectionTraining,
+      items: [
+        { label: vi.nav.courses, href: `${base}/courses`, icon: School },
+        { label: vi.nav.curricula, href: `${base}/curricula`, icon: ListTree },
+      ],
+    });
   }
   return sections;
 }

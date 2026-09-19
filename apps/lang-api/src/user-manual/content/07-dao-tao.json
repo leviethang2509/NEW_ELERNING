@@ -1,0 +1,155 @@
+{
+  "id": "dao-tao",
+  "title": "Đào tạo",
+  "pages": [
+    {
+      "id": "khoa-hoc",
+      "title": "Khoá học",
+      "summary": "Tạo, sửa, lưu trữ, xoá khoá học và gắn giáo trình tham khảo.",
+      "roles": ["TENANT_OWNER", "TENANT_ADMIN", "TEACHER"],
+      "blocks": [
+        {
+          "type": "roles",
+          "roles": ["TENANT_OWNER", "TENANT_ADMIN", "TEACHER"]
+        },
+        {
+          "type": "paragraph",
+          "text": "Menu **Đào tạo → Khoá học** (`/t/{slug}/dashboard/courses`). Khoá học mô tả một chương trình của trung tâm (vd. Tiếng Nhật N5); lớp học sẽ được tạo từ khoá học (giai đoạn Lớp học). Khoá học chỉ dùng nội bộ, không hiện cho học viên hay khách."
+        },
+        {
+          "type": "table",
+          "columns": ["Thao tác", "Chủ sở hữu / Quản trị viên", "Giáo viên"],
+          "rows": [
+            ["Xem danh sách, chi tiết khoá học", "✔", "✔"],
+            ["Tạo, sửa, lưu trữ, xoá khoá học", "✔", "✘"],
+            ["Gắn / bỏ gắn giáo trình tham khảo", "✔", "✘"]
+          ]
+        },
+        { "type": "heading", "level": 2, "text": "Thông tin khoá học" },
+        {
+          "type": "table",
+          "columns": ["Trường", "Quy tắc"],
+          "rows": [
+            [
+              "Mã khoá học",
+              "Bắt buộc, chữ in hoa không dấu, số và dấu `-` hoặc `_` ở giữa (vd. `N5-2026`), tự đổi sang in hoa; không trùng trong trung tâm"
+            ],
+            ["Tên khoá học", "Bắt buộc, tối đa 200 ký tự"],
+            ["Mô tả", "Tuỳ chọn"],
+            [
+              "Danh mục",
+              "Tuỳ chọn; danh mục hệ thống hoặc của trung tâm, đang dùng. Danh mục đang có khoá học không xoá được"
+            ],
+            [
+              "Ảnh bìa",
+              "Tuỳ chọn; **Chọn ảnh** để upload vào [Thư viện media](page:thu-vien-media) hoặc dán URL"
+            ],
+            ["Trình độ", "Tuỳ chọn, chữ tự do (vd. N5, A2)"],
+            [
+              "Số buổi dự kiến",
+              "Tuỳ chọn, 1–500; lớp tạo từ khoá học sẽ lấy làm số buổi mặc định"
+            ]
+          ]
+        },
+        { "type": "heading", "level": 2, "text": "Lưu trữ và xoá" },
+        {
+          "type": "list",
+          "items": [
+            "**Lưu trữ**: khoá học vẫn còn, không tạo lớp mới được từ khoá học; bấm **Dùng lại** để chuyển về Đang dùng.",
+            "**Xoá khoá học**: xoá hẳn; các giáo trình đang gắn chỉ bị **bỏ gắn**, vẫn còn trong thư viện Giáo trình.",
+            "Khi đã có chức năng lớp học: khoá học đã có lớp sẽ chỉ lưu trữ được, không xoá được."
+          ]
+        },
+        { "type": "heading", "level": 2, "text": "Giáo trình tham khảo" },
+        {
+          "type": "paragraph",
+          "text": "Trang khoá học có tab **Thông tin** và **Giáo trình tham khảo**. Tab Giáo trình tham khảo liệt kê các [giáo trình](page:giao-trinh) đang gắn (bấm tên để mở). Chủ sở hữu/Quản trị viên chọn giáo trình trong ô **Chọn giáo trình để gắn** rồi bấm **Gắn giáo trình**; nút **Bỏ gắn** chỉ gỡ liên kết, không xoá giáo trình."
+        },
+        {
+          "type": "list",
+          "items": [
+            "Một khoá học gắn nhiều giáo trình, một giáo trình gắn được vào nhiều khoá học.",
+            "Giáo trình tham khảo giúp giáo viên biết khoá học có những nội dung nào. Khi tạo lớp (giai đoạn Lớp học) sẽ chọn 1 giáo trình để **sao chép** sang lớp; sửa giáo trình tham khảo sau đó không ảnh hưởng lớp đã tạo."
+          ]
+        }
+      ]
+    },
+    {
+      "id": "giao-trinh",
+      "title": "Giáo trình",
+      "summary": "Thư viện giáo trình tham khảo: chương, mục bài học/đề thi, nhãn, ghi chú, nhân bản và quyền.",
+      "roles": ["TENANT_OWNER", "TENANT_ADMIN", "TEACHER"],
+      "blocks": [
+        {
+          "type": "roles",
+          "roles": ["TENANT_OWNER", "TENANT_ADMIN", "TEACHER"]
+        },
+        {
+          "type": "paragraph",
+          "text": "Menu **Đào tạo → Giáo trình** (`/t/{slug}/dashboard/curricula`). Giáo trình là thư viện độc lập của trung tâm: chia **chương** (1 cấp), mỗi chương gồm các **mục** là [bài học](page:bai-hoc) hoặc đề thi đã publish. Danh sách tìm theo tên, lọc theo khoá học đang gắn và người tạo; mỗi dòng hiện khoá học đang gắn (bấm mã để mở), số chương, số mục."
+        },
+        { "type": "heading", "level": 2, "text": "Tạo giáo trình" },
+        {
+          "type": "steps",
+          "items": [
+            {
+              "title": "Bấm Tạo giáo trình",
+              "text": "Nhập tên (tối đa 200 ký tự) và mô tả, bấm **Tạo giáo trình**; trang giáo trình mở ra."
+            },
+            {
+              "title": "Thêm chương",
+              "text": "Bấm **Thêm chương**, đổi tên chương ngay trong ô tên (vd. “Chương 1: Bài 1–2”)."
+            },
+            {
+              "title": "Thêm mục",
+              "text": "Bấm **Thêm mục** ở chương (hoặc ở **Chưa xếp chương**), chọn tab **Bài học** hoặc **Đề thi**, tìm theo tên và bấm **Thêm**; thêm được nhiều mục liên tiếp rồi bấm **Xong**."
+            },
+            {
+              "title": "Sắp xếp, đặt nhãn, ghi chú",
+              "text": "Kéo tay cầm để sắp xếp chương và mục (kéo mục sang chương khác được), hoặc dùng nút **Lên/Xuống** và ô **Chương**. Chọn nhãn; bấm mũi tên để sửa **Tên hiển thị** và **Ghi chú cho giáo viên**."
+            },
+            {
+              "title": "Bấm Lưu giáo trình",
+              "text": "Lưu cả danh sách chương + mục một lần. Rời trang khi còn thay đổi chưa lưu sẽ được hỏi lại."
+            }
+          ]
+        },
+        { "type": "heading", "level": 2, "text": "Quy tắc mục" },
+        {
+          "type": "list",
+          "items": [
+            "Chỉ thêm được bài học/đề thi **đã publish** (kể cả hiển thị **Chỉ qua lớp**). Mỗi bài học/đề thi chỉ có **một lần** trong một giáo trình.",
+            "**Nhãn** chỉ để hiển thị và lọc: mục bài học là **Bài học** hoặc **Bài tập**; mục đề thi là **Bài kiểm tra** hoặc **Bài thi**.",
+            "**Tên hiển thị** để trống thì dùng tên bài học/đề thi; khi có tên riêng, dòng mục hiện thêm “Gốc: …”.",
+            "Mục không thuộc chương nào nằm ở **Chưa xếp chương**, hiện ở đầu giáo trình. **Xoá chương** chuyển các mục của chương về Chưa xếp chương.",
+            "Giới hạn: tối đa 100 chương và 300 mục mỗi giáo trình.",
+            "Bài học/đề thi **đang nằm trong giáo trình** không xoá được, chỉ **lưu trữ** được. Mục có bài/đề đã lưu trữ vẫn giữ nguyên, hiện nhãn **Đã lưu trữ** để cân nhắc thay bài khác."
+          ]
+        },
+        {
+          "type": "callout",
+          "tone": "warning",
+          "text": "Hai người cùng sửa một giáo trình: người lưu sau nhận lỗi “Giáo trình vừa được người khác lưu”. Hãy tải lại trang để xem bản mới nhất rồi sửa lại."
+        },
+        { "type": "heading", "level": 2, "text": "Nhân bản và xoá" },
+        {
+          "type": "list",
+          "items": [
+            "Nút **Nhân bản** (danh sách hoặc trang giáo trình): mọi giáo trình → giáo trình mới của bạn, tên “… (bản sao)”, chép chương và mục (kể cả mục có bài/đề đã lưu trữ), **không** gắn vào khoá học nào.",
+            "**Xoá giáo trình**: chương và mục bị xoá theo. Giáo trình đang gắn khoá học không xoá được – hãy **Bỏ gắn** ở trang [Khoá học](page:khoa-hoc) trước."
+          ]
+        },
+        { "type": "heading", "level": 2, "text": "Quyền trên giáo trình" },
+        {
+          "type": "list",
+          "items": [
+            "Chủ sở hữu, Quản trị viên: sửa thông tin, chương + mục, xoá **mọi giáo trình**.",
+            "Giáo viên: tạo giáo trình; sửa, xoá **giáo trình do mình tạo**; giáo trình người khác mở ở chế độ **Chỉ xem** (vẫn nhân bản được).",
+            "Gắn/bỏ gắn giáo trình vào khoá học: chỉ Chủ sở hữu, Quản trị viên.",
+            "Học viên, Phụ huynh không vào được trang giáo trình."
+          ]
+        }
+      ]
+    }
+  ]
+}

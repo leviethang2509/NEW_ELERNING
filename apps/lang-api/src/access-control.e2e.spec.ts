@@ -180,6 +180,24 @@ const ROUTES: Record<string, Access> = {
   'POST /t/:slug/lessons/:id/archive': STAFF,
   'DELETE /t/:slug/lessons/:id': STAFF,
 
+  // Khoá học: Teacher chỉ xem; gắn/bỏ giáo trình chỉ Owner/Admin (R6).
+  'GET /t/:slug/courses': STAFF,
+  'POST /t/:slug/courses': MANAGER,
+  'GET /t/:slug/courses/:id': STAFF,
+  'PATCH /t/:slug/courses/:id': MANAGER,
+  'DELETE /t/:slug/courses/:id': MANAGER,
+  'POST /t/:slug/courses/:id/curricula/:curriculumId': MANAGER,
+  'DELETE /t/:slug/courses/:id/curricula/:curriculumId': MANAGER,
+  // Giáo trình: Teacher tạo, nhân bản, sửa/xoá giáo trình mình tạo (service).
+  'GET /t/:slug/curricula': STAFF,
+  'GET /t/:slug/curricula/creators': STAFF,
+  'POST /t/:slug/curricula': STAFF,
+  'GET /t/:slug/curricula/:id': STAFF,
+  'PATCH /t/:slug/curricula/:id': STAFF,
+  'PUT /t/:slug/curricula/:id/items': STAFF,
+  'POST /t/:slug/curricula/:id/clone': STAFF,
+  'DELETE /t/:slug/curricula/:id': STAFF,
+
   'GET /t/:slug/grading/attempts': STAFF,
   'GET /t/:slug/grading/attempts/:id': STAFF,
   'GET /t/:slug/grading/attempts/:id/recordings/:answerId/url': STAFF,

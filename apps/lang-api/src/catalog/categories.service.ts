@@ -21,11 +21,12 @@ import { ExamBlueprint } from './exam-blueprint.entity';
 import { compareCategories, toCategoryItem } from './catalog.mapper';
 import { Category } from './category.entity';
 import { LessonBlueprint } from './lesson-blueprint.entity';
+import { Course } from '../training/course.entity';
 
 const CATEGORY_NOT_FOUND = 'Không tìm thấy danh mục';
 const CODE_TAKEN = 'Mã danh mục đã tồn tại';
 const CATEGORY_IN_USE =
-  'Danh mục đang có loại đề hoặc mẫu bài học, chỉ có thể ngừng dùng thay vì xoá';
+  'Danh mục đang có loại đề, mẫu bài học hoặc khoá học, chỉ có thể ngừng dùng thay vì xoá';
 
 /** Loại đề và mẫu bài học: dòng có phạm vi thuộc một danh mục. */
 interface CategorizedRow {
@@ -48,20 +49,23 @@ export class CategoriesService {
     private readonly examBlueprints: Repository<ExamBlueprint>,
     @InjectRepository(LessonBlueprint)
     private readonly lessonBlueprints: Repository<LessonBlueprint>,
+    @InjectRepository(Course) private readonly courses: Repository<Course>,
   ) {}
 
   async list(owner: CatalogOwner): Promise<CategoryItem[]> {
     const categories = (await findVisible(this.categories, owner)).sort(
       compareCategories,
     );
-    const [examCounts, lessonCounts] = await Promise.all([
+    const [examCounts, lessonCounts, courseCounts] = await Promise.all([
       countByCategory(this.examBlueprints, owner),
       countByCategory(this.lessonBlueprints, owner),
+      this.countCourses(owner),
     ]);
     return categories.map((category) =>
       toCategoryItem(category, {
         examBlueprintCount: examCounts.get(category.id) ?? 0,
         lessonBlueprintCount: lessonCounts.get(category.id) ?? 0,
+        courseCount: courseCounts.get(category.id) ?? 0,
       }),
     );
   }
@@ -89,6 +93,7 @@ export class CategoriesService {
     return toCategoryItem(category, {
       examBlueprintCount: 0,
       lessonBlueprintCount: 0,
+      courseCount: 0,
     });
   }
 
@@ -132,20 +137,24 @@ export class CategoriesService {
         owner,
         id,
       ),
+      courseCount: (await this.countCourses(owner, id)).get(id) ?? 0,
     });
   }
 
   /**
-   * Xoá cứng khi chưa loại đề hay mẫu bài học nào (kể cả của tenant) thuộc
-   * danh mục.
+   * Xoá cứng khi chưa loại đề, mẫu bài học hay khoá học nào (kể cả của tenant)
+   * thuộc danh mục.
    */
   async remove(owner: CatalogOwner, id: string): Promise<void> {
     await findOwned(this.categories, owner, id, CATEGORY_NOT_FOUND);
-    const [hasExam, hasLesson] = await Promise.all([
+    const [hasExam, hasLesson, hasCourse] = await Promise.all([
       this.examBlueprints.existsBy({ categoryId: id }),
       this.lessonBlueprints.existsBy({ categoryId: id }),
+      this.courses.existsBy({ categoryId: id }),
     ]);
-    if (hasExam || hasLesson) throw new ConflictException(CATEGORY_IN_USE);
+    if (hasExam || hasLesson || hasCourse) {
+      throw new ConflictException(CATEGORY_IN_USE);
+    }
     try {
       await this.categories.delete({ id });
     } catch (error) {
@@ -155,6 +164,30 @@ export class CategoriesService {
       }
       throw error;
     }
+  }
+
+  /**
+   * Số khoá học theo danh mục: trang hệ thống đếm khoá học mọi tenant, tenant
+   * đếm khoá học của mình.
+   */
+  private async countCourses(
+    owner: CatalogOwner,
+    categoryId?: string,
+  ): Promise<Map<string, number>> {
+    const rows = await this.courses.find({
+      select: { id: true, categoryId: true },
+      where: {
+        ...(owner === null ? {} : { tenantId: owner }),
+        ...(categoryId ? { categoryId } : {}),
+      },
+    });
+    const counts = new Map<string, number>();
+    for (const row of rows) {
+      if (row.categoryId) {
+        counts.set(row.categoryId, (counts.get(row.categoryId) ?? 0) + 1);
+      }
+    }
+    return counts;
   }
 
   private async assertCodeAvailable(

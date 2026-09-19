@@ -219,6 +219,29 @@
             ]
           ]
         },
+        { "type": "heading", "level": 2, "text": "Đào tạo" },
+        {
+          "type": "table",
+          "columns": ["Thuật ngữ", "Ý nghĩa"],
+          "rows": [
+            [
+              "Khoá học",
+              "Chương trình của trung tâm (vd. Tiếng Nhật N5): mã, tên, danh mục, trình độ, số buổi dự kiến. Xem [Khoá học](page:khoa-hoc)."
+            ],
+            [
+              "Giáo trình (tham khảo)",
+              "Danh sách chương + mục (bài học, đề thi đã publish) trong thư viện của trung tâm, gắn được vào nhiều khoá học. Xem [Giáo trình](page:giao-trinh)."
+            ],
+            [
+              "Chương",
+              "Nhóm 1 cấp các mục trong giáo trình; mục không thuộc chương nào nằm ở “Chưa xếp chương”."
+            ],
+            [
+              "Nhãn mục",
+              "**Bài học**/**Bài tập** (mục bài học), **Bài kiểm tra**/**Bài thi** (mục đề thi); chỉ để hiển thị và lọc."
+            ]
+          ]
+        },
         { "type": "heading", "level": 2, "text": "Thi & chấm" },
         {
           "type": "table",
@@ -446,6 +469,24 @@
               "✘"
             ],
             ["Thư viện media (upload, xoá)", "✔", "✔", "✔", "✘", "✘"],
+            ["Xem khoá học", "✔", "✔", "✔", "✘", "✘"],
+            [
+              "Tạo, sửa, lưu trữ, xoá khoá học; gắn/bỏ gắn giáo trình",
+              "✔",
+              "✔",
+              "✘",
+              "✘",
+              "✘"
+            ],
+            ["Xem, tạo, nhân bản giáo trình", "✔", "✔", "✔", "✘", "✘"],
+            [
+              "Sửa chương + mục, thông tin, xoá giáo trình",
+              "mọi giáo trình",
+              "mọi giáo trình",
+              "giáo trình mình tạo",
+              "✘",
+              "✘"
+            ],
             ["Học bài học công khai trong trung tâm", "✔", "✔", "✔", "✔", "✔"],
             [
               "Chấm bài Writing/Speaking – đề thi và bài học (trừ bài của mình)",
@@ -484,6 +525,10 @@
             [
               "Đề thi & Bài học → Chấm bài",
               "Chủ sở hữu, Quản trị viên, Giáo viên"
+            ],
+            [
+              "Đào tạo → Khoá học, Giáo trình",
+              "Chủ sở hữu, Quản trị viên, Giáo viên (khoá học chỉ xem)"
             ]
           ]
         },

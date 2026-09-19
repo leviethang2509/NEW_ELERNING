@@ -13,5 +13,6 @@ export * from './pagination';
 export * from './roles';
 export * from './status';
 export * from './tenant';
+export * from './training';
 export * from './user';
 export * from './user-manual';

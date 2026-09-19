@@ -9,6 +9,7 @@ import type { ExamBlueprint } from './exam-blueprint.entity';
 import { CategoriesService } from './categories.service';
 import type { Category } from './category.entity';
 import type { LessonBlueprint } from './lesson-blueprint.entity';
+import type { Course } from '../training/course.entity';
 
 const TENANT_A = 'tenant-a';
 const TENANT_B = 'tenant-b';
@@ -23,12 +24,14 @@ function setup() {
   const lessonBlueprints = new InMemoryRepository<LessonBlueprint>(() => ({
     updatedAt: new Date(),
   }));
+  const courses = new InMemoryRepository<Course>();
   const service = new CategoriesService(
     categories.asRepository(),
     blueprints.asRepository(),
     lessonBlueprints.asRepository(),
+    courses.asRepository(),
   );
-  return { service, categories, blueprints, lessonBlueprints };
+  return { service, categories, blueprints, lessonBlueprints, courses };
 }
 
 describe('CategoriesService', () => {
@@ -158,10 +161,12 @@ describe('CategoriesService', () => {
     );
   });
 
-  it('không xoá danh mục hệ thống khi có loại đề hoặc mẫu bài học của tenant thuộc nó', async () => {
-    const { service, categories, blueprints, lessonBlueprints } = setup();
+  it('không xoá danh mục hệ thống khi có loại đề, mẫu bài học hoặc khoá học của tenant thuộc nó', async () => {
+    const { service, categories, blueprints, lessonBlueprints, courses } =
+      setup();
     const exam = await service.create(null, 'o', { code: 'EN', name: 'A' });
     const lesson = await service.create(null, 'o', { code: 'JA', name: 'B' });
+    const course = await service.create(null, 'o', { code: 'ZH', name: 'D' });
     const unused = await service.create(null, 'o', { code: 'KO', name: 'C' });
     await blueprints.save(
       blueprints.create({ tenantId: TENANT_A, categoryId: exam.id }),
@@ -169,13 +174,22 @@ describe('CategoriesService', () => {
     await lessonBlueprints.save(
       lessonBlueprints.create({ tenantId: TENANT_A, categoryId: lesson.id }),
     );
+    await courses.save(
+      courses.create({ tenantId: TENANT_A, categoryId: course.id }),
+    );
 
-    for (const used of [exam, lesson]) {
+    // Trang hệ thống đếm khoá học mọi tenant; tenant khác không thấy.
+    const counts = (items: { code: string; courseCount: number }[]) =>
+      items.map((item) => [item.code, item.courseCount]);
+    expect(counts(await service.list(null))).toContainEqual(['ZH', 1]);
+    expect(counts(await service.list(TENANT_B))).toContainEqual(['ZH', 0]);
+
+    for (const used of [exam, lesson, course]) {
       await expect(service.remove(null, used.id)).rejects.toBeInstanceOf(
         ConflictException,
       );
     }
     await service.remove(null, unused.id);
-    expect(categories.rows.map((row) => row.code)).toEqual(['EN', 'JA']);
+    expect(categories.rows.map((row) => row.code)).toEqual(['EN', 'JA', 'ZH']);
   });
 });

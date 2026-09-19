@@ -28,9 +28,9 @@ import {
 
 // Viết nguyên văn để Tailwind sinh class.
 const SYSTEM_GRID =
-  'sm:grid-cols-[minmax(0,1fr)_minmax(0,1.6fr)_80px_110px_80px_110px_90px]';
+  'sm:grid-cols-[minmax(0,1fr)_minmax(0,1.6fr)_80px_110px_80px_80px_110px_90px]';
 const TENANT_GRID =
-  'sm:grid-cols-[minmax(0,1fr)_minmax(0,1.6fr)_80px_110px_80px_110px_100px_90px]';
+  'sm:grid-cols-[minmax(0,1fr)_minmax(0,1.6fr)_80px_110px_80px_80px_110px_100px_90px]';
 
 type StatusFilter = 'active' | 'inactive';
 
@@ -91,7 +91,9 @@ export function CategoriesView({
   }
 
   const inUse = (row: CategoryItem) =>
-    row.examBlueprintCount > 0 || row.lessonBlueprintCount > 0;
+    row.examBlueprintCount > 0 ||
+    row.lessonBlueprintCount > 0 ||
+    row.courseCount > 0;
 
   const columns: DataColumn<CategoryItem>[] = [
     {
@@ -133,6 +135,14 @@ export function CategoriesView({
       render: (row) => (
         <span className="text-[13.5px] text-[var(--body)]">
           {formatNumber(row.lessonBlueprintCount)}
+        </span>
+      ),
+    },
+    {
+      header: text.courseCount,
+      render: (row) => (
+        <span className="text-[13.5px] text-[var(--body)]">
+          {formatNumber(row.courseCount)}
         </span>
       ),
     },

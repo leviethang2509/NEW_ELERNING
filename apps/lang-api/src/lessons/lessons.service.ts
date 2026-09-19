@@ -29,6 +29,7 @@ import {
   sectionIssues,
 } from '../exams/section-content';
 import type { TenantContext } from '../tenants/tenant-context';
+import { assertLessonNotInUse } from '../training/content-usage';
 import { User } from '../users/user.entity';
 import type {
   CreateLessonDto,
@@ -390,11 +391,15 @@ export class LessonsService {
     return this.getDetail(ctx, actorId, id);
   }
 
-  /** Bài đã có lượt học (mọi version) thì xoá mềm, chưa có thì xoá hẳn. */
+  /**
+   * Bài đang nằm trong giáo trình → 409 (chỉ lưu trữ được). Bài đã có lượt học
+   * (mọi version) thì xoá mềm, chưa có thì xoá hẳn.
+   */
   async remove(ctx: TenantContext, actorId: string, id: string): Promise<void> {
     await this.dataSource.transaction(async (manager) => {
       const lesson = await findLesson(manager, ctx.tenantId, id, true);
       assertCanEditLesson(ctx, actorId, lesson);
+      await assertLessonNotInUse(manager, id);
       const repository = manager.getRepository(Lesson);
       if (await this.attemptLookup.hasAttempts(manager, id)) {
         await repository.update(id, { updatedBy: actorId });

@@ -295,8 +295,8 @@
         {
           "type": "list",
           "items": [
-            "Cột **Loại đề** và **Mẫu bài học** đếm số mục thuộc danh mục.",
-            "Chỉ **xoá** được danh mục chưa có loại đề hay mẫu bài học nào (kể cả của trung tâm thuộc danh mục hệ thống); ngược lại chỉ ngừng dùng."
+            "Cột **Loại đề**, **Mẫu bài học** và **Khoá học** đếm số mục thuộc danh mục (khoá học của mọi trung tâm).",
+            "Chỉ **xoá** được danh mục chưa có loại đề, mẫu bài học hay khoá học nào (kể cả của trung tâm thuộc danh mục hệ thống); ngược lại chỉ ngừng dùng."
           ]
         },
         { "type": "heading", "level": 2, "text": "Loại đề" },

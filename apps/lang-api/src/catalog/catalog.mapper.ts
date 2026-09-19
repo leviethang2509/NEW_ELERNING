@@ -15,7 +15,10 @@ import type { LessonModule } from './lesson-module.entity';
 
 export function toCategoryItem(
   category: Category,
-  counts: Pick<CategoryItem, 'examBlueprintCount' | 'lessonBlueprintCount'>,
+  counts: Pick<
+    CategoryItem,
+    'examBlueprintCount' | 'lessonBlueprintCount' | 'courseCount'
+  >,
 ): CategoryItem {
   return {
     ...toCategoryRef(category),

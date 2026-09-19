@@ -263,7 +263,8 @@
             "Quy tắc trường, module/phần, ngừng dùng và xoá giống bản hệ thống – xem [Danh mục, loại đề & mẫu bài học hệ thống](page:admin-danh-muc-loai-de).",
             "Mã chỉ cần không trùng trong phạm vi trung tâm (được trùng mã hệ thống hay trung tâm khác).",
             "Loại đề và mẫu bài học của trung tâm được đặt trong **danh mục hệ thống** hoặc danh mục của trung tâm.",
-            "Cột **Số đề** ở trung tâm chỉ đếm đề của trung tâm mình."
+            "Cột **Số đề** ở trung tâm chỉ đếm đề của trung tâm mình; cột **Khoá học** của danh mục đếm [khoá học](page:khoa-hoc) của trung tâm.",
+            "Danh mục đang có khoá học không xoá được (chỉ ngừng dùng)."
           ]
         },
         {

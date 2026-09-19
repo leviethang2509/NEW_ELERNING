@@ -24,6 +24,7 @@ import { ExamBlueprint } from '../catalog/exam-blueprint.entity';
 import { ExamBlueprintsService } from '../catalog/exam-blueprints.service';
 import { Category } from '../catalog/category.entity';
 import type { TenantContext } from '../tenants/tenant-context';
+import { assertExamNotInUse } from '../training/content-usage';
 import { User } from '../users/user.entity';
 import type {
   CreateExamDto,
@@ -390,11 +391,15 @@ export class ExamsService {
     return this.getDetail(ctx, actorId, id);
   }
 
-  /** Đề đã có bài làm (mọi version) thì xoá mềm, chưa có thì xoá hẳn. */
+  /**
+   * Đề đang nằm trong giáo trình → 409 (chỉ lưu trữ được). Đề đã có bài làm
+   * (mọi version) thì xoá mềm, chưa có thì xoá hẳn.
+   */
   async remove(ctx: TenantContext, actorId: string, id: string): Promise<void> {
     await this.dataSource.transaction(async (manager) => {
       const exam = await findExam(manager, ctx.tenantId, id, true);
       assertCanEditExam(ctx, actorId, exam);
+      await assertExamNotInUse(manager, id);
       const repository = manager.getRepository(Exam);
       const hasAttempts = await manager
         .getRepository(ExamAttempt)
