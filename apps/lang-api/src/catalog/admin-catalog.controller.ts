@@ -12,6 +12,7 @@ import {
 import {
   SYSTEM_MANAGER_ROLES,
   type ExamBlueprintItem,
+  type LessonBlueprintItem,
   type CategoryItem,
 } from '@lang/shared';
 import { SystemRoles } from '../auth/decorators';
@@ -25,7 +26,12 @@ import {
   UpdateExamBlueprintDto,
 } from './dto/exam-blueprint.dto';
 import { CreateCategoryDto, UpdateCategoryDto } from './dto/category.dto';
+import {
+  CreateLessonBlueprintDto,
+  UpdateLessonBlueprintDto,
+} from './dto/lesson-blueprint.dto';
 import { ExamBlueprintsService } from './exam-blueprints.service';
+import { LessonBlueprintsService } from './lesson-blueprints.service';
 import { CategoriesService } from './categories.service';
 
 /** Danh mục hệ thống (`tenant_id` NULL), System Owner/Admin. */
@@ -88,6 +94,41 @@ export class AdminExamBlueprintsController {
     @Param('id', ParseIdPipe()) id: string,
     @Body() dto: UpdateExamBlueprintDto,
   ): Promise<ExamBlueprintItem> {
+    return this.blueprints.update(null, actor.id, id, dto);
+  }
+
+  @Delete(':id')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  remove(@Param('id', ParseIdPipe()) id: string): Promise<void> {
+    return this.blueprints.remove(null, id);
+  }
+}
+
+/** Mẫu bài học hệ thống kèm phần, System Owner/Admin. */
+@Controller('admin/lesson-blueprints')
+@SystemRoles(...SYSTEM_MANAGER_ROLES)
+export class AdminLessonBlueprintsController {
+  constructor(private readonly blueprints: LessonBlueprintsService) {}
+
+  @Get()
+  list(): Promise<LessonBlueprintItem[]> {
+    return this.blueprints.list(null);
+  }
+
+  @Post()
+  create(
+    @CurrentUser() actor: RequestUser,
+    @Body() dto: CreateLessonBlueprintDto,
+  ): Promise<LessonBlueprintItem> {
+    return this.blueprints.create(null, actor.id, dto);
+  }
+
+  @Patch(':id')
+  update(
+    @CurrentUser() actor: RequestUser,
+    @Param('id', ParseIdPipe()) id: string,
+    @Body() dto: UpdateLessonBlueprintDto,
+  ): Promise<LessonBlueprintItem> {
     return this.blueprints.update(null, actor.id, id, dto);
   }
 

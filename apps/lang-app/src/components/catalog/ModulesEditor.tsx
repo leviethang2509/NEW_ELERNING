@@ -5,6 +5,7 @@ import { ArrowDown, ArrowUp, GripVertical, Plus, Trash2 } from 'lucide-react';
 import {
   DURATION_OPTIONS_MINUTES,
   EXAM_BLUEPRINT_MAX_MODULES,
+  LESSON_BLUEPRINT_MAX_MODULES,
   CATALOG_CODE_MAX_LENGTH,
   CATALOG_DESCRIPTION_MAX_LENGTH,
   CATALOG_NAME_MAX_LENGTH,
@@ -12,7 +13,10 @@ import {
 import { iconButtonClass, secondaryButtonClass } from '@/components/ui';
 import { vi } from '@/i18n/vi';
 
-/** Module đang soạn; `key` ổn định cho React vì `id` chỉ có ở module đã lưu. */
+/**
+ * Module đang soạn; `key` ổn định cho React vì `id` chỉ có ở module đã lưu.
+ * Phần của mẫu bài học bỏ qua `referenceDurationMinutes`.
+ */
 export interface ModuleDraft {
   key: string;
   id?: string;
@@ -41,8 +45,21 @@ function move<T>(items: T[], from: number, to: number): T[] {
   return next;
 }
 
+/** `exam`: module loại đề (có thời lượng); `lesson`: phần mẫu bài học. */
+export type ModulesVariant = 'exam' | 'lesson';
+
+// Viết nguyên văn để Tailwind sinh class.
+const FIELDS_GRID: Record<ModulesVariant, string> = {
+  exam: 'sm:grid-cols-[minmax(0,1fr)_150px_130px]',
+  lesson: 'sm:grid-cols-[minmax(0,1fr)_150px]',
+};
+const DESCRIPTION_SPAN: Record<ModulesVariant, string> = {
+  exam: 'sm:col-span-3',
+  lesson: 'sm:col-span-2',
+};
+
 /**
- * Danh sách module của loại đề: kéo thả bằng tay cầm (HTML5 drag & drop, chỉ
+ * Danh sách module của loại đề / phần của mẫu bài học: kéo thả bằng tay cầm (HTML5 drag & drop, chỉ
  * bật `draggable` khi đang giữ tay cầm để còn bôi chọn chữ trong ô nhập) hoặc
  * nút lên/xuống cho bàn phím và mobile.
  */
@@ -50,15 +67,23 @@ export function ModulesEditor({
   modules,
   readOnly,
   onChange,
+  variant = 'exam',
 }: {
   modules: ModuleDraft[];
   readOnly: boolean;
   onChange: (modules: ModuleDraft[]) => void;
+  variant?: ModulesVariant;
 }) {
   const [armed, setArmed] = useState<number | null>(null);
   const [dragging, setDragging] = useState<number | null>(null);
   const [over, setOver] = useState<number | null>(null);
-  const text = vi.catalog.blueprints;
+  const withDuration = variant === 'exam';
+  const maxModules = withDuration
+    ? EXAM_BLUEPRINT_MAX_MODULES
+    : LESSON_BLUEPRINT_MAX_MODULES;
+  const text = withDuration
+    ? vi.catalog.blueprints
+    : { ...vi.catalog.blueprints, ...vi.catalog.lessonBlueprints };
 
   // Thả chuột ngoài tay cầm mà không kéo: tắt `draggable` để còn bôi chọn chữ.
   useEffect(() => {
@@ -128,7 +153,9 @@ export function ModulesEditor({
                 {index + 1}
               </span>
 
-              <div className="grid min-w-0 flex-1 gap-2 sm:grid-cols-[minmax(0,1fr)_150px_130px]">
+              <div
+                className={`grid min-w-0 flex-1 gap-2 ${FIELDS_GRID[variant]}`}
+              >
                 <input
                   required
                   aria-label={text.moduleName}
@@ -151,23 +178,25 @@ export function ModulesEditor({
                   }
                   className={`${compactInputClass} font-mono`}
                 />
-                <select
-                  aria-label={text.moduleDuration}
-                  title={text.moduleDuration}
-                  value={module.referenceDurationMinutes}
-                  onChange={(event) =>
-                    update(index, {
-                      referenceDurationMinutes: Number(event.target.value),
-                    })
-                  }
-                  className={compactInputClass}
-                >
-                  {DURATION_OPTIONS_MINUTES.map((minutes) => (
-                    <option key={minutes} value={minutes}>
-                      {text.minutes(minutes)}
-                    </option>
-                  ))}
-                </select>
+                {withDuration && (
+                  <select
+                    aria-label={text.moduleDuration}
+                    title={text.moduleDuration}
+                    value={module.referenceDurationMinutes}
+                    onChange={(event) =>
+                      update(index, {
+                        referenceDurationMinutes: Number(event.target.value),
+                      })
+                    }
+                    className={compactInputClass}
+                  >
+                    {DURATION_OPTIONS_MINUTES.map((minutes) => (
+                      <option key={minutes} value={minutes}>
+                        {text.minutes(minutes)}
+                      </option>
+                    ))}
+                  </select>
+                )}
                 <input
                   aria-label={text.moduleDescription}
                   placeholder={`${text.moduleDescription} ${vi.common.optional}`}
@@ -176,7 +205,7 @@ export function ModulesEditor({
                   onChange={(event) =>
                     update(index, { description: event.target.value })
                   }
-                  className={`${compactInputClass} text-[13px] sm:col-span-3`}
+                  className={`${compactInputClass} text-[13px] ${DESCRIPTION_SPAN[variant]}`}
                 />
               </div>
 
@@ -224,7 +253,7 @@ export function ModulesEditor({
       {!readOnly && (
         <button
           type="button"
-          disabled={modules.length >= EXAM_BLUEPRINT_MAX_MODULES}
+          disabled={modules.length >= maxModules}
           onClick={() =>
             onChange([
               ...modules,

@@ -3,21 +3,25 @@ import type {
   CategoryItem,
   CategoryRef,
   ExamModuleItem,
+  LessonBlueprintItem,
+  LessonModuleItem,
 } from '@lang/shared';
 import { compareText, scopeOf } from './catalog-scope';
 import type { ExamBlueprint } from './exam-blueprint.entity';
 import type { Category } from './category.entity';
 import type { ExamModule } from './exam-module.entity';
+import type { LessonBlueprint } from './lesson-blueprint.entity';
+import type { LessonModule } from './lesson-module.entity';
 
 export function toCategoryItem(
   category: Category,
-  blueprintCount: number,
+  counts: Pick<CategoryItem, 'examBlueprintCount' | 'lessonBlueprintCount'>,
 ): CategoryItem {
   return {
     ...toCategoryRef(category),
     description: category.description,
     sortOrder: category.sortOrder,
-    blueprintCount,
+    ...counts,
     updatedAt: category.updatedAt.toISOString(),
   };
 }
@@ -63,6 +67,36 @@ export function toExamBlueprintItem(
       .sort((a, b) => a.sortOrder - b.sortOrder)
       .map(toExamModuleItem),
     examCount,
+    updatedAt: blueprint.updatedAt.toISOString(),
+  };
+}
+
+export function toLessonModuleItem(module: LessonModule): LessonModuleItem {
+  return {
+    id: module.id,
+    name: module.name,
+    code: module.code,
+    sortOrder: module.sortOrder,
+    description: module.description,
+  };
+}
+
+export function toLessonBlueprintItem(
+  blueprint: LessonBlueprint,
+  category: Category,
+  modules: LessonModule[],
+): LessonBlueprintItem {
+  return {
+    id: blueprint.id,
+    scope: scopeOf(blueprint),
+    category: toCategoryRef(category),
+    name: blueprint.name,
+    code: blueprint.code,
+    description: blueprint.description,
+    isActive: blueprint.isActive,
+    modules: [...modules]
+      .sort((a, b) => a.sortOrder - b.sortOrder)
+      .map(toLessonModuleItem),
     updatedAt: blueprint.updatedAt.toISOString(),
   };
 }

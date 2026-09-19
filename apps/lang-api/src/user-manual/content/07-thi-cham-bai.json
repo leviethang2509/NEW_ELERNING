@@ -162,7 +162,7 @@
         },
         {
           "type": "paragraph",
-          "text": "Menu **Đề thi → Chấm bài** (`/t/{slug}/dashboard/grading`). Danh sách chỉ gồm lượt làm **đã nộp hết** và **có câu chấm tay**; tìm theo tên/email học viên, lọc **Chờ chấm / Đã chấm** và đề thi. Cột Chấm tay hiện tiến độ `đã chấm/tổng câu`."
+          "text": "Menu **Đề thi & Bài học → Chấm bài** (`/t/{slug}/dashboard/grading`). Danh sách chỉ gồm lượt làm **đã nộp hết** và **có câu chấm tay**; tìm theo tên/email học viên, lọc **Chờ chấm / Đã chấm** và đề thi. Cột Chấm tay hiện tiến độ `đã chấm/tổng câu`."
         },
         { "type": "heading", "level": 2, "text": "Chấm một bài" },
         {

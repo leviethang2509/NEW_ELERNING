@@ -10,8 +10,8 @@
 | Giai đoạn | Step | Nội dung | Trạng thái | Ngày xong | Ghi chú |
 |---|---|---|---|---|---|
 | 0 | – | Câu hỏi 4 vòng, plan, DB local `lang_simulator_dev` | ✅ | 2026-09-19 | Seed System Owner xong; CLAUDE.md cập nhật DB local |
-| 1 | 1 | Đổi tên danh mục | 🟡 | | Code + nghiệm thu local xong; chờ commit/push để deploy :3001 |
-| 1 | 2 | Mẫu bài học | ⬜ | | |
+| 1 | 1 | Đổi tên danh mục | ✅ | 2026-09-19 | Commit 484f81e, deploy :3001, người dùng kiểm OK |
+| 1 | 2 | Mẫu bài học | ✅ | 2026-09-19 | Chưa commit |
 | 1 | 3 | Editor: khối mới & giải thích | ⬜ | | |
 | 1 | 4 | Soạn bài học | ⬜ | | |
 | 1 | 5 | Học bài học & chấm tay bài học | ⬜ | | Deploy giai đoạn 1 |
@@ -27,9 +27,9 @@
 
 ## Bàn giao cho phiên tiếp theo
 
-- Step 1 xong phần code, chờ người dùng commit/push (deploy :3001, migration chạy lúc container khởi động) rồi kiểm trang Danh mục/Loại đề/Đề thi trên :3001 → đánh ✅. Step 2 chỉ bắt đầu sau khi deploy (P2).
-- Máy dev: `apps/lang-api/.env` trỏ Postgres local `lang_simulator_dev` (cấu hình VPS để comment `# VPS:`). DB local có 10 migration + 1 System Owner, chưa có tenant. Còn schema rỗng `lang_simulator` sót lại (không ảnh hưởng).
-- Thay đổi chưa commit: toàn bộ Step 1 + `CLAUDE.md`, `README.md`, `req-1-plan.md` (mục Database), các file `req-3*.md`.
+- Step 2 xong (chưa commit). Tiếp theo: Step 3 – Editor: khối mới & giải thích.
+- Máy dev: `apps/lang-api/.env` trỏ Postgres local `lang_simulator_dev` (cấu hình VPS để comment `# VPS:`). DB local có 11 migration, 1 System Owner, chưa có tenant; có sẵn mẫu bài học hệ thống **Minna no Nihongo – 1 bài** (`MINNA-1-BAI`, 5 phần, danh mục JA) tạo lúc nghiệm thu, giữ lại để dùng ở Step 4. Còn schema rỗng `lang_simulator` sót lại (không ảnh hưởng).
+- Chạy thử: API `node dist/main.js` (:3101), app `pnpm start` (:3100). Dừng Next bằng `pkill -f next-server` (tiến trình tên `next-server`, `pkill -f "next start"` không bắt được).
 
 ## Nhật ký
 
@@ -55,3 +55,27 @@
 **Lưu ý cho step sau**
 - `CategoryItem.blueprintCount` hiện chỉ đếm loại đề; Step 2 thêm số mẫu bài học và chặn xoá danh mục có mẫu bài học.
 - Chuỗi `vi.catalog.categories.subtitle` còn nói "nhóm loại đề"; Step 2 sửa thành loại đề + mẫu bài học.
+
+### Step 2 – Mẫu bài học (2026-09-19)
+
+**Đã làm**
+- Migration `1789798273850-CreateLessonBlueprints` (sinh bằng `migration:generate`, `down` rút gọn): `lesson_blueprints` (như `exam_blueprints`, FK `categories` RESTRICT) + `lesson_modules` (không có thời lượng, unique mã deferred).
+- lang-api (`catalog/`): `LessonBlueprint`, `LessonModule`, `LessonBlueprintsService` (chép `ExamBlueprintsService`: phạm vi hệ thống/tenant, danh mục phải thấy được & đang dùng, mã unique theo phạm vi, lưu cả danh sách phần), DTO, `AdminLessonBlueprintsController` (`admin/lesson-blueprints`), `TenantLessonBlueprintsController` (`t/:slug/lesson-blueprints`: xem Owner/Admin/Teacher, sửa Owner/Admin); `ROUTES` thêm 8 dòng. Unit test service + DTO.
+- `CategoriesService`: đếm và chặn xoá theo cả loại đề lẫn mẫu bài học; `CategoryItem.blueprintCount` → `examBlueprintCount` + `lessonBlueprintCount`.
+- `@lang/shared`: `LessonBlueprintItem`, `LessonModuleItem`, `LessonModuleInput`, `LESSON_BLUEPRINT_MIN/MAX_MODULES`.
+- lang-app: `LessonBlueprintsView` + `LessonBlueprintFormModal` (chép bản loại đề), `ModulesEditor` thêm `variant="lesson"` (bỏ ô thời lượng, chữ "phần"); trang `/admin/lesson-blueprints`, `/t/{slug}/dashboard/lesson-blueprints`; menu "Mẫu bài học"; nhóm menu đổi tên **Đề thi & Bài học** (plan 6.1); trang Danh mục có 2 cột Loại đề / Mẫu bài học.
+- Tài liệu: `/user-manual` (trang danh mục hệ thống + trung tâm, thuật ngữ, vai trò, giới hạn, tên nhóm menu), README, CLAUDE.md.
+
+**Sai khác so với plan**
+- Không tạo `LessonCatalogModule` riêng: mẫu bài học nằm trong `CatalogModule` (`catalog/`, đã đổi tên ở Step 1) cạnh loại đề; service/entity/controller vẫn tách riêng.
+- `ModulesEditor` dùng chung (thêm `variant`) thay vì chép, vì chỉ khác ô thời lượng.
+- Chưa có cột "Số bài học" và chưa chặn nút xoá mẫu đang dùng: bảng `lessons` có ở Step 4. `remove` đã bắt lỗi khoá ngoại → 409 "Mẫu bài học đang có bài học sử dụng…".
+
+**Nghiệm thu (local)**
+- 5 lệnh kiểm tra pass (lang-api 198 test).
+- Migration: chạy → "No changes" → revert → chạy lại OK.
+- API thật (:3101): System Owner tạo **Minna no Nihongo – 1 bài** (5 phần, thứ tự đúng); mã trùng 409, không có phần 400; danh mục JA đếm 1 loại đề + 1 mẫu, xoá JA → 409. Tenant thử: thấy mẫu hệ thống, sửa mẫu hệ thống 403, tạo mẫu riêng (trùng mã hệ thống được), sửa danh sách phần giữ id phần cũ. Teacher: xem được cả 2 mẫu, tạo/sửa/xoá 403. Đã xoá tenant + giáo viên thử.
+- lang-app (`next start`): 2 trang mẫu bài học 200. Chưa bấm giao diện bằng trình duyệt.
+
+**Lưu ý cho step sau**
+- Step 4: thêm `LessonBlueprintsService.findUsable` (như loại đề), cột "Số bài học" (`lessonCount`) và khoá nút xoá mẫu đang dùng; FK `lessons.blueprint_id` NO ACTION.

@@ -493,20 +493,21 @@ export const vi = {
     deleteFailed: 'Xoá thất bại',
     categories: {
       subtitle:
-        'Nhóm loại đề theo ngôn ngữ hoặc chương trình (Tiếng Anh, Tiếng Nhật…).',
+        'Nhóm loại đề và mẫu bài học theo ngôn ngữ hoặc chương trình (Tiếng Anh, Tiếng Nhật…).',
       tenantSubtitle:
-        'Gồm danh mục của hệ thống và danh mục riêng của trung tâm.',
+        'Gồm danh mục của hệ thống và danh mục riêng của trung tâm, dùng chung cho loại đề và mẫu bài học.',
       create: 'Tạo danh mục',
       edit: 'Sửa danh mục',
       delete: 'Xoá danh mục',
       deleteConfirm: (name: string) =>
         `Xoá danh mục ${name}? Thao tác không hoàn tác được.`,
-      inUse: 'Danh mục đang có loại đề, chỉ có thể ngừng dùng',
-      blueprintCount: 'Loại đề',
+      inUse: 'Danh mục đang có loại đề hoặc mẫu bài học, chỉ có thể ngừng dùng',
+      examBlueprintCount: 'Loại đề',
+      lessonBlueprintCount: 'Mẫu bài học',
       icon: 'Biểu tượng',
       color: 'Màu',
       activeHint:
-        'Danh mục ngừng dùng không chọn được khi tạo loại đề mới; loại đề đã có giữ nguyên.',
+        'Danh mục ngừng dùng không chọn được khi tạo loại đề, mẫu bài học mới; mục đã có giữ nguyên.',
       empty: 'Chưa có danh mục.',
       searchPlaceholder: 'Tìm theo tên hoặc mã danh mục',
     },
@@ -552,6 +553,35 @@ export const vi = {
       minutes: (value: number) => `${value} phút`,
       needModule: 'Loại đề phải có ít nhất 1 module',
       duplicateModuleCode: (code: string) => `Mã module bị trùng: ${code}`,
+    },
+    lessonBlueprints: {
+      subtitle:
+        'Mẫu bài học gồm các phần (Từ vựng, Ngữ pháp…), dùng để sinh section khi tạo bài học. Phần không có thời lượng.',
+      tenantSubtitle:
+        'Gồm mẫu bài học của hệ thống và mẫu riêng của trung tâm. Mẫu của trung tâm có thể thuộc danh mục hệ thống.',
+      create: 'Tạo mẫu bài học',
+      edit: 'Sửa mẫu bài học',
+      detail: 'Chi tiết mẫu bài học',
+      delete: 'Xoá mẫu bài học',
+      deleteConfirm: (name: string) =>
+        `Xoá mẫu bài học ${name} cùng các phần? Thao tác không hoàn tác được.`,
+      noCategory:
+        'Chưa có danh mục đang dùng. Hãy tạo danh mục trước khi tạo mẫu bài học.',
+      modules: 'Phần',
+      moduleCount: (count: number) => `${count} phần`,
+      activeHint:
+        'Mẫu ngừng dùng không chọn được khi tạo bài học mới; bài học đã tạo giữ nguyên.',
+      empty: 'Chưa có mẫu bài học.',
+      searchPlaceholder: 'Tìm theo tên hoặc mã mẫu bài học',
+      moduleName: 'Tên phần',
+      moduleCode: 'Mã phần',
+      moduleDescription: 'Mô tả phần',
+      addModule: 'Thêm phần',
+      removeModule: 'Xoá phần',
+      modulesHint:
+        'Kéo thả hoặc dùng nút mũi tên để sắp xếp. Sửa phần không ảnh hưởng bài học đã tạo.',
+      needModule: 'Mẫu bài học phải có ít nhất 1 phần',
+      duplicateModuleCode: (code: string) => `Mã phần bị trùng: ${code}`,
     },
   },
   exams: {
@@ -1106,12 +1136,13 @@ export const vi = {
     members: 'Thành viên',
     categories: 'Danh mục',
     examBlueprints: 'Loại đề',
+    lessonBlueprints: 'Mẫu bài học',
     exams: 'Đề thi',
     media: 'Thư viện media',
     grading: 'Chấm bài',
     userManual: 'Tài liệu nội bộ',
     sectionManagement: 'Quản lý',
-    sectionExam: 'Đề thi',
+    sectionExam: 'Đề thi & Bài học',
   },
   shell: {
     toggleMenu: 'Mở/đóng menu',

@@ -14,6 +14,7 @@ import {
   FolderTree,
   Images,
   Layers,
+  LayoutTemplate,
   LayoutDashboard,
   Users,
   type LucideIcon,
@@ -64,6 +65,11 @@ function systemNavigation(): NavSection[] {
           href: '/admin/exam-blueprints',
           icon: Layers,
         },
+        {
+          label: vi.nav.lessonBlueprints,
+          href: '/admin/lesson-blueprints',
+          icon: LayoutTemplate,
+        },
       ],
     },
     {
@@ -104,6 +110,11 @@ function tenantNavigation(
         label: vi.nav.examBlueprints,
         href: `${base}/exam-blueprints`,
         icon: Layers,
+      },
+      {
+        label: vi.nav.lessonBlueprints,
+        href: `${base}/lesson-blueprints`,
+        icon: LayoutTemplate,
       },
       { label: vi.nav.exams, href: `${base}/exams`, icon: FileText },
       { label: vi.nav.media, href: `${base}/media`, icon: Images },

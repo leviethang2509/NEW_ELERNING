@@ -20,11 +20,19 @@ import type { CreateCategoryDto, UpdateCategoryDto } from './dto/category.dto';
 import { ExamBlueprint } from './exam-blueprint.entity';
 import { compareCategories, toCategoryItem } from './catalog.mapper';
 import { Category } from './category.entity';
+import { LessonBlueprint } from './lesson-blueprint.entity';
 
 const CATEGORY_NOT_FOUND = 'Không tìm thấy danh mục';
 const CODE_TAKEN = 'Mã danh mục đã tồn tại';
 const CATEGORY_IN_USE =
-  'Danh mục đang có loại đề, chỉ có thể ngừng dùng thay vì xoá';
+  'Danh mục đang có loại đề hoặc mẫu bài học, chỉ có thể ngừng dùng thay vì xoá';
+
+/** Loại đề và mẫu bài học: dòng có phạm vi thuộc một danh mục. */
+interface CategorizedRow {
+  id: string;
+  tenantId: string | null;
+  categoryId: string;
+}
 
 /**
  * Danh mục cho 2 phạm vi: hệ thống (`owner = null`, System Owner/Admin) và
@@ -37,33 +45,24 @@ export class CategoriesService {
     @InjectRepository(Category)
     private readonly categories: Repository<Category>,
     @InjectRepository(ExamBlueprint)
-    private readonly blueprints: Repository<ExamBlueprint>,
+    private readonly examBlueprints: Repository<ExamBlueprint>,
+    @InjectRepository(LessonBlueprint)
+    private readonly lessonBlueprints: Repository<LessonBlueprint>,
   ) {}
 
   async list(owner: CatalogOwner): Promise<CategoryItem[]> {
     const categories = (await findVisible(this.categories, owner)).sort(
       compareCategories,
     );
-    if (owner === null) {
-      // Trang hệ thống đếm cả loại đề của tenant: danh mục đó không xoá được.
-      return Promise.all(
-        categories.map(async (category) =>
-          toCategoryItem(
-            category,
-            await this.blueprints.countBy({ categoryId: category.id }),
-          ),
-        ),
-      );
-    }
-    const counts = new Map<string, number>();
-    for (const blueprint of await findVisible(this.blueprints, owner)) {
-      counts.set(
-        blueprint.categoryId,
-        (counts.get(blueprint.categoryId) ?? 0) + 1,
-      );
-    }
+    const [examCounts, lessonCounts] = await Promise.all([
+      countByCategory(this.examBlueprints, owner),
+      countByCategory(this.lessonBlueprints, owner),
+    ]);
     return categories.map((category) =>
-      toCategoryItem(category, counts.get(category.id) ?? 0),
+      toCategoryItem(category, {
+        examBlueprintCount: examCounts.get(category.id) ?? 0,
+        lessonBlueprintCount: lessonCounts.get(category.id) ?? 0,
+      }),
     );
   }
 
@@ -87,7 +86,10 @@ export class CategoriesService {
         updatedBy: actorId,
       }),
     );
-    return toCategoryItem(category, 0);
+    return toCategoryItem(category, {
+      examBlueprintCount: 0,
+      lessonBlueprintCount: 0,
+    });
   }
 
   async update(
@@ -123,40 +125,36 @@ export class CategoriesService {
       }
     }
     const updated = await this.categories.findOneBy({ id });
-    return toCategoryItem(
-      updated ?? { ...category, ...changes },
-      await this.countBlueprints(owner, id),
-    );
+    return toCategoryItem(updated ?? { ...category, ...changes }, {
+      examBlueprintCount: await countInCategory(this.examBlueprints, owner, id),
+      lessonBlueprintCount: await countInCategory(
+        this.lessonBlueprints,
+        owner,
+        id,
+      ),
+    });
   }
 
-  /** Xoá cứng khi chưa loại đề nào (kể cả của tenant) thuộc danh mục. */
+  /**
+   * Xoá cứng khi chưa loại đề hay mẫu bài học nào (kể cả của tenant) thuộc
+   * danh mục.
+   */
   async remove(owner: CatalogOwner, id: string): Promise<void> {
     await findOwned(this.categories, owner, id, CATEGORY_NOT_FOUND);
-    if (await this.blueprints.existsBy({ categoryId: id })) {
-      throw new ConflictException(CATEGORY_IN_USE);
-    }
+    const [hasExam, hasLesson] = await Promise.all([
+      this.examBlueprints.existsBy({ categoryId: id }),
+      this.lessonBlueprints.existsBy({ categoryId: id }),
+    ]);
+    if (hasExam || hasLesson) throw new ConflictException(CATEGORY_IN_USE);
     try {
       await this.categories.delete({ id });
     } catch (error) {
-      // Loại đề vừa được tạo trong danh mục ngay sau lúc kiểm tra (FK RESTRICT).
+      // Loại đề/mẫu vừa được tạo trong danh mục ngay sau lúc kiểm tra (FK RESTRICT).
       if (isForeignKeyViolation(error)) {
         throw new ConflictException(CATEGORY_IN_USE);
       }
       throw error;
     }
-  }
-
-  /** Cùng cách đếm với `list`. */
-  private async countBlueprints(
-    owner: CatalogOwner,
-    categoryId: string,
-  ): Promise<number> {
-    if (owner === null) return this.blueprints.countBy({ categoryId });
-    const [system, own] = await Promise.all([
-      this.blueprints.countBy({ categoryId, tenantId: IsNull() }),
-      this.blueprints.countBy({ categoryId, tenantId: owner }),
-    ]);
-    return system + own;
   }
 
   private async assertCodeAvailable(
@@ -178,4 +176,37 @@ export class CategoriesService {
       throw error;
     }
   }
+}
+
+/**
+ * Số dòng theo danh mục. Trang hệ thống đếm mọi dòng (kể cả của tenant: danh
+ * mục đó không xoá được); tenant đếm dòng hệ thống + của mình.
+ */
+async function countByCategory(
+  repository: Repository<CategorizedRow>,
+  owner: CatalogOwner,
+): Promise<Map<string, number>> {
+  const rows =
+    owner === null
+      ? await repository.find()
+      : await findVisible(repository, owner);
+  const counts = new Map<string, number>();
+  for (const row of rows) {
+    counts.set(row.categoryId, (counts.get(row.categoryId) ?? 0) + 1);
+  }
+  return counts;
+}
+
+/** Cùng cách đếm với `countByCategory`, cho 1 danh mục. */
+async function countInCategory(
+  repository: Repository<CategorizedRow>,
+  owner: CatalogOwner,
+  categoryId: string,
+): Promise<number> {
+  if (owner === null) return repository.countBy({ categoryId });
+  const [system, own] = await Promise.all([
+    repository.countBy({ categoryId, tenantId: IsNull() }),
+    repository.countBy({ categoryId, tenantId: owner }),
+  ]);
+  return system + own;
 }

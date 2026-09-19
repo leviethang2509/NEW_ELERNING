@@ -14,6 +14,7 @@ import {
   EXAM_AUTHOR_ROLES,
   TENANT_MANAGER_ROLES,
   type ExamBlueprintItem,
+  type LessonBlueprintItem,
   type CategoryItem,
 } from '@lang/shared';
 import {
@@ -32,7 +33,12 @@ import {
   UpdateExamBlueprintDto,
 } from './dto/exam-blueprint.dto';
 import { CreateCategoryDto, UpdateCategoryDto } from './dto/category.dto';
+import {
+  CreateLessonBlueprintDto,
+  UpdateLessonBlueprintDto,
+} from './dto/lesson-blueprint.dto';
 import { ExamBlueprintsService } from './exam-blueprints.service';
+import { LessonBlueprintsService } from './lesson-blueprints.service';
 import { CategoriesService } from './categories.service';
 
 /**
@@ -109,6 +115,48 @@ export class TenantExamBlueprintsController {
     @Param('id', ParseIdPipe()) id: string,
     @Body() dto: UpdateExamBlueprintDto,
   ): Promise<ExamBlueprintItem> {
+    return this.blueprints.update(ctx.tenantId, actor.id, id, dto);
+  }
+
+  @Delete(':id')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  remove(
+    @TenantCtx() ctx: TenantContext,
+    @Param('id', ParseIdPipe()) id: string,
+  ): Promise<void> {
+    return this.blueprints.remove(ctx.tenantId, id);
+  }
+}
+
+/** Mẫu bài học của tenant, quyền như danh mục. */
+@Controller('t/:slug/lesson-blueprints')
+@UseGuards(TenantGuard)
+@TenantRoles(...TENANT_MANAGER_ROLES)
+export class TenantLessonBlueprintsController {
+  constructor(private readonly blueprints: LessonBlueprintsService) {}
+
+  @Get()
+  @TenantRoles(...EXAM_AUTHOR_ROLES)
+  list(@TenantCtx() ctx: TenantContext): Promise<LessonBlueprintItem[]> {
+    return this.blueprints.list(ctx.tenantId);
+  }
+
+  @Post()
+  create(
+    @TenantCtx() ctx: TenantContext,
+    @CurrentUser() actor: RequestUser,
+    @Body() dto: CreateLessonBlueprintDto,
+  ): Promise<LessonBlueprintItem> {
+    return this.blueprints.create(ctx.tenantId, actor.id, dto);
+  }
+
+  @Patch(':id')
+  update(
+    @TenantCtx() ctx: TenantContext,
+    @CurrentUser() actor: RequestUser,
+    @Param('id', ParseIdPipe()) id: string,
+    @Body() dto: UpdateLessonBlueprintDto,
+  ): Promise<LessonBlueprintItem> {
     return this.blueprints.update(ctx.tenantId, actor.id, id, dto);
   }
 

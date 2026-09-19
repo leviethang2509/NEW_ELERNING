@@ -45,9 +45,9 @@ export const DEFAULT_CATEGORY_ICON: CategoryIconName =
   CategoryIconName.BOOK_OPEN;
 
 /**
- * Mã danh mục/loại đề/module: chữ IN HOA không dấu, số, `-`/`_` ở giữa. Sửa
- * được (đề thi tham chiếu bằng id). Unique theo phạm vi; module unique trong
- * loại đề.
+ * Mã danh mục/loại đề/mẫu bài học/module: chữ IN HOA không dấu, số, `-`/`_` ở
+ * giữa. Sửa được (đề thi, bài học tham chiếu bằng id). Unique theo phạm vi;
+ * module unique trong loại đề/mẫu bài học.
  */
 export const CATALOG_CODE_PATTERN = /^[A-Z0-9]+(?:[-_][A-Z0-9]+)*$/;
 export const CATALOG_CODE_MAX_LENGTH = 32;
@@ -56,6 +56,9 @@ export const CATALOG_DESCRIPTION_MAX_LENGTH = 2000;
 /** Loại đề phải có ít nhất 1 module vì đề thi cần ít nhất 1 section. */
 export const EXAM_BLUEPRINT_MIN_MODULES = 1;
 export const EXAM_BLUEPRINT_MAX_MODULES = 20;
+/** Mẫu bài học phải có ít nhất 1 phần (module) vì bài học cần ít nhất 1 section. */
+export const LESSON_BLUEPRINT_MIN_MODULES = 1;
+export const LESSON_BLUEPRINT_MAX_MODULES = 20;
 
 /** Chuẩn hoá mã người dùng nhập: bỏ khoảng trắng hai đầu, đổi sang in hoa. */
 export function normalizeCatalogCode(value: string): string {
@@ -74,10 +77,12 @@ export interface CategoryItem {
   sortOrder: number;
   isActive: boolean;
   /**
-   * Số loại đề thuộc danh mục. Trang hệ thống đếm mọi loại đề (kể cả của
-   * tenant); trang tenant đếm loại đề hệ thống + của tenant.
+   * Số loại đề / mẫu bài học thuộc danh mục (có thì không xoá được danh mục).
+   * Trang hệ thống đếm mọi mục (kể cả của tenant); trang tenant đếm mục hệ
+   * thống + của tenant.
    */
-  blueprintCount: number;
+  examBlueprintCount: number;
+  lessonBlueprintCount: number;
   updatedAt: string;
 }
 
@@ -122,5 +127,36 @@ export interface ExamModuleInput {
   name: string;
   code: string;
   referenceDurationMinutes: number;
+  description?: string | null;
+}
+
+/** Phần (module) của mẫu bài học: giống module loại đề nhưng không có thời lượng. */
+export interface LessonModuleItem {
+  id: string;
+  name: string;
+  code: string;
+  sortOrder: number;
+  description: string | null;
+}
+
+/** `GET …/lesson-blueprints`. */
+export interface LessonBlueprintItem {
+  id: string;
+  scope: CatalogScope;
+  category: CategoryRef;
+  name: string;
+  code: string;
+  description: string | null;
+  isActive: boolean;
+  /** Theo `sortOrder`. */
+  modules: LessonModuleItem[];
+  updatedAt: string;
+}
+
+/** Phần gửi lên khi lưu mẫu bài học; có `id` là sửa phần cũ, không có là thêm mới. */
+export interface LessonModuleInput {
+  id?: string;
+  name: string;
+  code: string;
   description?: string | null;
 }

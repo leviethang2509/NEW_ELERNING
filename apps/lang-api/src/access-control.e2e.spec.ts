@@ -115,6 +115,10 @@ const ROUTES: Record<string, Access> = {
   'POST /admin/exam-blueprints': SYSTEM,
   'PATCH /admin/exam-blueprints/:id': SYSTEM,
   'DELETE /admin/exam-blueprints/:id': SYSTEM,
+  'GET /admin/lesson-blueprints': SYSTEM,
+  'POST /admin/lesson-blueprints': SYSTEM,
+  'PATCH /admin/lesson-blueprints/:id': SYSTEM,
+  'DELETE /admin/lesson-blueprints/:id': SYSTEM,
   'GET /admin/user-manual': SYSTEM,
 
   'GET /t/:slug/me': MEMBER,
@@ -130,7 +134,7 @@ const ROUTES: Record<string, Access> = {
   'POST /t/:slug/memberships/:id/guardians': MANAGER,
   'DELETE /t/:slug/memberships/:id/guardians/:parentMembershipId': MANAGER,
 
-  // Teacher chỉ xem danh mục/loại đề của tenant.
+  // Teacher chỉ xem danh mục/loại đề/mẫu bài học của tenant.
   'GET /t/:slug/categories': STAFF,
   'POST /t/:slug/categories': MANAGER,
   'PATCH /t/:slug/categories/:id': MANAGER,
@@ -139,6 +143,10 @@ const ROUTES: Record<string, Access> = {
   'POST /t/:slug/exam-blueprints': MANAGER,
   'PATCH /t/:slug/exam-blueprints/:id': MANAGER,
   'DELETE /t/:slug/exam-blueprints/:id': MANAGER,
+  'GET /t/:slug/lesson-blueprints': STAFF,
+  'POST /t/:slug/lesson-blueprints': MANAGER,
+  'PATCH /t/:slug/lesson-blueprints/:id': MANAGER,
+  'DELETE /t/:slug/lesson-blueprints/:id': MANAGER,
 
   'GET /t/:slug/media/status': STAFF,
   'GET /t/:slug/media': STAFF,

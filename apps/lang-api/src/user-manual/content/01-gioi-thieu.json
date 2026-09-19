@@ -155,7 +155,7 @@
           "rows": [
             [
               "Danh mục (category)",
-              "Nhóm loại đề theo ngôn ngữ/chương trình, vd. Tiếng Anh, Tiếng Nhật. Có phạm vi **Hệ thống** hoặc **Trung tâm**."
+              "Nhóm loại đề và mẫu bài học theo ngôn ngữ/chương trình, vd. Tiếng Anh, Tiếng Nhật. Có phạm vi **Hệ thống** hoặc **Trung tâm**."
             ],
             [
               "Loại đề (exam blueprint)",
@@ -164,6 +164,10 @@
             [
               "Module",
               "Thành phần của loại đề (Listening, Reading…) với **thời lượng tham khảo** (bội số 5, tối đa 180 phút)."
+            ],
+            [
+              "Mẫu bài học (lesson blueprint)",
+              "Khuôn bài học như Minna no Nihongo – 1 bài, thuộc một danh mục, gồm các **phần** (module không có thời lượng)."
             ],
             [
               "Đề thi (exam)",
@@ -247,7 +251,7 @@
             [
               "System Admin",
               "System Admin",
-              "Quản lý Người dùng, trung tâm, gói dịch vụ, danh mục/loại đề hệ thống. Chỉ xem, không sửa được tài khoản System Owner/Admin. Xem [hướng dẫn](page:system-admin)."
+              "Quản lý Người dùng, trung tâm, gói dịch vụ, danh mục/loại đề/mẫu bài học hệ thống. Chỉ xem, không sửa được tài khoản System Owner/Admin. Xem [hướng dẫn](page:system-admin)."
             ],
             [
               "Registered User",
@@ -342,7 +346,7 @@
               "✘"
             ],
             ["Quản lý gói dịch vụ", "✔", "✔", "✘"],
-            ["Quản lý danh mục & loại đề hệ thống", "✔", "✔", "✘"],
+            ["Quản lý danh mục, loại đề & mẫu bài học hệ thống", "✔", "✔", "✘"],
             ["Đọc tài liệu nội bộ `/user-manual`", "✔", "✔", "✘"],
             [
               "Vào nội dung một trung tâm",
@@ -380,7 +384,7 @@
             ],
             ["Gắn phụ huynh ↔ học viên", "✔", "✔", "✘", "✘", "✘"],
             [
-              "Danh mục & loại đề riêng của trung tâm",
+              "Danh mục, loại đề & mẫu bài học riêng của trung tâm",
               "✔",
               "✔",
               "xem",
@@ -422,10 +426,13 @@
             ["Tổng quan", "Chủ sở hữu, Quản trị viên, Giáo viên"],
             ["Quản lý → Thành viên", "Chủ sở hữu, Quản trị viên"],
             [
-              "Đề thi → Danh mục, Loại đề, Đề thi, Thư viện media",
+              "Đề thi & Bài học → Danh mục, Loại đề, Mẫu bài học, Đề thi, Thư viện media",
               "Chủ sở hữu, Quản trị viên, Giáo viên"
             ],
-            ["Đề thi → Chấm bài", "Chủ sở hữu, Quản trị viên, Giáo viên"]
+            [
+              "Đề thi & Bài học → Chấm bài",
+              "Chủ sở hữu, Quản trị viên, Giáo viên"
+            ]
           ]
         },
         {

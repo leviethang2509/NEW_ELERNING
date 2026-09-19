@@ -28,9 +28,9 @@ import {
 
 // Viết nguyên văn để Tailwind sinh class.
 const SYSTEM_GRID =
-  'sm:grid-cols-[minmax(0,1fr)_minmax(0,1.6fr)_90px_80px_110px_90px]';
+  'sm:grid-cols-[minmax(0,1fr)_minmax(0,1.6fr)_80px_110px_80px_110px_90px]';
 const TENANT_GRID =
-  'sm:grid-cols-[minmax(0,1fr)_minmax(0,1.6fr)_90px_80px_110px_100px_90px]';
+  'sm:grid-cols-[minmax(0,1fr)_minmax(0,1.6fr)_80px_110px_80px_110px_100px_90px]';
 
 type StatusFilter = 'active' | 'inactive';
 
@@ -90,6 +90,9 @@ export function CategoriesView({
     }
   }
 
+  const inUse = (row: CategoryItem) =>
+    row.examBlueprintCount > 0 || row.lessonBlueprintCount > 0;
+
   const columns: DataColumn<CategoryItem>[] = [
     {
       header: common.code,
@@ -118,10 +121,18 @@ export function CategoriesView({
       ),
     },
     {
-      header: text.blueprintCount,
+      header: text.examBlueprintCount,
       render: (row) => (
         <span className="text-[13.5px] text-[var(--body)]">
-          {formatNumber(row.blueprintCount)}
+          {formatNumber(row.examBlueprintCount)}
+        </span>
+      ),
+    },
+    {
+      header: text.lessonBlueprintCount,
+      render: (row) => (
+        <span className="text-[13.5px] text-[var(--body)]">
+          {formatNumber(row.lessonBlueprintCount)}
         </span>
       ),
     },
@@ -161,9 +172,9 @@ export function CategoriesView({
             </button>
             <button
               type="button"
-              title={row.blueprintCount > 0 ? text.inUse : text.delete}
+              title={inUse(row) ? text.inUse : text.delete}
               aria-label={text.delete}
-              disabled={row.blueprintCount > 0}
+              disabled={inUse(row)}
               onClick={() => setDeleting(row)}
               className={iconButtonClass}
             >

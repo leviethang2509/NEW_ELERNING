@@ -228,8 +228,8 @@
     },
     {
       "id": "danh-muc-loai-de-trung-tam",
-      "title": "Danh mục & loại đề của trung tâm",
-      "summary": "Dùng mục hệ thống hoặc tạo danh mục, loại đề riêng cho trung tâm.",
+      "title": "Danh mục, loại đề & mẫu bài học của trung tâm",
+      "summary": "Dùng mục hệ thống hoặc tạo danh mục, loại đề, mẫu bài học riêng cho trung tâm.",
       "roles": ["TENANT_OWNER", "TENANT_ADMIN", "TEACHER"],
       "blocks": [
         {
@@ -238,7 +238,7 @@
         },
         {
           "type": "paragraph",
-          "text": "Menu **Đề thi → Danh mục** và **Loại đề** trong dashboard trung tâm. Danh sách gồm mục **Hệ thống** (xếp trước) và mục **Trung tâm** của riêng trung tâm; lọc được theo phạm vi và trạng thái. Trung tâm không thấy mục của trung tâm khác."
+          "text": "Menu **Đề thi & Bài học → Danh mục**, **Loại đề** và **Mẫu bài học** trong dashboard trung tâm. Danh sách gồm mục **Hệ thống** (xếp trước) và mục **Trung tâm** của riêng trung tâm; lọc được theo phạm vi và trạng thái. Trung tâm không thấy mục của trung tâm khác."
         },
         {
           "type": "table",
@@ -260,9 +260,9 @@
         {
           "type": "list",
           "items": [
-            "Quy tắc trường, module, ngừng dùng và xoá giống bản hệ thống – xem [Danh mục & loại đề hệ thống](page:admin-danh-muc-loai-de).",
+            "Quy tắc trường, module/phần, ngừng dùng và xoá giống bản hệ thống – xem [Danh mục, loại đề & mẫu bài học hệ thống](page:admin-danh-muc-loai-de).",
             "Mã chỉ cần không trùng trong phạm vi trung tâm (được trùng mã hệ thống hay trung tâm khác).",
-            "Loại đề của trung tâm được đặt trong **danh mục hệ thống** hoặc danh mục của trung tâm.",
+            "Loại đề và mẫu bài học của trung tâm được đặt trong **danh mục hệ thống** hoặc danh mục của trung tâm.",
             "Cột **Số đề** ở trung tâm chỉ đếm đề của trung tâm mình."
           ]
         },
@@ -285,7 +285,7 @@
         },
         {
           "type": "paragraph",
-          "text": "Menu **Đề thi → Thư viện media** (`/t/{slug}/dashboard/media`) liệt kê mọi file media của trung tâm. File cũng được tải lên trực tiếp từ trình soạn đề khi chèn Hình ảnh/Audio/Video."
+          "text": "Menu **Đề thi & Bài học → Thư viện media** (`/t/{slug}/dashboard/media`) liệt kê mọi file media của trung tâm. File cũng được tải lên trực tiếp từ trình soạn đề khi chèn Hình ảnh/Audio/Video."
         },
         {
           "type": "table",

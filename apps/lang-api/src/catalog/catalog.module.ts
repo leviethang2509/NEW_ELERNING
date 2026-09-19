@@ -3,32 +3,53 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { Exam } from '../exams/exam.entity';
 import { TenantsModule } from '../tenants/tenants.module';
 import {
-  AdminExamBlueprintsController,
   AdminCategoriesController,
+  AdminExamBlueprintsController,
+  AdminLessonBlueprintsController,
 } from './admin-catalog.controller';
-import { ExamBlueprint } from './exam-blueprint.entity';
-import { ExamBlueprintsService } from './exam-blueprints.service';
 import { CategoriesService } from './categories.service';
 import { Category } from './category.entity';
+import { ExamBlueprint } from './exam-blueprint.entity';
+import { ExamBlueprintsService } from './exam-blueprints.service';
 import { ExamModule } from './exam-module.entity';
+import { LessonBlueprint } from './lesson-blueprint.entity';
+import { LessonBlueprintsService } from './lesson-blueprints.service';
+import { LessonModule } from './lesson-module.entity';
 import {
-  TenantExamBlueprintsController,
   TenantCategoriesController,
+  TenantExamBlueprintsController,
+  TenantLessonBlueprintsController,
 } from './tenant-catalog.controller';
 
-/** Danh mục, loại đề và module cho `/admin/*` và `/t/:slug/*` (Step 11). */
+/**
+ * Danh mục (dùng chung), loại đề + module và mẫu bài học + phần cho `/admin/*`
+ * và `/t/:slug/*` (req-1 Step 11, req-3 Step 2).
+ */
 @Module({
   imports: [
     TenantsModule,
-    TypeOrmModule.forFeature([Category, ExamBlueprint, ExamModule, Exam]),
+    TypeOrmModule.forFeature([
+      Category,
+      ExamBlueprint,
+      ExamModule,
+      LessonBlueprint,
+      LessonModule,
+      Exam,
+    ]),
   ],
   controllers: [
     AdminCategoriesController,
     AdminExamBlueprintsController,
+    AdminLessonBlueprintsController,
     TenantCategoriesController,
     TenantExamBlueprintsController,
+    TenantLessonBlueprintsController,
   ],
-  providers: [CategoriesService, ExamBlueprintsService],
-  exports: [TypeOrmModule, ExamBlueprintsService],
+  providers: [
+    CategoriesService,
+    ExamBlueprintsService,
+    LessonBlueprintsService,
+  ],
+  exports: [TypeOrmModule, ExamBlueprintsService, LessonBlueprintsService],
 })
 export class CatalogModule {}

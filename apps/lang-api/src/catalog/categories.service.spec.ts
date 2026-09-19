@@ -8,6 +8,7 @@ import { InMemoryRepository } from '../testing/in-memory-repository';
 import type { ExamBlueprint } from './exam-blueprint.entity';
 import { CategoriesService } from './categories.service';
 import type { Category } from './category.entity';
+import type { LessonBlueprint } from './lesson-blueprint.entity';
 
 const TENANT_A = 'tenant-a';
 const TENANT_B = 'tenant-b';
@@ -19,11 +20,15 @@ function setup() {
   const blueprints = new InMemoryRepository<ExamBlueprint>(() => ({
     updatedAt: new Date(),
   }));
+  const lessonBlueprints = new InMemoryRepository<LessonBlueprint>(() => ({
+    updatedAt: new Date(),
+  }));
   const service = new CategoriesService(
     categories.asRepository(),
     blueprints.asRepository(),
+    lessonBlueprints.asRepository(),
   );
-  return { service, categories, blueprints };
+  return { service, categories, blueprints, lessonBlueprints };
 }
 
 describe('CategoriesService', () => {
@@ -38,7 +43,8 @@ describe('CategoriesService', () => {
       color: 'blue',
       sortOrder: 0,
       isActive: true,
-      blueprintCount: 0,
+      examBlueprintCount: 0,
+      lessonBlueprintCount: 0,
     });
     await expect(
       service.create(null, 'owner', { code: 'EN', name: 'Trùng' }),
@@ -53,8 +59,8 @@ describe('CategoriesService', () => {
     ).rejects.toBeInstanceOf(ConflictException);
   });
 
-  it('tenant thấy mục hệ thống trước rồi mục của mình, không thấy tenant khác; đếm loại đề theo phạm vi', async () => {
-    const { service, blueprints } = setup();
+  it('tenant thấy mục hệ thống trước rồi mục của mình, không thấy tenant khác; đếm loại đề, mẫu bài học theo phạm vi', async () => {
+    const { service, blueprints, lessonBlueprints } = setup();
     const ja = await service.create(null, 'o', {
       code: 'JA',
       name: 'Tiếng Nhật',
@@ -76,17 +82,29 @@ describe('CategoriesService', () => {
       );
     }
 
+    await lessonBlueprints.save(
+      lessonBlueprints.create({ tenantId: TENANT_B, categoryId: en.id }),
+    );
+
     const tenantList = await service.list(TENANT_A);
     expect(tenantList.map((row) => row.code)).toEqual(['EN', 'JA', 'KO']);
-    expect(tenantList[0].blueprintCount).toBe(2);
+    expect(tenantList[0]).toMatchObject({
+      examBlueprintCount: 2,
+      lessonBlueprintCount: 0,
+    });
     expect(tenantList.find((row) => row.id === own.id)?.scope).toBe(
       CatalogScope.TENANT,
     );
 
     const systemList = await service.list(null);
     expect(systemList.map((row) => row.code)).toEqual(['EN', 'JA']);
-    expect(systemList[0].blueprintCount).toBe(3);
-    expect(systemList.find((row) => row.id === ja.id)?.blueprintCount).toBe(0);
+    expect(systemList[0]).toMatchObject({
+      examBlueprintCount: 3,
+      lessonBlueprintCount: 1,
+    });
+    expect(systemList.find((row) => row.id === ja.id)?.examBlueprintCount).toBe(
+      0,
+    );
   });
 
   it('tenant không sửa/xoá được mục hệ thống (403) hay của tenant khác (404)', async () => {
@@ -140,18 +158,24 @@ describe('CategoriesService', () => {
     );
   });
 
-  it('không xoá danh mục hệ thống khi có loại đề của tenant thuộc nó', async () => {
-    const { service, categories, blueprints } = setup();
-    const used = await service.create(null, 'o', { code: 'EN', name: 'A' });
-    const unused = await service.create(null, 'o', { code: 'JA', name: 'B' });
+  it('không xoá danh mục hệ thống khi có loại đề hoặc mẫu bài học của tenant thuộc nó', async () => {
+    const { service, categories, blueprints, lessonBlueprints } = setup();
+    const exam = await service.create(null, 'o', { code: 'EN', name: 'A' });
+    const lesson = await service.create(null, 'o', { code: 'JA', name: 'B' });
+    const unused = await service.create(null, 'o', { code: 'KO', name: 'C' });
     await blueprints.save(
-      blueprints.create({ tenantId: TENANT_A, categoryId: used.id }),
+      blueprints.create({ tenantId: TENANT_A, categoryId: exam.id }),
+    );
+    await lessonBlueprints.save(
+      lessonBlueprints.create({ tenantId: TENANT_A, categoryId: lesson.id }),
     );
 
-    await expect(service.remove(null, used.id)).rejects.toBeInstanceOf(
-      ConflictException,
-    );
+    for (const used of [exam, lesson]) {
+      await expect(service.remove(null, used.id)).rejects.toBeInstanceOf(
+        ConflictException,
+      );
+    }
     await service.remove(null, unused.id);
-    expect(categories.rows.map((row) => row.code)).toEqual(['EN']);
+    expect(categories.rows.map((row) => row.code)).toEqual(['EN', 'JA']);
   });
 });

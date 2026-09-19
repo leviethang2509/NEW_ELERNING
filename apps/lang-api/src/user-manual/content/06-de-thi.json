@@ -14,7 +14,7 @@
         },
         {
           "type": "paragraph",
-          "text": "Menu **Đề thi → Đề thi** (`/t/{slug}/dashboard/exams`). Danh sách tìm theo tên đề, lọc trạng thái, danh mục, loại đề, người tạo. Mỗi dòng hiện số section, tổng phút, số câu, version hiện tại, người tạo."
+          "text": "Menu **Đề thi & Bài học → Đề thi** (`/t/{slug}/dashboard/exams`). Danh sách tìm theo tên đề, lọc trạng thái, danh mục, loại đề, người tạo. Mỗi dòng hiện số section, tổng phút, số câu, version hiện tại, người tạo."
         },
         { "type": "heading", "level": 2, "text": "Trạng thái" },
         {

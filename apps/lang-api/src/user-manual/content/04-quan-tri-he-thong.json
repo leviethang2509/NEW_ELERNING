@@ -261,14 +261,14 @@
     },
     {
       "id": "admin-danh-muc-loai-de",
-      "title": "Danh mục & loại đề hệ thống",
-      "summary": "Danh mục và loại đề dùng chung cho mọi trung tâm.",
+      "title": "Danh mục, loại đề & mẫu bài học hệ thống",
+      "summary": "Danh mục, loại đề và mẫu bài học dùng chung cho mọi trung tâm.",
       "roles": ["SYSTEM_OWNER", "SYSTEM_ADMIN"],
       "blocks": [
         { "type": "roles", "roles": ["SYSTEM_OWNER", "SYSTEM_ADMIN"] },
         {
           "type": "paragraph",
-          "text": "Menu **Đề thi → Danh mục** (`/admin/categories`) và **Loại đề** (`/admin/exam-blueprints`). Mục phạm vi **Hệ thống** hiện ở mọi trung tâm, trung tâm chỉ xem và dùng, không sửa được. Dữ liệu seed sẵn: Tiếng Anh (TOEIC, IELTS), Tiếng Nhật (JLPT N2)."
+          "text": "Menu **Đề thi & Bài học → Danh mục** (`/admin/categories`), **Loại đề** (`/admin/exam-blueprints`) và **Mẫu bài học** (`/admin/lesson-blueprints`). Danh mục dùng chung cho loại đề và mẫu bài học. Mục phạm vi **Hệ thống** hiện ở mọi trung tâm, trung tâm chỉ xem và dùng, không sửa được. Dữ liệu seed sẵn: Tiếng Anh (TOEIC, IELTS), Tiếng Nhật (JLPT N2)."
         },
         { "type": "heading", "level": 2, "text": "Danh mục" },
         {
@@ -288,15 +288,15 @@
             ["Thứ tự", "Sắp xếp hiển thị"],
             [
               "Trạng thái",
-              "**Ngừng dùng**: không chọn được khi tạo loại đề mới; loại đề đã có giữ nguyên"
+              "**Ngừng dùng**: không chọn được khi tạo loại đề, mẫu bài học mới; mục đã có giữ nguyên"
             ]
           ]
         },
         {
           "type": "list",
           "items": [
-            "Cột **Loại đề** đếm số loại đề thuộc danh mục.",
-            "Chỉ **xoá** được danh mục chưa có loại đề nào (kể cả loại đề của trung tâm thuộc danh mục hệ thống); ngược lại chỉ ngừng dùng."
+            "Cột **Loại đề** và **Mẫu bài học** đếm số mục thuộc danh mục.",
+            "Chỉ **xoá** được danh mục chưa có loại đề hay mẫu bài học nào (kể cả của trung tâm thuộc danh mục hệ thống); ngược lại chỉ ngừng dùng."
           ]
         },
         { "type": "heading", "level": 2, "text": "Loại đề" },
@@ -318,6 +318,30 @@
             "Khi trung tâm tạo đề từ loại đề, mỗi module sinh một section với thời lượng mặc định bằng thời lượng tham khảo. Section là **bản sao độc lập**: sửa/xoá module sau đó không ảnh hưởng đề đã tạo.",
             "Cột **Số đề** đếm đề thi của mọi trung tâm dùng loại đề này.",
             "Chỉ **xoá** được loại đề chưa có đề thi; ngược lại chỉ ngừng dùng (không chọn được khi tạo đề mới)."
+          ]
+        },
+        { "type": "heading", "level": 2, "text": "Mẫu bài học" },
+        {
+          "type": "paragraph",
+          "text": "Mẫu bài học là khuôn cho bài học (vd. **Minna no Nihongo – 1 bài** gồm Từ vựng, Ngữ pháp, Hội thoại, Luyện tập, Bài tập). Giống loại đề nhưng các **phần** không có thời lượng."
+        },
+        {
+          "type": "steps",
+          "items": [
+            { "title": "Bấm Tạo mẫu bài học" },
+            { "title": "Chọn Danh mục (đang dùng), nhập Mã, Tên, Mô tả" },
+            {
+              "title": "Thêm phần",
+              "text": "Mỗi phần có Tên, Mã (không trùng trong mẫu), Mô tả. Kéo thả hoặc dùng mũi tên để sắp xếp. Cần 1–20 phần."
+            },
+            { "title": "Lưu" }
+          ]
+        },
+        {
+          "type": "list",
+          "items": [
+            "Mã mẫu không trùng trong phạm vi hệ thống (được trùng mã loại đề).",
+            "Mẫu **ngừng dùng** không chọn được khi tạo bài học mới."
           ]
         }
       ]

@@ -41,7 +41,7 @@
           "items": [
             "Duyệt trung tâm chờ duyệt – xem [Quản lý trung tâm](page:admin-trung-tam).",
             "Hỗ trợ người dùng quên mật khẩu (chưa có quên mật khẩu tự phục vụ): reset mật khẩu và gửi mật khẩu tạm qua kênh an toàn.",
-            "Duy trì danh mục & loại đề dùng chung – xem [Danh mục & loại đề hệ thống](page:admin-danh-muc-loai-de).",
+            "Duy trì danh mục, loại đề & mẫu bài học dùng chung – xem [Danh mục, loại đề & mẫu bài học hệ thống](page:admin-danh-muc-loai-de).",
             "Cập nhật tài liệu này khi hệ thống thay đổi."
           ]
         }
@@ -56,7 +56,7 @@
         { "type": "roles", "roles": ["SYSTEM_ADMIN", "SYSTEM_OWNER"] },
         {
           "type": "paragraph",
-          "text": "Sau khi đăng nhập, System Admin (không là thành viên trung tâm nào) được đưa thẳng tới dashboard `/admin`. Menu gồm **Tổng quan**, **Quản lý** (Người dùng, Trung tâm, Gói dịch vụ), **Đề thi** (Danh mục, Loại đề) và **Tài liệu nội bộ**."
+          "text": "Sau khi đăng nhập, System Admin (không là thành viên trung tâm nào) được đưa thẳng tới dashboard `/admin`. Menu gồm **Tổng quan**, **Quản lý** (Người dùng, Trung tâm, Gói dịch vụ), **Đề thi & Bài học** (Danh mục, Loại đề, Mẫu bài học) và **Tài liệu nội bộ**."
         },
         { "type": "heading", "level": 2, "text": "Được làm" },
         {
@@ -66,7 +66,7 @@
             "Tạo, sửa, khoá/mở khoá, reset mật khẩu **Người dùng** – [Người dùng](page:admin-nguoi-dung).",
             "Duyệt, từ chối, tạm khoá, mở khoá trung tâm, đổi gói – [Trung tâm](page:admin-trung-tam).",
             "Tạo, sửa, ngừng áp dụng, xoá gói dịch vụ – [Gói dịch vụ](page:admin-goi-dich-vu).",
-            "Quản lý danh mục & loại đề hệ thống – [Danh mục & loại đề hệ thống](page:admin-danh-muc-loai-de)."
+            "Quản lý danh mục, loại đề & mẫu bài học hệ thống – [Danh mục, loại đề & mẫu bài học hệ thống](page:admin-danh-muc-loai-de)."
           ]
         },
         { "type": "heading", "level": 2, "text": "Không được làm" },
@@ -137,7 +137,7 @@
             },
             {
               "title": "Chuẩn bị loại đề (nếu cần)",
-              "text": "Dùng loại đề hệ thống có sẵn hoặc tạo loại đề riêng. Xem [Danh mục & loại đề của trung tâm](page:danh-muc-loai-de-trung-tam)."
+              "text": "Dùng loại đề hệ thống có sẵn hoặc tạo loại đề riêng. Xem [Danh mục, loại đề & mẫu bài học của trung tâm](page:danh-muc-loai-de-trung-tam)."
             },
             {
               "title": "Soạn đề hoặc giao cho giáo viên",
@@ -159,7 +159,7 @@
     {
       "id": "tenant-admin",
       "title": "Quản trị viên trung tâm",
-      "summary": "Tenant Admin: quản lý thành viên, danh mục/loại đề và mọi đề của trung tâm.",
+      "summary": "Tenant Admin: quản lý thành viên, danh mục/loại đề/mẫu bài học và mọi đề của trung tâm.",
       "roles": ["TENANT_ADMIN"],
       "blocks": [
         { "type": "roles", "roles": ["TENANT_ADMIN", "TENANT_OWNER"] },
@@ -169,7 +169,7 @@
           "items": [
             "Dashboard trung tâm đầy đủ số liệu – [Dashboard trung tâm](page:dashboard-trung-tam).",
             "Thêm thành viên, phân vai trò (kể cả Quản trị viên khác), ngừng kích hoạt, xoá khỏi trung tâm, gắn phụ huynh – [Thành viên](page:thanh-vien).",
-            "Tạo, sửa, xoá danh mục & loại đề riêng của trung tâm – [Danh mục & loại đề của trung tâm](page:danh-muc-loai-de-trung-tam).",
+            "Tạo, sửa, xoá danh mục, loại đề & mẫu bài học riêng của trung tâm – [Danh mục, loại đề & mẫu bài học của trung tâm](page:danh-muc-loai-de-trung-tam).",
             "Tạo đề; sửa, publish, lưu trữ, xoá, khôi phục version **mọi đề** (kể cả đề giáo viên tạo).",
             "Upload/xoá media – [Thư viện media](page:thu-vien-media).",
             "Chấm bài – [Chấm bài](page:cham-bai).",
@@ -182,7 +182,7 @@
           "items": [
             "Đổi vai trò, trạng thái hay xoá thành viên **Chủ sở hữu** (“Chỉ chủ sở hữu thao tác được trên tài khoản chủ sở hữu”).",
             "Cấp vai trò Chủ sở hữu cho ai.",
-            "Sửa/xoá danh mục & loại đề của hệ thống (chỉ xem và dùng).",
+            "Sửa/xoá danh mục, loại đề & mẫu bài học của hệ thống (chỉ xem và dùng).",
             "Chấm bài của chính mình."
           ]
         }
@@ -197,13 +197,13 @@
         { "type": "roles", "roles": ["TEACHER"] },
         {
           "type": "paragraph",
-          "text": "Giáo viên vào dashboard trung tâm với menu **Tổng quan** (số liệu rút gọn) và nhóm **Đề thi**: Danh mục, Loại đề, Đề thi, Thư viện media, Chấm bài."
+          "text": "Giáo viên vào dashboard trung tâm với menu **Tổng quan** (số liệu rút gọn) và nhóm **Đề thi & Bài học**: Danh mục, Loại đề, Mẫu bài học, Đề thi, Thư viện media, Chấm bài."
         },
         { "type": "heading", "level": 2, "text": "Được làm" },
         {
           "type": "list",
           "items": [
-            "Xem danh mục & loại đề (hệ thống và trung tâm) – chỉ xem.",
+            "Xem danh mục, loại đề & mẫu bài học (hệ thống và trung tâm) – chỉ xem.",
             "Xem mọi đề của trung tâm (đề người khác mở ở chế độ **Chỉ xem**, vẫn xem trước và xem version được).",
             "Tạo đề mới; sửa nội dung, thông tin, publish, lưu trữ, xoá, khôi phục version **đề do mình tạo** – [Vòng đời đề thi](page:vong-doi-de-thi).",
             "Upload/xoá media của trung tâm – [Thư viện media](page:thu-vien-media).",
@@ -216,7 +216,7 @@
           "type": "list",
           "items": [
             "Quản lý thành viên.",
-            "Tạo/sửa/xoá danh mục & loại đề (cần nhờ Chủ sở hữu/Quản trị viên nếu chưa có loại đề phù hợp).",
+            "Tạo/sửa/xoá danh mục, loại đề & mẫu bài học (cần nhờ Chủ sở hữu/Quản trị viên nếu chưa có loại đề phù hợp).",
             "Sửa đề do người khác tạo."
           ]
         },

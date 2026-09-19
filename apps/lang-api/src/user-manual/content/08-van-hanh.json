@@ -233,17 +233,24 @@
             ["Ghi “Lần vào gần nhất”", "Tối đa 1 lần/giờ mỗi thành viên"]
           ]
         },
-        { "type": "heading", "level": 2, "text": "Danh mục, loại đề, đề thi" },
+        {
+          "type": "heading",
+          "level": 2,
+          "text": "Danh mục, loại đề, mẫu bài học, đề thi"
+        },
         {
           "type": "table",
           "columns": ["Mục", "Giới hạn"],
           "rows": [
             [
-              "Mã danh mục / loại đề",
+              "Mã danh mục / loại đề / mẫu bài học",
               "In hoa, số, `-`/`_`, tối đa 32 ký tự; duy nhất trong phạm vi"
             ],
-            ["Tên danh mục / loại đề", "Tối đa 100 ký tự; mô tả tối đa 2000"],
-            ["Module mỗi loại đề", "1–20"],
+            [
+              "Tên danh mục / loại đề / mẫu bài học",
+              "Tối đa 100 ký tự; mô tả tối đa 2000"
+            ],
+            ["Module mỗi loại đề, phần mỗi mẫu bài học", "1–20"],
             ["Thời lượng module / section", "5–180 phút, bội số 5"],
             ["Section mỗi đề", "1–20; tên section tối đa 100 ký tự"],
             ["Tên đề / mô tả đề", "Tối đa 200 / 2000 ký tự"],
