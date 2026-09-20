@@ -666,7 +666,26 @@
             "Mục đề thi đã có học viên làm có thêm nút **Bài làm**: danh sách lượt thi của từng học viên kèm trạng thái (Đang làm · Chờ chấm · Đã chấm), điểm % và Đậu/Chưa đạt.",
             "Mỗi mục đề thi học viên chỉ làm **một lần**. Khi học viên gặp sự cố, bấm **Cho làm lại** ở dòng của họ: lượt cũ bị đánh dấu **Đã cho làm lại** (giữ lịch sử, không tính điểm) và học viên bắt đầu được một lượt mới.",
             "Lượt đang làm dở bị **chốt ngay** (chấm như hết giờ) trước khi đánh dấu.",
-            "Mỗi lần cho làm lại đều ghi vào **Nhật ký thay đổi** của lớp. Lớp **Đã kết thúc**/**Đã huỷ** thì không cho làm lại được."
+            "Mỗi lần cho làm lại đều ghi vào **Nhật ký thay đổi** của lớp. Lớp **Đã kết thúc**/**Đã huỷ** thì không cho làm lại được.",
+            "Bấm tên học viên trong hộp **Bài làm** để mở [Bài làm của học viên](page:giao-trinh-lop#bai-lam-cua-hoc-vien)."
+          ]
+        },
+        {
+          "type": "heading",
+          "level": 2,
+          "text": "Bài làm của học viên"
+        },
+        {
+          "type": "paragraph",
+          "text": "Ở tab **Giáo viên & Học viên**, nút **Bài làm** trên dòng mỗi học viên mở trang bài làm chi tiết của riêng học viên đó trong lớp."
+        },
+        {
+          "type": "list",
+          "items": [
+            "Liệt kê mọi mục của giáo trình lớp theo chương: mục đề thi kèm các lượt (kể cả lượt **Đã cho làm lại**), mục bài học kèm trạng thái học và số câu đúng.",
+            "Bấm **Xem bài làm** để mở bài: nội dung đề/bài, **câu trả lời học viên đã nộp**, đúng/sai từng câu, đáp án đúng, giải thích và điểm chấm tay. Chỉ xem, không sửa điểm ở đây (chấm điểm ở [Chấm bài](page:cham-bai)).",
+            "Mục đã bỏ khỏi giáo trình vẫn hiện nếu học viên còn bài làm ở đó; học viên đã rời lớp vẫn xem lại được bài cũ.",
+            "Chỉ **giáo viên của lớp** và Chủ sở hữu/Quản trị viên mở được trang này."
           ]
         },
         {

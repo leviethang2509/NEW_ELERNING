@@ -19,7 +19,7 @@
 | 2 | 7 | Lớp học & giáo trình lớp | ✅ | 2026-09-19 | Commit 06d9daa (chưa push); dữ liệu thử lớp `N5-2026-01` ở `step4-test` |
 | 2 | 8 | Thời khoá biểu, ngày nghỉ, lịch | ✅ | 2026-09-20 | Chưa commit; lịch thử lớp `N5-2026-01` + lớp `TRUNG-LICH` ở `step4-test` |
 | 2 | 9 | Học viên trong lớp | ✅ | 2026-09-20 | Chưa commit; dữ liệu thử lượt trong lớp `N5-2026-01` ở `step4-test` |
-| 2 | 10 | Chấm theo lớp & chuyển giao | ⬜ | | Deploy giai đoạn 2 |
+| 2 | 10 | Chấm theo lớp & chuyển giao | ✅ | 2026-09-20 | Chưa commit; deploy giai đoạn 2 sau khi người dùng kiểm giao diện |
 | 3 | 11 | Chuyên cần, bảng điểm, nhận xét cuối khoá | ⬜ | | |
 | 3 | 12 | Thông báo | ⬜ | | |
 | 3 | 13 | Phụ huynh | ⬜ | | |
@@ -27,17 +27,18 @@
 
 ## Bàn giao cho phiên tiếp theo
 
-- Giai đoạn 1 (Step 1–5) xong, đã push `main` (`db18cb7`). Giai đoạn 2: Step 6 `d5cf255`, Step 7 `06d9daa`, Step 8 `a9d588a` đã commit (chưa push); Step 9 xong trên local, **chưa commit** (deploy cùng cả giai đoạn 2 sau Step 10; migration `CreateCoursesCurricula`, `CreateClassrooms`, `CreateClassSchedule` chạy lúc container khởi động; **Step 9 không có migration mới**, không có env mới).
-- **Tiếp theo: Step 10 – Chấm theo lớp & chuyển giao** (plan mục 1.4, 4.7, 5, 6, 7). Xem "Lưu ý cho step sau" của Step 9, prompt ở cuối file.
-- Máy dev: `apps/lang-api/.env` trỏ Postgres local `lang_simulator_dev`. DB local có 17 migration, 1 System Owner, mẫu bài học hệ thống **Minna no Nihongo – 1 bài**. **Còn giữ dữ liệu thử** để người dùng bấm giao diện:
-  - Step 3: tenant `step3-test` (4 đề, 1 lượt làm chờ chấm) + `step3-teacher|student|student2@example.com`.
+- Giai đoạn 1 (Step 1–5) xong, đã push `main` (`db18cb7`). Giai đoạn 2: Step 6 `d5cf255`, Step 7 `06d9daa`, Step 8 `a9d588a`, Step 9 `258b8a4` đã commit (chưa push); **Step 10 xong trên local, chưa commit**. Deploy cả giai đoạn 2 sau khi người dùng kiểm giao diện: migration `CreateCoursesCurricula`, `CreateClassrooms`, `CreateClassSchedule`, **`CreateGradingDelegations`** chạy lúc container khởi động; **không có env mới**.
+- **Tiếp theo: Step 11 – Chuyên cần, bảng điểm, nhận xét cuối khoá** (plan mục 1.4, 4.7, 5, 6, 7). Xem "Lưu ý cho step sau" của Step 10, prompt ở cuối file.
+- Máy dev: `apps/lang-api/.env` trỏ Postgres local `lang_simulator_dev`. DB local có **18 migration**, 1 System Owner, mẫu bài học hệ thống **Minna no Nihongo – 1 bài**. **Còn giữ dữ liệu thử** để người dùng bấm giao diện:
+  - Step 3: tenant `step3-test` (4 đề, 1 lượt làm chờ chấm của đề **do Chủ sở hữu soạn** → sau Step 10 `step3-teacher` **không còn thấy bài này**) + `step3-teacher|student|student2@example.com`.
   - Step 4–5: tenant `step4-test` (System Owner là Chủ sở hữu). Bài **Minna bài 1** của `step4-teacher` (công khai, **version 2**; tab Từ vựng có furigana/callout/khối gập mở, tab Luyện tập có Writing + Speaking, tab Bài tập 2 câu MC + 1 giải thích) và bản sao nháp **Bản của GV2** của `step4-teacher2`. `step4-student@example.com` có 2 lượt học tự do: version 1 (đã học xong, phần Luyện tập **chờ chấm** ở trang Chấm bài → Bài học) và version 2 (mới mở).
   - Step 6 (cũng ở `step4-test`): khoá **Tiếng Nhật N5** (`N5`, 24 buổi) và **Tiếng Nhật N5 – lớp tối** (`N5-TOI`), cả hai gắn giáo trình **Giáo trình N5 – Minna no Nihongo** của `step4-teacher` (3 chương, 7 mục); bản sao **… (bản sao)** của `step4-teacher2`. Bài Minna bài 2–4 và 3 đề JLPT_N2 (hiển thị Chỉ qua lớp) do `step4-teacher` tạo cho giáo trình.
-  - Step 7 (cũng ở `step4-test`): lớp **N5 tối thứ 2–4** (`N5-2026-01`, khoá N5, **Đang học**, sĩ số tối đa 3, Phòng 202) chép giáo trình N5; giáo viên lớp `step4-teacher` (`step4-teacher2` là Teacher ngoài lớp); 3 học viên `step4-student`, `step7-student1|2@example.com` (mật khẩu `Step7-Passw0rd`, **đã bỏ cờ đổi mật khẩu** để nghiệm thu Step 9). Mục chưa xếp chương **Ôn tập riêng lớp N5-2026-01** (bài học chỉ có trong lớp → không xoá được). Nhật ký lớp có đủ loại dòng.
+  - Step 7 (cũng ở `step4-test`): lớp **N5 tối thứ 2–4** (`N5-2026-01`, khoá N5, **Đang học**, sĩ số tối đa 3, Phòng 202) chép giáo trình N5; giáo viên lớp `step4-teacher` (`step4-teacher2` là Teacher ngoài lớp); 3 học viên `step4-student`, `step7-student1|2@example.com` (mật khẩu `Step7-Passw0rd`, **đã bỏ cờ đổi mật khẩu**). Mục chưa xếp chương **Ôn tập riêng lớp N5-2026-01**. Nhật ký lớp có đủ loại dòng.
   - Step 8 (cũng ở `step4-test`): lớp `N5-2026-01` có thời khoá biểu **T2 + T4 18:00–19:30, 10 buổi từ 05/10/2026**; ngày nghỉ **Ngày nghỉ thử (Step 8)** T4 21/10 (buổi 6–10 đã lùi, kết thúc 09/11); buổi 5 **đã huỷ** + **buổi bù** T7 24/10 09:00; buổi 3 dạy thế `step4-teacher2` và đang có cảnh báo **Đã dời – kiểm tra lại**; buổi 1 map chương 1 + Minna bài 1. Lớp **Lớp thử trùng lịch** (`TRUNG-LICH`, Sắp mở, T2 19:00–20:30, 4 buổi, giáo viên `step4-teacher2`, học viên `step4-student`). Tham số chuyên cần của `step4-test` giữ mặc định 0,5 / 70.
-  - Step 9 (cũng ở `step4-test`, do `accept9.js` dựng, chạy lại là dựng lại từ đầu): giáo trình lớp `N5-2026-01` đặt **Chương 1 mở 01/09/2026**, mục **Kiểm tra chương 1** (ngưỡng 70, hạn 31/12/2026, **không nhận bài quá hạn**), mục **Thi lại** cùng đề (ngưỡng 70), mục **Kiểm tra chương 2** mở **01/12/2026** (để thấy "Chưa tới ngày mở"). Lượt trong lớp: `step7-student1` trượt 50% lần 1 → **đã được "Cho làm lại"** rồi làm lại đạt 100%, thi lại 100%; `step7-student2` đậu 100% lần 1 và thi lại 50% (thấy nhãn "Không bắt buộc"); `step4-student` có 1 lượt bị **chốt** (0/2) lúc thử kết thúc lớp; `step7-student1` còn 1 lượt học đang làm ở bài **Ôn tập riêng lớp**. Lớp đã trả về **Đang học**.
-  - Dọn dẹp (đã thử trong transaction rồi rollback). **Xoá thẳng tenant không chạy được** vì FK NO ACTION `curriculum_items → exams/lessons` có từ Step 6 (xem lưu ý Step 7), phải xoá theo thứ tự: `delete from exam_attempt_answers where attempt_id in (select id from exam_attempts where tenant_id in (select id from tenants where slug in ('step3-test','step4-test')));` rồi `exam_attempt_sections`, `exam_attempts`; tương tự cho `lesson_attempt_*`; sau đó `classrooms`, `courses`, `curricula`; cuối cùng `delete from tenants where slug in ('step3-test','step4-test'); delete from users where email like 'step3-%@example.com' or email like 'step4-%@example.com' or email like 'step7-%@example.com';`. File ghi âm thử nằm trên bucket R2 private, xoá DB không xoá file. Còn schema rỗng `lang_simulator` sót lại (không ảnh hưởng).
-- Chạy thử: API `node dist/main.js` (:3101, sau `pnpm build`), app `pnpm start` (:3100, cần `BACKEND_INTERNAL_URL=http://127.0.0.1:3101`); **đang chạy** bản build Step 9. Dừng Next bằng `pkill -f next-server`; trước khi chạy API mới kiểm `lsof -iTCP:3101 -sTCP:LISTEN`. Kiểm trang qua curl cần cookie `ls_rt=x`. Nghiệm thu API không cần mật khẩu: ký JWT `{ sub, tv }` bằng `JWT_SECRET` trong `.env` (mẫu `lib9.js` + `accept9.js` trong scratchpad phiên Step 9 – `tokenOf(email)` đọc `token_version` từ DB, `jsonwebtoken`/`pg` lấy từ `node_modules/.pnpm/…`; Chủ sở hữu `step4-test` là `admin@lang-simulator.com`). Không có công cụ trình duyệt – nhờ người dùng bấm thử; kiểm render không cần trình duyệt: bundle bằng esbuild (`node_modules/.pnpm/esbuild@0.27.7/node_modules/esbuild/bin/esbuild --bundle --platform=node --jsx=automatic --packages=external --alias:@=./src`, chạy trong `apps/lang-app`) rồi `renderToStaticMarkup`, chạy với `NODE_PATH=apps/lang-app/node_modules` (component có `Modal`/portal không render được kiểu này; component gọi API phải tách phần nhận prop như `LearnerClassBoard`).
+  - Step 9 (cũng ở `step4-test`, do `accept9.js` dựng): giáo trình lớp `N5-2026-01` đặt **Chương 1 mở 01/09/2026**, mục **Kiểm tra chương 1** (ngưỡng 70, hạn 31/12/2026, **không nhận bài quá hạn**), mục **Thi lại** cùng đề (ngưỡng 70), mục **Kiểm tra chương 2** mở **01/12/2026**. Lượt trong lớp: `step7-student1` trượt 50% lần 1 → **đã được "Cho làm lại"** rồi làm lại đạt 100%, thi lại 100%; `step7-student2` đậu 100% lần 1 và thi lại 50%; `step4-student` có 1 lượt bị **chốt** (0/2); `step7-student1` còn 1 lượt học đang làm ở bài **Ôn tập riêng lớp**.
+  - Step 10 (cũng ở `step4-test`, do `accept10.js` dựng): `step7-student1` có **lượt học bài Minna bài 1 trong lớp** đã nộp cả hai phần → 2 câu chấm tay, trong đó **1 câu đã được `step4-teacher2` chấm 7,5** lúc thử chuyển giao (chuyển giao đã gỡ lại, bảng `grading_delegations` hiện **rỗng**). Đây là dữ liệu tốt để bấm thử: `step4-teacher` mở Chấm bài → Bài học thấy cả bài trong lớp lẫn bài tự do, `step4-teacher2` **không thấy gì** cho tới khi được chuyển giao.
+  - Dọn dẹp: như Step 9, thêm `delete from grading_delegations where tenant_id in (...)` trước khi xoá tenant (FK CASCADE theo tenant/membership nên xoá tenant cũng tự dọn).
+- Chạy thử: API `node dist/main.js` (:3101, sau `pnpm build`), app `pnpm start` (:3100, cần `BACKEND_INTERNAL_URL=http://127.0.0.1:3101`); **đang chạy** bản build Step 10. Dừng Next bằng `pkill -f next-server`; trước khi chạy API mới kiểm `lsof -iTCP:3101 -sTCP:LISTEN`. Kiểm trang qua curl cần cookie `ls_rt=x`. Nghiệm thu API không cần mật khẩu: ký JWT `{ sub, tv }` bằng `JWT_SECRET` trong `.env` (mẫu `lib10.js` + `accept10.js` trong scratchpad phiên Step 10 – `tokenOf(email)` đọc `token_version` từ DB, `jsonwebtoken`/`pg` lấy từ `node_modules/.pnpm/…`; Chủ sở hữu `step4-test` là `admin@lang-simulator.com`). Không có công cụ trình duyệt – nhờ người dùng bấm thử; kiểm render không cần trình duyệt: bundle bằng esbuild (`node_modules/.pnpm/esbuild@0.27.7/node_modules/esbuild/bin/esbuild --bundle --platform=node --jsx=automatic --packages=external --alias:@=./src`, chạy trong `apps/lang-app`) rồi `renderToStaticMarkup`, chạy với `NODE_PATH=apps/lang-app/node_modules` (component có `Modal`/portal không render được kiểu này; component gọi API phải tách phần nhận prop như `LearnerClassBoard`, hoặc render thẳng component con nhận prop như `AttemptReviewView`).
 
 ## Nhật ký
 
@@ -507,13 +508,68 @@
 - Step 12: sự kiện "mục mới/đổi deadline" cho học viên lấy từ `detail.added`/`changed` của `ClassCurriculumService.save`; "cho làm lại" cũng nên báo cho học viên.
 - Step 13 (phụ huynh): `LearnerClassesService.detail` dựng sẵn trạng thái mục theo một người; phụ huynh xem con thì truyền `userId`/`membershipId` của con và bỏ nút bắt đầu.
 
-## Prompt cho Step 10
+### Step 10 – Chấm theo lớp & chuyển giao (2026-09-20)
+
+**Đã làm**
+- Người dùng chốt đầu phiên (đã ghi vào plan mục 4.7 và Step 10):
+  - Giữ đúng **5 loại phạm vi** chuyển giao của plan, **không** thêm phạm vi "cả lớp".
+  - Phạm vi **đề thi/bài học** chỉ áp dụng cho **bài làm tự do** (bài trong lớp giao theo mục hoặc theo từng lượt).
+  - Người **được** chuyển giao **không** chuyển giao tiếp.
+  - Trang bài làm chi tiết của học viên (F4) gồm **cả mục đề thi lẫn mục bài học**.
+- Migration `CreateGradingDelegations` (bảng `grading_delegations`: `tenant_id`, `delegate_membership_id`, `scope_type` varchar + `@Check`, `scope_id` (đa hình, không FK), `created_by`, unique `(delegate, scope_type, scope_id)`, index `(tenant_id, scope_type, scope_id)`); `migration:generate` sau đó báo "No changes".
+- `@lang/shared`: `GradingKind`, `GradingScopeType`/`GRADING_SCOPE_TYPES`, `GradingDelegation`/`GradingDelegationBox`/`GradingDelegationTarget`/`CreateGradingDelegationInput`, `GRADING_FREE_FILTER`, `GradingClassOption`/`GradingClassItemOption`/`GradingClassItemRef`; danh sách chấm bài thêm `classItem`, `classes`, `classItems`; `class-progress.ts` thêm `ClassStudentRef`/`ClassStudentAttempts`/`ClassStudentItemView`/`ClassStudentAttemptRow`/`ClassStudentLessonRow`/`AttemptReview`/`AttemptReviewSection`.
+- lang-api `grading/`:
+  - `grading-access.ts`: hàm thuần `canGradeAttempt` (+ `grading-access.spec.ts`, 10 test), `loadGraderScope`, `applyGraderScope` (điều kiện SQL tương đương cho danh sách), `canDelegateScope` (quyền **gốc**).
+  - `GradingService`/`LessonGradingService` lọc theo phạm vi, thêm `classId`/`itemId`, trả `classes`/`classItems` (`grading-class.ts`), mỗi dòng kèm `classItem`; `nextAttemptId` lọc lại bằng `canGradeAttempt`.
+  - `GradingDelegationsService` + 3 route `grading/delegations` (+ spec 7 test).
+- lang-api `classrooms/`: `ClassStudentAttemptsService` + 5 route `classes/:id/students/:membershipId/...` (danh sách, xem lại lượt thi, xem lại lượt học, 2 route ghi âm); `attempts/attempt-review.ts` dựng `AttemptReviewSection` cho đề thi (dùng lại kiểu `LessonSectionResult`), bài học dùng `toSectionView` (đã export). `learner-classes.service.ts` export `orderItems`/`rootIdOf`/`buildExamGroups`/`toAttemptSummary` để dùng chung. `ROUTES` thêm 8 dòng.
+- lang-app: ô lọc **Lớp**/**Mục** + cột **Lớp · Mục** ở trang Chấm bài; `GradingDelegationDialog` (nút **Chuyển giao chấm** ở trang chấm một bài); trang `/t/{slug}/dashboard/classes/{id}/students/{membershipId}` (`StudentAttemptsView` + `AttemptReviewView`), vào từ tab **Giáo viên & Học viên** và từ hộp **Bài làm**; API ở `lib/grading-api.ts` và `lib/classroom-api.ts`; chuỗi `vi.grading.delegation`/`vi.classStudentAttempts`.
+- Tài liệu: `/user-manual` (trang **Chấm bài**: bộ lọc mới, mục **Ai chấm bài nào**, mục **Chuyển giao chấm**; trang **Giáo trình lớp**: mục **Bài làm của học viên**; vai trò Giáo viên; ma trận quyền 2 dòng mới + sửa dòng chấm tay; thuật ngữ **Chuyển giao chấm**), CLAUDE.md (lang-api + lang-app), plan (quyết định chốt đầu phiên).
+
+**Sai khác so với plan**
+- Route mục 6 chỉ ghi `GET students/:membershipId/attempts`; thực tế thêm `…/attempts/:attemptId`, `…/lesson-attempts/:attemptId` và 2 route ghi âm để xem lại bài làm (F4 cần đáp án + đúng/sai từng câu, và nghe lại câu Speaking).
+- `GET grading/delegations` nhận `attemptId` + `kind` và trả "hộp" (phạm vi giao được + đã giao) thay vì CRUD chung: giao diện luôn mở từ một bài làm cụ thể.
+- Trường lọc trả về đặt tên `classItems` (không phải `items`) vì `Paginated.items` đã dùng tên đó.
+- `nextAttemptId` không dùng query builder (lọc ở JS bằng `canGradeAttempt`) để unit test với repository giả vẫn chạy.
+- `GradingModule` phải `TypeOrmModule.forFeature([GradingDelegation])`: runtime dùng `autoLoadEntities`, thiếu thì 500 "No metadata".
+
+**Nghiệm thu (local)**
+- 5 lệnh kiểm tra pass: lang-api **317 test** (+10 `grading-access.spec.ts`, +7 `grading-delegations.service.spec.ts`, +4 F4 trong `classrooms.service.spec.ts`); `migration:generate` → "No changes".
+- API thật (:3101), `accept10.js` **41/41 mục đạt** + `voided.js` **4/4**:
+  - `step4-teacher` (giáo viên lớp + người soạn) thấy cả bài trong lớp lẫn bài tự do; `step4-teacher2` (Teacher ngoài lớp, không soạn) **không thấy bài nào**; Chủ sở hữu thấy mọi bài.
+  - Lọc theo lớp / "Bài làm tự do" / mục đúng; `classId` sai định dạng → 400.
+  - Teacher ngoài phạm vi mở bài → 403.
+  - Chuyển giao mục lớp cho `step4-teacher2`: thấy đúng bài của mục, mở và **chấm được** (7,5 điểm); người giao vẫn chấm được; người được giao giao tiếp → 403; gỡ xong hết thấy bài.
+  - Bài tự do: phạm vi thứ hai là **cả bài học**; `step3-teacher` **không còn** thấy bài làm tự do của đề do Chủ sở hữu soạn (đổi hành vi theo giả định 10), mở thẳng → 403.
+  - Lượt thi đánh dấu `voided` biến khỏi hàng chờ chấm, mở thẳng → 409 (đã khôi phục dữ liệu thử).
+  - F4: giáo viên lớp xem được, Teacher ngoài lớp 403; mục đề thi liệt kê cả lượt **Đã cho làm lại**; nhóm thi lại gộp mục gốc + lần thi lại; xem lại bài thi có câu trả lời, verdict từng câu và đáp án; xem lại lượt học có kết quả phần đã nộp; lượt của học viên khác → 404; membership không phải học viên lớp → 404.
+- lang-app (`next start`): `/t/step4-test/dashboard/grading`, `?kind=lesson`, trang lớp và trang bài làm học viên đều **200**.
+- Render `AttemptReviewView` bằng `react-dom/server` với dữ liệu thật: tab hai section, câu 1 kèm nhãn **Đáp án đúng**, ô chọn của học viên `checked` và mọi ô `disabled` (chỉ đọc).
+- **Chưa bấm giao diện bằng trình duyệt**:
+  - Bộ lọc Lớp/Mục và cột Lớp · Mục ở trang Chấm bài.
+  - Hộp **Chuyển giao chấm** (chọn phạm vi, chọn giáo viên, gỡ).
+  - Trang bài làm chi tiết của học viên và hộp **Xem bài làm** (kể cả nghe ghi âm Speaking).
+  - Hiển thị trên màn hình hẹp.
+
+**Lưu ý cho step sau**
+- Step 11:
+  - Chuyên cần chỉ tính **mục đề thi có deadline**; **không tính** lần thi lại không bắt buộc (`isGroupMemberRequired` = false), mục `removed_at`, lượt `voided`. "Đã làm" = đã nộp (không cần chấm xong).
+  - Tham số `k`/ngưỡng lấy từ `tenants.late_weight`/`warning_threshold` (đã có), lớp ghi đè được → cần cột mới ở `classrooms` (R11.1–2).
+  - Dữ liệu cho bảng điểm đã có sẵn: `ClassStudentAttemptsService.listForStudent` (theo 1 học viên) dựng đúng mục + nhóm thi; bảng điểm cả lớp nên gom theo cùng cách (`orderItems`/`buildExamGroups`/`toAttemptSummary` + `manualScoresByAttempt`).
+  - Trung bình chương = trung bình `bestPercent` của các nhóm thi trong chương (giả định 9); bài học không tính.
+  - Học viên/phụ huynh chỉ xem chuyên cần/bảng điểm/nhận xét khi lớp `finished`: `LearnerClassDetail` chưa có trường nào của phần này.
+  - Nhận xét cuối khoá: 1 dòng/học viên/lớp, viết khi lớp `ongoing`/`finished` (T5) → bảng mới, quyền như giáo viên của lớp (`loadClassroomAccess`).
+  - Excel dùng `exceljs` (giả định 13), route `GET classes/:id/export.xlsx`.
+- Step 12: thông báo "được chuyển giao chấm" cho giáo viên (R18) lấy từ `GradingDelegationsService.create`.
+- Step 13 (phụ huynh): `AttemptReview` **không** dùng cho phụ huynh (có đáp án); phụ huynh chỉ xem kết quả như học viên.
+
+## Prompt cho Step 11
 
 ```
-Bắt đầu Step 10 của req-3 (Chấm theo lớp & chuyển giao).
+Bắt đầu Step 11 của req-3 (Chuyên cần, bảng điểm, nhận xét cuối khoá).
 
-1. Làm theo mục "Bắt đầu phiên làm việc" trong CLAUDE.md: đọc docs/requirements/req-3-progress.md (phần "Bàn giao cho phiên tiếp theo" và "Lưu ý cho step sau" của Step 9), rồi đọc trong docs/requirements/req-3-plan.md: mục 1.4 (Chấm tay), giả định 8 và 10 ở mục 2, DB mục 4.7 (canGrade, grading_delegations), phân quyền mục 5 (chấm tay, chuyển giao chấm), route mục 6 (grading, classes :id/students/:membershipId/attempts, site classes/[id]/students/[membershipId]) và Step 10 ở mục 7. Chỉ mở req-3-question*.md (E10, R20, T3.2) khi cần lý do của một quyết định.
-2. Trước khi code, tóm tắt ngắn cho tôi cách làm: migration `grading_delegations`, hàm `canGrade` cho đề thi và bài học (giáo viên của lớp chấm bài trong lớp, người soạn chấm bài tự do, Owner/Admin mọi bài, không chấm bài của mình, lượt voided bỏ qua), API chuyển giao (mục / đề-bài tự do / từng lượt), lọc trang Chấm bài theo lớp/mục/học viên, trang bài làm chi tiết của học viên (F4). Chỗ nào chưa rõ thì hỏi tôi, không tự đoán.
+1. Làm theo mục "Bắt đầu phiên làm việc" trong CLAUDE.md: đọc docs/requirements/req-3-progress.md (phần "Bàn giao cho phiên tiếp theo" và "Lưu ý cho step sau" của Step 10), rồi đọc trong docs/requirements/req-3-plan.md: mục 1.4 (Chuyên cần, Tham số, Ai xem, Bảng điểm, Nhận xét cuối khoá, Excel), giả định 9, 13, 15, 16 ở mục 2, DB mục 4 (bảng mới cho nhận xét + tham số ghi đè của lớp), phân quyền mục 5, route mục 6 (classes progress: attendance, gradebook, export.xlsx, students/:membershipId/comment) và Step 11 ở mục 7. Chỉ mở req-3-question*.md (R11, R12, T1, T2, T5, E7.3–7.4) khi cần lý do của một quyết định.
+2. Trước khi code, tóm tắt ngắn cho tôi cách làm: hàm thuần tính chuyên cần và bảng điểm trong @lang/shared, migration (tham số ghi đè của lớp + nhận xét cuối khoá), API attendance/gradebook/comment/export.xlsx, tab "Tiến độ & Chuyên cần" và "Bảng điểm" ở trang lớp, phần học viên/phụ huynh chỉ thấy khi lớp đã kết thúc. Chỗ nào chưa rõ thì hỏi tôi, không tự đoán.
 3. Làm lần lượt: migration → hàm thuần + unit test → service + controller kèm unit test (thêm dòng ROUTES) → lang-app → tài liệu. Sau mỗi phần chạy test.
-4. Nghiệm thu thật theo tiêu chí của plan trên lớp N5-2026-01 của step4-test: Teacher không thuộc lớp không thấy bài của lớp; được chuyển giao thì thấy đúng các bài đó; bài tự do chỉ người soạn chấm. Cập nhật /user-manual, CLAUDE.md, req-3-progress.md và ghi prompt cho Step 11 ở cuối file. Chưa commit, chờ tôi yêu cầu. Sau Step 10 là deploy giai đoạn 2.
+4. Nghiệm thu thật theo tiêu chí của plan trên lớp N5-2026-01 của step4-test (dữ liệu Step 9–10 đã có lượt đúng hạn, muộn, chưa làm, thi lại). Cập nhật /user-manual, CLAUDE.md, req-3-progress.md và ghi prompt cho Step 12 ở cuối file. Chưa commit, chờ tôi yêu cầu.
 ```

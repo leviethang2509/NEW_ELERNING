@@ -1,7 +1,13 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { AlertTriangle, UserMinus, UserPlus } from 'lucide-react';
+import Link from 'next/link';
+import {
+  AlertTriangle,
+  ClipboardList,
+  UserMinus,
+  UserPlus,
+} from 'lucide-react';
 import {
   TenantRole,
   type ClassroomDetail,
@@ -20,6 +26,7 @@ import { vi } from '@/i18n/vi';
 import {
   addClassroomStudents,
   addClassroomTeachers,
+  classStudentPath,
   getClassroomMembers,
   removeClassroomStudent,
   removeClassroomTeacher,
@@ -165,6 +172,16 @@ export function ClassMembersPanel({
             </span>
           )}
         </span>
+        {student && (
+          <Link
+            href={classStudentPath(slug, classroom.id, member.membershipId)}
+            title={vi.classStudentAttempts.open}
+            aria-label={vi.classStudentAttempts.open}
+            className={iconButtonClass}
+          >
+            <ClipboardList size={16} />
+          </Link>
+        )}
         {editable && !student?.removedAt && (
           <button
             type="button"

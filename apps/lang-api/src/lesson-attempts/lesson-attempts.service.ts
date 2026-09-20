@@ -810,7 +810,8 @@ export function attemptTotals(
   };
 }
 
-function toSectionView(
+/** Dùng lại ở trang bài làm chi tiết của học viên (req-3 Step 10, F4). */
+export function toSectionView(
   section: LessonAttemptSection,
   lessonSection: LessonSection,
   questions: readonly LessonQuestion[],

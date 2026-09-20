@@ -1,4 +1,6 @@
 import type {
+  AttemptReview,
+  ClassStudentAttempts,
   ClassCurriculum,
   ClassLogEntry,
   ClassroomDetail,
@@ -134,4 +136,66 @@ export const listActiveMembers = (
       status: 'active',
       q,
     }),
+  );
+
+// --- Bài làm chi tiết của học viên (req-3 Step 10, F4) -----------------------
+
+export const classStudentPath = (
+  slug: string,
+  id: string,
+  membershipId: string,
+) => `${classDetailPath(slug, id)}/students/${membershipId}`;
+
+const studentBase = (slug: string, id: string, membershipId: string) =>
+  `${classesPath(slug)}/${id}/students/${membershipId}`;
+
+export const getClassStudentAttempts = (
+  slug: string,
+  id: string,
+  membershipId: string,
+) =>
+  api.get<ClassStudentAttempts>(
+    `${studentBase(slug, id, membershipId)}/attempts`,
+  );
+
+export const getClassStudentExamReview = (
+  slug: string,
+  id: string,
+  membershipId: string,
+  attemptId: string,
+) =>
+  api.get<AttemptReview>(
+    `${studentBase(slug, id, membershipId)}/attempts/${attemptId}`,
+  );
+
+export const getClassStudentLessonReview = (
+  slug: string,
+  id: string,
+  membershipId: string,
+  attemptId: string,
+) =>
+  api.get<AttemptReview>(
+    `${studentBase(slug, id, membershipId)}/lesson-attempts/${attemptId}`,
+  );
+
+export const getClassStudentExamRecordingUrl = (
+  slug: string,
+  id: string,
+  membershipId: string,
+  attemptId: string,
+  answerId: string,
+) =>
+  api.get<{ url: string }>(
+    `${studentBase(slug, id, membershipId)}/attempts/${attemptId}/recordings/${answerId}/url`,
+  );
+
+export const getClassStudentLessonRecordingUrl = (
+  slug: string,
+  id: string,
+  membershipId: string,
+  attemptId: string,
+  answerId: string,
+) =>
+  api.get<{ url: string }>(
+    `${studentBase(slug, id, membershipId)}/lesson-attempts/${attemptId}/recordings/${answerId}/url`,
   );

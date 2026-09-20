@@ -5,7 +5,11 @@ import { ClassroomStatus } from './classroom';
 import type { ClassroomRef } from './classroom';
 import { MANUAL_SCORE_MAX } from './exam';
 import type { ExamUserRef } from './exam-content';
-import type { LearnerLessonProgress } from './lesson-attempt';
+import type {
+  LearnerLessonProgress,
+  LessonAttemptStatus,
+  LessonSectionResult,
+} from './lesson-attempt';
 import type {
   ClassSessionKind,
   ClassSessionStatus,
@@ -314,4 +318,105 @@ export interface ClassItemAttemptRow extends ClassAttemptSummary {
 export interface VoidClassAttemptResult {
   attemptId: string;
   voidedAt: string;
+}
+
+// ---------------------------------------------------------------------------
+// Bài làm của học viên dưới góc nhìn giáo viên (req-3 Step 10, F4)
+
+/** Học viên của lớp trong trang bài làm chi tiết (F4). */
+export interface ClassStudentRef extends ExamUserRef {
+  membershipId: string;
+  email: string;
+}
+
+/** Một lượt thi của học viên trên một mục, kể cả lượt đã "Cho làm lại". */
+export interface ClassStudentAttemptRow extends ClassAttemptSummary {
+  voidedAt: string | null;
+  /** Xem được chi tiết câu trả lời (đã nộp ít nhất một phần). */
+  canReview: boolean;
+}
+
+/** Lượt học của học viên trên một mục bài học. */
+export interface ClassStudentLessonRow {
+  attemptId: string;
+  lessonVersion: number;
+  status: LessonAttemptStatus;
+  completedAt: string | null;
+  autoCorrect: number;
+  autoTotal: number;
+  manualCount: number;
+  manualGradedCount: number;
+  /** Đã nộp ít nhất một phần → xem được chi tiết câu trả lời. */
+  canReview: boolean;
+}
+
+/** Một mục giáo trình lớp trong trang bài làm của học viên. */
+export interface ClassStudentItemView {
+  id: string;
+  itemType: CurriculumItemType;
+  title: string;
+  label: CurriculumItemLabel;
+  /** Chương chứa mục; `null` = chưa xếp chương. */
+  groupTitle: string | null;
+  opensAt: string | null;
+  deadlineAt: string | null;
+  passThreshold: number;
+  /** Lần thứ mấy trong nhóm thi (1 = mục gốc); `null` = mục bài học. */
+  attemptIndex: number | null;
+  /** `false` = lần thi lại không bắt buộc vì đã đậu lần trước (T2.4). */
+  required: boolean;
+  /** Mục đã bị bỏ khỏi giáo trình lớp nhưng còn bài làm (E3). */
+  removed: boolean;
+  /** Mục đề thi: mọi lượt, mới nhất trước. */
+  attempts: ClassStudentAttemptRow[];
+  /** Mục bài học: lượt trên version hiện tại của bài. */
+  lessonAttempt: ClassStudentLessonRow | null;
+}
+
+/** `GET t/:slug/classes/:id/students/:membershipId/attempts`. */
+export interface ClassStudentAttempts {
+  classroom: ClassroomRef;
+  student: ClassStudentRef;
+  /** Học viên đã bị xoá khỏi lớp (vẫn xem được bài làm cũ). */
+  removed: boolean;
+  /** Mục chưa xếp chương trước, rồi từng chương theo thứ tự giáo trình. */
+  items: ClassStudentItemView[];
+  /** Nhóm có ≥ 2 mục (mục gốc + lần thi lại). */
+  examGroups: LearnerExamGroupView[];
+}
+
+/** Một phần của bài làm khi giáo viên xem lại (F4). */
+export interface AttemptReviewSection {
+  id: string;
+  name: string;
+  /** content_public đã xáo theo lượt (`ExamValue`, không đáp án). */
+  content: unknown[];
+  /** Câu trả lời + đúng/sai + đáp án + giải thích; `null` khi chưa nộp. */
+  result: LessonSectionResult | null;
+}
+
+/**
+ * `GET t/:slug/classes/:id/students/:membershipId/attempts/:attemptId`
+ * (và `…/lesson-attempts/:attemptId`): bài làm của học viên với đáp án và
+ * đúng/sai từng câu, chỉ giáo viên của lớp và Owner/Admin xem (F4).
+ */
+export interface AttemptReview {
+  id: string;
+  itemType: CurriculumItemType;
+  /** Tên đề thi / bài học. */
+  title: string;
+  /** Tên mục trong giáo trình lớp. */
+  itemTitle: string;
+  student: ClassStudentRef;
+  startedAt: string;
+  submittedAt: string | null;
+  /** `null` khi chưa chấm xong (đề thi) hoặc là lượt học. */
+  percent: number | null;
+  passed: boolean | null;
+  voidedAt: string | null;
+  autoCorrect: number;
+  autoTotal: number;
+  manualCount: number;
+  manualGradedCount: number;
+  sections: AttemptReviewSection[];
 }

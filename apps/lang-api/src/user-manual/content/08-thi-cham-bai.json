@@ -410,7 +410,7 @@
         },
         {
           "type": "paragraph",
-          "text": "Menu **Đề thi & Bài học → Chấm bài** (`/t/{slug}/dashboard/grading`). Chọn **Đề thi** hoặc **Bài học** ở đầu trang. Đề thi: chỉ lượt làm **đã nộp hết** và **có câu chấm tay**. Bài học: lượt học có phần đã nộp chứa câu Writing/Speaking (tính theo **lần nộp gần nhất** của từng phần). Tìm theo tên/email học viên, lọc **Chờ chấm / Đã chấm** và đề thi/bài học. Cột Chấm tay hiện tiến độ `đã chấm/tổng câu`."
+          "text": "Menu **Đề thi & Bài học → Chấm bài** (`/t/{slug}/dashboard/grading`). Chọn **Đề thi** hoặc **Bài học** ở đầu trang. Đề thi: chỉ lượt làm **đã nộp hết** và **có câu chấm tay**. Bài học: lượt học có phần đã nộp chứa câu Writing/Speaking (tính theo **lần nộp gần nhất** của từng phần). Danh sách chỉ hiện bài **bạn được chấm** (xem [Ai chấm bài nào](page:cham-bai#ai-cham-bai-nao)). Tìm theo tên/email học viên, lọc **Chờ chấm / Đã chấm**, đề thi/bài học, **lớp** (hoặc **Bài làm tự do**) và **mục của lớp**. Cột **Lớp · Mục** cho biết bài đến từ mục nào của lớp nào; cột Chấm tay hiện tiến độ `đã chấm/tổng câu`."
         },
         {
           "type": "heading",
@@ -445,6 +445,63 @@
         {
           "type": "heading",
           "level": 2,
+          "text": "Ai chấm bài nào"
+        },
+        {
+          "type": "paragraph",
+          "text": "Từ req-3, mỗi người chỉ thấy phần việc của mình. Chủ sở hữu và Quản trị viên chấm mọi bài của trung tâm."
+        },
+        {
+          "type": "list",
+          "items": [
+            "Bài làm **trong lớp** (mở từ giáo trình lớp): **giáo viên của lớp** đó chấm.",
+            "Bài làm **tự do** (học viên tự vào làm, ngoài lớp): **người soạn** đề thi/bài học đó chấm.",
+            "Ngoài ra: ai được **chuyển giao chấm** đúng phạm vi tương ứng.",
+            "Không ai chấm bài của **chính mình**; lượt thi đã **Cho làm lại** không còn trong hàng chờ chấm.",
+            "Mở thẳng một bài ngoài phạm vi của mình thì báo lỗi và không chấm được."
+          ]
+        },
+        {
+          "type": "heading",
+          "level": 2,
+          "text": "Chuyển giao chấm"
+        },
+        {
+          "type": "paragraph",
+          "text": "Nút **Chuyển giao chấm** ở trang chấm một bài: nhờ một Giáo viên khác của trung tâm chấm thay. Người chuyển giao **vẫn chấm được**."
+        },
+        {
+          "type": "steps",
+          "items": [
+            {
+              "title": "Chọn phạm vi",
+              "text": "Bài trong lớp: **chỉ bài làm này** hoặc **mọi bài của mục** đó trong lớp. Bài tự do: **chỉ bài làm này** hoặc **mọi bài làm tự do** của đề thi/bài học đó."
+            },
+            {
+              "title": "Chọn giáo viên",
+              "text": "Danh sách Giáo viên đang hoạt động của trung tâm (không cần là giáo viên của lớp). Chọn được nhiều người một lần."
+            },
+            {
+              "title": "Chuyển giao",
+              "text": "Người được chọn thấy ngay các bài đó trong danh sách Chấm bài của họ."
+            },
+            {
+              "title": "Gỡ khi xong",
+              "text": "Mục **Đang chuyển giao** liệt kê người đã giao kèm người giao và thời điểm; bấm **Gỡ** để thu lại quyền chấm."
+            }
+          ]
+        },
+        {
+          "type": "list",
+          "items": [
+            "Chuyển giao được: Chủ sở hữu, Quản trị viên; giáo viên **của lớp** (bài trong lớp); **người soạn** đề thi/bài học (bài tự do).",
+            "Người **được** chuyển giao không chuyển giao tiếp cho người khác.",
+            "Chuyển giao theo đề thi/bài học chỉ mở **bài làm tự do**; bài trong lớp phải giao theo mục hoặc theo từng bài."
+          ]
+        },
+        {
+          "type": "heading",
+          "level": 2,
           "text": "Quy tắc"
         },
         {
@@ -455,7 +512,6 @@
             "Chỉ chấm câu Writing/Speaking; kết quả tự động không sửa được.",
             "Câu bỏ trống vẫn cần chấm (thường cho 0) thì bài mới hoàn tất.",
             "Chấm lại được bất kỳ lúc nào: điểm mới thay điểm cũ, hiện “Chấm bởi … · thời điểm”.",
-            "Giáo viên chấm được bài của mọi đề và bài học trong trung tâm, không chỉ đề/bài mình tạo.",
             "Bài học: người chấm thấy **Giải thích (học viên thấy sau khi nộp)**. Học viên nộp lại phần có câu chấm tay thì điểm cũ bị bỏ, lượt học quay lại **Chờ chấm**; đang mở trang chấm bản cũ thì lưu điểm báo lỗi, tải lại trang để chấm lần nộp mới."
           ]
         }

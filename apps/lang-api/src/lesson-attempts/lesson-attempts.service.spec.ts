@@ -19,7 +19,9 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { ClassItem } from '../classrooms/class-item.entity';
+import { ClassroomTeacher } from '../classrooms/classroom-teacher.entity';
 import { Classroom } from '../classrooms/classroom.entity';
+import { GradingDelegation } from '../grading/grading-delegation.entity';
 import { LessonGradingService } from '../grading/lesson-grading.service';
 import { LessonPart } from '../lessons/lesson-part.entity';
 import { LessonQuestion } from '../lessons/lesson-question.entity';
@@ -202,6 +204,8 @@ function setup({
     .register(User, users)
     .register(ClassItem, classItems)
     .register(Classroom, classrooms)
+    .register(ClassroomTeacher, new InMemoryRepository<ClassroomTeacher>())
+    .register(GradingDelegation, new InMemoryRepository<GradingDelegation>())
     .asDataSource();
   const service = new LessonAttemptsService(
     dataSource,

@@ -4,6 +4,7 @@ import { AttemptsModule } from '../attempts/attempts.module';
 import { LessonAttemptsModule } from '../lesson-attempts/lesson-attempts.module';
 import { Membership } from '../memberships/membership.entity';
 import { TenantsModule } from '../tenants/tenants.module';
+import { StorageModule } from '../storage/storage.module';
 import { TrainingModule } from '../training/training.module';
 import { User } from '../users/user.entity';
 import { ClassAttemptsService } from './class-attempts.service';
@@ -14,6 +15,7 @@ import { ClassItem } from './class-item.entity';
 import { ClassMembersService } from './class-members.service';
 import { ClassScheduleSlot } from './class-schedule-slot.entity';
 import { ClassScheduleService } from './class-schedule.service';
+import { ClassStudentAttemptsService } from './class-student-attempts.service';
 import { ClassSessionLink } from './class-session-link.entity';
 import { ClassSessionTeacher } from './class-session-teacher.entity';
 import { ClassSession } from './class-session.entity';
@@ -30,7 +32,8 @@ import { ScheduleController } from './schedule.controller';
 
 /**
  * Lớp học, giáo viên/học viên, giáo trình lớp (Step 7), thời khoá biểu và lịch
- * (Step 8), khu vực học viên trong lớp và "Cho làm lại" (Step 9).
+ * (Step 8), khu vực học viên trong lớp và "Cho làm lại" (Step 9), bài làm chi
+ * tiết của học viên (Step 10).
  */
 @Module({
   imports: [
@@ -38,6 +41,7 @@ import { ScheduleController } from './schedule.controller';
     TrainingModule,
     AttemptsModule,
     LessonAttemptsModule,
+    StorageModule,
     TypeOrmModule.forFeature([
       Classroom,
       ClassroomTeacher,
@@ -66,6 +70,7 @@ import { ScheduleController } from './schedule.controller';
     ClassSessionsService,
     ScheduleFeedService,
     ClassAttemptsService,
+    ClassStudentAttemptsService,
     LearnerClassesService,
   ],
   exports: [TypeOrmModule],

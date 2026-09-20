@@ -323,6 +323,10 @@
             [
               "Cho làm lại",
               "Giáo viên của lớp huỷ một lượt thi khi học viên gặp sự cố: lượt cũ giữ lịch sử nhưng không tính điểm, học viên làm lượt mới."
+            ],
+            [
+              "Chuyển giao chấm",
+              "Cho một Giáo viên khác quyền chấm đúng một phạm vi (một bài làm, một mục của lớp, hoặc mọi bài làm tự do của một đề/bài học); người giao vẫn chấm được."
             ]
           ]
         },
@@ -665,7 +669,7 @@
               "Chấm bài Writing/Speaking – đề thi và bài học (trừ bài của mình)",
               "✔",
               "✔",
-              "✔",
+              "bài trong lớp mình phụ trách, bài tự do của đề/bài mình soạn, bài được chuyển giao",
               "✘",
               "✘"
             ],
@@ -703,6 +707,22 @@
             ],
             [
               "Cho làm lại một lượt thi trong lớp",
+              "mọi lớp",
+              "mọi lớp",
+              "lớp mình phụ trách",
+              "✘",
+              "✘"
+            ],
+            [
+              "Chuyển giao chấm cho giáo viên khác",
+              "✔",
+              "✔",
+              "phạm vi mình chấm được sẵn (không giao tiếp bài được giao)",
+              "✘",
+              "✘"
+            ],
+            [
+              "Xem bài làm chi tiết của học viên trong lớp (đáp án, đúng/sai từng câu)",
               "mọi lớp",
               "mọi lớp",
               "lớp mình phụ trách",

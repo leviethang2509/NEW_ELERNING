@@ -213,6 +213,14 @@ const ROUTES: Record<string, Access> = {
   'PUT /t/:slug/classes/:id/curriculum': STAFF,
   'GET /t/:slug/classes/:id/items/:itemId/attempts': STAFF,
   'POST /t/:slug/classes/:id/items/:itemId/void/:attemptId': STAFF,
+  'GET /t/:slug/classes/:id/students/:membershipId/attempts': STAFF,
+  'GET /t/:slug/classes/:id/students/:membershipId/attempts/:attemptId': STAFF,
+  'GET /t/:slug/classes/:id/students/:membershipId/attempts/:attemptId/recordings/:answerId/url':
+    STAFF,
+  'GET /t/:slug/classes/:id/students/:membershipId/lesson-attempts/:attemptId':
+    STAFF,
+  'GET /t/:slug/classes/:id/students/:membershipId/lesson-attempts/:attemptId/recordings/:answerId/url':
+    STAFF,
   'GET /t/:slug/classes/:id/logs': STAFF,
   'POST /t/:slug/classes/:id/conflicts': MANAGER,
   'GET /t/:slug/classes/:id/schedule': STAFF,
@@ -235,6 +243,9 @@ const ROUTES: Record<string, Access> = {
   'PATCH /t/:slug/settings/holidays/:id': MANAGER,
   'DELETE /t/:slug/settings/holidays/:id': MANAGER,
 
+  'GET /t/:slug/grading/delegations': STAFF,
+  'POST /t/:slug/grading/delegations': STAFF,
+  'DELETE /t/:slug/grading/delegations/:id': STAFF,
   'GET /t/:slug/grading/attempts': STAFF,
   'GET /t/:slug/grading/attempts/:id': STAFF,
   'GET /t/:slug/grading/attempts/:id/recordings/:answerId/url': STAFF,

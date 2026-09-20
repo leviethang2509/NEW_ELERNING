@@ -1,11 +1,13 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import Link from 'next/link';
 import type { ClassItemAttemptRow } from '@lang/shared';
 import { AttemptResultBadges } from '@/components/class-learning/class-learning-ui';
 import { Badge, FormAlert, Modal, secondaryButtonClass } from '@/components/ui';
 import { vi } from '@/i18n/vi';
 import { errorMessage } from '@/lib/error-message';
+import { classStudentPath } from '@/lib/classroom-api';
 import { formatDateTime } from '@/lib/format';
 import { listItemAttempts, voidClassAttempt } from '@/lib/learner-class-api';
 
@@ -93,9 +95,17 @@ export function ItemAttemptsDialog({
                 className="flex flex-wrap items-center gap-2 rounded-xl border border-[var(--border)] bg-[var(--card)] px-3 py-2"
               >
                 <span className="min-w-0 flex-1 basis-44">
-                  <span className="block truncate text-[14px] font-medium text-[var(--heading)]">
+                  <Link
+                    href={classStudentPath(
+                      slug,
+                      classroomId,
+                      row.student.membershipId,
+                    )}
+                    title={vi.classStudentAttempts.open}
+                    className="block truncate text-[14px] font-medium text-[var(--heading)] hover:text-[var(--accent)]"
+                  >
                     {row.student.fullName}
-                  </span>
+                  </Link>
                   <span className="block text-[12.5px] text-[var(--muted)]">
                     {text.startedAt}: {formatDateTime(row.startedAt)}
                   </span>

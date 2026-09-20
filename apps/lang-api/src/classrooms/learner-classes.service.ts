@@ -151,7 +151,9 @@ export class LearnerClassesService {
 
     // Nhóm thi: mục gốc + các lần thi lại, theo thứ tự trong giáo trình.
     const ordered = orderItems(groups, items);
-    const groupMembers = buildExamGroups(ordered, progress);
+    const groupMembers = buildExamGroups(ordered, (item) =>
+      progress.examAttempt(item),
+    );
     const view = (item: ClassItem): LearnerClassItemView => {
       const group = groups.find((row) => row.id === item.groupId) ?? null;
       const content = contents.get(classContentIdOf(item))!;
@@ -554,7 +556,7 @@ class MyProgress {
   }
 }
 
-function toAttemptSummary(
+export function toAttemptSummary(
   attempt: ExamAttempt,
   manualScore: number,
   passThreshold: number,
@@ -600,7 +602,10 @@ function toSessionRef(
 }
 
 /** Mục theo thứ tự hiển thị: chưa xếp chương trước, rồi từng chương. */
-function orderItems(groups: ClassGroup[], items: ClassItem[]): ClassItem[] {
+export function orderItems(
+  groups: ClassGroup[],
+  items: ClassItem[],
+): ClassItem[] {
   const inGroup = (groupId: string | null) =>
     items.filter((item) => item.groupId === groupId).sort(bySortOrder);
   return [
@@ -610,7 +615,7 @@ function orderItems(groups: ClassGroup[], items: ClassItem[]): ClassItem[] {
 }
 
 /** Mục gốc của nhóm thi (chính nó nếu không phải lần thi lại). */
-function rootIdOf(item: ClassItem, items: ClassItem[]): string {
+export function rootIdOf(item: ClassItem, items: ClassItem[]): string {
   if (!item.retakeOfItemId) return item.id;
   return items.some((row) => row.id === item.retakeOfItemId)
     ? item.retakeOfItemId
@@ -621,9 +626,9 @@ function rootIdOf(item: ClassItem, items: ClassItem[]): string {
  * Nhóm thi theo mục gốc: mục gốc đứng đầu rồi các lần thi lại theo thứ tự
  * giáo trình (giả định 7).
  */
-function buildExamGroups(
+export function buildExamGroups(
   ordered: ClassItem[],
-  progress: MyProgress,
+  attemptOf: (item: ClassItem) => ClassAttemptSummary | null,
 ): Map<string, ExamGroupMember[]> {
   const groups = new Map<string, ExamGroupMember[]>();
   for (const item of ordered) {
@@ -633,7 +638,7 @@ function buildExamGroups(
     members.push({
       itemId: item.id,
       passThreshold: item.passThreshold,
-      attempt: progress.examAttempt(item),
+      attempt: attemptOf(item),
     });
     groups.set(rootId, members);
   }

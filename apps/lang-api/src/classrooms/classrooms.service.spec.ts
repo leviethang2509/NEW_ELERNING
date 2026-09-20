@@ -3,8 +3,10 @@ import {
   BadRequestException,
   ConflictException,
   ForbiddenException,
+  NotFoundException,
 } from '@nestjs/common';
 import {
+  AttemptStatus,
   ClassLogAction,
   ClassSessionKind,
   ClassSessionStatus,
@@ -13,6 +15,7 @@ import {
   CurriculumItemLabel,
   CurriculumItemType,
   ExamStatus,
+  LessonAttemptStatus,
   MembershipStatus,
   TenantRole,
   TenantStatus,
@@ -28,6 +31,7 @@ import { plainToInstance } from 'class-transformer';
 import { validate } from 'class-validator';
 import { randomUUID } from 'node:crypto';
 import type { AttemptsService } from '../attempts/attempts.service';
+import { ExamAttemptAnswer } from '../attempts/exam-attempt-answer.entity';
 import { ExamAttempt } from '../attempts/exam-attempt.entity';
 import { validationMessages } from '../common/validation';
 import { Exam } from '../exams/exam.entity';
@@ -55,6 +59,7 @@ import { ClassCurriculumService } from './class-curriculum.service';
 import { ClassGroup } from './class-group.entity';
 import { ClassItem } from './class-item.entity';
 import { ClassMembersService } from './class-members.service';
+import { ClassStudentAttemptsService } from './class-student-attempts.service';
 import { ClassroomStudent } from './classroom-student.entity';
 import { ClassroomTeacher } from './classroom-teacher.entity';
 import { Classroom } from './classroom.entity';
@@ -124,6 +129,7 @@ function setup() {
   );
   const users = new InMemoryRepository<User>(timestamps);
   const examAttempts = new InMemoryRepository<ExamAttempt>();
+  const examAnswers = new InMemoryRepository<ExamAttemptAnswer>();
   const lessonAttempts = new InMemoryRepository<LessonAttempt>();
   const slots = new InMemoryRepository<ClassScheduleSlot>();
   const sessions = new InMemoryRepository<ClassSession>(timestamps);
@@ -158,6 +164,7 @@ function setup() {
     .register(MembershipRole, roles)
     .register(User, users)
     .register(ExamAttempt, examAttempts)
+    .register(ExamAttemptAnswer, examAnswers)
     .register(LessonAttempt, lessonAttempts)
     .register(ClassScheduleSlot, slots)
     .register(ClassSession, sessions)
@@ -182,6 +189,10 @@ function setup() {
     logs.asRepository(),
   );
   const membersService = new ClassMembersService(dataSource);
+  const studentAttemptsService = new ClassStudentAttemptsService(
+    dataSource,
+    {} as never,
+  );
   const curriculumService = new ClassCurriculumService(dataSource);
   const scheduleService = new ClassScheduleService(dataSource);
   const sessionsService = new ClassSessionsService(dataSource);
@@ -355,6 +366,8 @@ function setup() {
   return {
     classroomsService,
     membersService,
+    studentAttemptsService,
+    examAnswers,
     curriculumService,
     scheduleService,
     sessionsService,
@@ -1044,6 +1057,157 @@ const regularDates = (view: ClassScheduleView) =>
     .filter((row) => row.seq !== null)
     .map((row) => trainingDateOf(row.startsAt));
 const at = (date: string, time: string) => trainingDateTimeToIso(date, time);
+
+describe('Bài làm chi tiết của học viên (F4)', () => {
+  /** Lớp N5 + học viên 1; trả về mục bài học và mục kiểm tra của giáo trình. */
+  async function classWithStudent() {
+    const harness = setup();
+    const {
+      classroomsService,
+      membersService,
+      curriculumService,
+      createClass,
+    } = harness;
+    const { id } = await createClass();
+    await membersService.addStudents(ownerCtx, OWNER, id, ['m-student-1']);
+    await classroomsService.changeStatus(
+      ownerCtx,
+      OWNER,
+      id,
+      ClassroomStatus.ONGOING,
+    );
+    const curriculum = await curriculumService.get(ownerCtx, id);
+    return {
+      ...harness,
+      id,
+      lessonItem: curriculum.ungrouped[0],
+      quizItem: curriculum.groups[0].items[1],
+    };
+  }
+
+  it('liệt kê mục kèm lượt của học viên; lượt đã cho làm lại không tính điểm nhóm', async () => {
+    const {
+      studentAttemptsService,
+      examAttempts,
+      examAnswers,
+      id,
+      quizItem,
+      lessonItem,
+      lessonAttempts,
+    } = await classWithStudent();
+    examAttempts.rows.push(
+      {
+        id: 'a-voided',
+        tenantId: TENANT,
+        classItemId: quizItem.id,
+        userId: 'user-m-student-1',
+        status: AttemptStatus.GRADED,
+        startedAt: new Date('2026-10-06T01:00:00Z'),
+        submittedAt: new Date('2026-10-06T02:00:00Z'),
+        autoCorrect: 0,
+        autoTotal: 2,
+        manualCount: 0,
+        manualGradedCount: 0,
+        voidedAt: new Date('2026-10-06T03:00:00Z'),
+      } as ExamAttempt,
+      {
+        id: 'a-current',
+        tenantId: TENANT,
+        classItemId: quizItem.id,
+        userId: 'user-m-student-1',
+        status: AttemptStatus.GRADED,
+        startedAt: new Date('2026-10-07T01:00:00Z'),
+        submittedAt: new Date('2026-10-07T02:00:00Z'),
+        autoCorrect: 2,
+        autoTotal: 2,
+        manualCount: 0,
+        manualGradedCount: 0,
+        voidedAt: null,
+      } as ExamAttempt,
+    );
+    lessonAttempts.rows.push({
+      id: 'la-1',
+      tenantId: TENANT,
+      classItemId: lessonItem.id,
+      userId: 'user-m-student-1',
+      lessonVersion: 1,
+      status: LessonAttemptStatus.COMPLETED,
+      startedAt: new Date('2026-10-06T01:00:00Z'),
+      submittedAt: new Date('2026-10-06T01:30:00Z'),
+      completedAt: new Date('2026-10-06T01:30:00Z'),
+      autoCorrect: 1,
+      autoTotal: 1,
+      manualCount: 0,
+      manualGradedCount: 0,
+    } as LessonAttempt);
+    expect(examAnswers.rows).toEqual([]);
+
+    const view = await studentAttemptsService.listForStudent(
+      teacherCtx,
+      id,
+      'm-student-1',
+    );
+    expect(view.student.fullName).toBe('Học viên 1');
+    expect(view.removed).toBe(false);
+    const quiz = view.items.find((item) => item.id === quizItem.id)!;
+    // Lượt mới nhất trước; lượt đã "Cho làm lại" vẫn hiện kèm mốc voidedAt.
+    expect(
+      quiz.attempts.map((row) => [row.id, row.percent, row.voidedAt]),
+    ).toEqual([
+      ['a-current', 100, null],
+      ['a-voided', 0, expect.any(String)],
+    ]);
+    expect(quiz.attempts[0].passed).toBe(true);
+    const lesson = view.items.find((item) => item.id === lessonItem.id)!;
+    expect(lesson.lessonAttempt).toEqual(
+      expect.objectContaining({ attemptId: 'la-1', canReview: true }),
+    );
+  });
+
+  it('giáo viên ngoài lớp 403; học viên không thuộc lớp 404', async () => {
+    const { studentAttemptsService, id } = await classWithStudent();
+    await expect(
+      studentAttemptsService.listForStudent(otherTeacherCtx, id, 'm-student-1'),
+    ).rejects.toBeInstanceOf(ForbiddenException);
+    await expect(
+      studentAttemptsService.listForStudent(ownerCtx, id, 'm-student-2'),
+    ).rejects.toBeInstanceOf(NotFoundException);
+  });
+
+  it('học viên đã rời lớp vẫn xem được bài làm cũ', async () => {
+    const { studentAttemptsService, membersService, id } =
+      await classWithStudent();
+    await membersService.removeStudent(ownerCtx, OWNER, id, 'm-student-1');
+    const view = await studentAttemptsService.listForStudent(
+      ownerCtx,
+      id,
+      'm-student-1',
+    );
+    expect(view.removed).toBe(true);
+  });
+
+  it('xem lại bài làm: lượt của lớp khác hoặc của học viên khác → 404', async () => {
+    const { studentAttemptsService, examAttempts, id, quizItem } =
+      await classWithStudent();
+    examAttempts.rows.push({
+      id: 'a-other',
+      tenantId: TENANT,
+      classItemId: quizItem.id,
+      userId: 'user-m-student-2',
+      status: AttemptStatus.SUBMITTED,
+      startedAt: new Date(),
+      submittedAt: new Date(),
+      autoCorrect: 0,
+      autoTotal: 0,
+      manualCount: 0,
+      manualGradedCount: 0,
+      voidedAt: null,
+    } as ExamAttempt);
+    await expect(
+      studentAttemptsService.examReview(ownerCtx, id, 'm-student-1', 'a-other'),
+    ).rejects.toBeInstanceOf(NotFoundException);
+  });
+});
 
 describe('Thời khoá biểu & buổi học', () => {
   beforeEach(() => fakeDate('2026-01-01T09:00:00+07:00'));

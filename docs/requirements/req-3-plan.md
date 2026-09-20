@@ -233,6 +233,7 @@ notifications        user_id, tenant_id NULL, type, params jsonb, link, dedupe_k
                      INDEX(user_id, created_at desc); UNIQUE(user_id, dedupe_key) where dedupe_key is not null
 ```
 - Quyền chấm một lượt (`canGrade`): không phải bài của mình VÀ (Owner/Admin HOẶC lượt trong lớp mà mình là giáo viên của lớp HOẶC lượt tự do của đề/bài học mình soạn HOẶC có `grading_delegations` khớp mục/đề/bài/lượt).
+- Chốt ở Step 10 (2026-09-20): giữ đúng 5 loại `scope_type` (không có phạm vi "cả lớp"); `scope_type = exam/lesson` **chỉ** áp dụng cho bài làm **tự do** của đề/bài đó (bài trong lớp giao theo `class_item` hoặc theo từng lượt); người **được** chuyển giao **không** chuyển giao tiếp (chỉ người có quyền gốc – giáo viên của lớp, người soạn, Owner/Admin – mới giao và mới gỡ được); lượt thi đã "Cho làm lại" không vào hàng chờ chấm.
 - Điểm %, đậu, nhóm thi, chuyên cần: hàm thuần trong `@lang/shared` (`training.ts`) + unit test, service chỉ nạp dữ liệu.
 
 ---
@@ -399,7 +400,7 @@ t/:slug:
 ### Step 10 – Chấm theo lớp & chuyển giao
 - `canGrade` (mục 4.7) cho đề thi và bài học; migration `grading_delegations`; API chuyển giao (mục, đề/bài học tự do, từng lượt).
 - Trang Chấm bài: lọc lớp/mục/học viên, mặc định bài mình được chấm; hộp "Chuyển giao chấm".
-- Trang bài làm chi tiết của học viên (F4): đáp án học viên + đúng/sai từng câu cho giáo viên lớp.
+- Trang bài làm chi tiết của học viên (F4): đáp án học viên + đúng/sai từng câu cho giáo viên lớp — **cả mục đề thi lẫn mục bài học** (chốt ở Step 10).
 - **Nghiệm thu:** Teacher không thuộc lớp không thấy bài của lớp; được chuyển giao thì thấy đúng các bài đó; bài tự do chỉ người soạn chấm.
 - **Deploy giai đoạn 2.**
 

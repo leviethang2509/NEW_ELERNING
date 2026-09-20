@@ -1904,7 +1904,7 @@ export const vi = {
   // Bản giả lập đề: xem trước trong dashboard và trang thi.
   grading: {
     subtitle:
-      'Chấm các câu Writing/Speaking của bài đã nộp. Không chấm được bài của chính mình; phần chấm tự động giữ nguyên.',
+      'Chấm các câu Writing/Speaking của bài đã nộp. Bạn thấy bài trong lớp mình phụ trách, bài làm tự do của đề mình soạn và bài được chuyển giao; không chấm được bài của chính mình.',
     lessonSubtitle:
       'Chấm các câu Writing/Speaking trong bài tập của bài học. Chỉ chấm lần nộp gần nhất: học viên nộp lại thì điểm cũ bị bỏ và cần chấm lại.',
     kinds: { exam: 'Đề thi', lesson: 'Bài học' },
@@ -1912,6 +1912,9 @@ export const vi = {
     allStatuses: 'Mọi trạng thái',
     allExams: 'Mọi đề thi',
     allLessons: 'Mọi bài học',
+    allClasses: 'Mọi lớp và bài tự do',
+    freeClass: 'Bài làm tự do',
+    allItems: 'Mọi mục của lớp',
     status: { submitted: 'Chờ chấm', graded: 'Đã chấm' },
     columns: {
       student: 'Học viên',
@@ -1920,7 +1923,9 @@ export const vi = {
       submittedAt: 'Nộp lúc',
       progress: 'Chấm tay',
       status: 'Trạng thái',
+      classItem: 'Lớp · Mục',
     },
+    freeAttempt: 'Bài làm tự do',
     empty: 'Không có bài nào khớp bộ lọc.',
     open: 'Chấm bài',
     view: 'Xem bài',
@@ -1962,6 +1967,46 @@ export const vi = {
     gradedByUnknown: (at: string) => `Đã chấm · ${at}`,
     allGraded: 'Đã chấm đủ mọi câu của bài này. Học viên đã xem được điểm.',
     nextAttempt: 'Bài chờ chấm tiếp theo',
+    delegation: {
+      open: 'Chuyển giao chấm',
+      title: 'Chuyển giao chấm',
+      hint: 'Chọn phạm vi rồi chọn giáo viên sẽ chấm thay. Bạn vẫn chấm được sau khi chuyển giao; người được chuyển giao không chuyển giao tiếp cho người khác.',
+      scope: 'Phạm vi',
+      teachers: 'Giáo viên được chấm',
+      pick: 'Chọn giáo viên',
+      noTeachers: 'Trung tâm chưa có giáo viên nào khác.',
+      add: 'Chuyển giao',
+      adding: 'Đang lưu…',
+      current: 'Đang chuyển giao',
+      none: 'Chưa chuyển giao cho ai.',
+      by: (name: string, at: string) => `${name} giao · ${at}`,
+      remove: 'Gỡ',
+      confirmRemove: (name: string) =>
+        `Gỡ quyền chấm của ${name} với phạm vi này?`,
+      notAllowed:
+        'Chỉ giáo viên của lớp, người soạn đề/bài học hoặc Chủ sở hữu/Quản trị mới chuyển giao được bài này.',
+    },
+  },
+  classStudentAttempts: {
+    title: 'Bài làm của học viên',
+    open: 'Bài làm',
+    back: 'Về lớp học',
+    removedStudent: 'Học viên đã rời lớp. Bài làm cũ vẫn xem được.',
+    removedItem: 'Mục đã bỏ khỏi giáo trình',
+    empty: 'Học viên chưa có mục nào trong giáo trình lớp.',
+    noAttempt: 'Chưa làm',
+    ungrouped: 'Chưa xếp chương',
+    attemptLabel: (index: number) => `Lần ${index}`,
+    notRequired: 'Không bắt buộc',
+    review: 'Xem bài làm',
+    reviewTitle: 'Bài làm chi tiết',
+    reviewHint:
+      'Câu trả lời của học viên kèm đáp án và đúng/sai từng câu. Chỉ giáo viên của lớp và Chủ sở hữu/Quản trị xem được trang này.',
+    notSubmitted: 'Phần này học viên chưa nộp.',
+    lessonProgress: (correct: number, total: number) =>
+      `Tự động đúng ${correct}/${total}`,
+    deadline: (value: string) => `Hạn ${value}`,
+    threshold: (value: number) => `Đậu ≥ ${value}%`,
   },
   simulator: {
     status: {

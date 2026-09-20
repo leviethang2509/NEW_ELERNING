@@ -1,9 +1,13 @@
 import type {
+  CreateGradingDelegationInput,
   GradeAnswerInput,
   GradeAnswerResult,
   GradingAttemptDetail,
   GradingAttemptList,
   GradingAttemptStatus,
+  GradingDelegation,
+  GradingDelegationBox,
+  GradingKind,
   LessonGradeAnswerResult,
   LessonGradingAttemptDetail,
   LessonGradingAttemptList,
@@ -24,6 +28,9 @@ export interface GradingAttemptQuery {
   pageSize: number;
   status?: GradingAttemptStatus | '';
   examId?: string;
+  /** Lớp học (uuid) hoặc `GRADING_FREE_FILTER` cho bài làm tự do. */
+  classId?: string;
+  itemId?: string;
   q?: string;
 }
 
@@ -65,6 +72,8 @@ export interface LessonGradingAttemptQuery {
   pageSize: number;
   status?: GradingAttemptStatus | '';
   lessonId?: string;
+  classId?: string;
+  itemId?: string;
   q?: string;
 }
 
@@ -104,3 +113,22 @@ export const gradeLessonAnswer = (
     `${base(slug)}/lesson-answers/${answerId}`,
     input,
   );
+
+// --- Chuyển giao chấm (req-3 Step 10) ----------------------------------------
+
+export const getGradingDelegations = (
+  slug: string,
+  kind: GradingKind,
+  attemptId: string,
+) =>
+  api.get<GradingDelegationBox>(
+    `${base(slug)}/delegations?attemptId=${attemptId}&kind=${kind}`,
+  );
+
+export const createGradingDelegation = (
+  slug: string,
+  input: CreateGradingDelegationInput,
+) => api.post<GradingDelegation[]>(`${base(slug)}/delegations`, input);
+
+export const removeGradingDelegation = (slug: string, id: string) =>
+  api.delete<void>(`${base(slug)}/delegations/${id}`);

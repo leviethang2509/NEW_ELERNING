@@ -3,12 +3,18 @@ import {
   type GradeAnswerResult,
   type GradingAttemptDetail,
   type GradingAttemptList,
+  type GradingDelegation,
+  type GradingDelegationBox,
 } from '@lang/shared';
 import {
   Body,
   Controller,
+  Delete,
   Get,
+  HttpCode,
+  HttpStatus,
   Param,
+  Post,
   Put,
   Query,
   UseGuards,
@@ -24,7 +30,13 @@ import {
   type TenantContext,
 } from '../tenants/tenant-context';
 import { TenantGuard } from '../tenants/tenant.guard';
-import { GradeAnswerDto, ListGradingAttemptsQueryDto } from './dto/grading.dto';
+import {
+  CreateGradingDelegationDto,
+  GradeAnswerDto,
+  GradingDelegationQueryDto,
+  ListGradingAttemptsQueryDto,
+} from './dto/grading.dto';
+import { GradingDelegationsService } from './grading-delegations.service';
 import { GradingService } from './grading.service';
 
 /** Chấm bài Writing/Speaking (Owner/Admin/Teacher, trừ bài của chính mình). */
@@ -32,7 +44,40 @@ import { GradingService } from './grading.service';
 @UseGuards(TenantGuard)
 @TenantRoles(...GRADER_ROLES)
 export class GradingController {
-  constructor(private readonly grading: GradingService) {}
+  constructor(
+    private readonly grading: GradingService,
+    private readonly delegations: GradingDelegationsService,
+  ) {}
+
+  /** Hộp "Chuyển giao chấm" của một bài làm. */
+  @Get('delegations')
+  delegationBox(
+    @TenantCtx() ctx: TenantContext,
+    @CurrentUser() actor: RequestUser,
+    @Query() query: GradingDelegationQueryDto,
+  ): Promise<GradingDelegationBox> {
+    return this.delegations.box(ctx, actor.id, query);
+  }
+
+  @Post('delegations')
+  @HttpCode(HttpStatus.OK)
+  delegate(
+    @TenantCtx() ctx: TenantContext,
+    @CurrentUser() actor: RequestUser,
+    @Body() dto: CreateGradingDelegationDto,
+  ): Promise<GradingDelegation[]> {
+    return this.delegations.create(ctx, actor.id, dto);
+  }
+
+  @Delete('delegations/:id')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  removeDelegation(
+    @TenantCtx() ctx: TenantContext,
+    @CurrentUser() actor: RequestUser,
+    @Param('id', ParseIdPipe()) id: string,
+  ): Promise<void> {
+    return this.delegations.remove(ctx, actor.id, id);
+  }
 
   @Get('attempts')
   list(

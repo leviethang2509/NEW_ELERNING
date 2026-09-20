@@ -2,7 +2,14 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
-import { ArrowLeft, ArrowRight, Mic, PenLine, Timer } from 'lucide-react';
+import {
+  ArrowLeft,
+  ArrowRight,
+  Mic,
+  PenLine,
+  Timer,
+  UserPlus,
+} from 'lucide-react';
 import type { ExamElement } from '@lang/exam-core';
 import {
   AttemptStatus,
@@ -15,6 +22,7 @@ import {
   type GradingSection,
 } from '@lang/shared';
 import { ExamBlocks } from '@/components/exam-simulator/ExamSimulator';
+import { GradingDelegationDialog } from '@/components/grading/GradingDelegationDialog';
 import {
   Badge,
   FormAlert,
@@ -138,6 +146,7 @@ export function GradingAttemptView({
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
   const [savedId, setSavedId] = useState<string | null>(null);
+  const [delegating, setDelegating] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -269,6 +278,13 @@ export function GradingAttemptView({
 
   return (
     <div className="flex flex-col gap-4 p-4 sm:p-6">
+      <GradingDelegationDialog
+        open={delegating}
+        slug={slug}
+        kind={kind}
+        attemptId={attemptId}
+        onClose={() => setDelegating(false)}
+      />
       <Link
         href={listHref}
         className="inline-flex items-center gap-1.5 self-start text-[13.5px] font-medium text-[var(--muted)] transition hover:text-[var(--accent)]"
@@ -294,6 +310,13 @@ export function GradingAttemptView({
           </p>
         </div>
         <div className="flex flex-col items-start gap-1 text-[13px] text-[var(--body)] sm:items-end">
+          <button
+            type="button"
+            onClick={() => setDelegating(true)}
+            className={`${secondaryButtonClass} mb-1`}
+          >
+            <UserPlus size={15} /> {text.delegation.open}
+          </button>
           <span>{text.submittedAt(formatDateTime(detail.submittedAt))}</span>
           <span>{text.autoScore(detail.autoCorrect, detail.autoTotal)}</span>
           <span className="font-semibold text-[var(--heading)]">

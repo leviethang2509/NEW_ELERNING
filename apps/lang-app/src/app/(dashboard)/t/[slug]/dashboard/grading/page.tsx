@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { ClipboardCheck, Eye } from 'lucide-react';
 import {
   AttemptStatus,
+  GRADING_FREE_FILTER,
   type GradingAttemptItem,
   type GradingAttemptList,
   type GradingAttemptStatus,
@@ -36,7 +37,7 @@ import { useDebouncedValue } from '@/lib/use-debounced-value';
 
 const PAGE_SIZE = 20;
 const GRID =
-  'sm:grid-cols-[minmax(0,1.3fr)_minmax(0,1.5fr)_140px_110px_100px_70px]';
+  'sm:grid-cols-[minmax(0,1.1fr)_minmax(0,1.2fr)_minmax(0,1.1fr)_130px_100px_95px_60px]';
 
 const text = vi.grading;
 
@@ -92,6 +93,9 @@ export default function GradingPage({
   const [status, setStatus] = useState(parseStatus(searchParams.status));
   // Đề thi hoặc bài học đang lọc (theo `kind`).
   const [examId, setExamId] = useState('');
+  // Lớp (uuid) hoặc `free` = bài làm tự do; mục của lớp đang chọn.
+  const [classId, setClassId] = useState('');
+  const [itemId, setItemId] = useState('');
   const [page, setPage] = useState(1);
   const [data, setData] = useState<GradingAttemptList | null>(null);
   const attemptPath =
@@ -101,6 +105,8 @@ export default function GradingPage({
     if (next === kind) return;
     setKind(next);
     setExamId('');
+    setClassId('');
+    setItemId('');
     setData(null);
     router.replace(
       next === 'lesson'
@@ -111,7 +117,7 @@ export default function GradingPage({
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => setPage(1), [q, status, examId, kind]);
+  useEffect(() => setPage(1), [q, status, examId, classId, itemId, kind]);
 
   useEffect(() => {
     let cancelled = false;
@@ -122,6 +128,8 @@ export default function GradingPage({
       q,
       status,
       examId,
+      classId,
+      itemId,
     })
       .then(
         (result) => {
@@ -139,7 +147,7 @@ export default function GradingPage({
     return () => {
       cancelled = true;
     };
-  }, [slug, page, q, status, examId, kind]);
+  }, [slug, page, q, status, examId, classId, itemId, kind]);
 
   const columns: DataColumn<GradingAttemptItem>[] = [
     {
@@ -170,6 +178,24 @@ export default function GradingPage({
           </span>
         </>
       ),
+    },
+    {
+      header: text.columns.classItem,
+      render: (row) =>
+        row.classItem ? (
+          <>
+            <span className="block truncate text-[13.5px] text-[var(--body)]">
+              {row.classItem.itemTitle}
+            </span>
+            <span className="block truncate text-[12.5px] text-[var(--muted)]">
+              {row.classItem.classroomCode} · {row.classItem.classroomName}
+            </span>
+          </>
+        ) : (
+          <span className="text-[13px] text-[var(--muted)]">
+            {text.freeAttempt}
+          </span>
+        ),
     },
     {
       header: text.columns.submittedAt,
@@ -272,6 +298,31 @@ export default function GradingPage({
           }))}
           onChange={setExamId}
         />
+        <SelectFilter
+          value={classId}
+          allLabel={text.allClasses}
+          options={[
+            { value: GRADING_FREE_FILTER, label: text.freeClass },
+            ...(data?.classes ?? []).map((row) => ({
+              value: row.id,
+              label: `${row.code} · ${row.name}`,
+            })),
+          ]}
+          onChange={(value) => {
+            setClassId(value);
+            setItemId('');
+          }}
+        />
+        {classId !== '' && classId !== GRADING_FREE_FILTER && (
+          <SelectFilter
+            value={itemId}
+            allLabel={text.allItems}
+            options={(data?.classItems ?? [])
+              .filter((item) => item.classroomId === classId)
+              .map((item) => ({ value: item.id, label: item.title }))}
+            onChange={setItemId}
+          />
+        )}
       </div>
 
       {error && <FormAlert tone="error">{error}</FormAlert>}

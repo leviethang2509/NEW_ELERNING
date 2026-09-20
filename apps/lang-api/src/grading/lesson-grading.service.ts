@@ -1,11 +1,14 @@
 import { explanationsFor, type ExamElement } from '@lang/exam-core';
 import {
   AttemptStatus,
+  GRADING_FREE_FILTER,
+  GradingKind,
   QuestionGrading,
   isValidManualScore,
   type GradeAnswerInput,
   type GradingAnswerState,
   type GradingAttemptProgress,
+  type GradingClassItemRef,
   type GradingQuestion,
   type GradingSection,
   type LessonGradeAnswerResult,
@@ -29,6 +32,7 @@ import {
   type EntityManager,
   type Repository,
 } from 'typeorm';
+import { ClassItem } from '../classrooms/class-item.entity';
 import { toSkipTake } from '../common/pagination';
 import { escapeLike } from '../common/sql';
 import { LessonAttemptAnswer } from '../lesson-attempts/lesson-attempt-answer.entity';
@@ -45,8 +49,16 @@ import { R2Service } from '../storage/r2.service';
 import type { TenantContext } from '../tenants/tenant-context';
 import { User } from '../users/user.entity';
 import type { ListLessonGradingAttemptsQueryDto } from './dto/grading.dto';
+import {
+  applyGraderScope,
+  canGradeAttempt,
+  loadGraderScope,
+  type GradableAttemptRow,
+  type GraderScope,
+} from './grading-access';
+import { classFilterOptions, loadClassItemRefs } from './grading-class';
 import { sectionPrompts } from './grading-content';
-import { OWN_ATTEMPT } from './grading.service';
+import { NOT_MY_GRADING, OWN_ATTEMPT } from './grading.service';
 
 const ANSWER_NOT_FOUND = 'Không tìm thấy câu trả lời';
 const ANSWER_REPLACED =
@@ -108,8 +120,10 @@ export class LessonGradingService {
     graderId: string,
     query: ListLessonGradingAttemptsQueryDto,
   ): Promise<LessonGradingAttemptList> {
+    const manager = this.dataSource.manager;
+    const scope = await loadGraderScope(manager, ctx, graderId);
     const { skip, take } = toSkipTake(query);
-    const qb = this.gradableQuery(ctx, graderId)
+    const qb = this.gradableQuery(ctx, scope)
       .innerJoinAndSelect('attempt.user', 'user')
       .orderBy('attempt.submittedAt', 'DESC')
       .addOrderBy('attempt.id', 'ASC')
@@ -123,34 +137,50 @@ export class LessonGradingService {
     if (query.lessonId) {
       qb.andWhere('attempt.lessonId = :lessonId', { lessonId: query.lessonId });
     }
+    if (query.classId === GRADING_FREE_FILTER) {
+      qb.andWhere('attempt.classItemId IS NULL');
+    } else if (query.classId) {
+      qb.andWhere('item.classroomId = :classId', { classId: query.classId });
+    }
+    if (query.itemId) {
+      qb.andWhere('attempt.classItemId = :itemId', { itemId: query.itemId });
+    }
     if (query.q) {
       qb.andWhere('(user.fullName ILIKE :q OR user.email ILIKE :q)', {
         q: `%${escapeLike(query.q)}%`,
       });
     }
-    const [[rows, total], lessonIds] = await Promise.all([
+    const [[rows, total], scopeRows] = await Promise.all([
       qb.getManyAndCount(),
-      this.gradableQuery(ctx, graderId)
+      this.gradableQuery(ctx, scope)
         .select('attempt.lessonId', 'lessonId')
+        .addSelect('attempt.classItemId', 'classItemId')
         .distinct(true)
-        .getRawMany<{ lessonId: string }>(),
+        .getRawMany<{ lessonId: string; classItemId: string | null }>(),
     ]);
 
-    const lessons = await this.lessonsById([
-      ...rows.map((row) => row.lessonId),
-      ...lessonIds.map((row) => row.lessonId),
+    const [lessons, refs] = await Promise.all([
+      this.lessonsById([
+        ...rows.map((row) => row.lessonId),
+        ...scopeRows.map((row) => row.lessonId),
+      ]),
+      loadClassItemRefs(
+        manager,
+        scopeRows.flatMap((row) => row.classItemId ?? []),
+      ),
     ]);
     return {
-      items: rows.map((row) => toItem(row, row.user, lessons)),
+      items: rows.map((row) => toItem(row, row.user, lessons, refs)),
       total,
       page: query.page,
       pageSize: query.pageSize,
-      lessons: lessonIds
-        .map(({ lessonId }) => ({
+      lessons: [...new Set(scopeRows.map((row) => row.lessonId))]
+        .map((lessonId) => ({
           id: lessonId,
           title: lessons.get(lessonId)?.title ?? '',
         }))
         .sort((a, b) => a.title.localeCompare(b.title, 'vi')),
+      ...classFilterOptions(refs),
     };
   }
 
@@ -160,7 +190,8 @@ export class LessonGradingService {
     id: string,
   ): Promise<LessonGradingAttemptDetail> {
     const manager = this.dataSource.manager;
-    const attempt = await this.findGradable(manager, ctx, graderId, id);
+    const scope = await loadGraderScope(manager, ctx, graderId);
+    const attempt = await this.findGradable(manager, ctx, scope, id);
     const attemptSections = (
       await manager.getRepository(LessonAttemptSection).findBy({
         attemptId: attempt.id,
@@ -177,16 +208,7 @@ export class LessonGradingService {
       this.manualQuestions(manager, sectionIds),
       this.answers.findBy({ attemptId: attempt.id }),
       // Lượt còn câu chưa chấm: `graded_at` chỉ có khi đã chấm đủ.
-      this.attempts.findOne({
-        where: {
-          tenantId: ctx.tenantId,
-          manualCount: MoreThan(0),
-          gradedAt: IsNull(),
-          userId: Not(graderId),
-          id: Not(attempt.id),
-        },
-        order: { submittedAt: 'ASC', id: 'ASC' },
-      }),
+      this.nextGradableId(manager, ctx, scope, attempt.id),
     ]);
     const answerBySection = new Map<string, LessonAttemptAnswer>();
     for (const answer of answers) {
@@ -249,11 +271,15 @@ export class LessonGradingService {
       });
     }
 
+    const refs = await loadClassItemRefs(
+      manager,
+      attempt.classItemId ? [attempt.classItemId] : [],
+    );
     return {
-      ...toItem(attempt, users.get(attempt.userId), lessons),
+      ...toItem(attempt, users.get(attempt.userId), lessons, refs),
       startedAt: attempt.startedAt.toISOString(),
       sections,
-      nextAttemptId: next?.id ?? null,
+      nextAttemptId: next,
     };
   }
 
@@ -276,9 +302,8 @@ export class LessonGradingService {
         lock: { mode: 'pessimistic_write' },
       });
       if (!attempt) throw new NotFoundException(ANSWER_NOT_FOUND);
-      if (attempt.userId === graderId) {
-        throw new ForbiddenException(OWN_ATTEMPT);
-      }
+      const scope = await loadGraderScope(manager, ctx, graderId);
+      await assertGradable(manager, scope, attempt);
       const answer = await answerRepository.findOneBy({ id: answerId });
       if (!answer) throw new NotFoundException(ANSWER_REPLACED);
 
@@ -348,10 +373,11 @@ export class LessonGradingService {
     id: string,
     answerId: string,
   ): Promise<{ url: string }> {
+    const manager = this.dataSource.manager;
     const attempt = await this.findGradable(
-      this.dataSource.manager,
+      manager,
       ctx,
-      graderId,
+      await loadGraderScope(manager, ctx, graderId),
       id,
     );
     const answer = await this.answers.findOneBy({
@@ -366,19 +392,86 @@ export class LessonGradingService {
 
   // --- Nội bộ ---------------------------------------------------------------
 
-  /** Lượt học có câu chấm tay đã nộp, không phải của người chấm. */
-  private gradableQuery(ctx: TenantContext, graderId: string) {
-    return this.attempts
+  /**
+   * Lượt học có câu chấm tay đã nộp, không phải của người chấm và nằm trong
+   * phạm vi chấm của họ (`canGradeAttempt`).
+   */
+  private gradableQuery(ctx: TenantContext, scope: GraderScope) {
+    const qb = this.attempts
       .createQueryBuilder('attempt')
+      .leftJoin(ClassItem, 'item', 'item.id = attempt.class_item_id')
+      .leftJoin(Lesson, 'lesson', 'lesson.id = attempt.lesson_id')
       .where('attempt.tenantId = :tenantId', { tenantId: ctx.tenantId })
       .andWhere('attempt.manualCount > 0')
-      .andWhere('attempt.userId <> :graderId', { graderId });
+      .andWhere('attempt.userId <> :graderId', { graderId: scope.graderId });
+    applyGraderScope(qb, scope, GradingKind.LESSON, 'lesson');
+    return qb;
+  }
+
+  /** Lượt học chờ chấm kế tiếp mà người chấm được chấm (như đề thi). */
+  private async nextGradableId(
+    manager: EntityManager,
+    ctx: TenantContext,
+    scope: GraderScope,
+    currentId: string,
+  ): Promise<string | null> {
+    const rows = await this.attempts.find({
+      select: {
+        id: true,
+        userId: true,
+        lessonId: true,
+        classItemId: true,
+      },
+      where: {
+        tenantId: ctx.tenantId,
+        manualCount: MoreThan(0),
+        gradedAt: IsNull(),
+      },
+      order: { submittedAt: 'ASC', id: 'ASC' },
+    });
+    const candidates = rows.filter(
+      (row) => row.id !== currentId && row.userId !== scope.graderId,
+    );
+    if (candidates.length === 0) return null;
+    const itemIds = [
+      ...new Set(candidates.flatMap((row) => row.classItemId ?? [])),
+    ];
+    const [lessons, items] = await Promise.all([
+      manager.getRepository(Lesson).find({
+        select: { id: true, createdBy: true },
+        where: { id: In([...new Set(candidates.map((row) => row.lessonId))]) },
+        withDeleted: true,
+      }),
+      itemIds.length > 0
+        ? manager.getRepository(ClassItem).findBy({ id: In(itemIds) })
+        : Promise.resolve([]),
+    ]);
+    const authorOf = new Map(lessons.map((row) => [row.id, row.createdBy]));
+    const classroomOf = new Map(items.map((row) => [row.id, row.classroomId]));
+    const next = candidates.find((row) =>
+      canGradeAttempt(
+        scope,
+        {
+          id: row.id,
+          userId: row.userId,
+          voided: false,
+          classItemId: row.classItemId,
+          classroomId: row.classItemId
+            ? (classroomOf.get(row.classItemId) ?? null)
+            : null,
+          contentId: row.lessonId,
+          authorId: authorOf.get(row.lessonId) ?? null,
+        },
+        GradingKind.LESSON,
+      ),
+    );
+    return next?.id ?? null;
   }
 
   private async findGradable(
     manager: EntityManager,
     ctx: TenantContext,
-    graderId: string,
+    scope: GraderScope,
     id: string,
   ): Promise<LessonAttempt> {
     const attempt = await manager
@@ -387,7 +480,7 @@ export class LessonGradingService {
     if (!attempt || attempt.manualCount === 0) {
       throw new NotFoundException(LESSON_ATTEMPT_NOT_FOUND);
     }
-    if (attempt.userId === graderId) throw new ForbiddenException(OWN_ATTEMPT);
+    await assertGradable(manager, scope, attempt);
     return attempt;
   }
 
@@ -431,6 +524,7 @@ function toItem(
   attempt: LessonAttempt,
   user: User | undefined,
   lessons: ReadonlyMap<string, Lesson>,
+  refs: ReadonlyMap<string, GradingClassItemRef>,
 ): LessonGradingAttemptItem {
   return {
     id: attempt.id,
@@ -438,6 +532,9 @@ function toItem(
       id: attempt.lessonId,
       title: lessons.get(attempt.lessonId)?.title ?? '',
     },
+    classItem: attempt.classItemId
+      ? (refs.get(attempt.classItemId) ?? null)
+      : null,
     lessonVersion: attempt.lessonVersion,
     student: {
       userId: attempt.userId,
@@ -448,5 +545,46 @@ function toItem(
     autoCorrect: attempt.autoCorrect,
     autoTotal: attempt.autoTotal,
     ...toProgress(attempt),
+  };
+}
+
+/** Kiểm quyền chấm một lượt học (cùng quy tắc với `gradableQuery`). */
+async function assertGradable(
+  manager: EntityManager,
+  scope: GraderScope,
+  attempt: LessonAttempt,
+): Promise<void> {
+  if (attempt.userId === scope.graderId) {
+    throw new ForbiddenException(OWN_ATTEMPT);
+  }
+  const row = await lessonGradableRow(manager, attempt);
+  if (!canGradeAttempt(scope, row, GradingKind.LESSON)) {
+    throw new ForbiddenException(NOT_MY_GRADING);
+  }
+}
+
+/** Dữ liệu xét quyền của một lượt học: mục lớp và người soạn bài. */
+async function lessonGradableRow(
+  manager: EntityManager,
+  attempt: LessonAttempt,
+): Promise<GradableAttemptRow> {
+  const [lesson, item] = await Promise.all([
+    manager.getRepository(Lesson).findOne({
+      select: { id: true, createdBy: true },
+      where: { id: attempt.lessonId },
+      withDeleted: true,
+    }),
+    attempt.classItemId
+      ? manager.getRepository(ClassItem).findOneBy({ id: attempt.classItemId })
+      : Promise.resolve(null),
+  ]);
+  return {
+    id: attempt.id,
+    userId: attempt.userId,
+    voided: false,
+    classItemId: attempt.classItemId,
+    classroomId: item?.classroomId ?? null,
+    contentId: attempt.lessonId,
+    authorId: lesson?.createdBy ?? null,
   };
 }

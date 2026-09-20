@@ -15,10 +15,12 @@ import {
 import {
   EXAM_AUTHOR_ROLES,
   TENANT_MANAGER_ROLES,
+  type AttemptReview,
   type ClassCurriculum,
   type ClassItemAttemptRow,
   type ClassLogEntry,
   type ClassScheduleView,
+  type ClassStudentAttempts,
   type ClassSessionView,
   type ClassroomDetail,
   type ClassroomListItem,
@@ -41,6 +43,7 @@ import {
 import { TenantGuard } from '../tenants/tenant.guard';
 import { ClassAttemptsService } from './class-attempts.service';
 import { ClassCurriculumService } from './class-curriculum.service';
+import { ClassStudentAttemptsService } from './class-student-attempts.service';
 import { ClassMembersService } from './class-members.service';
 import { ClassScheduleService } from './class-schedule.service';
 import { ClassSessionsService } from './class-sessions.service';
@@ -80,6 +83,7 @@ export class ClassroomsController {
     private readonly schedule: ClassScheduleService,
     private readonly sessions: ClassSessionsService,
     private readonly classAttempts: ClassAttemptsService,
+    private readonly studentAttempts: ClassStudentAttemptsService,
   ) {}
 
   @Get()
@@ -190,6 +194,79 @@ export class ClassroomsController {
     @Param('membershipId', ParseIdPipe()) membershipId: string,
   ): Promise<void> {
     return this.members.removeStudent(ctx, actor.id, id, membershipId);
+  }
+
+  /** Bài làm chi tiết của một học viên trong lớp (F4). */
+  @Get(':id/students/:membershipId/attempts')
+  @TenantRoles(...EXAM_AUTHOR_ROLES)
+  studentAttemptList(
+    @TenantCtx() ctx: TenantContext,
+    @Param('id', ParseIdPipe()) id: string,
+    @Param('membershipId', ParseIdPipe()) membershipId: string,
+  ): Promise<ClassStudentAttempts> {
+    return this.studentAttempts.listForStudent(ctx, id, membershipId);
+  }
+
+  @Get(':id/students/:membershipId/attempts/:attemptId')
+  @TenantRoles(...EXAM_AUTHOR_ROLES)
+  studentExamReview(
+    @TenantCtx() ctx: TenantContext,
+    @Param('id', ParseIdPipe()) id: string,
+    @Param('membershipId', ParseIdPipe()) membershipId: string,
+    @Param('attemptId', ParseIdPipe()) attemptId: string,
+  ): Promise<AttemptReview> {
+    return this.studentAttempts.examReview(ctx, id, membershipId, attemptId);
+  }
+
+  @Get(
+    ':id/students/:membershipId/attempts/:attemptId/recordings/:answerId/url',
+  )
+  @TenantRoles(...EXAM_AUTHOR_ROLES)
+  studentExamRecordingUrl(
+    @TenantCtx() ctx: TenantContext,
+    @Param('id', ParseIdPipe()) id: string,
+    @Param('membershipId', ParseIdPipe()) membershipId: string,
+    @Param('attemptId', ParseIdPipe()) attemptId: string,
+    @Param('answerId', ParseIdPipe()) answerId: string,
+  ): Promise<{ url: string }> {
+    return this.studentAttempts.examRecordingUrl(
+      ctx,
+      id,
+      membershipId,
+      attemptId,
+      answerId,
+    );
+  }
+
+  @Get(':id/students/:membershipId/lesson-attempts/:attemptId')
+  @TenantRoles(...EXAM_AUTHOR_ROLES)
+  studentLessonReview(
+    @TenantCtx() ctx: TenantContext,
+    @Param('id', ParseIdPipe()) id: string,
+    @Param('membershipId', ParseIdPipe()) membershipId: string,
+    @Param('attemptId', ParseIdPipe()) attemptId: string,
+  ): Promise<AttemptReview> {
+    return this.studentAttempts.lessonReview(ctx, id, membershipId, attemptId);
+  }
+
+  @Get(
+    ':id/students/:membershipId/lesson-attempts/:attemptId/recordings/:answerId/url',
+  )
+  @TenantRoles(...EXAM_AUTHOR_ROLES)
+  studentLessonRecordingUrl(
+    @TenantCtx() ctx: TenantContext,
+    @Param('id', ParseIdPipe()) id: string,
+    @Param('membershipId', ParseIdPipe()) membershipId: string,
+    @Param('attemptId', ParseIdPipe()) attemptId: string,
+    @Param('answerId', ParseIdPipe()) answerId: string,
+  ): Promise<{ url: string }> {
+    return this.studentAttempts.lessonRecordingUrl(
+      ctx,
+      id,
+      membershipId,
+      attemptId,
+      answerId,
+    );
   }
 
   /** Cảnh báo trùng lịch trước khi thêm giáo viên/học viên (R15). */

@@ -9,6 +9,9 @@ import type {
   GradingAnswerState,
   GradingAttemptProgress,
   GradingAttemptStatus,
+  GradingClassItemOption,
+  GradingClassItemRef,
+  GradingClassOption,
   GradingExamOption,
   GradingSection,
   GradingStudent,
@@ -174,6 +177,8 @@ export interface LessonGradingAttemptItem {
   lesson: { id: string; title: string };
   lessonVersion: number;
   student: GradingStudent;
+  /** Mục giáo trình lớp sinh ra lượt học; `null` = lượt tự do (req-3 Step 10). */
+  classItem: GradingClassItemRef | null;
   status: GradingAttemptStatus;
   /** Lần nộp section gần nhất. */
   submittedAt: string | null;
@@ -184,9 +189,11 @@ export interface LessonGradingAttemptItem {
   manualGradedCount: number;
 }
 
-/** `GET t/:slug/grading/lesson-attempts`: kèm danh sách bài học để lọc. */
+/** `GET t/:slug/grading/lesson-attempts`: kèm các giá trị lọc. */
 export interface LessonGradingAttemptList extends Paginated<LessonGradingAttemptItem> {
   lessons: GradingExamOption[];
+  classes: GradingClassOption[];
+  classItems: GradingClassItemOption[];
 }
 
 /** `GET t/:slug/grading/lesson-attempts/:id`. */

@@ -19,6 +19,7 @@ import { AttemptsService } from '../attempts/attempts.service';
 import { ExamAttemptAnswer } from '../attempts/exam-attempt-answer.entity';
 import { ExamAttemptSection } from '../attempts/exam-attempt-section.entity';
 import { ExamAttempt } from '../attempts/exam-attempt.entity';
+import { ClassroomTeacher } from '../classrooms/classroom-teacher.entity';
 import { Exam } from '../exams/exam.entity';
 import { ExamPart } from '../exams/exam-part.entity';
 import { ExamQuestion } from '../exams/exam-question.entity';
@@ -32,6 +33,7 @@ import { InMemoryRepository } from '../testing/in-memory-repository';
 import { User } from '../users/user.entity';
 import { GradeAnswerDto } from './dto/grading.dto';
 import { sectionPrompts } from './grading-content';
+import { GradingDelegation } from './grading-delegation.entity';
 import { GradingService } from './grading.service';
 
 const TENANT = 'tenant-a';
@@ -153,6 +155,8 @@ function setup() {
     .register(ExamAttemptSection, attemptSections)
     .register(ExamAttemptAnswer, answers)
     .register(User, users)
+    .register(ClassroomTeacher, new InMemoryRepository<ClassroomTeacher>())
+    .register(GradingDelegation, new InMemoryRepository<GradingDelegation>())
     .asDataSource();
   const attemptsService = new AttemptsService(
     dataSource,
