@@ -15,8 +15,10 @@ import {
   type ScheduleSlotError,
 } from '@lang/shared';
 import { DataSource, MoreThan, type EntityManager } from 'typeorm';
+import { NotificationsService } from '../notifications/notifications.service';
 import type { TenantContext } from '../tenants/tenant-context';
 import { loadMembers } from './class-members.service';
+import { notifySessionsMoved } from './class-notifications';
 import { writeClassLog } from './class-logs';
 import {
   applySchedule,
@@ -53,7 +55,10 @@ const SLOT_ERRORS: Record<ScheduleSlotError, string> = {
  */
 @Injectable()
 export class ClassScheduleService {
-  constructor(private readonly dataSource: DataSource) {}
+  constructor(
+    private readonly dataSource: DataSource,
+    private readonly notifications: NotificationsService,
+  ) {}
 
   async get(
     ctx: TenantContext,
@@ -164,6 +169,12 @@ export class ClassScheduleService {
         });
       }
       await applySchedule(manager, classroom, result, actorId);
+      await notifySessionsMoved(manager, this.notifications, {
+        classroom,
+        slug: ctx.slug,
+        result,
+        actorId,
+      });
       const scheduleChanged =
         result.created.length + result.changed.length + result.removed.length >
         0;

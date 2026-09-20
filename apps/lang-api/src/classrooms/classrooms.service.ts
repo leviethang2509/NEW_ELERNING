@@ -24,6 +24,7 @@ import { toSkipTake, type Paginated } from '../common/pagination';
 import { escapeLike } from '../common/sql';
 import { toUserRef } from '../exams/exam.mapper';
 import { Membership } from '../memberships/membership.entity';
+import { NotificationsService } from '../notifications/notifications.service';
 import type { TenantContext } from '../tenants/tenant-context';
 import { CourseCurriculum } from '../training/course-curriculum.entity';
 import { Course } from '../training/course.entity';
@@ -34,6 +35,10 @@ import { User } from '../users/user.entity';
 import { countInProgressAttempts, learnerCountsByItem } from './class-activity';
 import { ClassChangeLog } from './class-change-log.entity';
 import { copyCurriculumIntoClassroom } from './class-curriculum.service';
+import {
+  notifyFinalComments,
+  notifySessionsMoved,
+} from './class-notifications';
 import { ClassItem } from './class-item.entity';
 import { writeClassLog } from './class-logs';
 import { loadHolidays, recomputeClassroom } from './class-schedule';
@@ -103,6 +108,7 @@ export class ClassroomsService {
     @InjectRepository(User) private readonly users: Repository<User>,
     @InjectRepository(ClassChangeLog)
     private readonly changeLogs: Repository<ClassChangeLog>,
+    private readonly notifications: NotificationsService,
   ) {}
 
   /** Owner/Admin thấy mọi lớp; Teacher chỉ lớp mình phụ trách (D11). */
@@ -332,13 +338,28 @@ export class ClassroomsService {
 
       if (isClassroomClosed(from) && !isClassroomClosed(status)) {
         // Mở lại lớp: lịch không được dời lúc lớp đóng (U3.4), tính lại ngay.
-        await recomputeClassroom(
+        const result = await recomputeClassroom(
           manager,
           { ...classroom, status },
           await loadHolidays(manager, ctx.tenantId),
           new Date(),
           actorId,
         );
+        if (result) {
+          await notifySessionsMoved(manager, this.notifications, {
+            classroom,
+            slug: ctx.slug,
+            result,
+            actorId,
+          });
+        }
+      }
+      if (status === ClassroomStatus.FINISHED) {
+        await notifyFinalComments(manager, this.notifications, {
+          classroom,
+          slug: ctx.slug,
+          actorId,
+        });
       }
       let finalized: number | undefined;
       if (isClassroomClosed(status)) {

@@ -3,6 +3,7 @@ import {
   ClassLogAction,
   ClassroomStatus,
   GradebookColumnKind,
+  NotificationType,
   type ClassAttendance,
   type ClassFinalComment,
   type ClassGradebook,
@@ -17,6 +18,11 @@ import {
 } from '@nestjs/common';
 import ExcelJS from 'exceljs';
 import { DataSource, type EntityManager } from 'typeorm';
+import {
+  learnerClassLink,
+  userIdsOfMemberships,
+} from '../notifications/notification-targets';
+import { NotificationsService } from '../notifications/notifications.service';
 import type { TenantContext } from '../tenants/tenant-context';
 import { writeClassLog } from './class-logs';
 import {
@@ -45,7 +51,10 @@ const COMMENT_CLOSED =
  */
 @Injectable()
 export class ClassProgressService {
-  constructor(private readonly dataSource: DataSource) {}
+  constructor(
+    private readonly dataSource: DataSource,
+    private readonly notifications: NotificationsService,
+  ) {}
 
   async attendance(
     ctx: TenantContext,
@@ -120,6 +129,21 @@ export class ClassProgressService {
           ...(value === null ? { cleared: true } : {}),
         },
       );
+      // Lớp đã kết thúc: học viên xem được ngay nên báo mỗi lần sửa (T5.3);
+      // lớp đang học thì chờ lúc chuyển "Đã kết thúc" mới báo.
+      if (
+        value !== null &&
+        access.classroom.status === ClassroomStatus.FINISHED
+      ) {
+        await this.notifications.notify(manager, {
+          userIds: await userIdsOfMemberships(manager, [membershipId]),
+          tenantId: ctx.tenantId,
+          type: NotificationType.FINAL_COMMENT_PUBLISHED,
+          params: { className: access.classroom.name },
+          link: learnerClassLink(ctx.slug, classroomId),
+          exceptUserId: actorId,
+        });
+      }
       if (value === null) return null;
       const author = data.commenters.get(actorId);
       return {

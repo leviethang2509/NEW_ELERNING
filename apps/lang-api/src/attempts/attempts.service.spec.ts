@@ -8,6 +8,7 @@ import {
 } from '@lang/exam-core';
 import {
   AttemptSectionStatus,
+  NotificationType,
   AttemptStatus,
   ClassroomStatus,
   ContentVisibility,
@@ -33,9 +34,12 @@ import type { TenantContext } from '../tenants/tenant-context';
 import { fakeDate } from '../testing/fake-clock';
 import { ClassItem } from '../classrooms/class-item.entity';
 import { Classroom } from '../classrooms/classroom.entity';
+import { fakeNotifications } from '../testing/fake-notifications';
 import { InMemoryDataSource } from '../testing/in-memory-data-source';
 import { InMemoryRepository } from '../testing/in-memory-repository';
 import { isAttemptResponses, responseOf } from './attempt-grading';
+import { Tenant } from '../tenants/tenant.entity';
+import { User } from '../users/user.entity';
 import { AttemptsService } from './attempts.service';
 import { ExamAttemptAnswer } from './exam-attempt-answer.entity';
 import { ExamAttemptSection } from './exam-attempt-section.entity';
@@ -218,6 +222,10 @@ function setup({
   };
   const classItems = new InMemoryRepository<ClassItem>();
   const classrooms = new InMemoryRepository<Classroom>();
+  // Thông báo "có bài mới cần chấm" đọc tenant và người nộp bài.
+  const tenants = new InMemoryRepository<Tenant>();
+  tenants.rows.push({ id: TENANT, slug: 'a', name: 'A' } as Tenant);
+  const notifications = fakeNotifications();
   const dataSource = new InMemoryDataSource()
     .register(Exam, exams)
     .register(ExamSection, sections)
@@ -228,6 +236,8 @@ function setup({
     .register(ExamAttemptAnswer, answers)
     .register(ClassItem, classItems)
     .register(Classroom, classrooms)
+    .register(Tenant, tenants)
+    .register(User, new InMemoryRepository<User>())
     .asDataSource();
   const service = new AttemptsService(
     dataSource,
@@ -235,6 +245,7 @@ function setup({
     attempts.asRepository(),
     attemptSections.asRepository(),
     answers.asRepository(),
+    notifications.service,
   );
   const questionsOf = (sortOrder: number) => {
     const section = sections.rows.find((row) => row.sortOrder === sortOrder)!;
@@ -244,6 +255,7 @@ function setup({
   };
   return {
     service,
+    notifications,
     dataSource,
     r2,
     exams,
@@ -591,7 +603,7 @@ describe('AttemptsService', () => {
   });
 
   it('nộp toàn bài chốt các section còn lại; kết quả không có đáp án', async () => {
-    const { service, attempts, answers } = setup();
+    const { service, attempts, answers, notifications } = setup();
     const created = await service.create(ctx, STUDENT, EXAM);
     await service.start(ctx, STUDENT, created.id, created.sections[0].id);
     await expect(
@@ -611,6 +623,14 @@ describe('AttemptsService', () => {
       manualCount: 2,
     });
     expect(answers.rows).toHaveLength(9);
+    // Bài tự do có câu chấm tay → báo cho người soạn đề (Step 12).
+    const pending = notifications.ofType(NotificationType.GRADING_PENDING);
+    expect(pending).toHaveLength(1);
+    expect(pending[0]).toMatchObject({
+      userIds: ['teacher'],
+      link: `/t/a/dashboard/grading/${created.id}`,
+      dedupeKey: `grade_pending:${created.id}`,
+    });
 
     const result = await service.result(ctx, STUDENT, created.id);
     expect(result.sections).toEqual([

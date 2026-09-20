@@ -20,6 +20,7 @@ import { Lesson } from '../lessons/lesson.entity';
 import { MembershipRole } from '../memberships/membership-role.entity';
 import { Membership } from '../memberships/membership.entity';
 import type { TenantContext } from '../tenants/tenant-context';
+import { fakeNotifications } from '../testing/fake-notifications';
 import { InMemoryDataSource } from '../testing/in-memory-data-source';
 import { InMemoryRepository } from '../testing/in-memory-repository';
 import { User } from '../users/user.entity';
@@ -153,7 +154,10 @@ function setup() {
   attempt('a-free', null);
 
   return {
-    service: new GradingDelegationsService(dataSource),
+    service: new GradingDelegationsService(
+      dataSource,
+      fakeNotifications().service,
+    ),
     dataSource,
     delegations,
   };

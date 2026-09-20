@@ -17,7 +17,11 @@
         "PARENT"
       ],
       "blocks": [
-        { "type": "heading", "level": 2, "text": "Đăng ký tài khoản" },
+        {
+          "type": "heading",
+          "level": 2,
+          "text": "Đăng ký tài khoản"
+        },
         {
           "type": "steps",
           "items": [
@@ -43,12 +47,20 @@
             "Chưa có xác thực email, quên mật khẩu hay đăng nhập Google/Facebook."
           ]
         },
-        { "type": "heading", "level": 2, "text": "Đăng nhập" },
+        {
+          "type": "heading",
+          "level": 2,
+          "text": "Đăng nhập"
+        },
         {
           "type": "paragraph",
           "text": "Tại `/login` nhập email và mật khẩu. Sai email hoặc mật khẩu đều báo chung “Email hoặc mật khẩu không đúng”. Tài khoản bị khoá báo “Tài khoản đã bị khoá, vui lòng liên hệ quản trị viên”."
         },
-        { "type": "heading", "level": 3, "text": "Trang đích sau đăng nhập" },
+        {
+          "type": "heading",
+          "level": 3,
+          "text": "Trang đích sau đăng nhập"
+        },
         {
           "type": "table",
           "columns": ["Điều kiện (xét theo thứ tự)", "Chuyển tới"],
@@ -76,7 +88,11 @@
             ]
           ]
         },
-        { "type": "heading", "level": 2, "text": "Phiên đăng nhập" },
+        {
+          "type": "heading",
+          "level": 2,
+          "text": "Phiên đăng nhập"
+        },
         {
           "type": "list",
           "items": [
@@ -112,7 +128,11 @@
           "type": "paragraph",
           "text": "Mở **Tài khoản của tôi** (`/me/account`) bằng cách bấm tên/avatar trên header khu vực chính, hoặc từ thẻ tài khoản ở `/me`."
         },
-        { "type": "heading", "level": 2, "text": "Hồ sơ" },
+        {
+          "type": "heading",
+          "level": 2,
+          "text": "Hồ sơ"
+        },
         {
           "type": "list",
           "items": [
@@ -120,11 +140,17 @@
             "Người dùng **không tự đổi email**. Cần đổi email thì System Owner/Admin sửa trong [Người dùng](page:admin-nguoi-dung)."
           ]
         },
-        { "type": "heading", "level": 2, "text": "Đổi mật khẩu" },
+        {
+          "type": "heading",
+          "level": 2,
+          "text": "Đổi mật khẩu"
+        },
         {
           "type": "steps",
           "items": [
-            { "title": "Nhập Mật khẩu hiện tại" },
+            {
+              "title": "Nhập Mật khẩu hiện tại"
+            },
             {
               "title": "Nhập Mật khẩu mới và Nhập lại mật khẩu mới",
               "text": "8–72 ký tự, phải khác mật khẩu hiện tại."
@@ -135,7 +161,11 @@
             }
           ]
         },
-        { "type": "heading", "level": 2, "text": "Mật khẩu tạm" },
+        {
+          "type": "heading",
+          "level": 2,
+          "text": "Mật khẩu tạm"
+        },
         {
           "type": "paragraph",
           "text": "Tài khoản do System Admin tạo/reset mật khẩu, hoặc do trung tâm tạo, có cờ **phải đổi mật khẩu**. Khi đăng nhập, người dùng bị đưa tới `/me/account` với thông báo “Tài khoản đang dùng mật khẩu tạm…” và không dùng được chức năng nào khác cho tới khi đổi xong."
@@ -210,6 +240,99 @@
         {
           "type": "paragraph",
           "text": "Sidebar dashboard (`/admin` hoặc dashboard trung tâm) có switcher **Chuyển không gian làm việc** ở đầu: chọn Quản trị hệ thống hoặc trung tâm khác, hoặc **Tất cả trong Không gian của tôi** để về `/me`."
+        }
+      ]
+    },
+    {
+      "id": "thong-bao",
+      "title": "Thông báo",
+      "summary": "Chuông trên header, trang Tất cả thông báo, các sự kiện sinh thông báo.",
+      "roles": [
+        "REGISTERED_USER",
+        "SYSTEM_OWNER",
+        "SYSTEM_ADMIN",
+        "TENANT_OWNER",
+        "TENANT_ADMIN",
+        "TEACHER",
+        "STUDENT",
+        "PARENT"
+      ],
+      "blocks": [
+        {
+          "type": "paragraph",
+          "text": "Chuông **Thông báo** nằm trên header của khu vực chính và của dashboard, gộp thông báo của **mọi trung tâm** mà người dùng tham gia (mỗi dòng ghi tên trung tâm). Số trên chuông là số thông báo chưa đọc; hệ thống đếm lại mỗi 60 giây và mỗi khi quay lại tab."
+        },
+        {
+          "type": "list",
+          "items": [
+            "Bấm chuông: 10 thông báo mới nhất, nút **Đánh dấu đã đọc tất cả**, liên kết **Tất cả thông báo**.",
+            "Bấm một thông báo: đánh dấu đã đọc rồi mở trang liên quan (trang lớp, màn hình học, kết quả bài thi, trang chấm bài, chi tiết buổi học).",
+            "Trang **Tất cả thông báo** (`/me/notifications`): lọc **Tất cả** / **Chưa đọc**, phân trang, đánh dấu đã đọc tất cả."
+          ]
+        },
+        {
+          "type": "callout",
+          "tone": "info",
+          "text": "Thông báo chỉ hiển thị trong ứng dụng – hệ thống **không** gửi email hay thông báo đẩy. Không tắt được từng loại; thông báo quá **90 ngày** tự xoá."
+        },
+        {
+          "type": "heading",
+          "level": 2,
+          "text": "Sự kiện sinh thông báo"
+        },
+        {
+          "type": "table",
+          "columns": ["Sự kiện", "Ai nhận"],
+          "rows": [
+            ["Được thêm vào lớp", "Học viên vừa được thêm"],
+            ["Được phân công dạy lớp", "Giáo viên vừa được thêm vào lớp"],
+            [
+              "Giáo trình lớp có mục mới",
+              "Học viên của lớp (gộp một thông báo cho cả lần lưu)"
+            ],
+            ["Có lần thi lại mới", "Học viên của lớp"],
+            ["Mục tới ngày mở", "Học viên của lớp"],
+            ["Sắp hết hạn (còn dưới 24 giờ)", "Học viên **chưa nộp** mục đó"],
+            ["Quá hạn chưa nộp", "Học viên **chưa nộp** mục đó"],
+            ["Bài đã chấm xong", "Học viên có bài"],
+            [
+              "Buổi học bị huỷ, buổi đổi giờ, dời lịch",
+              "Học viên và giáo viên của lớp (dời lịch: một thông báo gộp mỗi lớp)"
+            ],
+            ["Có buổi học bù", "Học viên và giáo viên của lớp"],
+            ["Được xếp dạy một buổi (dạy thế, buổi bù)", "Giáo viên của buổi"],
+            [
+              "Có bài mới cần chấm",
+              "Giáo viên của lớp (bài trong lớp) hoặc người soạn đề/bài học (bài tự do)"
+            ],
+            ["Được chuyển giao chấm", "Giáo viên được chuyển giao"],
+            [
+              "Giáo trình lớp được cập nhật",
+              "Giáo viên của lớp (trừ người vừa sửa)"
+            ],
+            [
+              "Nhận xét cuối khoá đã công bố",
+              "Học viên có nhận xét, khi lớp chuyển **Đã kết thúc**"
+            ]
+          ]
+        },
+        {
+          "type": "paragraph",
+          "text": "Người gây ra sự kiện không nhận thông báo của chính mình (ví dụ giáo viên tự sửa giáo trình lớp)."
+        },
+        {
+          "type": "heading",
+          "level": 2,
+          "text": "Mốc thời gian do hệ thống quét"
+        },
+        {
+          "type": "paragraph",
+          "text": "Thông báo **mục tới ngày mở**, **sắp hết hạn** và **quá hạn** không sinh ngay lúc lưu giáo trình mà do hệ thống quét **15 phút một lần**, chỉ với lớp đang **Đang học**. Mỗi mốc chỉ báo một lần cho mỗi học viên, nên hệ thống quét lại không tạo thông báo trùng. Học viên đã nộp (đề thi: đã có lượt chưa bị “Cho làm lại”; bài học: đã nộp ít nhất một lần) không nhận nhắc hạn."
+        },
+        {
+          "type": "callout",
+          "tone": "warning",
+          "text": "Nếu API dừng quá 3 ngày, các mốc rơi đúng khoảng dừng sẽ không được báo lại; xem [Sự cố thường gặp](page:su-co-thuong-gap)."
         }
       ]
     }

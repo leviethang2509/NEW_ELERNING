@@ -15,6 +15,7 @@ import {
 } from '@lang/shared';
 import { DataSource, type EntityManager } from 'typeorm';
 import { writeClassLog } from '../classrooms/class-logs';
+import { notifySessionsMoved } from '../classrooms/class-notifications';
 import {
   computeSchedule,
   loadHolidays,
@@ -26,6 +27,7 @@ import {
 import { findClassroom } from '../classrooms/classroom-access';
 import { Classroom } from '../classrooms/classroom.entity';
 import { toClassroomRef } from '../classrooms/classroom.mapper';
+import { NotificationsService } from '../notifications/notifications.service';
 import type { TenantContext } from '../tenants/tenant-context';
 import { Tenant } from '../tenants/tenant.entity';
 import type {
@@ -63,7 +65,10 @@ function assertRange(range: DateRange): void {
  */
 @Injectable()
 export class TenantSettingsService {
-  constructor(private readonly dataSource: DataSource) {}
+  constructor(
+    private readonly dataSource: DataSource,
+    private readonly notifications: NotificationsService,
+  ) {}
 
   async get(ctx: TenantContext): Promise<TenantTrainingSettings> {
     const manager = this.dataSource.manager;
@@ -257,6 +262,12 @@ export class TenantSettingsService {
         actorId,
       );
       if (!result) continue;
+      await notifySessionsMoved(manager, this.notifications, {
+        classroom,
+        slug: ctx.slug,
+        result,
+        actorId,
+      });
       const moved = movedCount(result);
       if (moved === 0 && result.endDate === classroom.endDate) continue;
       await writeClassLog(

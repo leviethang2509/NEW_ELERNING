@@ -66,7 +66,7 @@
 | Nhận xét cuối khoá | 1 nhận xét/học viên/lớp (cột `classroom_students.final_comment*`, không bảng riêng – theo mục 4.5), giáo viên của lớp hoặc Owner/Admin viết khi lớp `ongoing`/`finished`; học viên/phụ huynh thấy khi `finished` (T5) |
 | Excel | 1 file, 2 sheet: Chuyên cần, Bảng điểm (có cột Nhận xét) (E7.4, R12, T5) |
 | Chấm tay | Bài trong lớp: giáo viên của lớp. Bài tự do: người soạn đề/bài học. Owner/Admin: mọi bài. Chuyển giao chấm (mục hoặc từng lượt) cho Teacher khác, người giao vẫn chấm được. Không chấm bài của mình. Bài học chấm ở cùng trang "Chấm bài". Bài học nộp lại → chỉ lượt mới nhất cần chấm (R20, T3.2) |
-| Thông báo | Chuông ở header, gộp mọi tenant, gọi lại mỗi 60 giây + khi quay lại tab, đọc từng cái/tất cả, trang "Tất cả thông báo", giữ 90 ngày, không tắt được; cron 15 phút cho sắp hết hạn/quá hạn (E11, R18) |
+| Thông báo | Chuông ở header, gộp mọi tenant, gọi lại mỗi 60 giây + khi quay lại tab, đọc từng cái/tất cả, trang "Tất cả thông báo", giữ 90 ngày, không tắt được; cron 15 phút cho sắp hết hạn/quá hạn (E11, R18) | **Chốt Step 12:** "có bài mới cần chấm" chỉ gửi cho người có **quyền chấm gốc** (giáo viên của lớp với bài trong lớp, người soạn đề/bài với bài tự do), không gửi Owner/Admin hay người được chuyển giao; **không** làm thông báo cấp hệ thống (tenant chờ duyệt…); 3 loại thông báo cho phụ huynh dời sang Step 13 cùng trang "Con của tôi" |
 | Phụ huynh | "Con của tôi" ở `/t/{slug}`: lớp, lịch, giáo trình + trạng thái mục, kết quả từng bài (không đáp án), bài làm tự do; chuyên cần/bảng điểm/nhận xét sau tổng kết. Không xem nội dung bài/đề, không nhắn tin (D12, R19) |
 
 ### 1.5 Hạ tầng
@@ -413,11 +413,12 @@ t/:slug:
 - **Nghiệm thu:** số liệu khớp tính tay trên lớp mẫu; Excel mở được bằng Excel/Numbers; học viên không thấy chuyên cần khi lớp đang học, thấy khi `finished`.
 
 ### Step 12 – Thông báo
-- Migration `notifications`; `NotificationsService.notify(users, type, params, link, dedupeKey?)` gọi từ các service (sự kiện R18.1); cron 15 phút (sắp hết hạn 24 giờ, quá hạn), cron hằng ngày xoá > 90 ngày.
+- Migration `notifications`; `NotificationsService.notify(manager, { userIds, tenantId, type, params, link, dedupeKey })` gọi từ các service (sự kiện R18.1) trong cùng transaction; cron 15 phút (mục vừa mở, sắp hết hạn 24 giờ, quá hạn – chỉ lớp `ongoing`, chỉ học viên chưa nộp), cron hằng ngày xoá > 90 ngày. Route thực tế: `GET me/notifications` (`?unread`, phân trang), `GET me/notifications/unread-count`, `POST me/notifications/:id/read`, `POST me/notifications/read-all`.
 - lang-app: `NotificationBell` (header site + dashboard, gọi lại 60 giây + `visibilitychange`), `/me/notifications`, `vi.notifications`.
 - **Nghiệm thu:** giao mục mới → học viên có chuông; chấm xong → học viên có chuông; dời lịch → 1 thông báo gộp; không trùng khi cron chạy lại.
 
 ### Step 13 – Phụ huynh
+- Thêm 3 loại thông báo cho phụ huynh (con quá hạn, con có kết quả bài mới, chuyên cần con dưới ngưỡng) – dời từ Step 12 vì link đích là trang "Con của tôi" (bảng `notifications` không đổi).
 - Guardian API (kiểm liên kết `student_guardians` + role Parent) + trang "Con của tôi": chọn con, lớp, lịch, trạng thái mục, kết quả từng bài (không đáp án), bài làm tự do, chuyên cần/bảng điểm/nhận xét sau tổng kết.
 - **Nghiệm thu:** phụ huynh 2 con lọc được lịch theo con; không xem được học viên không liên kết (403/404).
 

@@ -31,6 +31,8 @@ import { Lesson } from '../lessons/lesson.entity';
 import type { UploadedFile } from '../storage/media-file';
 import type { R2Service } from '../storage/r2.service';
 import type { TenantContext } from '../tenants/tenant-context';
+import { Tenant } from '../tenants/tenant.entity';
+import { fakeNotifications } from '../testing/fake-notifications';
 import { InMemoryDataSource } from '../testing/in-memory-data-source';
 import { InMemoryRepository } from '../testing/in-memory-repository';
 import { User } from '../users/user.entity';
@@ -193,6 +195,9 @@ function setup({
   };
   const classItems = new InMemoryRepository<ClassItem>();
   const classrooms = new InMemoryRepository<Classroom>();
+  // Thông báo (Step 12) đọc tenant để dựng đường dẫn.
+  const tenants = new InMemoryRepository<Tenant>();
+  tenants.rows.push({ id: TENANT, slug: 'a', name: 'A' } as Tenant);
   const dataSource = new InMemoryDataSource()
     .register(Lesson, lessons)
     .register(LessonSection, sections)
@@ -202,23 +207,27 @@ function setup({
     .register(LessonAttemptSection, attemptSections)
     .register(LessonAttemptAnswer, answers)
     .register(User, users)
+    .register(Tenant, tenants)
     .register(ClassItem, classItems)
     .register(Classroom, classrooms)
     .register(ClassroomTeacher, new InMemoryRepository<ClassroomTeacher>())
     .register(GradingDelegation, new InMemoryRepository<GradingDelegation>())
     .asDataSource();
+  const notifications = fakeNotifications();
   const service = new LessonAttemptsService(
     dataSource,
     r2 as unknown as R2Service,
     attempts.asRepository(),
     attemptSections.asRepository(),
     answers.asRepository(),
+    notifications.service,
   );
   const grading = new LessonGradingService(
     dataSource,
     r2 as unknown as R2Service,
     attempts.asRepository(),
     answers.asRepository(),
+    notifications.service,
   );
   /** Bài học có version mới: section cũ ngừng dùng. */
   const publishNewVersion = () => {

@@ -397,6 +397,10 @@
         {
           "type": "paragraph",
           "text": "Tab **Nhật ký thay đổi** (giáo viên của lớp, Chủ sở hữu/Quản trị viên) ghi ai, lúc nào, làm gì: tạo lớp (và giáo trình đã chép), sửa thông tin (các trường đổi), đổi trạng thái (kèm số lượt thi bị chốt), thêm/bỏ giáo viên và học viên, mỗi lần lưu giáo trình lớp (mục thêm/xoá/ẩn/khôi phục, trường đổi của từng mục, chương thêm/xoá/sửa, sắp xếp lại); sửa thời khoá biểu (trường đổi, số buổi dời/thêm/xoá, ngày kết thúc cũ → mới), lịch tự dời vì thêm/sửa/xoá ngày nghỉ của trung tâm; huỷ/khôi phục buổi (kèm lý do), thêm/xoá buổi bù, sửa buổi (trường đổi), sửa nội dung buổi."
+        },
+        {
+          "type": "paragraph",
+          "text": "Thêm giáo viên hoặc học viên vào lớp sẽ gửi [thông báo](page:thong-bao) cho người được thêm."
         }
       ]
     },
@@ -593,6 +597,10 @@
             "Buổi (chưa huỷ) của lớp khác (chưa huỷ) **chồng giờ** và có **chung giáo viên** (kể cả giáo viên dạy thế) hoặc **chung học viên** (đang học) → nhãn **Trùng lịch** đỏ ở danh sách buổi, viền đỏ trên lịch, danh sách buổi trùng ở trang chi tiết buổi.",
             "Chỉ cảnh báo, không chặn. Cũng hiện khi thêm giáo viên/học viên vào lớp. Không kiểm trùng phòng (phòng là chữ tự do)."
           ]
+        },
+        {
+          "type": "paragraph",
+          "text": "Dời lịch gửi **một** [thông báo](page:thong-bao) gộp cho học viên và giáo viên của lớp; huỷ buổi, thêm buổi bù và xếp giáo viên dạy thế cũng gửi thông báo."
         }
       ]
     },
@@ -729,6 +737,10 @@
           "type": "callout",
           "tone": "warning",
           "text": "Hai người cùng sửa giáo trình lớp: người lưu sau nhận lỗi “Giáo trình lớp vừa được người khác lưu. Hãy tải lại…”. Tải lại trang để xem bản mới nhất rồi sửa lại."
+        },
+        {
+          "type": "paragraph",
+          "text": "Lưu giáo trình lớp gửi [thông báo](page:thong-bao) cho học viên (một thông báo gộp cho các mục mới đã mở, thông báo riêng cho lần thi lại) và cho các giáo viên khác của lớp. Mục hẹn ngày mở chỉ báo khi tới ngày; mục có hạn nộp được nhắc trước 24 giờ và khi quá hạn."
         }
       ]
     },
@@ -842,6 +854,10 @@
         {
           "type": "paragraph",
           "text": "Nút **Xuất Excel** ở cả hai tab tải một file `.xlsx` gồm 2 sheet: **Chuyên cần** (nhãn từng mục, thống kê, tỉ lệ) và **Bảng điểm** (điểm từng cột, trung bình chương, cột **Nhận xét cuối khoá**). File đặt tên theo mã lớp."
+        },
+        {
+          "type": "paragraph",
+          "text": "Khi lớp chuyển sang **Đã kết thúc**, học viên đã có nhận xét cuối khoá nhận [thông báo](page:thong-bao); sửa nhận xét sau đó cũng báo lại."
         }
       ]
     },

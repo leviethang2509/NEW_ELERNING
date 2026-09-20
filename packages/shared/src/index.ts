@@ -11,6 +11,7 @@ export * from './grading';
 export * from './lesson-attempt';
 export * from './lesson-content';
 export * from './media';
+export * from './notification';
 export * from './pagination';
 export * from './roles';
 export * from './schedule';

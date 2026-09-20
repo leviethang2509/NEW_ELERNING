@@ -2222,6 +2222,74 @@ export const vi = {
     openFirstPage: 'Về trang đầu',
     callout: { info: 'Thông tin', tip: 'Mẹo', warning: 'Lưu ý' },
   },
+  notifications: {
+    title: 'Thông báo',
+    bell: 'Thông báo',
+    subtitle: 'Thông báo của mọi trung tâm bạn tham gia, giữ 90 ngày',
+    empty: 'Chưa có thông báo nào',
+    emptyUnread: 'Không có thông báo chưa đọc',
+    markAll: 'Đánh dấu đã đọc tất cả',
+    markRead: 'Đánh dấu đã đọc',
+    viewAll: 'Tất cả thông báo',
+    filterAll: 'Tất cả',
+    filterUnread: 'Chưa đọc',
+    unread: 'Chưa đọc',
+    loadError: 'Không tải được thông báo',
+    /** Nhãn chuông khi có thông báo chưa đọc. */
+    unreadCount: (count: number) =>
+      `${count > 99 ? '99+' : count} thông báo chưa đọc`,
+    session: (seq: number | null | undefined) =>
+      seq == null ? 'Buổi bù' : `Buổi ${seq}`,
+    // Câu chữ của từng loại thông báo (giả định 11: dựng ở client).
+    types: {
+      class_student_added: (className: string) =>
+        `Bạn được thêm vào lớp ${className}`,
+      class_teacher_added: (className: string) =>
+        `Bạn được phân công dạy lớp ${className}`,
+      class_items_assigned: (
+        className: string,
+        title: string,
+        count: number,
+      ) =>
+        count > 1
+          ? `Lớp ${className} có ${count} mục mới: ${title} và ${count - 1} mục khác`
+          : `Lớp ${className} có mục mới: ${title}`,
+      retake_assigned: (className: string, title: string) =>
+        `Lớp ${className} mở lần thi lại: ${title}`,
+      class_item_opened: (className: string, title: string) =>
+        `Đã tới ngày mở mục ${title} (lớp ${className})`,
+      item_deadline_soon: (className: string, title: string, at: string) =>
+        `Sắp hết hạn: ${title} (lớp ${className}) hạn ${at}`,
+      item_overdue: (className: string, title: string, at: string) =>
+        `Quá hạn chưa nộp: ${title} (lớp ${className}), hạn ${at}`,
+      attempt_graded: (title: string) => `Bài ${title} đã chấm xong`,
+      session_cancelled: (className: string, session: string, at: string) =>
+        `${session} lớp ${className} ngày ${at} đã bị huỷ`,
+      sessions_moved: (className: string, count: number, at: string) =>
+        count > 1
+          ? `Lớp ${className} dời ${count} buổi, sớm nhất là ${at}`
+          : `Lớp ${className} dời lịch buổi ${at}`,
+      session_makeup_added: (className: string, at: string) =>
+        `Lớp ${className} có buổi học bù lúc ${at}`,
+      session_teacher_assigned: (
+        className: string,
+        session: string,
+        at: string,
+      ) => `Bạn được xếp dạy ${session} lớp ${className} ngày ${at}`,
+      grading_pending: (title: string, student: string) =>
+        student
+          ? `${student} vừa nộp bài ${title}, chờ chấm`
+          : `Có bài mới cần chấm: ${title}`,
+      grading_delegated: (title: string, actor: string) =>
+        actor
+          ? `${actor} chuyển giao cho bạn chấm: ${title}`
+          : `Bạn được chuyển giao chấm: ${title}`,
+      class_curriculum_changed: (className: string) =>
+        `Giáo trình lớp ${className} vừa được cập nhật`,
+      final_comment_published: (className: string) =>
+        `Lớp ${className} đã có nhận xét cuối khoá của bạn`,
+    },
+  },
   nav: {
     overview: 'Tổng quan',
     users: 'Người dùng',
@@ -2241,6 +2309,7 @@ export const vi = {
     schedule: 'Lịch',
     settings: 'Cài đặt',
     userManual: 'Tài liệu nội bộ',
+    notifications: 'Thông báo',
     sectionManagement: 'Quản lý',
     sectionExam: 'Đề thi & Bài học',
     sectionTraining: 'Đào tạo',

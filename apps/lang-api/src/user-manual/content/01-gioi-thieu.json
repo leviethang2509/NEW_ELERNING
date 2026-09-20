@@ -161,6 +161,10 @@
             [
               "Ngữ cảnh / không gian làm việc",
               "Quản trị hệ thống hoặc một trung tâm mà user là thành viên; chuyển qua switcher trong sidebar dashboard hoặc trang `/me`."
+            ],
+            [
+              "Thông báo",
+              "Tin nhắn trong ứng dụng gửi tới **tài khoản** (không phải email): chuông trên header gộp mọi trung tâm, giữ 90 ngày. Xem [Thông báo](page:thong-bao)."
             ]
           ]
         },
@@ -759,6 +763,14 @@
               "✔",
               "✘ (chỉ xem)",
               "✘",
+              "✘"
+            ],
+            [
+              "Nhận thông báo của mình (chuông, trang Tất cả thông báo)",
+              "✔",
+              "✔",
+              "✔",
+              "✔",
               "✘"
             ]
           ]

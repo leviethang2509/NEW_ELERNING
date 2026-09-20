@@ -3,6 +3,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { AttemptsModule } from '../attempts/attempts.module';
 import { ClassroomsModule } from '../classrooms/classrooms.module';
 import { LessonAttemptsModule } from '../lesson-attempts/lesson-attempts.module';
+import { NotificationsModule } from '../notifications/notifications.module';
 import { StorageModule } from '../storage/storage.module';
 import { TenantsModule } from '../tenants/tenants.module';
 import { GradingDelegation } from './grading-delegation.entity';
@@ -22,6 +23,7 @@ import { LessonGradingService } from './lesson-grading.service';
     AttemptsModule,
     LessonAttemptsModule,
     ClassroomsModule,
+    NotificationsModule,
     StorageModule,
     TypeOrmModule.forFeature([GradingDelegation]),
   ],

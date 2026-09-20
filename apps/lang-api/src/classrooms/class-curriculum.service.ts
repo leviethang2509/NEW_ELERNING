@@ -8,6 +8,8 @@ import {
   ClassLogAction,
   CurriculumItemType,
   DEFAULT_PASS_THRESHOLD,
+  NotificationType,
+  effectiveOpensAt,
   isLabelOfType,
   type ClassCurriculum,
   type ClassItemField,
@@ -19,6 +21,13 @@ import { DataSource, In, type EntityManager } from 'typeorm';
 import { Exam } from '../exams/exam.entity';
 import { bySortOrder } from '../exams/exam.mapper';
 import { Lesson } from '../lessons/lesson.entity';
+import {
+  classroomStudentUserIds,
+  classroomTeacherUserIds,
+  dashboardClassLink,
+  learnerClassLink,
+} from '../notifications/notification-targets';
+import { NotificationsService } from '../notifications/notifications.service';
 import type { TenantContext } from '../tenants/tenant-context';
 import { assertContentsUsable } from '../training/curricula.service';
 import { CurriculumGroup } from '../training/curriculum-group.entity';
@@ -78,7 +87,10 @@ interface PlacedItem {
  */
 @Injectable()
 export class ClassCurriculumService {
-  constructor(private readonly dataSource: DataSource) {}
+  constructor(
+    private readonly dataSource: DataSource,
+    private readonly notifications: NotificationsService,
+  ) {}
 
   async get(ctx: TenantContext, classroomId: string): Promise<ClassCurriculum> {
     const manager = this.dataSource.manager;
@@ -294,10 +306,107 @@ export class ClassCurriculumService {
           ClassLogAction.CURRICULUM_SAVED,
           detail,
         );
+        await this.notifyCurriculumChange(manager, ctx, {
+          classroom,
+          actorId,
+          placed,
+          dto,
+          nameOf,
+          now,
+        });
       }
     });
     return this.get(ctx, classroomId);
   }
+
+  /**
+   * Thông báo sau khi lưu giáo trình lớp (R18.1): học viên nhận **một** thông
+   * báo gộp cho các mục mới đã mở (mục hẹn ngày mở để cron báo lúc tới ngày) và
+   * một thông báo riêng cho lần thi lại; giáo viên khác của lớp được báo là
+   * giáo trình đã đổi.
+   */
+  private async notifyCurriculumChange(
+    manager: EntityManager,
+    ctx: TenantContext,
+    input: {
+      classroom: Classroom;
+      actorId: string;
+      placed: PlacedItem[];
+      dto: SaveClassCurriculumDto;
+      nameOf: (item: {
+        title: string | null;
+        lessonId: string | null;
+        examId: string | null;
+      }) => string;
+      now: Date;
+    },
+  ): Promise<void> {
+    const { classroom, actorId, placed, dto, nameOf, now } = input;
+    const className = classroom.name;
+    const openNow = placed.filter(
+      (entry) =>
+        entry.isNew &&
+        isOpenNow(
+          entry.input.opensAt ?? null,
+          entry.groupIndex === null
+            ? null
+            : (dto.groups[entry.groupIndex]?.opensAt ?? null),
+          now,
+        ),
+    );
+    const titleOf = (entry: PlacedItem) =>
+      nameOf({
+        title: entry.input.title ?? null,
+        ...toContentColumns(entry.input),
+      });
+    const students = await classroomStudentUserIds(manager, classroom.id);
+    const learnerLink = learnerClassLink(ctx.slug, classroom.id);
+
+    const assigned = openNow.filter((entry) => !entry.input.retakeOfItemId);
+    if (assigned.length > 0) {
+      await this.notifications.notify(manager, {
+        userIds: students,
+        tenantId: ctx.tenantId,
+        type: NotificationType.CLASS_ITEMS_ASSIGNED,
+        params: {
+          className,
+          title: titleOf(assigned[0]),
+          count: assigned.length,
+        },
+        link: learnerLink,
+        exceptUserId: actorId,
+      });
+    }
+    for (const entry of openNow.filter((row) => row.input.retakeOfItemId)) {
+      await this.notifications.notify(manager, {
+        userIds: students,
+        tenantId: ctx.tenantId,
+        type: NotificationType.RETAKE_ASSIGNED,
+        params: { className, title: titleOf(entry) },
+        link: learnerLink,
+        exceptUserId: actorId,
+      });
+    }
+
+    await this.notifications.notify(manager, {
+      userIds: await classroomTeacherUserIds(manager, classroom.id),
+      tenantId: ctx.tenantId,
+      type: NotificationType.CLASS_CURRICULUM_CHANGED,
+      params: { className },
+      link: dashboardClassLink(ctx.slug, classroom.id, 'curriculum'),
+      exceptUserId: actorId,
+    });
+  }
+}
+
+/** Mục đã mở ngay lúc lưu: cả chương lẫn mục đều không hẹn ngày mở sau. */
+function isOpenNow(
+  itemOpensAt: string | null,
+  groupOpensAt: string | null,
+  now: Date,
+): boolean {
+  const opensAt = effectiveOpensAt(groupOpensAt, itemOpensAt);
+  return opensAt === null || Date.parse(opensAt) <= now.getTime();
 }
 
 /**

@@ -3,6 +3,7 @@ import {
   AttemptStatus,
   GRADING_FREE_FILTER,
   GradingKind,
+  NotificationType,
   QuestionGrading,
   isValidManualScore,
   type GradeAnswerInput,
@@ -45,6 +46,8 @@ import {
 import { LessonQuestion } from '../lessons/lesson-question.entity';
 import { LessonSection } from '../lessons/lesson-section.entity';
 import { Lesson } from '../lessons/lesson.entity';
+import { lessonAttemptLink } from '../notifications/notification-targets';
+import { NotificationsService } from '../notifications/notifications.service';
 import { R2Service } from '../storage/r2.service';
 import type { TenantContext } from '../tenants/tenant-context';
 import { User } from '../users/user.entity';
@@ -113,6 +116,7 @@ export class LessonGradingService {
     private readonly attempts: Repository<LessonAttempt>,
     @InjectRepository(LessonAttemptAnswer)
     private readonly answers: Repository<LessonAttemptAnswer>,
+    private readonly notifications: NotificationsService,
   ) {}
 
   async list(
@@ -356,6 +360,20 @@ export class LessonGradingService {
         now,
       );
       await manager.getRepository(LessonAttempt).update(attempt.id, totals);
+      if (totals.gradedAt && !attempt.gradedAt) {
+        const lessons = await this.lessonsById([attempt.lessonId]);
+        await this.notifications.notify(manager, {
+          userIds: [attempt.userId],
+          tenantId: ctx.tenantId,
+          type: NotificationType.ATTEMPT_GRADED,
+          params: { title: lessons.get(attempt.lessonId)?.title ?? '' },
+          link: lessonAttemptLink(ctx.slug, attempt.id),
+          // Nộp lại rồi chấm lại là một lần chấm xong mới.
+          dedupeKey: `lesson_graded:${attempt.id}:${
+            attempt.submittedAt?.toISOString() ?? ''
+          }`,
+        });
+      }
       Object.assign(attempt, totals);
 
       const graders = await this.usersById(manager, [graderId]);

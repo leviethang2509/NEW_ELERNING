@@ -2,6 +2,7 @@ import 'reflect-metadata';
 import type { ExamElement, ExamValue } from '@lang/exam-core';
 import {
   AttemptStatus,
+  NotificationType,
   ContentVisibility,
   ExamStatus,
   TenantRole,
@@ -28,6 +29,8 @@ import { prepareSection } from '../exams/section-content';
 import type { R2Service } from '../storage/r2.service';
 import type { UploadedFile } from '../storage/media-file';
 import type { TenantContext } from '../tenants/tenant-context';
+import { Tenant } from '../tenants/tenant.entity';
+import { fakeNotifications } from '../testing/fake-notifications';
 import { InMemoryDataSource } from '../testing/in-memory-data-source';
 import { InMemoryRepository } from '../testing/in-memory-repository';
 import { User } from '../users/user.entity';
@@ -146,6 +149,9 @@ function setup() {
     delete: jest.fn().mockResolvedValue(undefined),
     presignedGetUrl: jest.fn().mockResolvedValue('https://r2/signed'),
   };
+  // Thông báo (Step 12) đọc tenant để dựng đường dẫn.
+  const tenants = new InMemoryRepository<Tenant>();
+  tenants.rows.push({ id: TENANT, slug: 'a', name: 'A' } as Tenant);
   const dataSource = new InMemoryDataSource()
     .register(Exam, exams)
     .register(ExamSection, sections)
@@ -155,21 +161,25 @@ function setup() {
     .register(ExamAttemptSection, attemptSections)
     .register(ExamAttemptAnswer, answers)
     .register(User, users)
+    .register(Tenant, tenants)
     .register(ClassroomTeacher, new InMemoryRepository<ClassroomTeacher>())
     .register(GradingDelegation, new InMemoryRepository<GradingDelegation>())
     .asDataSource();
+  const notifications = fakeNotifications();
   const attemptsService = new AttemptsService(
     dataSource,
     r2 as unknown as R2Service,
     attempts.asRepository(),
     attemptSections.asRepository(),
     answers.asRepository(),
+    notifications.service,
   );
   const service = new GradingService(
     dataSource,
     r2 as unknown as R2Service,
     attempts.asRepository(),
     answers.asRepository(),
+    notifications.service,
   );
 
   /** Học viên làm hết bài: viết một đoạn, ghi âm câu Speaking. */
@@ -198,7 +208,14 @@ function setup() {
     return view.id;
   }
 
-  return { service, r2, attempts, answers, submittedAttempt };
+  return {
+    service,
+    r2,
+    attempts,
+    answers,
+    submittedAttempt,
+    notifications,
+  };
 }
 
 describe('GradingService', () => {
@@ -289,7 +306,8 @@ describe('GradingService', () => {
   });
 
   it('chấm từng câu, đủ câu thì lượt làm → graded; chấm lại không đổi trạng thái', async () => {
-    const { service, attempts, answers, submittedAttempt } = setup();
+    const { service, attempts, answers, submittedAttempt, notifications } =
+      setup();
     const id = await submittedAttempt();
     const detail = await service.detail(ctx(), TEACHER, id);
     const [writing, speaking] = detail.sections[0].questions;
@@ -334,6 +352,16 @@ describe('GradingService', () => {
       manualGradedCount: 2,
     });
     expect(attempts.rows[0].gradedAt).toBe(gradedAt);
+
+    // Thông báo "đã chấm xong" gửi cho học viên đúng một lần (Step 12).
+    const graded = notifications.ofType(NotificationType.ATTEMPT_GRADED);
+    expect(graded).toHaveLength(1);
+    expect(graded[0]).toMatchObject({
+      userIds: [STUDENT],
+      link: `/t/a/attempts/${id}/result`,
+      dedupeKey: `graded:${id}`,
+      params: { title: 'Đề thử' },
+    });
     expect(
       answers.rows.find((row) => row.id === writing.answerId),
     ).toMatchObject({ score: 8, comment: null, gradedBy: TEACHER });

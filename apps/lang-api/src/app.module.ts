@@ -16,6 +16,7 @@ import { LessonsModule } from './lessons/lessons.module';
 import { GradingModule } from './grading/grading.module';
 import { HealthModule } from './health/health.module';
 import { MembershipsModule } from './memberships/memberships.module';
+import { NotificationsModule } from './notifications/notifications.module';
 import { PlansModule } from './plans/plans.module';
 import { StorageModule } from './storage/storage.module';
 import { TenantDashboardModule } from './tenant-dashboard/tenant-dashboard.module';
@@ -33,7 +34,8 @@ import { UsersModule } from './users/users.module';
       cache: true,
       validate: validateEnv,
     }),
-    // Cron chốt section quá giờ (`AttemptsScheduler`).
+    // Cron chốt section quá giờ (`AttemptsScheduler`) và thông báo
+    // (`NotificationsScheduler`).
     ScheduleModule.forRoot(),
     TypeOrmModule.forRootAsync({
       inject: [ConfigService],
@@ -66,6 +68,7 @@ import { UsersModule } from './users/users.module';
     TrainingModule,
     ClassroomsModule,
     TenantSettingsModule,
+    NotificationsModule,
     AdminModule,
     UserManualModule,
     // Đăng ký guard toàn cục: mọi route cần đăng nhập trừ route @Public().

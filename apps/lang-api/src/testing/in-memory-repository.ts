@@ -52,6 +52,30 @@ function matches<T>(row: T, where: Where<T>): boolean {
   });
 }
 
+function sortRows<T extends object>(
+  rows: T[],
+  order?: Record<string, 'ASC' | 'DESC'>,
+): T[] {
+  if (!order) return rows;
+  const entries = Object.entries(order);
+  return [...rows].sort((a, b) => {
+    for (const [key, direction] of entries) {
+      const left = (a as Record<string, unknown>)[key];
+      const right = (b as Record<string, unknown>)[key];
+      const value =
+        left instanceof Date && right instanceof Date
+          ? left.getTime() - right.getTime()
+          : left === right
+            ? 0
+            : (left as number | string) < (right as number | string)
+              ? -1
+              : 1;
+      if (value !== 0) return direction === 'DESC' ? -value : value;
+    }
+    return 0;
+  });
+}
+
 /**
  * Repository giả trong bộ nhớ cho unit test service, chỉ hỗ trợ các hàm và
  * FindOperator (IsNull, Not, LessThan(OrEqual), MoreThan(OrEqual), Between, In,
@@ -113,6 +137,26 @@ export class InMemoryRepository<T extends object> {
 
   find(options: { where?: Where<T> } = {}): Promise<T[]> {
     return this.findBy(options.where ?? {});
+  }
+
+  /** Hỗ trợ `order` (một hoặc nhiều cột), `skip`, `take`; bỏ qua `relations`. */
+  async findAndCount(
+    options: {
+      where?: Where<T>;
+      order?: Record<string, 'ASC' | 'DESC'>;
+      skip?: number;
+      take?: number;
+    } = {},
+  ): Promise<[T[], number]> {
+    const rows = sortRows(
+      await this.findBy(options.where ?? {}),
+      options.order,
+    );
+    const skip = options.skip ?? 0;
+    return [
+      rows.slice(skip, skip + (options.take ?? rows.length)),
+      rows.length,
+    ];
   }
 
   async existsBy(where: Where<T>): Promise<boolean> {

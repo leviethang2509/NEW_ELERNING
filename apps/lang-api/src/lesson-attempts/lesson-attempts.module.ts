@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { LessonsModule } from '../lessons/lessons.module';
+import { NotificationsModule } from '../notifications/notifications.module';
 import { StorageModule } from '../storage/storage.module';
 import { TenantsModule } from '../tenants/tenants.module';
 import { LearnerLessonsController } from './learner-lessons.controller';
@@ -15,6 +16,7 @@ import { LessonAttemptsService } from './lesson-attempts.service';
   imports: [
     TenantsModule,
     LessonsModule,
+    NotificationsModule,
     StorageModule,
     TypeOrmModule.forFeature([
       LessonAttempt,

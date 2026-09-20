@@ -41,6 +41,8 @@ import { ExamSection } from '../exams/exam-section.entity';
 import { Exam } from '../exams/exam.entity';
 import { EXAM_NOT_FOUND, currentSections } from '../exams/exams.service';
 import { insertable } from '../exams/section-content';
+import { notifyPendingGrading } from '../notifications/grading-notifications';
+import { NotificationsService } from '../notifications/notifications.service';
 import { R2Service } from '../storage/r2.service';
 import type { UploadedFile } from '../storage/media-file';
 import type { TenantContext } from '../tenants/tenant-context';
@@ -134,6 +136,7 @@ export class AttemptsService {
     private readonly attemptSections: Repository<ExamAttemptSection>,
     @InjectRepository(ExamAttemptAnswer)
     private readonly answers: Repository<ExamAttemptAnswer>,
+    private readonly notifications: NotificationsService,
   ) {}
 
   /** Bắt đầu lượt làm mới trên version hiện tại của đề đang publish. */
@@ -918,6 +921,20 @@ export class AttemptsService {
       .getRepository(ExamAttempt)
       .update({ id: attempt.id, status: AttemptStatus.IN_PROGRESS }, changes);
     Object.assign(attempt, changes);
+
+    if (changes.status === AttemptStatus.SUBMITTED) {
+      const exam = await this.examOf(manager, attempt);
+      await notifyPendingGrading(manager, this.notifications, {
+        tenantId: attempt.tenantId,
+        attemptId: attempt.id,
+        kind: 'exam',
+        classItemId: attempt.classItemId,
+        authorId: exam?.createdBy ?? null,
+        studentUserId: attempt.userId,
+        title: exam?.title ?? '',
+        dedupeKey: `grade_pending:${attempt.id}`,
+      });
+    }
   }
 
   private examOf(

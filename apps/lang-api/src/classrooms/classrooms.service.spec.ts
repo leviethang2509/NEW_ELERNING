@@ -14,6 +14,7 @@ import {
   ClassroomStatus,
   CourseStatus,
   CurriculumItemLabel,
+  NotificationType,
   CurriculumItemType,
   ExamStatus,
   LessonAttemptStatus,
@@ -45,6 +46,7 @@ import { TenantHoliday } from '../tenant-settings/tenant-holiday.entity';
 import { TenantSettingsService } from '../tenant-settings/tenant-settings.service';
 import type { TenantContext } from '../tenants/tenant-context';
 import { Tenant } from '../tenants/tenant.entity';
+import { fakeNotifications } from '../testing/fake-notifications';
 import { InMemoryDataSource } from '../testing/in-memory-data-source';
 import { InMemoryRepository } from '../testing/in-memory-repository';
 import { assertLessonNotInUse } from '../training/content-usage';
@@ -180,6 +182,7 @@ function setup() {
   const attemptsService = {
     finalizeForClassItems: jest.fn().mockResolvedValue(2),
   };
+  const notifications = fakeNotifications();
   const classroomsService = new ClassroomsService(
     dataSource,
     attemptsService as unknown as AttemptsService,
@@ -190,17 +193,36 @@ function setup() {
     memberships.asRepository(),
     users.asRepository(),
     logs.asRepository(),
+    notifications.service,
   );
-  const membersService = new ClassMembersService(dataSource);
+  const membersService = new ClassMembersService(
+    dataSource,
+    notifications.service,
+  );
   const studentAttemptsService = new ClassStudentAttemptsService(
     dataSource,
     {} as never,
   );
-  const progressService = new ClassProgressService(dataSource);
-  const curriculumService = new ClassCurriculumService(dataSource);
-  const scheduleService = new ClassScheduleService(dataSource);
-  const sessionsService = new ClassSessionsService(dataSource);
-  const settingsService = new TenantSettingsService(dataSource);
+  const progressService = new ClassProgressService(
+    dataSource,
+    notifications.service,
+  );
+  const curriculumService = new ClassCurriculumService(
+    dataSource,
+    notifications.service,
+  );
+  const scheduleService = new ClassScheduleService(
+    dataSource,
+    notifications.service,
+  );
+  const sessionsService = new ClassSessionsService(
+    dataSource,
+    notifications.service,
+  );
+  const settingsService = new TenantSettingsService(
+    dataSource,
+    notifications.service,
+  );
   const coursesService = new CoursesService(
     dataSource,
     {} as CurriculaService,
@@ -265,6 +287,9 @@ function setup() {
   };
   const lesson1 = content(lessons, 'lesson-1', 'Minna bài 1');
   const lesson2 = content(lessons, 'lesson-2', 'Minna bài 2');
+  // Bài chưa nằm trong giáo trình nào, dùng khi thêm mục mới.
+  const lesson3 = content(lessons, 'lesson-3', 'Minna bài 3');
+  const lesson4 = content(lessons, 'lesson-4', 'Minna bài 4');
   const quiz = content(exams, 'exam-quiz', 'Kiểm tra chương 1');
   const final = content(exams, 'exam-final', 'Thi cuối khoá');
   content(exams, 'exam-draft', 'Nháp', ExamStatus.DRAFT);
@@ -368,6 +393,7 @@ function setup() {
   };
 
   return {
+    notifications,
     classroomsService,
     membersService,
     studentAttemptsService,
@@ -390,7 +416,7 @@ function setup() {
     examAttempts,
     lessonAttempts,
     lessons,
-    ids: { lesson1, lesson2, quiz, final },
+    ids: { lesson1, lesson2, lesson3, lesson4, quiz, final },
     createClass,
   };
 }
@@ -439,6 +465,12 @@ function payload(
     ...draft,
   } as SaveClassCurriculumDto;
 }
+
+const lessonItem = (contentId: string): ClassItemInput => ({
+  itemType: CurriculumItemType.LESSON,
+  contentId,
+  label: CurriculumItemLabel.LESSON,
+});
 
 const examItem = (
   contentId: string,
@@ -2261,6 +2293,45 @@ describe('Chuyên cần, bảng điểm, nhận xét cuối khoá (Step 11)', ()
     );
   });
 
+  it('nhận xét cuối khoá: báo khi lớp kết thúc, sửa sau đó báo lại', async () => {
+    const { notifications, classroomsService, progressService, id } =
+      await classWithAttempts();
+    await progressService.saveComment(
+      ownerCtx,
+      OWNER,
+      id,
+      'm-student-1',
+      'Tiến bộ tốt',
+    );
+    expect(
+      notifications.ofType(NotificationType.FINAL_COMMENT_PUBLISHED),
+    ).toHaveLength(0);
+
+    await classroomsService.changeStatus(
+      ownerCtx,
+      OWNER,
+      id,
+      ClassroomStatus.FINISHED,
+    );
+    const published = notifications.ofType(
+      NotificationType.FINAL_COMMENT_PUBLISHED,
+    );
+    expect(published).toHaveLength(1);
+    expect(published[0].userIds).toEqual(['user-m-student-1']);
+    expect(published[0].dedupeKey).toBe(`final_comment:${id}`);
+
+    await progressService.saveComment(
+      ownerCtx,
+      OWNER,
+      id,
+      'm-student-1',
+      'Sửa lại nhận xét',
+    );
+    expect(
+      notifications.ofType(NotificationType.FINAL_COMMENT_PUBLISHED),
+    ).toHaveLength(2);
+  });
+
   it('xuất Excel 2 sheet đọc được', async () => {
     const { progressService, id } = await classWithAttempts();
     const { fileName, buffer } = await progressService.workbook(ownerCtx, id);
@@ -2275,5 +2346,89 @@ describe('Chuyên cần, bảng điểm, nhận xét cuối khoá (Step 11)', ()
     const attendance = workbook.getWorksheet('Chuyên cần')!;
     expect(attendance.getRow(4).getCell(1).value).toBe('Học viên');
     expect(attendance.actualRowCount).toBeGreaterThan(4);
+  });
+});
+
+describe('Thông báo (Step 12)', () => {
+  it('thêm học viên/giáo viên vào lớp: mỗi nhóm một thông báo, người thao tác không tự nhận', async () => {
+    const { notifications, membersService, createClass } = setup();
+    const { id } = await createClass();
+
+    const teacherAdded = notifications.ofType(
+      NotificationType.CLASS_TEACHER_ADDED,
+    );
+    expect(teacherAdded).toHaveLength(1);
+    expect(teacherAdded[0].userIds).toEqual(['user-m-teacher']);
+    expect(teacherAdded[0].link).toBe(`/t/a/dashboard/classes/${id}`);
+    expect(teacherAdded[0].exceptUserId).toBe(OWNER);
+
+    await membersService.addStudents(ownerCtx, OWNER, id, [
+      'm-student-1',
+      'm-student-2',
+    ]);
+    const studentAdded = notifications.ofType(
+      NotificationType.CLASS_STUDENT_ADDED,
+    );
+    expect(studentAdded).toHaveLength(1);
+    expect(studentAdded[0].userIds).toEqual([
+      'user-m-student-1',
+      'user-m-student-2',
+    ]);
+    expect(studentAdded[0].link).toBe(`/t/a/classes/${id}`);
+    expect(studentAdded[0].params).toEqual({ className: 'N5 tối 2-4' });
+  });
+
+  it('giáo trình lớp: mục mới gộp 1 thông báo, mục hẹn ngày mở để cron báo, thi lại riêng', async () => {
+    const {
+      notifications,
+      membersService,
+      curriculumService,
+      createClass,
+      ids,
+    } = setup();
+    const { id } = await createClass();
+    await membersService.addStudents(ownerCtx, OWNER, id, ['m-student-1']);
+    const current = await curriculumService.get(teacherCtx, id);
+    const quizId = current.groups[0].items[1].id;
+    notifications.sent.length = 0;
+
+    await curriculumService.save(
+      teacherCtx,
+      'user-m-teacher',
+      id,
+      payload(current, (draft) => {
+        draft.groups[0].items.push(
+          examItem(ids.final, { label: CurriculumItemLabel.FINAL }),
+          lessonItem(ids.lesson3),
+          examItem(ids.quiz, { retakeOfItemId: quizId }),
+        );
+        draft.groups.push({
+          title: 'Chương 2',
+          opensAt: '2026-12-01T00:00:00.000Z',
+          items: [lessonItem(ids.lesson4)],
+        });
+      }),
+    );
+
+    const assigned = notifications.ofType(
+      NotificationType.CLASS_ITEMS_ASSIGNED,
+    );
+    // Gộp 2 mục đã mở; mục của chương 2 chờ tới 01/12 nên cron báo sau.
+    expect(assigned).toHaveLength(1);
+    expect(assigned[0].params).toEqual({
+      className: 'N5 tối 2-4',
+      title: 'Thi cuối khoá',
+      count: 2,
+    });
+    expect(assigned[0].userIds).toEqual(['user-m-student-1']);
+    const retake = notifications.ofType(NotificationType.RETAKE_ASSIGNED);
+    expect(retake).toHaveLength(1);
+    expect(retake[0].params?.title).toBe('Kiểm tra chương 1');
+    // Giáo viên của lớp được báo, người sửa thì không.
+    const changed = notifications.ofType(
+      NotificationType.CLASS_CURRICULUM_CHANGED,
+    );
+    expect(changed[0].exceptUserId).toBe('user-m-teacher');
+    expect(changed[0].link).toBe(`/t/a/dashboard/classes/${id}?tab=curriculum`);
   });
 });

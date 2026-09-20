@@ -80,6 +80,10 @@ const ROUTES: Record<string, Access> = {
   'POST /auth/change-password': PENDING_OK,
 
   'GET /me/contexts': USER,
+  'GET /me/notifications': USER,
+  'GET /me/notifications/unread-count': USER,
+  'POST /me/notifications/read-all': USER,
+  'POST /me/notifications/:id/read': USER,
   'PATCH /me/profile': USER,
   'POST /me/branding/upload': USER,
   'POST /tenants': USER,

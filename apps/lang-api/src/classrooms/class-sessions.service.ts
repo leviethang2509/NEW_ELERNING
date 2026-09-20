@@ -9,6 +9,7 @@ import {
   ClassLogAction,
   ClassSessionKind,
   ClassSessionStatus,
+  NotificationType,
   TenantRole,
   isClassroomClosed,
   trainingDateOf,
@@ -17,6 +18,7 @@ import {
   type SessionField,
 } from '@lang/shared';
 import { DataSource, In, IsNull, type EntityManager } from 'typeorm';
+import { NotificationsService } from '../notifications/notifications.service';
 import type { TenantContext } from '../tenants/tenant-context';
 import { Course } from '../training/course.entity';
 import { toCourseRef } from '../training/training.mapper';
@@ -24,6 +26,10 @@ import { ClassGroup } from './class-group.entity';
 import { ClassItem } from './class-item.entity';
 import { loadEligible } from './class-members.service';
 import { writeClassLog } from './class-logs';
+import {
+  notifySessionChanged,
+  notifySessionTeachers,
+} from './class-notifications';
 import { ClassSessionLink } from './class-session-link.entity';
 import { ClassSessionTeacher } from './class-session-teacher.entity';
 import { ClassSession } from './class-session.entity';
@@ -72,7 +78,10 @@ const MAX_SESSION_MS = 12 * 60 * 60 * 1000;
  */
 @Injectable()
 export class ClassSessionsService {
-  constructor(private readonly dataSource: DataSource) {}
+  constructor(
+    private readonly dataSource: DataSource,
+    private readonly notifications: NotificationsService,
+  ) {}
 
   async update(
     ctx: TenantContext,
@@ -82,7 +91,7 @@ export class ClassSessionsService {
     dto: UpdateClassSessionDto,
   ): Promise<ClassSessionView> {
     await this.dataSource.transaction(async (manager) => {
-      const session = await this.lockForEdit(
+      const { classroom, session } = await this.lockForEdit(
         manager,
         ctx,
         classroomId,
@@ -159,6 +168,24 @@ export class ClassSessionsService {
         ClassLogAction.SESSION_UPDATED,
         { ...sessionLabel(session), sessionFields: fields },
       );
+      if (fields.includes('time')) {
+        await notifySessionChanged(manager, this.notifications, {
+          classroom,
+          slug: ctx.slug,
+          session: { ...session, ...changes },
+          type: NotificationType.SESSIONS_MOVED,
+          actorId,
+        });
+      }
+      if (fields.includes('teachers') && dto.teacherMembershipIds?.length) {
+        await notifySessionTeachers(manager, this.notifications, {
+          classroom,
+          slug: ctx.slug,
+          session,
+          membershipIds: dto.teacherMembershipIds,
+          actorId,
+        });
+      }
     });
     return this.view(ctx, sessionId);
   }
@@ -172,7 +199,7 @@ export class ClassSessionsService {
     reason: string | null,
   ): Promise<ClassSessionView> {
     await this.dataSource.transaction(async (manager) => {
-      const session = await this.lockForEdit(
+      const { classroom, session } = await this.lockForEdit(
         manager,
         ctx,
         classroomId,
@@ -195,6 +222,13 @@ export class ClassSessionsService {
         ClassLogAction.SESSION_CANCELLED,
         { ...sessionLabel(session), reason },
       );
+      await notifySessionChanged(manager, this.notifications, {
+        classroom,
+        slug: ctx.slug,
+        session,
+        type: NotificationType.SESSION_CANCELLED,
+        actorId,
+      });
     });
     return this.view(ctx, sessionId);
   }
@@ -207,7 +241,7 @@ export class ClassSessionsService {
     sessionId: string,
   ): Promise<ClassSessionView> {
     await this.dataSource.transaction(async (manager) => {
-      const session = await this.lockForEdit(
+      const { session } = await this.lockForEdit(
         manager,
         ctx,
         classroomId,
@@ -242,7 +276,7 @@ export class ClassSessionsService {
     dto: CreateMakeupSessionDto,
   ): Promise<ClassSessionView> {
     const id = await this.dataSource.transaction(async (manager) => {
-      await this.lockClassroom(manager, ctx, classroomId);
+      const classroom = await this.lockClassroom(manager, ctx, classroomId);
       const startsAt = new Date(dto.startsAt);
       const endsAt = new Date(dto.endsAt);
       assertSessionTime(startsAt, endsAt, new Date());
@@ -288,6 +322,22 @@ export class ClassSessionsService {
         ClassLogAction.MAKEUP_ADDED,
         { ...sessionLabel(session), makeupForSeq: target?.seq ?? null },
       );
+      await notifySessionChanged(manager, this.notifications, {
+        classroom,
+        slug: ctx.slug,
+        session,
+        type: NotificationType.SESSION_MAKEUP_ADDED,
+        actorId,
+      });
+      if (teacherIds !== null && teacherIds.length > 0) {
+        await notifySessionTeachers(manager, this.notifications, {
+          classroom,
+          slug: ctx.slug,
+          session,
+          membershipIds: teacherIds,
+          actorId,
+        });
+      }
       return session.id;
     });
     return this.view(ctx, id);
@@ -301,7 +351,7 @@ export class ClassSessionsService {
     sessionId: string,
   ): Promise<void> {
     await this.dataSource.transaction(async (manager) => {
-      const session = await this.lockForEdit(
+      const { session } = await this.lockForEdit(
         manager,
         ctx,
         classroomId,
@@ -335,7 +385,7 @@ export class ClassSessionsService {
     dto: SaveSessionLinksDto,
   ): Promise<ClassSessionView> {
     await this.dataSource.transaction(async (manager) => {
-      const session = await this.lockForEdit(
+      const { session } = await this.lockForEdit(
         manager,
         ctx,
         classroomId,
@@ -479,13 +529,13 @@ export class ClassSessionsService {
     ctx: TenantContext,
     classroomId: string,
     sessionId: string,
-  ): Promise<ClassSession> {
-    await this.lockClassroom(manager, ctx, classroomId);
+  ): Promise<{ classroom: Classroom; session: ClassSession }> {
+    const classroom = await this.lockClassroom(manager, ctx, classroomId);
     const session = await manager
       .getRepository(ClassSession)
       .findOneBy({ id: sessionId, classroomId });
     if (!session) throw new NotFoundException(SESSION_NOT_FOUND);
-    return session;
+    return { classroom, session };
   }
 
   /**

@@ -3,6 +3,7 @@ import {
   AttemptStatus,
   GRADING_FREE_FILTER,
   GradingKind,
+  NotificationType,
   QuestionGrading,
   isValidManualScore,
   type GradeAnswerInput,
@@ -44,6 +45,8 @@ import { escapeLike } from '../common/sql';
 import { ExamQuestion } from '../exams/exam-question.entity';
 import { ExamSection } from '../exams/exam-section.entity';
 import { Exam } from '../exams/exam.entity';
+import { examResultLink } from '../notifications/notification-targets';
+import { NotificationsService } from '../notifications/notifications.service';
 import { R2Service } from '../storage/r2.service';
 import type { TenantContext } from '../tenants/tenant-context';
 import { User } from '../users/user.entity';
@@ -115,6 +118,7 @@ export class GradingService {
     private readonly attempts: Repository<ExamAttempt>,
     @InjectRepository(ExamAttemptAnswer)
     private readonly answers: Repository<ExamAttemptAnswer>,
+    private readonly notifications: NotificationsService,
   ) {}
 
   async list(
@@ -341,6 +345,18 @@ export class GradingService {
       await manager
         .getRepository(ExamAttempt)
         .update({ id: attempt.id, status: attempt.status }, attemptChanges);
+      if (attemptChanges.status === AttemptStatus.GRADED) {
+        const exams = await this.examsById([attempt.examId]);
+        await this.notifications.notify(manager, {
+          userIds: [attempt.userId],
+          tenantId: ctx.tenantId,
+          type: NotificationType.ATTEMPT_GRADED,
+          params: { title: exams.get(attempt.examId)?.title ?? '' },
+          link: examResultLink(ctx.slug, attempt.id),
+          // Chấm lại sau khi đã chấm xong không báo thêm lần nữa.
+          dedupeKey: `graded:${attempt.id}`,
+        });
+      }
       Object.assign(attempt, attemptChanges);
 
       const graders = await this.usersById(manager, [graderId]);

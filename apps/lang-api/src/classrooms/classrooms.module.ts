@@ -3,6 +3,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { AttemptsModule } from '../attempts/attempts.module';
 import { LessonAttemptsModule } from '../lesson-attempts/lesson-attempts.module';
 import { Membership } from '../memberships/membership.entity';
+import { NotificationsModule } from '../notifications/notifications.module';
 import { TenantsModule } from '../tenants/tenants.module';
 import { StorageModule } from '../storage/storage.module';
 import { TrainingModule } from '../training/training.module';
@@ -40,6 +41,7 @@ import { ScheduleController } from './schedule.controller';
 @Module({
   imports: [
     TenantsModule,
+    NotificationsModule,
     TrainingModule,
     AttemptsModule,
     LessonAttemptsModule,

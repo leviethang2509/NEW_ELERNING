@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ExamsModule } from '../exams/exams.module';
+import { NotificationsModule } from '../notifications/notifications.module';
 import { StorageModule } from '../storage/storage.module';
 import { TenantsModule } from '../tenants/tenants.module';
 import { AttemptsScheduler } from './attempts.scheduler';
@@ -16,6 +17,7 @@ import { LearnerExamsService } from './learner-exams.service';
   imports: [
     TenantsModule,
     ExamsModule,
+    NotificationsModule,
     StorageModule,
     TypeOrmModule.forFeature([
       ExamAttempt,

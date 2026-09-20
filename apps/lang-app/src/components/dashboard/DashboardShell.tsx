@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { LogOut, Menu } from 'lucide-react';
 import { Brand } from '@/components/Brand';
+import { NotificationBell } from '@/components/notifications/NotificationBell';
 import {
   findActiveItem,
   navigationFor,
@@ -160,9 +161,13 @@ export function DashboardShell({
             {activeItem?.label ?? vi.nav.overview}
           </div>
 
+          <div className="ml-auto">
+            <NotificationBell />
+          </div>
+
           {/* Mobile đã có thẻ người dùng trong sidebar, ẩn để tiêu đề không xuống dòng. */}
           {user && (
-            <div className="ml-auto hidden items-center gap-3 px-2 py-1.5 sm:flex">
+            <div className="hidden items-center gap-3 px-2 py-1.5 sm:flex">
               <span className="text-right">
                 <span className="block text-[13.5px] font-semibold text-[var(--fg)]">
                   {user.fullName}

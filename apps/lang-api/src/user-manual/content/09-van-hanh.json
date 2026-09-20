@@ -324,7 +324,16 @@
             ["File ghi âm", "≤ 10MB, `audio/webm` hoặc `audio/mp4`"],
             ["Câu trả lời dạng chữ", "Tối đa 20.000 ký tự mỗi câu"],
             ["Điểm chấm tay", "0–10, bước 0,5"],
-            ["Nhận xét", "Tối đa 5000 ký tự"]
+            ["Nhận xét", "Tối đa 5000 ký tự"],
+            ["Thông báo: giữ lại", "90 ngày, cron xoá hằng ngày"],
+            [
+              "Thông báo: cron mốc giáo trình",
+              "15 phút một lần, chỉ xét mốc trong 3 ngày gần đây"
+            ],
+            [
+              "Chuông: đếm lại",
+              "60 giây và mỗi khi quay lại tab; hiện 10 thông báo mới nhất"
+            ]
           ]
         }
       ]

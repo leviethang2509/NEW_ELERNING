@@ -323,6 +323,10 @@
           "type": "callout",
           "tone": "tip",
           "text": "Giáo viên muốn tự thử đề như học viên: làm bài từ trang trung tâm `/t/{slug}`. Bài đó không tự chấm được (phải nhờ người chấm khác), và có bài làm khiến lần lưu đề sau tạo version mới."
+        },
+        {
+          "type": "paragraph",
+          "text": "Chuông **Thông báo** trên header báo: được phân công dạy lớp, được xếp dạy thế, có bài mới cần chấm, được chuyển giao chấm, giáo trình lớp bị người khác sửa, lớp dời lịch. Xem [Thông báo](page:thong-bao)."
         }
       ]
     },
@@ -403,6 +407,10 @@
             "Học viên được xếp vào [lớp học](page:lop-hoc) thì trang trung tâm có thêm **Lớp của tôi** – xem [Lớp học của tôi](page:lop-cua-toi).",
             "Trong lúc lớp đang học, bạn **không** thấy tỉ lệ chuyên cần hay nhãn \"muộn\" — chỉ thấy trạng thái và điểm từng bài của mình."
           ]
+        },
+        {
+          "type": "paragraph",
+          "text": "Chuông **Thông báo** trên header báo: được thêm vào lớp, mục mới được giao hoặc tới ngày mở, sắp hết hạn và quá hạn, bài đã chấm xong, buổi học huỷ/dời/bù, nhận xét cuối khoá. Xem [Thông báo](page:thong-bao)."
         }
       ]
     },

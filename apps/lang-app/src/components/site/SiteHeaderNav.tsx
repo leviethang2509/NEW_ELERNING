@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { LogOut } from 'lucide-react';
 import { useAuth } from '@/components/auth/AuthProvider';
+import { NotificationBell } from '@/components/notifications/NotificationBell';
 import { vi } from '@/i18n/vi';
 import { initials } from '@/lib/initials';
 
@@ -23,6 +24,7 @@ export function SiteHeaderNav() {
         <Link href="/me" className={ghostLinkClass}>
           {vi.site.myWorkspace}
         </Link>
+        <NotificationBell />
         <Link
           href="/me/account"
           title={vi.account.title}

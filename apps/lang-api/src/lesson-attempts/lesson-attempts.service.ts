@@ -45,6 +45,8 @@ import { insertable } from '../exams/section-content';
 import { LessonQuestion } from '../lessons/lesson-question.entity';
 import { LessonSection } from '../lessons/lesson-section.entity';
 import { Lesson } from '../lessons/lesson.entity';
+import { notifyPendingGrading } from '../notifications/grading-notifications';
+import { NotificationsService } from '../notifications/notifications.service';
 import {
   LESSON_NOT_FOUND,
   currentLessonSections,
@@ -145,6 +147,7 @@ export class LessonAttemptsService {
     private readonly attemptSections: Repository<LessonAttemptSection>,
     @InjectRepository(LessonAttemptAnswer)
     private readonly answers: Repository<LessonAttemptAnswer>,
+    private readonly notifications: NotificationsService,
   ) {}
 
   /**
@@ -471,6 +474,23 @@ export class LessonAttemptsService {
           .update(target.id, changes);
         Object.assign(target, changes);
         await this.recountAttempt(manager, locked, now);
+        if (graded.manual > 0) {
+          const lesson = await manager.getRepository(Lesson).findOne({
+            where: { id: locked.attempt.lessonId },
+            withDeleted: true,
+          });
+          await notifyPendingGrading(manager, this.notifications, {
+            tenantId: locked.attempt.tenantId,
+            attemptId: locked.attempt.id,
+            kind: 'lesson',
+            classItemId: locked.attempt.classItemId,
+            authorId: lesson?.createdBy ?? null,
+            studentUserId: locked.attempt.userId,
+            title: lesson?.title ?? '',
+            // Nộp lại section là một lần chờ chấm mới.
+            dedupeKey: `lesson_pending:${target.id}:${changes.submitCount}`,
+          });
+        }
       },
     );
     await Promise.all(obsoleteKeys.map((key) => this.deleteRecording(key)));

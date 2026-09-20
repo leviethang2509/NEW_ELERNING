@@ -1,6 +1,7 @@
 import {
   GradingKind,
   GradingScopeType,
+  NotificationType,
   TenantRole,
   type GradingDelegation as GradingDelegationView,
   type GradingDelegationBox,
@@ -22,6 +23,8 @@ import { Exam } from '../exams/exam.entity';
 import { LessonAttempt } from '../lesson-attempts/lesson-attempt.entity';
 import { Lesson } from '../lessons/lesson.entity';
 import { Membership } from '../memberships/membership.entity';
+import { gradingListLink } from '../notifications/notification-targets';
+import { NotificationsService } from '../notifications/notifications.service';
 import { isUniqueViolation } from '../common/database-errors';
 import type { TenantContext } from '../tenants/tenant-context';
 import { User } from '../users/user.entity';
@@ -65,7 +68,10 @@ interface AttemptScopeInfo {
  */
 @Injectable()
 export class GradingDelegationsService {
-  constructor(private readonly dataSource: DataSource) {}
+  constructor(
+    private readonly dataSource: DataSource,
+    private readonly notifications: NotificationsService,
+  ) {}
 
   /** Hộp "Chuyển giao chấm" của một bài làm: phạm vi giao được + đã giao. */
   async box(
@@ -168,6 +174,17 @@ export class GradingDelegationsService {
         // Hai người giao cùng lúc: unique index đã giữ đúng, đọc lại là đủ.
         if (!isUniqueViolation(error)) throw error;
       }
+      const actor = await manager
+        .getRepository(User)
+        .findOneBy({ id: actorId });
+      await this.notifications.notify(manager, {
+        userIds: added.map((member) => member.membership.userId),
+        tenantId: ctx.tenantId,
+        type: NotificationType.GRADING_DELEGATED,
+        params: { title, actorName: actor?.fullName ?? '' },
+        link: gradingListLink(ctx.slug),
+        exceptUserId: actorId,
+      });
     }
     return this.listFor(manager, ctx, [
       { scopeType: dto.scopeType, scopeId: dto.scopeId, title },

@@ -7,6 +7,7 @@ import {
 import {
   ClassLogAction,
   MembershipStatus,
+  NotificationType,
   TenantRole,
   isClassroomClosed,
   type ClassroomMemberView,
@@ -16,6 +17,11 @@ import {
 import { DataSource, In, IsNull, Not, type EntityManager } from 'typeorm';
 import { MembershipRole } from '../memberships/membership-role.entity';
 import { Membership } from '../memberships/membership.entity';
+import {
+  dashboardClassLink,
+  learnerClassLink,
+} from '../notifications/notification-targets';
+import { NotificationsService } from '../notifications/notifications.service';
 import type { TenantContext } from '../tenants/tenant-context';
 import { User } from '../users/user.entity';
 import { writeClassLog } from './class-logs';
@@ -46,7 +52,10 @@ export interface MemberInfo {
  */
 @Injectable()
 export class ClassMembersService {
-  constructor(private readonly dataSource: DataSource) {}
+  constructor(
+    private readonly dataSource: DataSource,
+    private readonly notifications: NotificationsService,
+  ) {}
 
   async list(
     ctx: TenantContext,
@@ -150,6 +159,14 @@ export class ClassMembersService {
         ClassLogAction.TEACHERS_ADDED,
         { names: added.map(({ user }) => user.fullName) },
       );
+      await this.notifications.notify(manager, {
+        userIds: added.map(({ membership }) => membership.userId),
+        tenantId: ctx.tenantId,
+        type: NotificationType.CLASS_TEACHER_ADDED,
+        params: { className: classroom.name },
+        link: dashboardClassLink(ctx.slug, classroomId),
+        exceptUserId: actorId,
+      });
     });
     return this.list(ctx, classroomId);
   }
@@ -263,6 +280,14 @@ export class ClassMembersService {
         ClassLogAction.STUDENTS_ADDED,
         { names: added.map(({ user }) => user.fullName) },
       );
+      await this.notifications.notify(manager, {
+        userIds: added.map(({ membership }) => membership.userId),
+        tenantId: ctx.tenantId,
+        type: NotificationType.CLASS_STUDENT_ADDED,
+        params: { className: classroom.name },
+        link: learnerClassLink(ctx.slug, classroomId),
+        exceptUserId: actorId,
+      });
     });
     return this.list(ctx, classroomId);
   }

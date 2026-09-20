@@ -419,6 +419,10 @@
           "tone": "info",
           "title": "Trong khoá học chưa thấy chuyên cần",
           "text": "Khi lớp còn **Đang học**, bạn chỉ thấy trạng thái từng mục (đã nộp/chưa nộp, hạn nộp) và điểm từng bài của mình, không thấy tỉ lệ chuyên cần hay nhãn \"muộn\". Lớp **Đã huỷ** không có tổng kết. Cách tính xem [Chuyên cần & bảng điểm](page:chuyen-can-bang-diem#cach-tinh-chuyen-can)."
+        },
+        {
+          "type": "paragraph",
+          "text": "Mục mới, mục tới ngày mở, hạn nộp còn 24 giờ, quá hạn chưa nộp, buổi học đổi lịch và nhận xét cuối khoá đều hiện ở chuông [Thông báo](page:thong-bao)."
         }
       ]
     },
@@ -538,6 +542,10 @@
             "Chấm lại được bất kỳ lúc nào: điểm mới thay điểm cũ, hiện “Chấm bởi … · thời điểm”.",
             "Bài học: người chấm thấy **Giải thích (học viên thấy sau khi nộp)**. Học viên nộp lại phần có câu chấm tay thì điểm cũ bị bỏ, lượt học quay lại **Chờ chấm**; đang mở trang chấm bản cũ thì lưu điểm báo lỗi, tải lại trang để chấm lần nộp mới."
           ]
+        },
+        {
+          "type": "paragraph",
+          "text": "Học viên nộp bài có câu chấm tay sẽ gửi [thông báo](page:thong-bao) “có bài mới cần chấm” cho giáo viên của lớp (bài trong lớp) hoặc người soạn đề/bài học (bài tự do); chuyển giao chấm gửi thông báo cho người được giao. Chấm xong thì học viên nhận thông báo."
         }
       ]
     }
