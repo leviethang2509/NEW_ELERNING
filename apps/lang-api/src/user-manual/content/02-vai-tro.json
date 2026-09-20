@@ -8,7 +8,10 @@
       "summary": "Quyền cao nhất của hệ thống và các việc chỉ System Owner làm được.",
       "roles": ["SYSTEM_OWNER"],
       "blocks": [
-        { "type": "roles", "roles": ["SYSTEM_OWNER"] },
+        {
+          "type": "roles",
+          "roles": ["SYSTEM_OWNER"]
+        },
         {
           "type": "paragraph",
           "text": "System Owner có mọi quyền của [System Admin](page:system-admin) và thêm quyền trên các tài khoản quản trị hệ thống."
@@ -26,7 +29,11 @@
             "Tạo thêm System Owner: tạo tài khoản (luôn là Người dùng) rồi đổi vai trò."
           ]
         },
-        { "type": "heading", "level": 2, "text": "Ràng buộc an toàn" },
+        {
+          "type": "heading",
+          "level": 2,
+          "text": "Ràng buộc an toàn"
+        },
         {
           "type": "list",
           "items": [
@@ -35,7 +42,11 @@
             "System Owner đầu tiên được tạo bằng lệnh seed trên máy dev (xem [Deploy & môi trường](page:deploy-moi-truong))."
           ]
         },
-        { "type": "heading", "level": 2, "text": "Công việc thường ngày" },
+        {
+          "type": "heading",
+          "level": 2,
+          "text": "Công việc thường ngày"
+        },
         {
           "type": "list",
           "items": [
@@ -53,12 +64,19 @@
       "summary": "Vận hành hằng ngày: người dùng, trung tâm, gói dịch vụ, danh mục hệ thống.",
       "roles": ["SYSTEM_ADMIN"],
       "blocks": [
-        { "type": "roles", "roles": ["SYSTEM_ADMIN", "SYSTEM_OWNER"] },
+        {
+          "type": "roles",
+          "roles": ["SYSTEM_ADMIN", "SYSTEM_OWNER"]
+        },
         {
           "type": "paragraph",
           "text": "Sau khi đăng nhập, System Admin (không là thành viên trung tâm nào) được đưa thẳng tới dashboard `/admin`. Menu gồm **Tổng quan**, **Quản lý** (Người dùng, Trung tâm, Gói dịch vụ), **Đề thi & Bài học** (Danh mục, Loại đề, Mẫu bài học) và **Tài liệu nội bộ**."
         },
-        { "type": "heading", "level": 2, "text": "Được làm" },
+        {
+          "type": "heading",
+          "level": 2,
+          "text": "Được làm"
+        },
         {
           "type": "list",
           "items": [
@@ -69,7 +87,11 @@
             "Quản lý danh mục, loại đề & mẫu bài học hệ thống – [Danh mục, loại đề & mẫu bài học hệ thống](page:admin-danh-muc-loai-de)."
           ]
         },
-        { "type": "heading", "level": 2, "text": "Không được làm" },
+        {
+          "type": "heading",
+          "level": 2,
+          "text": "Không được làm"
+        },
         {
           "type": "list",
           "items": [
@@ -86,12 +108,19 @@
       "summary": "Người dùng thông thường: tài khoản cá nhân, đăng ký trung tâm, tham gia trung tâm.",
       "roles": ["REGISTERED_USER"],
       "blocks": [
-        { "type": "roles", "roles": ["REGISTERED_USER"] },
+        {
+          "type": "roles",
+          "roles": ["REGISTERED_USER"]
+        },
         {
           "type": "paragraph",
           "text": "Mọi tài khoản mới (tự đăng ký, do System Admin tạo hoặc do trung tâm tạo) đều là **Người dùng**. Quyền trong trung tâm đến từ vai trò trung tâm, không từ vai trò hệ thống."
         },
-        { "type": "heading", "level": 2, "text": "Được làm" },
+        {
+          "type": "heading",
+          "level": 2,
+          "text": "Được làm"
+        },
         {
           "type": "list",
           "items": [
@@ -101,7 +130,11 @@
             "Đăng ký trung tâm nếu **đủ 18 tuổi** – [Đăng ký trung tâm](page:dang-ky-trung-tam)."
           ]
         },
-        { "type": "heading", "level": 2, "text": "Tham gia trung tâm" },
+        {
+          "type": "heading",
+          "level": 2,
+          "text": "Tham gia trung tâm"
+        },
         {
           "type": "paragraph",
           "text": "Chưa có chức năng tự xin tham gia trung tâm. Người dùng cần nhờ Chủ sở hữu/Quản trị viên của trung tâm thêm theo email (tài khoản đã có) hoặc tạo tài khoản mới cho họ. Người dưới 18 tuổi vẫn tự đăng ký tài khoản và tham gia trung tâm bình thường."
@@ -114,12 +147,19 @@
       "summary": "Tenant Owner: người đăng ký và có toàn quyền trong trung tâm.",
       "roles": ["TENANT_OWNER"],
       "blocks": [
-        { "type": "roles", "roles": ["TENANT_OWNER"] },
+        {
+          "type": "roles",
+          "roles": ["TENANT_OWNER"]
+        },
         {
           "type": "paragraph",
           "text": "Chủ sở hữu là người gửi đăng ký trung tâm. Membership Chủ sở hữu được tạo ngay khi gửi đăng ký và tính vào giới hạn gói. Mỗi trung tâm có **đúng một** Chủ sở hữu; chưa có chức năng chuyển quyền sở hữu."
         },
-        { "type": "heading", "level": 2, "text": "Bắt đầu" },
+        {
+          "type": "heading",
+          "level": 2,
+          "text": "Bắt đầu"
+        },
         {
           "type": "steps",
           "items": [
@@ -157,7 +197,11 @@
             }
           ]
         },
-        { "type": "heading", "level": 2, "text": "Quyền" },
+        {
+          "type": "heading",
+          "level": 2,
+          "text": "Quyền"
+        },
         {
           "type": "list",
           "items": [
@@ -174,8 +218,15 @@
       "summary": "Tenant Admin: quản lý thành viên, danh mục/loại đề/mẫu bài học và mọi đề của trung tâm.",
       "roles": ["TENANT_ADMIN"],
       "blocks": [
-        { "type": "roles", "roles": ["TENANT_ADMIN", "TENANT_OWNER"] },
-        { "type": "heading", "level": 2, "text": "Được làm" },
+        {
+          "type": "roles",
+          "roles": ["TENANT_ADMIN", "TENANT_OWNER"]
+        },
+        {
+          "type": "heading",
+          "level": 2,
+          "text": "Được làm"
+        },
         {
           "type": "list",
           "items": [
@@ -195,7 +246,11 @@
             "Làm bài thi như mọi thành viên."
           ]
         },
-        { "type": "heading", "level": 2, "text": "Không được làm" },
+        {
+          "type": "heading",
+          "level": 2,
+          "text": "Không được làm"
+        },
         {
           "type": "list",
           "items": [
@@ -213,12 +268,19 @@
       "summary": "Teacher: soạn đề, publish đề của mình, upload media và chấm bài.",
       "roles": ["TEACHER"],
       "blocks": [
-        { "type": "roles", "roles": ["TEACHER"] },
+        {
+          "type": "roles",
+          "roles": ["TEACHER"]
+        },
         {
           "type": "paragraph",
           "text": "Giáo viên vào dashboard trung tâm với menu **Tổng quan** (số liệu rút gọn), nhóm **Đề thi & Bài học**: Danh mục, Loại đề, Mẫu bài học, Đề thi, Bài học, Thư viện media, Chấm bài và nhóm **Đào tạo**: Khoá học, Giáo trình, Lớp học, Lịch."
         },
-        { "type": "heading", "level": 2, "text": "Được làm" },
+        {
+          "type": "heading",
+          "level": 2,
+          "text": "Được làm"
+        },
         {
           "type": "list",
           "items": [
@@ -233,10 +295,15 @@
             "Xem **Lịch dạy của tôi** (kể cả buổi được xếp dạy thế ở lớp khác), lịch khoá học của lớp mình và chi tiết buổi mình dạy thế – [Lịch](page:lich).",
             "Upload/xoá media của trung tâm – [Thư viện media](page:thu-vien-media).",
             "Chấm Writing/Speaking của mọi bài đã nộp, trừ bài của chính mình – [Chấm bài](page:cham-bai).",
-            "Làm bài thi như mọi thành viên."
+            "Làm bài thi như mọi thành viên.",
+            "Xem bài làm của học viên trên từng mục đề thi của lớp mình và bấm **Cho làm lại** khi học viên gặp sự cố."
           ]
         },
-        { "type": "heading", "level": 2, "text": "Không được làm" },
+        {
+          "type": "heading",
+          "level": 2,
+          "text": "Không được làm"
+        },
         {
           "type": "list",
           "items": [
@@ -261,12 +328,19 @@
       "summary": "Student: học bài học, làm đề đã publish và xem kết quả của mình.",
       "roles": ["STUDENT"],
       "blocks": [
-        { "type": "roles", "roles": ["STUDENT"] },
+        {
+          "type": "roles",
+          "roles": ["STUDENT"]
+        },
         {
           "type": "paragraph",
           "text": "Học viên không vào dashboard trung tâm (mở `/t/{slug}/dashboard` sẽ thấy “Bạn không có quyền vào dashboard”). Mọi việc diễn ra ở trang trung tâm `/t/{slug}`."
         },
-        { "type": "heading", "level": 2, "text": "Hành trình của học viên" },
+        {
+          "type": "heading",
+          "level": 2,
+          "text": "Hành trình của học viên"
+        },
         {
           "type": "steps",
           "items": [
@@ -296,14 +370,32 @@
             }
           ]
         },
-        { "type": "heading", "level": 2, "text": "Lưu ý" },
+        {
+          "type": "heading",
+          "level": 2,
+          "text": "Lớp học"
+        },
+        {
+          "type": "list",
+          "items": [
+            "Được trung tâm xếp vào lớp thì trang `/t/{slug}` có thêm **Lớp của tôi**: giáo trình lớp, bài học và bài kiểm tra được giao, buổi sắp tới.",
+            "Bài/đề giao qua lớp làm ở trang lớp, kể cả bài đặt **Chỉ qua lớp**; mỗi bài kiểm tra/bài thi chỉ làm **một lần**.",
+            "**Lịch học của tôi** (`/t/{slug}/schedule`) hiện buổi của mọi lớp bạn đang học.",
+            "Chi tiết ở [Lớp học của tôi](page:lop-cua-toi)."
+          ]
+        },
+        {
+          "type": "heading",
+          "level": 2,
+          "text": "Lưu ý"
+        },
         {
           "type": "list",
           "items": [
             "Không giới hạn số lượt làm mỗi đề, nhưng mỗi đề chỉ có **1 lượt đang làm** tại một thời điểm.",
             "Kết quả không hiện đáp án đúng hay đánh dấu câu sai; chỉ có số câu đúng theo section và điểm/nhận xét phần chấm tay.",
             "Speaking cần trình duyệt cho dùng micro (HTTPS hoặc localhost).",
-            "Học viên có thể đã được xếp vào [lớp học](page:lop-hoc), nhưng trang học trong lớp chưa có – xem [Ngoài phạm vi hiện tại](page:ngoai-pham-vi)."
+            "Học viên được xếp vào [lớp học](page:lop-hoc) thì trang trung tâm có thêm **Lớp của tôi** – xem [Lớp học của tôi](page:lop-cua-toi)."
           ]
         }
       ]
@@ -314,12 +406,19 @@
       "summary": "Parent: liên kết với học viên; hiện quyền như một thành viên làm bài.",
       "roles": ["PARENT"],
       "blocks": [
-        { "type": "roles", "roles": ["PARENT"] },
+        {
+          "type": "roles",
+          "roles": ["PARENT"]
+        },
         {
           "type": "paragraph",
           "text": "Phụ huynh là thành viên trung tâm có vai trò **Phụ huynh**, được Chủ sở hữu/Quản trị viên gắn với một hoặc nhiều học viên (thường là học viên dưới 18 tuổi, nhưng không bắt buộc) kèm quan hệ như “Mẹ”, “Bố”."
         },
-        { "type": "heading", "level": 2, "text": "Hiện tại" },
+        {
+          "type": "heading",
+          "level": 2,
+          "text": "Hiện tại"
+        },
         {
           "type": "list",
           "items": [

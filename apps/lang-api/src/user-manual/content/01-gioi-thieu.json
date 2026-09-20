@@ -18,7 +18,11 @@
           "type": "paragraph",
           "text": "**Lang Simulator** là nền tảng multi-tenant cho trung tâm ngoại ngữ: mỗi trung tâm (tenant) có không gian riêng để quản lý thành viên, soạn đề theo cấu trúc kỳ thi (TOEIC, IELTS, JLPT…), cho học viên thi thử có tính giờ, chấm tự động phần trắc nghiệm và để giáo viên chấm Writing/Speaking."
         },
-        { "type": "heading", "level": 2, "text": "Các khu vực của hệ thống" },
+        {
+          "type": "heading",
+          "level": 2,
+          "text": "Các khu vực của hệ thống"
+        },
         {
           "type": "table",
           "columns": ["Khu vực", "Đường dẫn", "Ai dùng"],
@@ -52,7 +56,11 @@
             ["Tài liệu nội bộ", "`/user-manual`", "System Owner, System Admin"]
           ]
         },
-        { "type": "heading", "level": 2, "text": "Luồng nghiệp vụ chính" },
+        {
+          "type": "heading",
+          "level": 2,
+          "text": "Luồng nghiệp vụ chính"
+        },
         {
           "type": "steps",
           "items": [
@@ -86,7 +94,11 @@
             }
           ]
         },
-        { "type": "heading", "level": 2, "text": "Cách dùng tài liệu" },
+        {
+          "type": "heading",
+          "level": 2,
+          "text": "Cách dùng tài liệu"
+        },
         {
           "type": "list",
           "items": [
@@ -105,7 +117,11 @@
       "summary": "Giải thích các khái niệm dùng trong hệ thống và tài liệu.",
       "roles": [],
       "blocks": [
-        { "type": "heading", "level": 2, "text": "Tài khoản & trung tâm" },
+        {
+          "type": "heading",
+          "level": 2,
+          "text": "Tài khoản & trung tâm"
+        },
         {
           "type": "table",
           "columns": ["Thuật ngữ", "Ý nghĩa"],
@@ -148,7 +164,11 @@
             ]
           ]
         },
-        { "type": "heading", "level": 2, "text": "Đề thi" },
+        {
+          "type": "heading",
+          "level": 2,
+          "text": "Đề thi"
+        },
         {
           "type": "table",
           "columns": ["Thuật ngữ", "Ý nghĩa"],
@@ -219,7 +239,11 @@
             ]
           ]
         },
-        { "type": "heading", "level": 2, "text": "Đào tạo" },
+        {
+          "type": "heading",
+          "level": 2,
+          "text": "Đào tạo"
+        },
         {
           "type": "table",
           "columns": ["Thuật ngữ", "Ý nghĩa"],
@@ -250,7 +274,7 @@
             ],
             [
               "Ngày mở",
-              "Thời điểm mục (hoặc chương) của giáo trình lớp mở cho học viên; trước đó học viên thấy nhưng chưa vào được."
+              "Thời điểm mục (hoặc chương) của giáo trình lớp mở cho học viên; trước đó học viên thấy nhưng chưa vào được. Đặt cả chương lẫn mục thì mốc muộn hơn có hiệu lực."
             ],
             [
               "Deadline",
@@ -258,7 +282,7 @@
             ],
             [
               "Lần thi lại / Nhóm thi",
-              "Mục đề thi đánh dấu **Thi lại cho** một mục đề thi đứng trước; nhóm thi = mục gốc + các lần thi lại (cách tính điểm nhóm có ở giai đoạn sau)."
+              "Mục đề thi đánh dấu **Thi lại cho** một mục đề thi đứng trước; nhóm thi = mục gốc + các lần thi lại. Kết quả nhóm = điểm cao nhất, đậu khi có ít nhất một lượt đạt ngưỡng."
             ],
             [
               "Nhãn mục",
@@ -287,10 +311,26 @@
             [
               "Trùng lịch",
               "Hai buổi của hai lớp chồng giờ và có chung giáo viên hoặc học viên; cảnh báo đỏ, không chặn."
+            ],
+            [
+              "Điểm %",
+              "Điểm của một lượt thi: (số câu tự chấm đúng + tổng điểm chấm tay) / (số câu tự chấm + số câu chấm tay × 10) × 100."
+            ],
+            [
+              "Ngưỡng đậu",
+              "Điểm % tối thiểu để đậu một mục đề thi của lớp (mặc định 50)."
+            ],
+            [
+              "Cho làm lại",
+              "Giáo viên của lớp huỷ một lượt thi khi học viên gặp sự cố: lượt cũ giữ lịch sử nhưng không tính điểm, học viên làm lượt mới."
             ]
           ]
         },
-        { "type": "heading", "level": 2, "text": "Thi & chấm" },
+        {
+          "type": "heading",
+          "level": 2,
+          "text": "Thi & chấm"
+        },
         {
           "type": "table",
           "columns": ["Thuật ngữ", "Ý nghĩa"],
@@ -329,7 +369,11 @@
           "type": "paragraph",
           "text": "Hệ thống có **hai lớp vai trò độc lập**. Vai trò hệ thống quyết định quyền trên dashboard `/admin`; vai trò trung tâm quyết định quyền trong từng trung tâm. System Owner/Admin **không** tự động có quyền trong trung tâm nào – muốn vào phải được thêm làm thành viên."
         },
-        { "type": "heading", "level": 2, "text": "Vai trò hệ thống" },
+        {
+          "type": "heading",
+          "level": 2,
+          "text": "Vai trò hệ thống"
+        },
         {
           "type": "table",
           "columns": ["Vai trò", "Tên trên giao diện", "Tóm tắt"],
@@ -351,7 +395,11 @@
             ]
           ]
         },
-        { "type": "heading", "level": 2, "text": "Vai trò trong trung tâm" },
+        {
+          "type": "heading",
+          "level": 2,
+          "text": "Vai trò trong trung tâm"
+        },
         {
           "type": "table",
           "columns": ["Vai trò", "Tên trên giao diện", "Tóm tắt"],
@@ -383,7 +431,11 @@
             ]
           ]
         },
-        { "type": "heading", "level": 2, "text": "Kết hợp nhiều vai trò" },
+        {
+          "type": "heading",
+          "level": 2,
+          "text": "Kết hợp nhiều vai trò"
+        },
         {
           "type": "list",
           "items": [
@@ -409,7 +461,11 @@
           "type": "paragraph",
           "text": "Quyền được kiểm tra ở API (guard toàn cục + guard trung tâm + quy tắc trong service). Ẩn menu trên giao diện chỉ là lớp hiển thị. Ký hiệu: ✔ được phép, ✘ không, “xem” chỉ đọc."
         },
-        { "type": "heading", "level": 2, "text": "Dashboard hệ thống" },
+        {
+          "type": "heading",
+          "level": 2,
+          "text": "Dashboard hệ thống"
+        },
         {
           "type": "table",
           "columns": [
@@ -452,7 +508,11 @@
           "tone": "warning",
           "text": "Không ai tự khoá/mở khoá được tài khoản của chính mình, và hệ thống luôn phải còn ít nhất một System Owner đang hoạt động."
         },
-        { "type": "heading", "level": 2, "text": "Trong trung tâm" },
+        {
+          "type": "heading",
+          "level": 2,
+          "text": "Trong trung tâm"
+        },
         {
           "type": "table",
           "columns": [
@@ -617,7 +677,38 @@
               "✔",
               "✔"
             ],
-            ["Xem lịch sử & kết quả lượt làm của mình", "✔", "✔", "✔", "✔", "✔"]
+            [
+              "Xem lịch sử & kết quả lượt làm của mình",
+              "✔",
+              "✔",
+              "✔",
+              "✔",
+              "✔"
+            ],
+            [
+              "Xem lớp mình học, giáo trình lớp, lịch học của tôi",
+              "nếu là học viên lớp",
+              "←",
+              "←",
+              "✔",
+              "✘"
+            ],
+            [
+              "Học bài học / làm bài kiểm tra, bài thi trong lớp",
+              "nếu là học viên lớp",
+              "←",
+              "←",
+              "✔",
+              "✘"
+            ],
+            [
+              "Cho làm lại một lượt thi trong lớp",
+              "mọi lớp",
+              "mọi lớp",
+              "lớp mình phụ trách",
+              "✘",
+              "✘"
+            ]
           ]
         },
         {

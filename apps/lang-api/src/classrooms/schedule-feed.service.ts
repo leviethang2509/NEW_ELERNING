@@ -108,6 +108,25 @@ export class ScheduleFeedService {
     );
   }
 
+  /**
+   * Lịch của một nhóm lớp cho trước — "Lịch học của tôi" (Step 9): lớp mà học
+   * viên đang học. Lớp đã huỷ không hiện (như các lịch khác).
+   */
+  async forClassrooms(
+    ctx: TenantContext,
+    range: CalendarRangeQueryDto,
+    classroomIds: string[],
+  ): Promise<CalendarFeed> {
+    const ids = new Set(classroomIds);
+    const classrooms =
+      ids.size > 0
+        ? (await this.openClassrooms(ctx.tenantId)).filter((row) =>
+            ids.has(row.id),
+          )
+        : [];
+    return this.feed(ctx, range, classrooms, () => true);
+  }
+
   private openClassrooms(
     tenantId: string,
     filter: { courseId?: string } = {},

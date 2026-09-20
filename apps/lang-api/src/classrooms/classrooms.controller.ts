@@ -16,6 +16,7 @@ import {
   EXAM_AUTHOR_ROLES,
   TENANT_MANAGER_ROLES,
   type ClassCurriculum,
+  type ClassItemAttemptRow,
   type ClassLogEntry,
   type ClassScheduleView,
   type ClassSessionView,
@@ -24,6 +25,7 @@ import {
   type ClassroomMembers,
   type MemberScheduleConflicts,
   type ScheduleChangeSummary,
+  type VoidClassAttemptResult,
 } from '@lang/shared';
 import {
   CurrentUser,
@@ -37,6 +39,7 @@ import {
   type TenantContext,
 } from '../tenants/tenant-context';
 import { TenantGuard } from '../tenants/tenant.guard';
+import { ClassAttemptsService } from './class-attempts.service';
 import { ClassCurriculumService } from './class-curriculum.service';
 import { ClassMembersService } from './class-members.service';
 import { ClassScheduleService } from './class-schedule.service';
@@ -76,6 +79,7 @@ export class ClassroomsController {
     private readonly curriculum: ClassCurriculumService,
     private readonly schedule: ClassScheduleService,
     private readonly sessions: ClassSessionsService,
+    private readonly classAttempts: ClassAttemptsService,
   ) {}
 
   @Get()
@@ -324,6 +328,29 @@ export class ClassroomsController {
     @Body() dto: SaveClassCurriculumDto,
   ): Promise<ClassCurriculum> {
     return this.curriculum.save(ctx, actor.id, id, dto);
+  }
+
+  @Get(':id/items/:itemId/attempts')
+  @TenantRoles(...EXAM_AUTHOR_ROLES)
+  itemAttempts(
+    @TenantCtx() ctx: TenantContext,
+    @Param('id', ParseIdPipe()) id: string,
+    @Param('itemId', ParseIdPipe()) itemId: string,
+  ): Promise<ClassItemAttemptRow[]> {
+    return this.classAttempts.listForItem(ctx, id, itemId);
+  }
+
+  @Post(':id/items/:itemId/void/:attemptId')
+  @TenantRoles(...EXAM_AUTHOR_ROLES)
+  @HttpCode(HttpStatus.OK)
+  voidAttempt(
+    @TenantCtx() ctx: TenantContext,
+    @CurrentUser() actor: RequestUser,
+    @Param('id', ParseIdPipe()) id: string,
+    @Param('itemId', ParseIdPipe()) itemId: string,
+    @Param('attemptId', ParseIdPipe()) attemptId: string,
+  ): Promise<VoidClassAttemptResult> {
+    return this.classAttempts.voidAttempt(ctx, actor.id, id, itemId, attemptId);
   }
 
   @Get(':id/logs')

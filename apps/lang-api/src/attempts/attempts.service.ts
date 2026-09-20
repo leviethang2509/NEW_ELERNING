@@ -34,6 +34,7 @@ import {
   type Repository,
 } from 'typeorm';
 import type { QueryDeepPartialEntity } from 'typeorm/query-builder/QueryPartialEntity';
+import { assertAttemptClassOngoing } from '../classrooms/class-gate';
 import { isUniqueViolation } from '../common/database-errors';
 import { ExamQuestion } from '../exams/exam-question.entity';
 import { ExamSection } from '../exams/exam-section.entity';
@@ -161,61 +162,14 @@ export class AttemptsService {
         if (exam.status !== ExamStatus.PUBLISHED) {
           throw new ConflictException(EXAM_CLOSED);
         }
-        const attempts = manager.getRepository(ExamAttempt);
-        const open = await attempts.existsBy({
+        const open = await manager.getRepository(ExamAttempt).existsBy({
           examId,
           userId,
           classItemId: IsNull(),
           status: AttemptStatus.IN_PROGRESS,
         });
         if (open) throw new ConflictException(ATTEMPT_IN_PROGRESS);
-
-        const sections = await currentSections(manager, exam);
-        if (sections.length === 0) throw new ConflictException(EXAM_CLOSED);
-
-        const attempt = await attempts.save(
-          attempts.create({
-            tenantId: ctx.tenantId,
-            examId,
-            examVersion: exam.currentVersion,
-            userId,
-            membershipId: ctx.membershipId,
-            classItemId: null,
-            voidedAt: null,
-            voidedBy: null,
-            status: AttemptStatus.IN_PROGRESS,
-            startedAt: now,
-            submittedAt: null,
-            gradedAt: null,
-            autoCorrect: 0,
-            autoTotal: 0,
-            manualCount: 0,
-            manualGradedCount: 0,
-          }),
-        );
-        await manager.getRepository(ExamAttemptSection).insert(
-          insertable(
-            sections.map(
-              (section, sortOrder): ExamAttemptSection =>
-                ({
-                  id: randomUUID(),
-                  attemptId: attempt.id,
-                  sectionId: section.id,
-                  sortOrder,
-                  status: AttemptSectionStatus.NOT_STARTED,
-                  startedAt: null,
-                  deadlineAt: null,
-                  submittedAt: null,
-                  autoSubmitted: false,
-                  responses: emptyAttemptResponses(),
-                  orderSeed: randomInt(2 ** 31),
-                  correct: null,
-                  total: null,
-                }) as ExamAttemptSection,
-            ),
-          ),
-        );
-        return attempt.id;
+        return this.insertAttempt(manager, ctx, userId, exam, null, now);
       });
     } catch (error) {
       // Hai request bắt đầu cùng lúc: index unique chặn lượt thứ hai.
@@ -225,6 +179,90 @@ export class AttemptsService {
       throw error;
     }
     return this.get(ctx, userId, attemptId);
+  }
+
+  /**
+   * Bắt đầu lượt thi cho một mục giáo trình lớp (Step 9). Chạy trong
+   * transaction của `LearnerClassesService` (đã khoá dòng lớp và kiểm ngày mở,
+   * deadline, 1 lượt/mục): ở đây chỉ kiểm nội dung đề còn dùng được. Đề
+   * `private` và đề đã lưu trữ vẫn thi được vì mục của lớp là căn cứ (người
+   * dùng chốt Step 9).
+   */
+  async createForClassItem(
+    manager: EntityManager,
+    ctx: TenantContext,
+    userId: string,
+    examId: string,
+    classItemId: string,
+    now = new Date(),
+  ): Promise<string> {
+    const exam = await manager.getRepository(Exam).findOne({
+      where: { id: examId, tenantId: ctx.tenantId },
+      lock: { mode: 'pessimistic_read' },
+    });
+    if (!exam) throw new NotFoundException(EXAM_NOT_FOUND);
+    if (exam.status === ExamStatus.DRAFT) {
+      throw new ConflictException(EXAM_CLOSED);
+    }
+    return this.insertAttempt(manager, ctx, userId, exam, classItemId, now);
+  }
+
+  /** Dòng lượt làm + các section trên version hiện tại của đề (đã khoá FOR SHARE). */
+  private async insertAttempt(
+    manager: EntityManager,
+    ctx: TenantContext,
+    userId: string,
+    exam: Exam,
+    classItemId: string | null,
+    now: Date,
+  ): Promise<string> {
+    const sections = await currentSections(manager, exam);
+    if (sections.length === 0) throw new ConflictException(EXAM_CLOSED);
+
+    const attempts = manager.getRepository(ExamAttempt);
+    const attempt = await attempts.save(
+      attempts.create({
+        tenantId: ctx.tenantId,
+        examId: exam.id,
+        examVersion: exam.currentVersion,
+        userId,
+        membershipId: ctx.membershipId,
+        classItemId,
+        voidedAt: null,
+        voidedBy: null,
+        status: AttemptStatus.IN_PROGRESS,
+        startedAt: now,
+        submittedAt: null,
+        gradedAt: null,
+        autoCorrect: 0,
+        autoTotal: 0,
+        manualCount: 0,
+        manualGradedCount: 0,
+      }),
+    );
+    await manager.getRepository(ExamAttemptSection).insert(
+      insertable(
+        sections.map(
+          (section, sortOrder): ExamAttemptSection =>
+            ({
+              id: randomUUID(),
+              attemptId: attempt.id,
+              sectionId: section.id,
+              sortOrder,
+              status: AttemptSectionStatus.NOT_STARTED,
+              startedAt: null,
+              deadlineAt: null,
+              submittedAt: null,
+              autoSubmitted: false,
+              responses: emptyAttemptResponses(),
+              orderSeed: randomInt(2 ** 31),
+              correct: null,
+              total: null,
+            }) as ExamAttemptSection,
+        ),
+      ),
+    );
+    return attempt.id;
   }
 
   async get(
@@ -291,7 +329,16 @@ export class AttemptsService {
     responses: AttemptResponses,
   ): Promise<{ savedAt: string }> {
     const now = new Date();
-    await this.findOwn(this.dataSource.manager, ctx, userId, id);
+    const attempt = await this.findOwn(
+      this.dataSource.manager,
+      ctx,
+      userId,
+      id,
+    );
+    await assertAttemptClassOngoing(
+      this.dataSource.manager,
+      attempt.classItemId,
+    );
     const section = await this.attemptSections.findOneBy({
       id: sectionId,
       attemptId: id,
@@ -418,7 +465,8 @@ export class AttemptsService {
     // Kiểm trước khi tải lên để không đẩy file vô ích; kiểm lại trong transaction.
     const now = new Date();
     const manager = this.dataSource.manager;
-    await this.findOwn(manager, ctx, userId, id);
+    const own = await this.findOwn(manager, ctx, userId, id);
+    await assertAttemptClassOngoing(manager, own.classItemId);
     const section = await this.attemptSections.findOneBy({
       id: sectionId,
       attemptId: id,
@@ -624,25 +672,36 @@ export class AttemptsService {
       },
     });
     for (const { id } of open) {
-      const attempt = await this.lockAttempt(manager, { id });
-      const sections = await this.lockSections(manager, id);
-      await this.submitSections(
-        manager,
-        attempt,
-        sections,
-        sections
-          .filter(
-            (section) => section.status !== AttemptSectionStatus.SUBMITTED,
-          )
-          .map((section) => ({
-            section,
-            responses: normalizeResponses(section.responses),
-            autoSubmitted: true,
-          })),
-        now,
-      );
+      await this.finalizeAttempt(manager, id, now);
     }
     return open.length;
+  }
+
+  /**
+   * Chốt một lượt thi đang làm dở (như hết giờ): dùng khi lớp kết thúc và khi
+   * giáo viên "Cho làm lại" lượt đang làm (người dùng chốt Step 9). Chạy trong
+   * transaction của người gọi.
+   */
+  async finalizeAttempt(
+    manager: EntityManager,
+    attemptId: string,
+    now = new Date(),
+  ): Promise<void> {
+    const attempt = await this.lockAttempt(manager, { id: attemptId });
+    const sections = await this.lockSections(manager, attemptId);
+    await this.submitSections(
+      manager,
+      attempt,
+      sections,
+      sections
+        .filter((section) => section.status !== AttemptSectionStatus.SUBMITTED)
+        .map((section) => ({
+          section,
+          responses: normalizeResponses(section.responses),
+          autoSubmitted: true,
+        })),
+      now,
+    );
   }
 
   // --- Nội bộ ---------------------------------------------------------------
@@ -699,10 +758,16 @@ export class AttemptsService {
     if (!sections.some((section) => isOverdue(section, now))) {
       return { attempt, sections };
     }
-    return this.mutate(ctx, userId, id, now, async () => undefined);
+    return this.mutate(ctx, userId, id, now, async () => undefined, {
+      classMayBeClosed: true,
+    });
   }
 
-  /** Transaction ghi: khoá lượt làm + section, chốt section quá hạn rồi chạy `run`. */
+  /**
+   * Transaction ghi: khoá lượt làm + section, chốt section quá hạn rồi chạy
+   * `run`. Lượt trong lớp chỉ ghi được khi lớp còn `ongoing` (T6, R10.4);
+   * `classMayBeClosed` dành cho lần chốt lười khi chỉ đọc.
+   */
   private mutate(
     ctx: TenantContext,
     userId: string,
@@ -713,6 +778,7 @@ export class AttemptsService {
       attempt: ExamAttempt,
       sections: ExamAttemptSection[],
     ) => Promise<void>,
+    { classMayBeClosed = false }: { classMayBeClosed?: boolean } = {},
   ): Promise<LockedAttempt> {
     return this.dataSource.transaction(async (manager) => {
       const attempt = await this.lockAttempt(manager, {
@@ -720,6 +786,9 @@ export class AttemptsService {
         tenantId: ctx.tenantId,
         userId,
       });
+      if (!classMayBeClosed) {
+        await assertAttemptClassOngoing(manager, attempt.classItemId);
+      }
       const sections = await this.lockSections(manager, id);
       await this.expireOverdue(manager, attempt, sections, now);
       await run(manager, attempt, sections);

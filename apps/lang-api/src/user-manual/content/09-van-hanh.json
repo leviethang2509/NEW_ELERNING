@@ -13,7 +13,11 @@
           "tone": "warning",
           "text": "Tài liệu này không chứa mật khẩu, khoá hay địa chỉ máy chủ. Giá trị thật nằm trong file `.env` trên máy dev và VPS – không dán vào tài liệu, chat hay ticket."
         },
-        { "type": "heading", "level": 2, "text": "Thành phần" },
+        {
+          "type": "heading",
+          "level": 2,
+          "text": "Thành phần"
+        },
         {
           "type": "table",
           "columns": ["Thành phần", "Công nghệ", "Vai trò"],
@@ -49,7 +53,11 @@
           "type": "paragraph",
           "text": "Monorepo pnpm + Turborepo, Node 24. Cổng local: app `3100`, api `3101`. Trên VPS một container chạy cả hai: app cổng 3000 (map ra host **3001**), api 3002 chỉ trong container."
         },
-        { "type": "heading", "level": 2, "text": "Dữ liệu" },
+        {
+          "type": "heading",
+          "level": 2,
+          "text": "Dữ liệu"
+        },
         {
           "type": "list",
           "items": [
@@ -80,7 +88,11 @@
             ]
           ]
         },
-        { "type": "heading", "level": 2, "text": "Xác thực & phân quyền" },
+        {
+          "type": "heading",
+          "level": 2,
+          "text": "Xác thực & phân quyền"
+        },
         {
           "type": "list",
           "items": [
@@ -103,7 +115,11 @@
           "type": "paragraph",
           "text": "Hướng dẫn đầy đủ nằm trong repo: `docs/setup/deploy.md`. Trang này tóm tắt những điểm cần nhớ khi vận hành."
         },
-        { "type": "heading", "level": 2, "text": "Quy trình deploy" },
+        {
+          "type": "heading",
+          "level": 2,
+          "text": "Quy trình deploy"
+        },
         {
           "type": "table",
           "columns": ["Sự kiện", "GitHub Actions làm gì"],
@@ -135,7 +151,11 @@
             }
           ]
         },
-        { "type": "heading", "level": 2, "text": "Biến môi trường" },
+        {
+          "type": "heading",
+          "level": 2,
+          "text": "Biến môi trường"
+        },
         {
           "type": "table",
           "columns": ["Nhóm", "Biến", "Ghi chú"],
@@ -172,13 +192,24 @@
           "tone": "info",
           "text": "Sửa `/opt/lang-simulator/.env` trên VPS xong phải tạo lại container: `docker compose up -d --force-recreate`."
         },
-        { "type": "heading", "level": 2, "text": "Tạo System Owner đầu tiên" },
+        {
+          "type": "heading",
+          "level": 2,
+          "text": "Tạo System Owner đầu tiên"
+        },
         {
           "type": "paragraph",
           "text": "Chạy một lần từ máy dev (database dùng chung): đặt các biến `SEED_OWNER_*` trong `apps/lang-api/.env` rồi chạy lệnh dưới. Các Owner sau đó tạo qua giao diện ([System Owner](page:system-owner))."
         },
-        { "type": "code", "text": "pnpm --filter lang-api seed:owner" },
-        { "type": "heading", "level": 2, "text": "Rollback" },
+        {
+          "type": "code",
+          "text": "pnpm --filter lang-api seed:owner"
+        },
+        {
+          "type": "heading",
+          "level": 2,
+          "text": "Rollback"
+        },
         {
           "type": "code",
           "text": "cd /opt/lang-simulator\nsed -i 's/^IMAGE_TAG=.*/IMAGE_TAG=sha-<commit>/' .env\ndocker compose pull && docker compose up -d --wait"
@@ -190,7 +221,11 @@
             "Deploy từ workflow vẫn dùng `IMAGE_TAG` trong `.env` – nhớ đặt lại trống trước khi push bản mới."
           ]
         },
-        { "type": "heading", "level": 2, "text": "Kiểm tra sau deploy" },
+        {
+          "type": "heading",
+          "level": 2,
+          "text": "Kiểm tra sau deploy"
+        },
         {
           "type": "list",
           "ordered": true,
@@ -209,7 +244,11 @@
       "summary": "Các con số giới hạn và quy tắc định dạng dùng trong toàn hệ thống.",
       "roles": [],
       "blocks": [
-        { "type": "heading", "level": 2, "text": "Tài khoản & trung tâm" },
+        {
+          "type": "heading",
+          "level": 2,
+          "text": "Tài khoản & trung tâm"
+        },
         {
           "type": "table",
           "columns": ["Mục", "Giới hạn"],
@@ -265,7 +304,11 @@
             ["Media đề", "Ảnh 5MB (→ WebP), audio 50MB, video 100MB"]
           ]
         },
-        { "type": "heading", "level": 2, "text": "Thi & chấm" },
+        {
+          "type": "heading",
+          "level": 2,
+          "text": "Thi & chấm"
+        },
         {
           "type": "table",
           "columns": ["Mục", "Giới hạn"],
@@ -292,7 +335,11 @@
       "summary": "Triệu chứng, nguyên nhân và cách xử lý cho người dùng và máy chủ.",
       "roles": [],
       "blocks": [
-        { "type": "heading", "level": 2, "text": "Người dùng báo lỗi" },
+        {
+          "type": "heading",
+          "level": 2,
+          "text": "Người dùng báo lỗi"
+        },
         {
           "type": "table",
           "columns": ["Triệu chứng", "Nguyên nhân / xử lý"],
@@ -357,7 +404,11 @@
             ]
           ]
         },
-        { "type": "heading", "level": 2, "text": "Ghi âm Speaking" },
+        {
+          "type": "heading",
+          "level": 2,
+          "text": "Ghi âm Speaking"
+        },
         {
           "type": "table",
           "columns": ["Triệu chứng", "Xử lý"],
@@ -376,7 +427,11 @@
             ]
           ]
         },
-        { "type": "heading", "level": 2, "text": "Máy chủ" },
+        {
+          "type": "heading",
+          "level": 2,
+          "text": "Máy chủ"
+        },
         {
           "type": "table",
           "columns": ["Hiện tượng", "Nguyên nhân / xử lý"],
@@ -431,7 +486,7 @@
             ["Trung tâm", "Chuyển quyền Chủ sở hữu, tự xin tham gia trung tâm"],
             [
               "Học tập",
-              "Trang lớp và lịch học của học viên; học viên vào học bài và làm đề trong lớp; chấm bài và tính điểm nhóm thi theo lớp; chuyên cần, bảng điểm; thông báo; vai trò theo khoá học; giới thiệu khoá học công khai (lớp học, giáo trình lớp, thời khoá biểu và lịch dạy đã có – xem [Lớp học](page:lop-hoc), [Thời khoá biểu & buổi học](page:thoi-khoa-bieu))"
+              "Chấm bài theo lớp và chuyển giao chấm; chuyên cần, bảng điểm, nhận xét cuối khoá; thông báo; trang của phụ huynh; vai trò theo khoá học; giới hạn khung giờ làm bài; trọng số điểm và điểm tổng kết; gia hạn deadline riêng cho từng học viên; điểm danh"
             ],
             [
               "Phụ huynh",

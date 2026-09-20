@@ -1,6 +1,7 @@
 import 'reflect-metadata';
 import type { ExamElement, ExamValue } from '@lang/exam-core';
 import {
+  ClassroomStatus,
   ContentVisibility,
   LessonAttemptSectionStatus,
   LessonAttemptStatus,
@@ -17,6 +18,8 @@ import {
   ForbiddenException,
   NotFoundException,
 } from '@nestjs/common';
+import { ClassItem } from '../classrooms/class-item.entity';
+import { Classroom } from '../classrooms/classroom.entity';
 import { LessonGradingService } from '../grading/lesson-grading.service';
 import { LessonPart } from '../lessons/lesson-part.entity';
 import { LessonQuestion } from '../lessons/lesson-question.entity';
@@ -186,6 +189,8 @@ function setup({
     delete: jest.fn().mockResolvedValue(undefined),
     presignedGetUrl: jest.fn().mockResolvedValue('https://r2/signed'),
   };
+  const classItems = new InMemoryRepository<ClassItem>();
+  const classrooms = new InMemoryRepository<Classroom>();
   const dataSource = new InMemoryDataSource()
     .register(Lesson, lessons)
     .register(LessonSection, sections)
@@ -195,6 +200,8 @@ function setup({
     .register(LessonAttemptSection, attemptSections)
     .register(LessonAttemptAnswer, answers)
     .register(User, users)
+    .register(ClassItem, classItems)
+    .register(Classroom, classrooms)
     .asDataSource();
   const service = new LessonAttemptsService(
     dataSource,
@@ -224,6 +231,8 @@ function setup({
     attempts,
     attemptSections,
     answers,
+    classItems,
+    classrooms,
     publishNewVersion,
   };
 }
@@ -534,5 +543,32 @@ describe('LessonAttemptsService', () => {
     await expect(
       grading.grade(teacherCtx, TEACHER, writeQ.answerId, { score: 5 }),
     ).rejects.toBeInstanceOf(NotFoundException);
+  });
+
+  it('lượt học trong lớp: lớp kết thúc thì không nộp được nữa (T6.3)', async () => {
+    const { service, attempts, classItems, classrooms } = setup();
+    const view = await service.start(ctx, STUDENT, LESSON);
+    const [, , talk] = view.sections.map((section) => section.id);
+    // Gắn lượt vào mục của lớp đã kết thúc.
+    attempts.rows[0].classItemId = 'item-1';
+    classItems.rows.push({ id: 'item-1', classroomId: 'class-1' } as ClassItem);
+    classrooms.rows.push({
+      id: 'class-1',
+      status: ClassroomStatus.FINISHED,
+    } as Classroom);
+
+    const closed = await service.get(ctx, STUDENT, view.id);
+    expect(closed.canSubmit).toBe(false);
+    await expect(
+      service.submit(ctx, STUDENT, view.id, talk, undefined),
+    ).rejects.toThrow(/không còn nhận bài/);
+
+    // Lớp mở lại thì học tiếp được, kể cả bài chỉ hiển thị qua lớp.
+    await classrooms.update(
+      { id: 'class-1' },
+      { status: ClassroomStatus.ONGOING },
+    );
+    const open = await service.get(ctx, STUDENT, view.id);
+    expect(open.canSubmit).toBe(true);
   });
 });

@@ -389,6 +389,11 @@ t/:slug:
 - Nhóm thi: hàm thuần điểm %, đậu, bắt buộc/không bắt buộc (R7, R8, T2, T3) + unit test; học viên thấy điểm/đậu ngay.
 - "Cho làm lại" (giáo viên lớp) → `voided`.
 - lang-app: "Lớp của tôi" ở `/t/{slug}`, trang lớp học viên, "Lịch học của tôi"; mục bài học mở màn hình học, mục đề thi mở giả lập thi như cũ.
+- Người dùng chốt đầu phiên Step 9 (2026-09-20):
+  - Chương và mục cùng có ngày mở → lấy **mốc muộn hơn** (cả hai phải qua mới vào được).
+  - Bài học/đề thi của mục lớp bị **lưu trữ** sau khi giao: học viên **vẫn học/thi được** (mục của lớp là căn cứ); chỉ bài/đề bị xoá mềm mới khoá mục.
+  - "Cho làm lại" áp dụng cho **mọi lượt đề thi trong lớp, kể cả lượt đang làm dở** (chốt lượt như hết giờ rồi đánh dấu `voided`); lượt học bài học không cần (vốn làm lại tự do).
+  - Trang lớp của học viên **không** hiện danh sách bạn cùng lớp, chỉ giáo viên phụ trách và sĩ số.
 - **Nghiệm thu:** học viên làm bài kiểm tra trong lớp 1 lần, thi lại khi trượt, người đã đậu thấy "không bắt buộc" và vẫn thi được, điểm nhóm = cao nhất; mục chưa mở hiện nhưng không vào được; lớp `finished` chặn nộp.
 
 ### Step 10 – Chấm theo lớp & chuyển giao

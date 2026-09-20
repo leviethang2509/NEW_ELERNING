@@ -299,6 +299,8 @@ export const ClassLogAction = {
   MAKEUP_ADDED: 'makeup_added',
   MAKEUP_REMOVED: 'makeup_removed',
   SESSION_LINKS_SAVED: 'session_links_saved',
+  /** Step 9: giáo viên "Cho làm lại" một lượt thi trong lớp (R10.5). */
+  ATTEMPT_VOIDED: 'attempt_voided',
 } as const;
 export type ClassLogAction =
   (typeof ClassLogAction)[keyof typeof ClassLogAction];
@@ -359,6 +361,9 @@ export interface ClassLogDetail {
   makeupForSeq?: number | null;
   /** `session_updated`: trường đã đổi. */
   sessionFields?: SessionField[];
+  /** `attempt_voided`: tên mục và họ tên học viên được cho làm lại. */
+  itemTitle?: string;
+  studentName?: string;
 }
 
 /** Trường của buổi học có thể đổi (nhật ký). */

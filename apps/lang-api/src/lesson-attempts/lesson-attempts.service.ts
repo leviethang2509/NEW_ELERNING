@@ -36,6 +36,10 @@ import {
   normalizeResponses,
   toGradable,
 } from '../attempts/attempt-grading';
+import {
+  CLASSROOM_NOT_ONGOING,
+  isAttemptClassOngoing,
+} from '../classrooms/class-gate';
 import { isUniqueViolation } from '../common/database-errors';
 import { insertable } from '../exams/section-content';
 import { LessonQuestion } from '../lessons/lesson-question.entity';
@@ -97,17 +101,20 @@ export function isLessonOpen(lesson: Lesson): boolean {
   );
 }
 
-/** Nộp/làm lại được: lượt học tự do trên version hiện tại của bài đang mở. */
+/**
+ * Nộp/làm lại được: lượt trên version hiện tại của bài. Lượt tự do cần bài còn
+ * mở (publish + hiển thị `tenant`); lượt trong lớp (Step 9) chỉ cần lớp còn
+ * `ongoing` (T6.3) và bài chưa bị xoá — bài `private`/đã lưu trữ vẫn học được
+ * vì mục của lớp là căn cứ (người dùng chốt Step 9).
+ */
 export function canSubmitAttempt(
   attempt: LessonAttempt,
   lesson: Lesson | null,
+  classOngoing = true,
 ): boolean {
-  return (
-    !!lesson &&
-    attempt.classItemId === null &&
-    attempt.lessonVersion === lesson.currentVersion &&
-    isLessonOpen(lesson)
-  );
+  if (!lesson || attempt.lessonVersion !== lesson.currentVersion) return false;
+  if (attempt.classItemId !== null) return classOngoing && !lesson.deletedAt;
+  return isLessonOpen(lesson);
 }
 
 interface LockedAttempt {
@@ -115,6 +122,8 @@ interface LockedAttempt {
   lesson: Lesson | null;
   /** Theo `sort_order`. */
   sections: LessonAttemptSection[];
+  /** Lượt trong lớp: lớp còn `ongoing`; lượt tự do luôn `true`. */
+  classOngoing: boolean;
 }
 
 /**
@@ -176,55 +185,7 @@ export class LessonAttemptsService {
 
         const existing = await findExisting(manager, lesson.currentVersion);
         if (existing) return existing.id;
-
-        const sections = await currentLessonSections(manager, lesson);
-        if (sections.length === 0) throw new ConflictException(LESSON_CLOSED);
-        const attempts = manager.getRepository(LessonAttempt);
-        const attempt = await attempts.save(
-          attempts.create({
-            tenantId: ctx.tenantId,
-            lessonId,
-            lessonVersion: lesson.currentVersion,
-            userId,
-            membershipId: ctx.membershipId,
-            classItemId: null,
-            status: LessonAttemptStatus.IN_PROGRESS,
-            startedAt: new Date(),
-            completedAt: null,
-            submittedAt: null,
-            gradedAt: null,
-            autoCorrect: 0,
-            autoTotal: 0,
-            manualCount: 0,
-            manualGradedCount: 0,
-          }),
-        );
-        await manager.getRepository(LessonAttemptSection).insert(
-          insertable(
-            sections.map(
-              (section, sortOrder): LessonAttemptSection =>
-                ({
-                  id: randomUUID(),
-                  attemptId: attempt.id,
-                  sectionId: section.id,
-                  sortOrder,
-                  status: LessonAttemptSectionStatus.OPEN,
-                  viewedAt: null,
-                  responses: emptyAttemptResponses(),
-                  recordings: {},
-                  orderSeed: randomInt(2 ** 31),
-                  submittedResponses: null,
-                  submittedAt: null,
-                  submitCount: 0,
-                  correct: null,
-                  total: null,
-                  manualCount: 0,
-                  manualGradedCount: 0,
-                }) as LessonAttemptSection,
-            ),
-          ),
-        );
-        return attempt.id;
+        return this.insertAttempt(manager, ctx, userId, lesson, null);
       });
     } catch (error) {
       // Hai request mở bài cùng lúc: index unique chặn lượt thứ hai.
@@ -241,6 +202,95 @@ export class LessonAttemptsService {
     return this.get(ctx, userId, attemptId);
   }
 
+  /**
+   * Mở lượt học cho một mục giáo trình lớp (Step 9), dùng lại lượt của version
+   * hiện tại nếu đã có. Chạy trong transaction của `LearnerClassesService` (đã
+   * khoá dòng lớp và kiểm ngày mở): bài `private`/đã lưu trữ vẫn học được.
+   */
+  async startForClassItem(
+    manager: EntityManager,
+    ctx: TenantContext,
+    userId: string,
+    lessonId: string,
+    classItemId: string,
+  ): Promise<string> {
+    const lesson = await manager.getRepository(Lesson).findOne({
+      where: { id: lessonId, tenantId: ctx.tenantId },
+      lock: { mode: 'pessimistic_read' },
+    });
+    if (!lesson) throw new NotFoundException(LESSON_NOT_FOUND);
+    if (lesson.status === LessonStatus.DRAFT) {
+      throw new ConflictException(LESSON_CLOSED);
+    }
+    const existing = await manager.getRepository(LessonAttempt).findOneBy({
+      tenantId: ctx.tenantId,
+      lessonId,
+      lessonVersion: lesson.currentVersion,
+      userId,
+      classItemId,
+    });
+    if (existing) return existing.id;
+    return this.insertAttempt(manager, ctx, userId, lesson, classItemId);
+  }
+
+  /** Dòng lượt học + các section trên version hiện tại của bài (đã khoá FOR SHARE). */
+  private async insertAttempt(
+    manager: EntityManager,
+    ctx: TenantContext,
+    userId: string,
+    lesson: Lesson,
+    classItemId: string | null,
+  ): Promise<string> {
+    const sections = await currentLessonSections(manager, lesson);
+    if (sections.length === 0) throw new ConflictException(LESSON_CLOSED);
+    const attempts = manager.getRepository(LessonAttempt);
+    const attempt = await attempts.save(
+      attempts.create({
+        tenantId: ctx.tenantId,
+        lessonId: lesson.id,
+        lessonVersion: lesson.currentVersion,
+        userId,
+        membershipId: ctx.membershipId,
+        classItemId,
+        status: LessonAttemptStatus.IN_PROGRESS,
+        startedAt: new Date(),
+        completedAt: null,
+        submittedAt: null,
+        gradedAt: null,
+        autoCorrect: 0,
+        autoTotal: 0,
+        manualCount: 0,
+        manualGradedCount: 0,
+      }),
+    );
+    await manager.getRepository(LessonAttemptSection).insert(
+      insertable(
+        sections.map(
+          (section, sortOrder): LessonAttemptSection =>
+            ({
+              id: randomUUID(),
+              attemptId: attempt.id,
+              sectionId: section.id,
+              sortOrder,
+              status: LessonAttemptSectionStatus.OPEN,
+              viewedAt: null,
+              responses: emptyAttemptResponses(),
+              recordings: {},
+              orderSeed: randomInt(2 ** 31),
+              submittedResponses: null,
+              submittedAt: null,
+              submitCount: 0,
+              correct: null,
+              total: null,
+              manualCount: 0,
+              manualGradedCount: 0,
+            }) as LessonAttemptSection,
+        ),
+      ),
+    );
+    return attempt.id;
+  }
+
   async get(
     ctx: TenantContext,
     userId: string,
@@ -248,14 +298,16 @@ export class LessonAttemptsService {
   ): Promise<LessonAttemptView> {
     const manager = this.dataSource.manager;
     const attempt = await this.findOwn(manager, ctx, userId, id);
-    const [lesson, sections] = await Promise.all([
+    const [lesson, sections, classOngoing] = await Promise.all([
       this.lessonOf(manager, attempt),
       this.attemptSections.findBy({ attemptId: id }),
+      isAttemptClassOngoing(manager, attempt.classItemId),
     ]);
     return this.buildView({
       attempt,
       lesson,
       sections: sections.sort(bySortOrder),
+      classOngoing,
     });
   }
 
@@ -273,7 +325,11 @@ export class LessonAttemptsService {
       id,
       async (manager, locked) => {
         const target = findSection(locked.sections, sectionId);
-        if (!canSubmitAttempt(locked.attempt, locked.lesson)) return;
+        if (
+          !canSubmitAttempt(locked.attempt, locked.lesson, locked.classOngoing)
+        ) {
+          return;
+        }
         if (target.viewedAt) return;
         await manager
           .getRepository(LessonAttemptSection)
@@ -474,12 +530,16 @@ export class LessonAttemptsService {
     // Kiểm trước khi tải lên để không đẩy file vô ích; kiểm lại trong transaction.
     const manager = this.dataSource.manager;
     const attempt = await this.findOwn(manager, ctx, userId, id);
-    const [lesson, section] = await Promise.all([
+    const [lesson, section, classOngoing] = await Promise.all([
       this.lessonOf(manager, attempt),
       this.attemptSections.findOneBy({ id: sectionId, attemptId: id }),
+      isAttemptClassOngoing(manager, attempt.classItemId),
     ]);
     if (!section) throw new NotFoundException(SECTION_NOT_FOUND);
-    assertOpenSection({ attempt, lesson, sections: [section] }, section);
+    assertOpenSection(
+      { attempt, lesson, sections: [section], classOngoing },
+      section,
+    );
     const question = await manager
       .getRepository(LessonQuestion)
       .findOneBy({ sectionId: section.sectionId, number });
@@ -590,14 +650,20 @@ export class LessonAttemptsService {
         lock: { mode: 'pessimistic_write' },
       });
       if (!attempt) throw new NotFoundException(LESSON_ATTEMPT_NOT_FOUND);
-      const [lesson, sections] = await Promise.all([
+      const [lesson, sections, classOngoing] = await Promise.all([
         this.lessonOf(manager, attempt),
         manager.getRepository(LessonAttemptSection).find({
           where: { attemptId: id },
           lock: { mode: 'pessimistic_write' },
         }),
+        isAttemptClassOngoing(manager, attempt.classItemId),
       ]);
-      const locked = { attempt, lesson, sections: sections.sort(bySortOrder) };
+      const locked = {
+        attempt,
+        lesson,
+        sections: sections.sort(bySortOrder),
+        classOngoing,
+      };
       await run(manager, locked);
       return locked;
     });
@@ -627,6 +693,7 @@ export class LessonAttemptsService {
     attempt,
     lesson,
     sections,
+    classOngoing,
   }: LockedAttempt): Promise<LessonAttemptView> {
     const manager = this.dataSource.manager;
     const sectionIds = sections.map((section) => section.sectionId);
@@ -646,7 +713,7 @@ export class LessonAttemptsService {
       status: attempt.status,
       startedAt: attempt.startedAt.toISOString(),
       completedAt: attempt.completedAt?.toISOString() ?? null,
-      canSubmit: canSubmitAttempt(attempt, lesson),
+      canSubmit: canSubmitAttempt(attempt, lesson, classOngoing),
       sections: sections.map((section) =>
         toSectionView(
           section,
@@ -680,9 +747,17 @@ function findSection(
   return section;
 }
 
-function assertCanSubmit({ attempt, lesson }: LockedAttempt): void {
-  if (!canSubmitAttempt(attempt, lesson)) {
-    throw new ConflictException(READ_ONLY);
+function assertCanSubmit({
+  attempt,
+  lesson,
+  classOngoing,
+}: LockedAttempt): void {
+  if (!canSubmitAttempt(attempt, lesson, classOngoing)) {
+    throw new ConflictException(
+      attempt.classItemId !== null && !classOngoing
+        ? CLASSROOM_NOT_ONGOING
+        : READ_ONLY,
+    );
   }
 }
 

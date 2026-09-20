@@ -27,6 +27,16 @@ function matches<T>(row: T, where: Where<T>): boolean {
           return (actual as number | Date) < (expected.value as number | Date);
         case 'moreThan':
           return (actual as number | Date) > (expected.value as number | Date);
+        case 'moreThanOrEqual':
+          return (actual as number | Date) >= (expected.value as number | Date);
+        case 'lessThanOrEqual':
+          return (actual as number | Date) <= (expected.value as number | Date);
+        case 'between': {
+          const [from, to] = expected.value as [number | Date, number | Date];
+          return (
+            (actual as number | Date) >= from && (actual as number | Date) <= to
+          );
+        }
         case 'in':
           return (expected.value as unknown[]).includes(actual);
         case 'like':
@@ -44,7 +54,8 @@ function matches<T>(row: T, where: Where<T>): boolean {
 
 /**
  * Repository giả trong bộ nhớ cho unit test service, chỉ hỗ trợ các hàm và
- * FindOperator (IsNull, Not, LessThan, MoreThan, In, Like) đang dùng. Bỏ qua `relations`,
+ * FindOperator (IsNull, Not, LessThan(OrEqual), MoreThan(OrEqual), Between, In,
+ * Like) đang dùng. Bỏ qua `relations`,
  * `order`, `lock`, không tự loại bản ghi đã xoá mềm. Trả bản sao như khi đọc DB.
  */
 export class InMemoryRepository<T extends object> {

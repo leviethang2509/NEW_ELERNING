@@ -1,5 +1,6 @@
 import { AttemptStatus } from '@lang/shared';
-import { In, type EntityManager } from 'typeorm';
+import { In, IsNull, Not, type EntityManager } from 'typeorm';
+import { ExamAttemptAnswer } from '../attempts/exam-attempt-answer.entity';
 import { ExamAttempt } from '../attempts/exam-attempt.entity';
 import { LessonAttempt } from '../lesson-attempts/lesson-attempt.entity';
 
@@ -45,4 +46,27 @@ export function countInProgressAttempts(
     classItemId: In(itemIds),
     status: AttemptStatus.IN_PROGRESS,
   });
+}
+
+/**
+ * Tổng điểm chấm tay đã chấm theo lượt thi (R8.1). Câu chấm tự động không có
+ * `graded_at` nên không lọt vào tổng này.
+ */
+export async function manualScoresByAttempt(
+  manager: EntityManager,
+  attemptIds: string[],
+): Promise<Map<string, number>> {
+  const scores = new Map<string, number>();
+  if (attemptIds.length === 0) return scores;
+  const rows = await manager.getRepository(ExamAttemptAnswer).find({
+    select: { attemptId: true, score: true },
+    where: { attemptId: In(attemptIds), gradedAt: Not(IsNull()) },
+  });
+  for (const row of rows) {
+    scores.set(
+      row.attemptId,
+      (scores.get(row.attemptId) ?? 0) + Number(row.score ?? 0),
+    );
+  }
+  return scores;
 }

@@ -19,10 +19,15 @@ import {
   type CalendarViewMode,
 } from './calendar-model';
 
-/** Buổi trên lịch gộp → sự kiện lịch (mỗi lớp một màu). */
+/**
+ * Buổi trên lịch gộp → sự kiện lịch (mỗi lớp một màu). `href` là trang chi
+ * tiết buổi; lịch của học viên không có link (trang đó chỉ cho giáo viên).
+ */
 export function feedEvent(
   slug: string,
   session: CalendarSession,
+  href: (session: CalendarSession) => string | undefined = (row) =>
+    sessionDetailPath(slug, row.id),
 ): CalendarEvent {
   const text = vi.schedule;
   return {
@@ -43,7 +48,7 @@ export function feedEvent(
       ...(session.substitute ? [text.substitute] : []),
       ...(session.movedWarning ? [text.moved] : []),
     ],
-    href: sessionDetailPath(slug, session.id),
+    href: href(session),
   };
 }
 
@@ -56,11 +61,14 @@ export function CalendarFeedView({
   load,
   reloadKey = '',
   toolbarExtra,
+  sessionHref,
 }: {
   slug: string;
   load: (range: { from: string; to: string }) => Promise<CalendarFeed>;
   reloadKey?: string;
   toolbarExtra?: React.ReactNode;
+  /** Link của mỗi buổi; bỏ qua = trang chi tiết buổi trong dashboard. */
+  sessionHref?: (session: CalendarSession) => string | undefined;
 }) {
   const [view, setView] = useState<CalendarViewMode>('week');
   const [anchor, setAnchor] = useState(todayDate);
@@ -107,7 +115,9 @@ export function CalendarFeedView({
         anchor={anchor}
         onViewChange={setView}
         onAnchorChange={setAnchor}
-        events={(feed?.sessions ?? []).map((row) => feedEvent(slug, row))}
+        events={(feed?.sessions ?? []).map((row) =>
+          feedEvent(slug, row, sessionHref),
+        )}
         holidays={feed?.holidays ?? []}
         loading={loading}
         toolbarExtra={toolbarExtra}

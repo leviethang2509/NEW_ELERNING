@@ -9,6 +9,7 @@ import {
 import {
   AttemptSectionStatus,
   AttemptStatus,
+  ClassroomStatus,
   ContentVisibility,
   ExamStatus,
   TenantRole,
@@ -30,6 +31,8 @@ import type { R2Service } from '../storage/r2.service';
 import type { UploadedFile } from '../storage/media-file';
 import type { TenantContext } from '../tenants/tenant-context';
 import { fakeDate } from '../testing/fake-clock';
+import { ClassItem } from '../classrooms/class-item.entity';
+import { Classroom } from '../classrooms/classroom.entity';
 import { InMemoryDataSource } from '../testing/in-memory-data-source';
 import { InMemoryRepository } from '../testing/in-memory-repository';
 import { isAttemptResponses, responseOf } from './attempt-grading';
@@ -213,6 +216,8 @@ function setup({
     delete: jest.fn().mockResolvedValue(undefined),
     presignedGetUrl: jest.fn().mockResolvedValue('https://r2/signed'),
   };
+  const classItems = new InMemoryRepository<ClassItem>();
+  const classrooms = new InMemoryRepository<Classroom>();
   const dataSource = new InMemoryDataSource()
     .register(Exam, exams)
     .register(ExamSection, sections)
@@ -221,6 +226,8 @@ function setup({
     .register(ExamAttempt, attempts)
     .register(ExamAttemptSection, attemptSections)
     .register(ExamAttemptAnswer, answers)
+    .register(ClassItem, classItems)
+    .register(Classroom, classrooms)
     .asDataSource();
   const service = new AttemptsService(
     dataSource,
@@ -243,6 +250,8 @@ function setup({
     attempts,
     attemptSections,
     answers,
+    classItems,
+    classrooms,
     questionsOf,
   };
 }
@@ -327,6 +336,41 @@ describe('AttemptsService', () => {
     expect(attempts.rows.find((row) => row.id === free.id)!.status).toBe(
       AttemptStatus.IN_PROGRESS,
     );
+  });
+
+  it('lớp không còn đang học thì lượt trong lớp không ghi được nữa (T6.1)', async () => {
+    const { service, attempts, classItems, classrooms, questionsOf } = setup();
+    const created = await service.create(ctx, STUDENT, EXAM);
+    const [first] = sectionIds(created);
+    await service.start(ctx, STUDENT, created.id, first);
+    // Gắn lượt vào mục của lớp đã kết thúc.
+    attempts.rows[0].classItemId = 'item-1';
+    classItems.rows.push({ id: 'item-1', classroomId: 'class-1' } as ClassItem);
+    classrooms.rows.push({
+      id: 'class-1',
+      status: ClassroomStatus.FINISHED,
+    } as Classroom);
+
+    const responses = correctResponses(questionsOf(0));
+    await expect(
+      service.saveResponses(ctx, STUDENT, created.id, first, responses),
+    ).rejects.toThrow(/không còn nhận bài/);
+    await expect(
+      service.submitSection(ctx, STUDENT, created.id, first, responses),
+    ).rejects.toThrow(/không còn nhận bài/);
+    await expect(service.finish(ctx, STUDENT, created.id)).rejects.toThrow(
+      /không còn nhận bài/,
+    );
+    // Xem lại vẫn được.
+    await expect(service.get(ctx, STUDENT, created.id)).resolves.toBeDefined();
+
+    await classrooms.update(
+      { id: 'class-1' },
+      { status: ClassroomStatus.ONGOING },
+    );
+    await expect(
+      service.submitSection(ctx, STUDENT, created.id, first, responses),
+    ).resolves.toBeDefined();
   });
 
   it('mỗi đề chỉ một lượt làm dở; đề lưu trữ 409, đề nháp/private 404', async () => {

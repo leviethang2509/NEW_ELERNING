@@ -47,7 +47,7 @@ export function toClassItemView(
     title: item.title,
     label: item.label,
     note: item.note,
-    content,
+    content: { id: content.id, title: content.title, status: content.status },
     opensAt: item.opensAt?.toISOString() ?? null,
     deadlineAt: item.deadlineAt?.toISOString() ?? null,
     acceptLate: item.acceptLate,

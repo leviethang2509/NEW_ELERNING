@@ -24,6 +24,6 @@ import { LessonAttemptsService } from './lesson-attempts.service';
   ],
   controllers: [LearnerLessonsController],
   providers: [LessonAttemptsService, LearnerLessonsService],
-  exports: [TypeOrmModule],
+  exports: [TypeOrmModule, LessonAttemptsService],
 })
 export class LessonAttemptsModule {}

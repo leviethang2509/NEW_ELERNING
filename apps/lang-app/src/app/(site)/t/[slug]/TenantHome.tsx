@@ -11,6 +11,7 @@ import {
   type TenantMembershipInfo,
 } from '@lang/shared';
 import { useAuth } from '@/components/auth/AuthProvider';
+import { MyClassList } from '@/components/class-learning/MyClassList';
 import { LearnerExamList } from '@/components/learner/LearnerExamList';
 import { LearnerLessonList } from '@/components/lesson-learning/LearnerLessonList';
 import { MyRecentAttempts } from '@/components/learner/MyRecentAttempts';
@@ -175,6 +176,7 @@ export function TenantHome({ slug: rawSlug }: { slug: string }) {
               </Badge>
             ))}
           </div>
+          <MyClassList slug={tenant.slug} />
           <MyRecentAttempts slug={tenant.slug} />
           <section className="mt-10">
             <h2 className="mb-3 text-[12px] font-semibold uppercase tracking-[0.09em] text-[var(--muted)]">

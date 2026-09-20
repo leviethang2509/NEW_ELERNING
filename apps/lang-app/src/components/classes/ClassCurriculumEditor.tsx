@@ -6,6 +6,7 @@ import {
   ArrowUp,
   ChevronDown,
   ChevronRight,
+  ClipboardList,
   Download,
   GripVertical,
   Plus,
@@ -58,6 +59,7 @@ import { saveClassCurriculum } from '@/lib/classroom-api';
 import { errorMessage } from '@/lib/error-message';
 import { formatDateTime } from '@/lib/format';
 import { ImportCurriculumDialog } from './ImportCurriculumDialog';
+import { ItemAttemptsDialog } from './ItemAttemptsDialog';
 import {
   classContentKeys,
   classDraftFrom,
@@ -120,6 +122,7 @@ export function ClassCurriculumEditor({
   const [picking, setPicking] = useState<string | null>(null);
   const [importing, setImporting] = useState(false);
   const [hiding, setHiding] = useState<ClassItemDraft | null>(null);
+  const [attemptsFor, setAttemptsFor] = useState<ClassItemDraft | null>(null);
   const [armed, setArmed] = useState<string | null>(null);
   const [drag, setDrag] = useState<DragState>(null);
   const [over, setOver] = useState<DropTarget>(null);
@@ -470,6 +473,17 @@ export function ClassCurriculumEditor({
               </span>
             )}
           </span>
+          {item.itemType === CurriculumItemType.EXAM &&
+            item.learnerCount > 0 && (
+              <button
+                type="button"
+                title={vi.classAttempts.open}
+                onClick={() => setAttemptsFor(item)}
+                className={iconButtonClass}
+              >
+                <ClipboardList size={16} />
+              </button>
+            )}
           {readOnly ? (
             <Badge tone="accent">{common.label[item.label]}</Badge>
           ) : (
@@ -913,6 +927,17 @@ export function ClassCurriculumEditor({
         }}
         onClose={() => setImporting(false)}
       />
+      {attemptsFor && (
+        <ItemAttemptsDialog
+          open
+          slug={slug}
+          classroomId={classroomId}
+          itemId={attemptsFor.key}
+          itemTitle={displayTitle(attemptsFor)}
+          canVoid={!readOnly}
+          onClose={() => setAttemptsFor(null)}
+        />
+      )}
       <ConfirmDialog
         open={hiding !== null}
         title={common.removeItem}

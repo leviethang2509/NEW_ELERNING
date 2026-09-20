@@ -4,6 +4,7 @@ export * from './attempt';
 export * from './auth';
 export * from './exam';
 export * from './catalog';
+export * from './class-progress';
 export * from './classroom';
 export * from './exam-content';
 export * from './grading';

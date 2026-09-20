@@ -54,6 +54,13 @@ const RETAKE_TARGET_NOT_ROOT =
 const RETAKE_ORDER = 'Lần thi lại phải đứng sau mục gốc trong giáo trình';
 const DEADLINE_BEFORE_OPEN = 'Deadline phải sau ngày mở';
 
+/** Bài học/đề thi của mục, kèm cờ đã xoá mềm (mục giữ lại nhưng không vào được). */
+export interface ClassContentRow extends CurriculumContentRef {
+  deleted: boolean;
+  /** Version đang phục vụ (lượt học/lượt thi gắn version này). */
+  currentVersion: number;
+}
+
 /** Mục gửi lên kèm vị trí sau khi trải phẳng (chưa xếp chương trước, rồi từng chương). */
 interface PlacedItem {
   input: ClassItemInputDto;
@@ -352,20 +359,32 @@ export async function copyCurriculumIntoClassroom(
 export async function loadContents(
   manager: EntityManager,
   items: Pick<ClassItem, 'lessonId' | 'examId'>[],
-): Promise<Map<string, CurriculumContentRef>> {
+): Promise<Map<string, ClassContentRow>> {
   const lessonIds = [...new Set(items.flatMap((item) => item.lessonId ?? []))];
   const examIds = [...new Set(items.flatMap((item) => item.examId ?? []))];
   const [lessons, exams] = await Promise.all([
     lessonIds.length > 0
       ? manager.getRepository(Lesson).find({
-          select: { id: true, title: true, status: true },
+          select: {
+            id: true,
+            title: true,
+            status: true,
+            deletedAt: true,
+            currentVersion: true,
+          },
           where: { id: In(lessonIds) },
           withDeleted: true,
         })
       : Promise.resolve([]),
     examIds.length > 0
       ? manager.getRepository(Exam).find({
-          select: { id: true, title: true, status: true },
+          select: {
+            id: true,
+            title: true,
+            status: true,
+            deletedAt: true,
+            currentVersion: true,
+          },
           where: { id: In(examIds) },
           withDeleted: true,
         })
@@ -374,7 +393,13 @@ export async function loadContents(
   return new Map(
     [...lessons, ...exams].map((row) => [
       row.id,
-      { id: row.id, title: row.title, status: row.status },
+      {
+        id: row.id,
+        title: row.title,
+        status: row.status,
+        deleted: row.deletedAt !== null,
+        currentVersion: row.currentVersion,
+      },
     ]),
   );
 }
