@@ -211,7 +211,7 @@
         },
         {
           "type": "paragraph",
-          "text": "Menu **Đào tạo → Lớp học** (`/t/{slug}/dashboard/classes`). Lớp học được mở từ một [khoá học](page:khoa-hoc), có giáo viên, học viên và [giáo trình lớp](page:giao-trinh-lop) riêng. Trang lớp (`/t/{slug}/dashboard/classes/{id}`) có các tab **Thông tin** · **Thời khoá biểu** · **Giáo viên & Học viên** · **Giáo trình** · **Nhật ký thay đổi**."
+          "text": "Menu **Đào tạo → Lớp học** (`/t/{slug}/dashboard/classes`). Lớp học được mở từ một [khoá học](page:khoa-hoc), có giáo viên, học viên và [giáo trình lớp](page:giao-trinh-lop) riêng. Trang lớp (`/t/{slug}/dashboard/classes/{id}`) có các tab **Thông tin** · **Thời khoá biểu** · **Giáo viên & Học viên** · **Giáo trình** · **Tiến độ & Chuyên cần** · **Bảng điểm** · **Nhật ký thay đổi**."
         },
         {
           "type": "table",
@@ -242,6 +242,21 @@
               "Huỷ/khôi phục buổi, thêm buổi bù, sửa buổi (phòng, giờ, giáo viên dạy thế), chọn nội dung buổi",
               "mọi lớp",
               "lớp mình là giáo viên của lớp"
+            ],
+            [
+              "Xem [chuyên cần & bảng điểm](page:chuyen-can-bang-diem), xuất Excel",
+              "mọi lớp",
+              "lớp mình là giáo viên của lớp"
+            ],
+            [
+              "Viết **Nhận xét cuối khoá** cho học viên",
+              "mọi lớp",
+              "lớp mình là giáo viên của lớp"
+            ],
+            [
+              "Sửa **Tham số chuyên cần của lớp** (hệ số k, ngưỡng cảnh báo)",
+              "✔",
+              "✘ (chỉ xem)"
             ]
           ]
         },
@@ -714,6 +729,119 @@
           "type": "callout",
           "tone": "warning",
           "text": "Hai người cùng sửa giáo trình lớp: người lưu sau nhận lỗi “Giáo trình lớp vừa được người khác lưu. Hãy tải lại…”. Tải lại trang để xem bản mới nhất rồi sửa lại."
+        }
+      ]
+    },
+    {
+      "id": "chuyen-can-bang-diem",
+      "title": "Chuyên cần & bảng điểm",
+      "summary": "Tab Tiến độ & Chuyên cần và tab Bảng điểm của lớp: tỉ lệ chuyên cần, điểm từng mục, nhận xét cuối khoá và xuất Excel.",
+      "roles": ["TENANT_OWNER", "TENANT_ADMIN", "TEACHER"],
+      "blocks": [
+        {
+          "type": "roles",
+          "roles": ["TENANT_OWNER", "TENANT_ADMIN", "TEACHER"]
+        },
+        {
+          "type": "paragraph",
+          "text": "Trang lớp (`/t/{slug}/dashboard/classes/{id}`) có hai tab theo dõi: **Tiến độ & Chuyên cần** và **Bảng điểm**. Chủ sở hữu/Quản trị viên xem mọi lớp, Giáo viên xem lớp mình phụ trách. Học viên **chỉ** thấy phần của mình sau khi lớp **Đã kết thúc** – xem [Lớp học của tôi](page:lop-cua-toi#tong-ket-cuoi-khoa)."
+        },
+        {
+          "type": "heading",
+          "level": 2,
+          "text": "Cách tính chuyên cần"
+        },
+        {
+          "type": "list",
+          "items": [
+            "Chỉ mục **đề thi có hạn nộp** được tính. Mục bài học, mục đề thi không đặt hạn nộp và mục đã bỏ khỏi giáo trình lớp không vào bảng.",
+            "Đúng hạn tính **1** điểm, muộn tính **k** (hệ số nộp muộn), quá hạn chưa nộp tính **0**. Tỉ lệ chuyên cần = tổng điểm / số mục được tính.",
+            "Đúng hạn hay muộn xét theo **lúc bắt đầu** lượt thi, vì hạn nộp của đề thi là hạn **bắt đầu** làm bài: vào thi trước hạn rồi làm hết giờ vẫn là đúng hạn.",
+            "\"Đã nộp\" là đủ – không cần giáo viên chấm xong.",
+            "Không tính vào mẫu số: mục **chưa tới hạn** mà chưa nộp, lượt **đang làm dở**, và **lần thi lại không bắt buộc** (học viên đã đậu ở lần trước).",
+            "Lượt đã **Cho làm lại** không được tính; nếu học viên chưa làm lượt mới thì mục coi như chưa nộp."
+          ]
+        },
+        {
+          "type": "table",
+          "columns": ["Nhãn trong ô", "Ý nghĩa", "Điểm"],
+          "rows": [
+            ["Đúng hạn", "Bắt đầu lượt trước hạn và đã nộp", "1"],
+            ["Muộn", "Bắt đầu lượt sau hạn và đã nộp", "k"],
+            ["Chưa nộp", "Đã quá hạn mà chưa nộp", "0"],
+            ["Đang làm", "Lượt còn dở (sẽ được chốt khi hết giờ)", "chưa tính"],
+            ["Chưa tới hạn", "Còn hạn, chưa nộp", "chưa tính"],
+            [
+              "Không tính",
+              "Lần thi lại không bắt buộc hoặc mục đã bỏ khỏi giáo trình",
+              "không tính"
+            ]
+          ]
+        },
+        {
+          "type": "heading",
+          "level": 2,
+          "text": "Tham số chuyên cần của lớp"
+        },
+        {
+          "type": "list",
+          "items": [
+            "Ô **Hệ số nộp muộn (k)** và **Ngưỡng cảnh báo (%)** ở đầu tab: bỏ trống = dùng [cài đặt trung tâm](page:cai-dat-trung-tam#tham-so-chuyen-can) (giá trị của trung tâm hiện ngay dưới ô).",
+            "Chỉ Chủ sở hữu/Quản trị viên sửa và bấm **Lưu tham số**; Giáo viên chỉ xem. Mỗi lần lưu ghi vào **Nhật ký thay đổi** của lớp.",
+            "Học viên có tỉ lệ dưới ngưỡng hiện số đỏ, phía trên bảng có cảnh báo số học viên dưới ngưỡng."
+          ]
+        },
+        {
+          "type": "heading",
+          "level": 2,
+          "text": "Bảng chuyên cần"
+        },
+        {
+          "type": "list",
+          "items": [
+            "Mỗi dòng là một học viên, mỗi cột là một mục đề thi có hạn nộp (kèm hạn nộp và \"Nhận bài quá hạn\"); lần thi lại ghi thêm **Lần 2**, **Lần 3**…",
+            "Cột cuối là **Tỉ lệ chuyên cần** kèm số mục được tính và thống kê Đúng hạn · Muộn · Chưa nộp.",
+            "Bấm tên học viên để mở [Bài làm của học viên](page:giao-trinh-lop#bai-lam-cua-hoc-vien).",
+            "Học viên đã rời lớp bị ẩn; bật **Hiện học viên đã rời lớp** để xem. Thành viên đã ngừng trong trung tâm vẫn được tính, có nhãn **Đã ngừng**."
+          ]
+        },
+        {
+          "type": "heading",
+          "level": 2,
+          "text": "Bảng điểm"
+        },
+        {
+          "type": "list",
+          "items": [
+            "Mỗi dòng là một học viên; cột theo thứ tự giáo trình lớp (mục chưa xếp chương trước, rồi từng chương).",
+            "Mục **đề thi**: nhóm thi (mục gốc + các lần thi lại) gộp **một cột**, hiện **điểm cao nhất** trong các lượt đã chấm kèm **Đậu**/**Trượt**; các lần trong nhóm hiện bên dưới. Còn lượt chờ chấm thì ghi **Còn lượt chờ chấm** (điểm có thể tăng).",
+            "Mục **bài học**: **% câu tự chấm** của lần nộp gần nhất kèm **Đã học xong** / **Đang học** / **Chưa học** (câu chấm tay của bài học không tính vào %).",
+            "Cột **TB <tên chương>**: trung bình điểm các nhóm thi **đã có điểm** trong chương; bài học không tính.",
+            "Ô chọn chương lọc cột theo một chương; không có điểm tổng kết toàn khoá."
+          ]
+        },
+        {
+          "type": "heading",
+          "level": 2,
+          "text": "Nhận xét cuối khoá"
+        },
+        {
+          "type": "list",
+          "items": [
+            "Cột cuối bảng điểm: mỗi học viên **một** nhận xét cho cả lớp, lưu người sửa cuối và thời điểm.",
+            "Bấm biểu tượng nhận xét ở dòng học viên để viết/sửa; để trống rồi lưu là **xoá** nhận xét. Mỗi lần lưu ghi vào **Nhật ký thay đổi**.",
+            "Viết được khi lớp **Đang học** hoặc **Đã kết thúc** (lớp Sắp mở, Đã huỷ thì không).",
+            "Học viên chỉ thấy nhận xét khi lớp **Đã kết thúc**."
+          ]
+        },
+        {
+          "type": "heading",
+          "level": 2,
+          "text": "Xuất Excel"
+        },
+        {
+          "type": "paragraph",
+          "text": "Nút **Xuất Excel** ở cả hai tab tải một file `.xlsx` gồm 2 sheet: **Chuyên cần** (nhãn từng mục, thống kê, tỉ lệ) và **Bảng điểm** (điểm từng cột, trung bình chương, cột **Nhận xét cuối khoá**). File đặt tên theo mã lớp."
         }
       ]
     },

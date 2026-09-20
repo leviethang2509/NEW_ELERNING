@@ -1,6 +1,7 @@
 import 'reflect-metadata';
 import {
   AttemptStatus,
+  AttendanceMark,
   ClassAttemptState,
   ClassItemLock,
   ClassLogAction,
@@ -105,6 +106,11 @@ function setup() {
   const sessionLinks = new InMemoryRepository<ClassSessionLink>();
   const holidays = new InMemoryRepository<TenantHoliday>(timestamps);
   const tenants = new InMemoryRepository<Tenant>(timestamps);
+  tenants.rows.push({
+    id: TENANT,
+    lateWeight: 0.5,
+    warningThreshold: 70,
+  } as Tenant);
 
   const dataSource = new InMemoryDataSource()
     .register(Classroom, classrooms)
@@ -401,6 +407,7 @@ function setup() {
     classAttempts,
     dataSource,
     classrooms,
+    tenants,
     students,
     items,
     logs,
@@ -922,5 +929,71 @@ describe('Lịch học của tôi', () => {
       to: '2026-10-31',
     } as never);
     expect(feed.sessions.map((s) => s.id)).toEqual(['s-mine']);
+  });
+});
+
+describe('Kết quả cuối khoá của học viên (Step 11)', () => {
+  /** Mục kiểm tra có deadline đã qua; lượt của học viên vào thi trước hạn. */
+  async function finishedClass(closed = true) {
+    const harness = setup();
+    harness.quizItem.deadlineAt = new Date('2026-10-15T17:00:00.000Z');
+    await harness.gradedAttempt(harness.quizItem, {
+      autoCorrect: 9,
+      autoTotal: 10,
+    });
+    harness.students.rows[0]!.finalComment = 'Cần luyện nói thêm';
+    harness.students.rows[0]!.finalCommentBy = 'user-m-teacher';
+    harness.students.rows[0]!.finalCommentAt = new Date(
+      '2026-10-19T10:00:00.000Z',
+    );
+    if (closed) {
+      harness.classrooms.rows[0]!.status = ClassroomStatus.FINISHED;
+    }
+    return harness;
+  }
+
+  it('lớp đang học: không có tổng kết (R11.3)', async () => {
+    const { service } = await finishedClass(false);
+    const detail = await service.detail(studentCtx, STUDENT_USER, CLASS);
+    expect(detail.summary).toBeNull();
+    // Trạng thái từng mục vẫn thấy.
+    expect(detail.groups[0].items[0].attempt).toMatchObject({ percent: 90 });
+  });
+
+  it('lớp đã kết thúc: tỉ lệ chuyên cần, trung bình chương và nhận xét', async () => {
+    const { service } = await finishedClass();
+    const detail = await service.detail(studentCtx, STUDENT_USER, CLASS);
+    expect(detail.summary).toMatchObject({
+      warningThreshold: 70,
+      belowThreshold: false,
+      attendance: { onTime: 1, late: 0, missed: 0, counted: 1, percent: 100 },
+      finalComment: {
+        text: 'Cần luyện nói thêm',
+        author: { id: 'user-m-teacher', fullName: 'Giáo viên A' },
+      },
+    });
+    expect(detail.summary!.attendanceItems).toEqual([
+      {
+        itemId: expect.any(String),
+        title: 'Kiểm tra chương 1',
+        deadlineAt: iso('2026-10-15T17:00:00.000Z'),
+        mark: AttendanceMark.ON_TIME,
+        startedAt: iso('2026-10-10T10:00:00.000Z'),
+      },
+    ]);
+    expect(detail.summary!.groupAverages).toEqual([
+      { groupId: 'g-1', title: 'Chương 1', percent: 90 },
+    ]);
+  });
+
+  it('học viên khác trong lớp không thấy nhận xét của người khác', async () => {
+    const { service } = await finishedClass();
+    const detail = await service.detail(
+      otherStudentCtx,
+      'user-m-student-2',
+      CLASS,
+    );
+    expect(detail.summary!.finalComment).toBeNull();
+    expect(detail.summary!.attendance.percent).toBe(0);
   });
 });

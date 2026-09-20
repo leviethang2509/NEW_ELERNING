@@ -165,6 +165,39 @@ async function request<T>(
   });
 }
 
+/** Tên file trong `Content-Disposition` (ưu tiên `filename*` đã encode). */
+function fileNameOf(header: string | null): string | null {
+  if (!header) return null;
+  const encoded = /filename\*=UTF-8''([^;]+)/i.exec(header);
+  if (encoded?.[1]) return decodeURIComponent(encoded[1]);
+  const plain = /filename="?([^";]+)"?/i.exec(header);
+  return plain?.[1] ?? null;
+}
+
+/** Tải file nhị phân (vd. Excel bảng điểm): trả blob kèm tên file của server. */
+async function download(
+  path: string,
+  fallbackError = 'Tải file thất bại',
+): Promise<{ blob: Blob; fileName: string | null }> {
+  return withLoading(async () => {
+    let res: Response;
+    try {
+      res = await send(path, {});
+    } catch {
+      throw new ApiError(NETWORK_ERROR, 0);
+    }
+    if (!res.ok) {
+      const data: unknown = await res.json().catch(() => ({}));
+      const fallback = res.status >= 500 ? SERVER_ERROR : fallbackError;
+      throw new ApiError(errorMessage(data, fallback), res.status, data);
+    }
+    return {
+      blob: await res.blob(),
+      fileName: fileNameOf(res.headers.get('Content-Disposition')),
+    };
+  });
+}
+
 // Upload multipart (không set Content-Type để trình duyệt tự thêm boundary).
 function upload<T>(path: string, file: File, fieldName = 'file'): Promise<T> {
   const form = new FormData();
@@ -195,4 +228,5 @@ export const api = {
     }),
   upload,
   postForm,
+  download,
 };

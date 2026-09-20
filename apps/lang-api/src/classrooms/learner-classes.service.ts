@@ -45,6 +45,7 @@ import { Course } from '../training/course.entity';
 import { toCourseRef } from '../training/training.mapper';
 import { User } from '../users/user.entity';
 import { manualScoresByAttempt } from './class-activity';
+import { learnerSummary, loadClassProgress } from './class-progress';
 import { loadContents, type ClassContentRow } from './class-curriculum.service';
 import { ClassGroup } from './class-group.entity';
 import { ClassItem } from './class-item.entity';
@@ -141,13 +142,21 @@ export class LearnerClassesService {
         .getRepository(ClassItem)
         .findBy({ classroomId, removedAt: IsNull() }),
     ]);
-    const [base, contents, progress, links, upcoming] = await Promise.all([
-      this.baseItems(manager, [classroom]),
-      loadContents(manager, items),
-      this.myProgress(manager, userId, items),
-      this.sessionLinks(manager, classroom),
-      this.upcomingSessions(manager, classroom, now),
-    ]);
+    const [base, contents, progress, links, upcoming, summary] =
+      await Promise.all([
+        this.baseItems(manager, [classroom]),
+        loadContents(manager, items),
+        this.myProgress(manager, userId, items),
+        this.sessionLinks(manager, classroom),
+        this.upcomingSessions(manager, classroom, now),
+        // Chuyên cần, trung bình chương, nhận xét: chỉ khi lớp đã kết thúc
+        // (R11.3–4; lớp đã huỷ không tổng kết – giả định 3).
+        classroom.status === ClassroomStatus.FINISHED
+          ? loadClassProgress(manager, classroom).then((data) =>
+              learnerSummary(data, ctx.membershipId, now),
+            )
+          : Promise.resolve(null),
+      ]);
 
     // Nhóm thi: mục gốc + các lần thi lại, theo thứ tự trong giáo trình.
     const ordered = orderItems(groups, items);
@@ -243,6 +252,7 @@ export class LearnerClassesService {
           };
         }),
       upcomingSessions: upcoming,
+      summary,
     };
   }
 

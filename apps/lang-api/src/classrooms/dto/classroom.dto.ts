@@ -23,6 +23,7 @@ import {
   IsIn,
   IsInt,
   IsNotEmpty,
+  IsNumber,
   IsOptional,
   IsString,
   IsUUID,
@@ -123,6 +124,26 @@ const LocationField = () =>
     }),
   );
 
+/** Tham số chuyên cần của lớp; `null` = theo trung tâm (R11.1–2, Step 11). */
+const LateWeightField = () =>
+  composeDecorators(
+    IsOptional(),
+    IsNumber(
+      { maxDecimalPlaces: 2 },
+      { message: 'Hệ số nộp muộn là số từ 0 đến 1, tối đa 2 chữ số thập phân' },
+    ),
+    Min(0, { message: 'Hệ số nộp muộn là số từ 0 đến 1' }),
+    Max(1, { message: 'Hệ số nộp muộn là số từ 0 đến 1' }),
+  );
+
+const WarningThresholdField = () =>
+  composeDecorators(
+    IsOptional(),
+    IsInt({ message: 'Ngưỡng cảnh báo phải là số nguyên' }),
+    Min(0, { message: 'Ngưỡng cảnh báo từ 0 đến 100' }),
+    Max(100, { message: 'Ngưỡng cảnh báo từ 0 đến 100' }),
+  );
+
 export class ListClassroomsQueryDto extends PaginationQueryDto {
   /** Tìm theo tên hoặc mã lớp. */
   @IsOptional()
@@ -197,6 +218,12 @@ export class UpdateClassroomDto implements UpdateClassroomInput {
 
   @LocationField()
   location?: string | null;
+
+  @LateWeightField()
+  lateWeight?: number | null;
+
+  @WarningThresholdField()
+  warningThreshold?: number | null;
 }
 
 export class ChangeClassroomStatusDto implements ChangeClassroomStatusInput {

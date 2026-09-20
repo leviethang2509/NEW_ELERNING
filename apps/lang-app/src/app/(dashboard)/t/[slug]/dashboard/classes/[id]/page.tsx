@@ -11,7 +11,9 @@ import {
   type ClassCurriculum,
   type ClassroomDetail,
 } from '@lang/shared';
+import { ClassAttendancePanel } from '@/components/classes/ClassAttendancePanel';
 import { ClassCurriculumEditor } from '@/components/classes/ClassCurriculumEditor';
+import { ClassGradebookPanel } from '@/components/classes/ClassGradebookPanel';
 import { ClassLogList } from '@/components/classes/ClassLogList';
 import { ClassMembersPanel } from '@/components/classes/ClassMembersPanel';
 import { ClassSchedulePanel } from '@/components/classes/ClassSchedulePanel';
@@ -35,12 +37,28 @@ import { errorMessage } from '@/lib/error-message';
 import { formatDate, formatDateTime } from '@/lib/format';
 import { courseDetailPath, curriculumDetailPath } from '@/lib/training-api';
 
-type Tab = 'info' | 'schedule' | 'members' | 'curriculum' | 'logs';
-const TABS: Tab[] = ['info', 'schedule', 'members', 'curriculum', 'logs'];
+type Tab =
+  | 'info'
+  | 'schedule'
+  | 'members'
+  | 'curriculum'
+  | 'progress'
+  | 'gradebook'
+  | 'logs';
+const TABS: Tab[] = [
+  'info',
+  'schedule',
+  'members',
+  'curriculum',
+  'progress',
+  'gradebook',
+  'logs',
+];
 
 /**
  * Trang lớp: Thông tin · Thời khoá biểu · Giáo viên & Học viên · Giáo trình ·
- * Nhật ký. `?tab=` mở sẵn một tab (vd. quay lại từ trang buổi học).
+ * Tiến độ & Chuyên cần · Bảng điểm · Nhật ký. `?tab=` mở sẵn một tab (vd. quay
+ * lại từ trang buổi học).
  */
 export default function ClassDetailPage({
   params,
@@ -356,6 +374,23 @@ export default function ClassDetailPage({
             {vi.common.loading}
           </span>
         ))}
+      {tab === 'progress' && (
+        <ClassAttendancePanel
+          slug={slug}
+          classroom={classroom}
+          onParamsSaved={() => {
+            reload();
+            setLogKey((key) => key + 1);
+          }}
+        />
+      )}
+      {tab === 'gradebook' && (
+        <ClassGradebookPanel
+          slug={slug}
+          classroom={classroom}
+          onCommentSaved={() => setLogKey((key) => key + 1)}
+        />
+      )}
       {tab === 'logs' && (
         <ClassLogList
           slug={slug}

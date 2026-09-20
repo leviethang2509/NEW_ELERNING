@@ -297,7 +297,8 @@
             "Chấm Writing/Speaking của **bài làm trong lớp mình phụ trách**, **bài làm tự do của đề/bài học do mình soạn** và bài được **chuyển giao chấm**; không chấm bài của chính mình – [Chấm bài](page:cham-bai).",
             "Chuyển giao chấm các phạm vi đó cho Giáo viên khác của trung tâm (người được giao không giao tiếp).",
             "Làm bài thi như mọi thành viên.",
-            "Xem bài làm của học viên trên từng mục đề thi của lớp mình và bấm **Cho làm lại** khi học viên gặp sự cố; mở **Bài làm** của từng học viên để xem đáp án và đúng/sai từng câu – [Giáo trình lớp](page:giao-trinh-lop)."
+            "Xem bài làm của học viên trên từng mục đề thi của lớp mình và bấm **Cho làm lại** khi học viên gặp sự cố; mở **Bài làm** của từng học viên để xem đáp án và đúng/sai từng câu – [Giáo trình lớp](page:giao-trinh-lop).",
+            "Xem **Tiến độ & Chuyên cần** và **Bảng điểm** của lớp mình phụ trách, viết **nhận xét cuối khoá** cho học viên và xuất Excel – [Chuyên cần & bảng điểm](page:chuyen-can-bang-diem)."
           ]
         },
         {
@@ -314,7 +315,8 @@
             "Tạo/sửa khoá học, gắn giáo trình vào khoá học.",
             "Tạo lớp, sửa thông tin/trạng thái lớp, thêm/bỏ giáo viên và học viên; xem lớp mình không phụ trách.",
             "Sửa lịch lặp, ngày bắt đầu, số buổi của lớp; xem lịch trung tâm; vào **Cài đặt** trung tâm.",
-            "Chấm bài của lớp mình không phụ trách hoặc của đề/bài học người khác soạn, trừ khi được chuyển giao."
+            "Chấm bài của lớp mình không phụ trách hoặc của đề/bài học người khác soạn, trừ khi được chuyển giao.",
+            "Sửa **tham số chuyên cần của lớp** (hệ số nộp muộn, ngưỡng cảnh báo) – chỉ xem."
           ]
         },
         {
@@ -383,7 +385,8 @@
             "Được trung tâm xếp vào lớp thì trang `/t/{slug}` có thêm **Lớp của tôi**: giáo trình lớp, bài học và bài kiểm tra được giao, buổi sắp tới.",
             "Bài/đề giao qua lớp làm ở trang lớp, kể cả bài đặt **Chỉ qua lớp**; mỗi bài kiểm tra/bài thi chỉ làm **một lần**.",
             "**Lịch học của tôi** (`/t/{slug}/schedule`) hiện buổi của mọi lớp bạn đang học.",
-            "Chi tiết ở [Lớp học của tôi](page:lop-cua-toi)."
+            "Chi tiết ở [Lớp học của tôi](page:lop-cua-toi).",
+            "Lớp **Đã kết thúc**: trang lớp có thêm **Tổng kết cuối khoá** (tỉ lệ chuyên cần, trung bình theo chương, nhận xét của giáo viên) – [Tổng kết cuối khoá](page:lop-cua-toi#tong-ket-cuoi-khoa)."
           ]
         },
         {
@@ -397,7 +400,8 @@
             "Không giới hạn số lượt làm mỗi đề, nhưng mỗi đề chỉ có **1 lượt đang làm** tại một thời điểm.",
             "Kết quả không hiện đáp án đúng hay đánh dấu câu sai; chỉ có số câu đúng theo section và điểm/nhận xét phần chấm tay.",
             "Speaking cần trình duyệt cho dùng micro (HTTPS hoặc localhost).",
-            "Học viên được xếp vào [lớp học](page:lop-hoc) thì trang trung tâm có thêm **Lớp của tôi** – xem [Lớp học của tôi](page:lop-cua-toi)."
+            "Học viên được xếp vào [lớp học](page:lop-hoc) thì trang trung tâm có thêm **Lớp của tôi** – xem [Lớp học của tôi](page:lop-cua-toi).",
+            "Trong lúc lớp đang học, bạn **không** thấy tỉ lệ chuyên cần hay nhãn \"muộn\" — chỉ thấy trạng thái và điểm từng bài của mình."
           ]
         }
       ]

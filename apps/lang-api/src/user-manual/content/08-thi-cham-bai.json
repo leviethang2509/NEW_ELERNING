@@ -395,6 +395,30 @@
           "tone": "warning",
           "title": "Rời lớp",
           "text": "Khi bị xoá khỏi lớp, lớp không còn trong **Lớp của tôi** và bạn không vào trang lớp được nữa; bài làm cũ vẫn được giữ. Được thêm lại thì kết quả cũ hiện lại như trước."
+        },
+        {
+          "type": "heading",
+          "level": 2,
+          "text": "Tổng kết cuối khoá"
+        },
+        {
+          "type": "paragraph",
+          "text": "Khi lớp chuyển sang **Đã kết thúc**, trang lớp có thêm khối **Tổng kết cuối khoá** dành riêng cho bạn:"
+        },
+        {
+          "type": "list",
+          "items": [
+            "**Tỉ lệ chuyên cần** của bạn kèm thống kê Đúng hạn · Muộn · Chưa nộp và cảnh báo nếu dưới ngưỡng của lớp.",
+            "Từng mục bài kiểm tra/bài thi có hạn nộp kèm nhãn Đúng hạn · Muộn · Chưa nộp · Chưa tới hạn · Không tính.",
+            "**Trung bình theo chương** (tính trên các bài kiểm tra/bài thi đã có điểm).",
+            "**Nhận xét của giáo viên** (nếu giáo viên đã viết)."
+          ]
+        },
+        {
+          "type": "callout",
+          "tone": "info",
+          "title": "Trong khoá học chưa thấy chuyên cần",
+          "text": "Khi lớp còn **Đang học**, bạn chỉ thấy trạng thái từng mục (đã nộp/chưa nộp, hạn nộp) và điểm từng bài của mình, không thấy tỉ lệ chuyên cần hay nhãn \"muộn\". Lớp **Đã huỷ** không có tổng kết. Cách tính xem [Chuyên cần & bảng điểm](page:chuyen-can-bang-diem#cach-tinh-chuyen-can)."
         }
       ]
     },

@@ -8,13 +8,20 @@
       "summary": "Gửi đăng ký, chờ duyệt, sửa và gửi lại khi bị từ chối.",
       "roles": ["REGISTERED_USER", "TENANT_OWNER"],
       "blocks": [
-        { "type": "roles", "roles": ["REGISTERED_USER", "TENANT_OWNER"] },
+        {
+          "type": "roles",
+          "roles": ["REGISTERED_USER", "TENANT_OWNER"]
+        },
         {
           "type": "callout",
           "tone": "warning",
           "text": "Chỉ người **đủ 18 tuổi** (tính theo ngày sinh và múi giờ của tài khoản) mới đăng ký được trung tâm. Không giới hạn số trung tâm mỗi người."
         },
-        { "type": "heading", "level": 2, "text": "Các bước" },
+        {
+          "type": "heading",
+          "level": 2,
+          "text": "Các bước"
+        },
         {
           "type": "steps",
           "items": [
@@ -36,7 +43,11 @@
             }
           ]
         },
-        { "type": "heading", "level": 2, "text": "Đường dẫn trung tâm" },
+        {
+          "type": "heading",
+          "level": 2,
+          "text": "Đường dẫn trung tâm"
+        },
         {
           "type": "list",
           "items": [
@@ -45,7 +56,11 @@
             "Không dùng được từ hệ thống dành riêng (`admin`, `api`, `login`, `dashboard`…) hay đường dẫn trung tâm khác đang dùng."
           ]
         },
-        { "type": "heading", "level": 2, "text": "Sau khi gửi" },
+        {
+          "type": "heading",
+          "level": 2,
+          "text": "Sau khi gửi"
+        },
         {
           "type": "table",
           "columns": ["Kết quả", "Chủ sở hữu làm gì"],
@@ -78,7 +93,11 @@
           "type": "roles",
           "roles": ["TENANT_OWNER", "TENANT_ADMIN", "TEACHER"]
         },
-        { "type": "heading", "level": 2, "text": "Số liệu" },
+        {
+          "type": "heading",
+          "level": 2,
+          "text": "Số liệu"
+        },
         {
           "type": "table",
           "columns": ["Thẻ", "Chủ sở hữu / Quản trị viên", "Giáo viên"],
@@ -129,12 +148,19 @@
       "summary": "Thêm thành viên, phân vai trò, ngừng kích hoạt, xoá, gắn phụ huynh, giới hạn gói.",
       "roles": ["TENANT_OWNER", "TENANT_ADMIN"],
       "blocks": [
-        { "type": "roles", "roles": ["TENANT_OWNER", "TENANT_ADMIN"] },
+        {
+          "type": "roles",
+          "roles": ["TENANT_OWNER", "TENANT_ADMIN"]
+        },
         {
           "type": "paragraph",
           "text": "Menu **Quản lý → Thành viên** (`/t/{slug}/dashboard/members`). Đầu trang hiện số thành viên đang hoạt động / giới hạn gói. Danh sách tìm theo họ tên/email, lọc vai trò, trạng thái; nhãn **< 18 tuổi** cho thành viên chưa thành niên."
         },
-        { "type": "heading", "level": 2, "text": "Thêm thành viên" },
+        {
+          "type": "heading",
+          "level": 2,
+          "text": "Thêm thành viên"
+        },
         {
           "type": "table",
           "columns": ["Cách", "Khi nào", "Nhập"],
@@ -159,7 +185,11 @@
             "Đã đạt giới hạn gói thì không thêm được (“Trung tâm đã đạt giới hạn … thành viên của gói …”)."
           ]
         },
-        { "type": "heading", "level": 2, "text": "Chi tiết thành viên" },
+        {
+          "type": "heading",
+          "level": 2,
+          "text": "Chi tiết thành viên"
+        },
         {
           "type": "table",
           "columns": ["Thao tác", "Tác dụng"],
@@ -187,11 +217,17 @@
           "tone": "warning",
           "text": "Không ai xoá hay ngừng kích hoạt được **Chủ sở hữu**. Quản trị viên không đổi được vai trò/trạng thái của Chủ sở hữu; Chủ sở hữu chỉ tự thêm/bỏ các vai trò khác cho mình."
         },
-        { "type": "heading", "level": 2, "text": "Liên kết phụ huynh" },
+        {
+          "type": "heading",
+          "level": 2,
+          "text": "Liên kết phụ huynh"
+        },
         {
           "type": "steps",
           "items": [
-            { "title": "Mở chi tiết một thành viên có vai trò Học viên" },
+            {
+              "title": "Mở chi tiết một thành viên có vai trò Học viên"
+            },
             {
               "title": "Bấm Gắn phụ huynh",
               "text": "Tìm và chọn thành viên có vai trò **Phụ huynh** (khác người đó), nhập **Quan hệ** (tuỳ chọn, tối đa 50 ký tự, vd. Mẹ, Bố)."
@@ -206,7 +242,11 @@
           "type": "paragraph",
           "text": "Một học viên có nhiều phụ huynh và ngược lại. Chi tiết của Phụ huynh hiện mục **Học viên được giám hộ**."
         },
-        { "type": "heading", "level": 2, "text": "Vượt giới hạn gói" },
+        {
+          "type": "heading",
+          "level": 2,
+          "text": "Vượt giới hạn gói"
+        },
         {
           "type": "paragraph",
           "text": "Xảy ra khi System Admin hạ gói hoặc giảm số thành viên tối đa. Không ai bị ngừng kích hoạt tự động; trung tâm chỉ bị chặn thêm và kích hoạt lại thành viên cho tới khi số thành viên đang hoạt động ≤ giới hạn."
@@ -323,12 +363,19 @@
       "summary": "Ngày nghỉ của trung tâm và tham số chuyên cần.",
       "roles": ["TENANT_OWNER", "TENANT_ADMIN"],
       "blocks": [
-        { "type": "roles", "roles": ["TENANT_OWNER", "TENANT_ADMIN"] },
+        {
+          "type": "roles",
+          "roles": ["TENANT_OWNER", "TENANT_ADMIN"]
+        },
         {
           "type": "paragraph",
           "text": "Menu **Cài đặt** (`/t/{slug}/dashboard/settings`), chỉ Chủ sở hữu và Quản trị viên."
         },
-        { "type": "heading", "level": 2, "text": "Tham số chuyên cần" },
+        {
+          "type": "heading",
+          "level": 2,
+          "text": "Tham số chuyên cần"
+        },
         {
           "type": "table",
           "columns": ["Tham số", "Quy tắc"],
@@ -345,9 +392,13 @@
         },
         {
           "type": "paragraph",
-          "text": "Bấm **Lưu tham số**. Bảng chuyên cần dùng các tham số này có ở giai đoạn sau."
+          "text": "Bấm **Lưu tham số**. Đây là giá trị mặc định cho mọi lớp; từng lớp ghi đè được ở tab **Tiến độ & Chuyên cần** – xem [Chuyên cần & bảng điểm](page:chuyen-can-bang-diem#tham-so-chuyen-can-cua-lop)."
         },
-        { "type": "heading", "level": 2, "text": "Ngày nghỉ" },
+        {
+          "type": "heading",
+          "level": 2,
+          "text": "Ngày nghỉ"
+        },
         {
           "type": "list",
           "items": [

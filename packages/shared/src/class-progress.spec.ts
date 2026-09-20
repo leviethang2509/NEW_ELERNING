@@ -1,13 +1,20 @@
 import {
+  AttendanceMark,
   ClassAttemptState,
   ClassItemLock,
   ClassroomStatus,
   CurriculumItemType,
   attemptScorePercent,
+  attendanceMarkOf,
+  attendanceRate,
+  autoScorePercent,
+  averagePercent,
   classItemLock,
   effectiveOpensAt,
   examGroupResult,
+  isBelowAttendanceThreshold,
   isGroupMemberRequired,
+  type AttendanceItemInput,
   type ClassAttemptSummary,
   type ClassItemGateInput,
   type ExamGroupMember,
@@ -307,5 +314,213 @@ describe('classItemLock', () => {
     expect(classItemLock(gate({ contentAvailable: false }), NOW)).toBe(
       ClassItemLock.CONTENT,
     );
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Chuyên cần (Step 11)
+
+const DEADLINE = '2026-10-19T17:00:00.000Z';
+
+function attendanceItem(
+  over: Partial<AttendanceItemInput> = {},
+): AttendanceItemInput {
+  return {
+    deadlineAt: DEADLINE,
+    removed: false,
+    required: true,
+    attempt: null,
+    ...over,
+  };
+}
+
+const started = (
+  startedAt: string,
+  state: ClassAttemptState = ClassAttemptState.GRADED,
+) => ({ state, startedAt });
+
+describe('attendanceMarkOf', () => {
+  it('bắt đầu trước hạn và đã nộp → đúng hạn (dù nộp sau hạn)', () => {
+    expect(
+      attendanceMarkOf(
+        attendanceItem({ attempt: started('2026-10-19T16:30:00.000Z') }),
+        NOW,
+      ),
+    ).toBe(AttendanceMark.ON_TIME);
+  });
+
+  it('chưa chấm xong vẫn tính là đã nộp (E7.2)', () => {
+    expect(
+      attendanceMarkOf(
+        attendanceItem({
+          attempt: started(
+            '2026-10-19T10:00:00.000Z',
+            ClassAttemptState.PENDING_GRADING,
+          ),
+        }),
+        NOW,
+      ),
+    ).toBe(AttendanceMark.ON_TIME);
+  });
+
+  it('bắt đầu sau hạn → muộn', () => {
+    expect(
+      attendanceMarkOf(
+        attendanceItem({ attempt: started('2026-10-19T17:00:00.001Z') }),
+        NOW,
+      ),
+    ).toBe(AttendanceMark.LATE);
+  });
+
+  it('quá hạn chưa làm → không nộp', () => {
+    expect(attendanceMarkOf(attendanceItem(), NOW)).toBe(AttendanceMark.MISSED);
+  });
+
+  it('chưa tới hạn, chưa làm → chưa tính', () => {
+    expect(
+      attendanceMarkOf(
+        attendanceItem({ deadlineAt: '2026-10-25T17:00:00.000Z' }),
+        NOW,
+      ),
+    ).toBe(AttendanceMark.PENDING);
+  });
+
+  it('đang làm dở → chưa tính (lượt bỏ dở sẽ bị chốt)', () => {
+    expect(
+      attendanceMarkOf(
+        attendanceItem({
+          attempt: started(
+            '2026-10-19T16:00:00.000Z',
+            ClassAttemptState.IN_PROGRESS,
+          ),
+        }),
+        NOW,
+      ),
+    ).toBe(AttendanceMark.IN_PROGRESS);
+  });
+
+  it('mục không có deadline → không tính', () => {
+    expect(attendanceMarkOf(attendanceItem({ deadlineAt: null }), NOW)).toBe(
+      AttendanceMark.EXCLUDED,
+    );
+  });
+
+  it('mục đã bỏ khỏi giáo trình lớp → không tính (E3)', () => {
+    expect(attendanceMarkOf(attendanceItem({ removed: true }), NOW)).toBe(
+      AttendanceMark.EXCLUDED,
+    );
+  });
+
+  it('lần thi lại không bắt buộc → không tính (T2.2)', () => {
+    const item = attendanceItem({
+      required: false,
+      attempt: started('2026-10-19T18:00:00.000Z'),
+    });
+    expect(attendanceMarkOf(item, NOW)).toBe(AttendanceMark.EXCLUDED);
+  });
+
+  it('đổi deadline sang tương lai: mục quá hạn thành chưa tính', () => {
+    const missed = attendanceItem();
+    expect(attendanceMarkOf(missed, NOW)).toBe(AttendanceMark.MISSED);
+    expect(
+      attendanceMarkOf(
+        { ...missed, deadlineAt: '2026-10-21T17:00:00.000Z' },
+        NOW,
+      ),
+    ).toBe(AttendanceMark.PENDING);
+  });
+
+  it('lượt đã "Cho làm lại" không truyền vào → coi như chưa làm', () => {
+    // Service chỉ đưa lượt còn hiệu lực (`voided_at IS NULL`) vào `attempt`.
+    expect(attendanceMarkOf(attendanceItem({ attempt: null }), NOW)).toBe(
+      AttendanceMark.MISSED,
+    );
+  });
+});
+
+describe('attendanceRate', () => {
+  it('đúng hạn 1, muộn k, quá hạn 0; mục khác không vào mẫu số', () => {
+    const rate = attendanceRate(
+      [
+        AttendanceMark.ON_TIME,
+        AttendanceMark.ON_TIME,
+        AttendanceMark.LATE,
+        AttendanceMark.MISSED,
+        AttendanceMark.PENDING,
+        AttendanceMark.IN_PROGRESS,
+        AttendanceMark.EXCLUDED,
+      ],
+      0.5,
+    );
+    expect(rate).toEqual({
+      onTime: 2,
+      late: 1,
+      missed: 1,
+      counted: 4,
+      score: 2.5,
+      percent: 62.5,
+    });
+  });
+
+  it('chưa có mục nào được tính → không có tỉ lệ', () => {
+    const rate = attendanceRate([AttendanceMark.PENDING], 0.5);
+    expect(rate.counted).toBe(0);
+    expect(rate.percent).toBeNull();
+  });
+
+  it('làm tròn 1 chữ số thập phân', () => {
+    const rate = attendanceRate(
+      [AttendanceMark.ON_TIME, AttendanceMark.LATE, AttendanceMark.MISSED],
+      0.5,
+    );
+    expect(rate.percent).toBe(50);
+    expect(
+      attendanceRate(
+        [AttendanceMark.ON_TIME, AttendanceMark.ON_TIME, AttendanceMark.MISSED],
+        0.5,
+      ).percent,
+    ).toBe(66.7);
+  });
+
+  it('k = 0 (không tính bài muộn) và k = 1', () => {
+    const marks = [AttendanceMark.ON_TIME, AttendanceMark.LATE];
+    expect(attendanceRate(marks, 0).percent).toBe(50);
+    expect(attendanceRate(marks, 1).percent).toBe(100);
+  });
+});
+
+describe('isBelowAttendanceThreshold', () => {
+  it('dưới ngưỡng thì cảnh báo, bằng ngưỡng thì không', () => {
+    expect(isBelowAttendanceThreshold(69.9, 70)).toBe(true);
+    expect(isBelowAttendanceThreshold(70, 70)).toBe(false);
+  });
+
+  it('chưa có tỉ lệ thì không cảnh báo', () => {
+    expect(isBelowAttendanceThreshold(null, 70)).toBe(false);
+  });
+});
+
+describe('averagePercent', () => {
+  it('bỏ qua mục chưa có điểm', () => {
+    expect(averagePercent([80, null, 50])).toBe(65);
+  });
+
+  it('không có điểm nào → null', () => {
+    expect(averagePercent([null, null])).toBeNull();
+    expect(averagePercent([])).toBeNull();
+  });
+
+  it('làm tròn 1 chữ số thập phân', () => {
+    expect(averagePercent([100, 50, 50])).toBe(66.7);
+  });
+});
+
+describe('autoScorePercent', () => {
+  it('% câu tự chấm đúng', () => {
+    expect(autoScorePercent(3, 4)).toBe(75);
+  });
+
+  it('không có câu tự chấm → null', () => {
+    expect(autoScorePercent(0, 0)).toBeNull();
   });
 });

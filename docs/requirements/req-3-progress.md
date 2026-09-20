@@ -20,16 +20,16 @@
 | 2 | 8 | Thời khoá biểu, ngày nghỉ, lịch | ✅ | 2026-09-20 | Chưa commit; lịch thử lớp `N5-2026-01` + lớp `TRUNG-LICH` ở `step4-test` |
 | 2 | 9 | Học viên trong lớp | ✅ | 2026-09-20 | Chưa commit; dữ liệu thử lượt trong lớp `N5-2026-01` ở `step4-test` |
 | 2 | 10 | Chấm theo lớp & chuyển giao | ✅ | 2026-09-20 | Chưa commit; deploy giai đoạn 2 sau khi người dùng kiểm giao diện |
-| 3 | 11 | Chuyên cần, bảng điểm, nhận xét cuối khoá | ⬜ | | |
+| 3 | 11 | Chuyên cần, bảng điểm, nhận xét cuối khoá | ✅ | 2026-09-20 | Chưa commit; dữ liệu thử lớp `N5-2026-01` có thêm 2 mục đề thi đặt hạn nộp |
 | 3 | 12 | Thông báo | ⬜ | | |
 | 3 | 13 | Phụ huynh | ⬜ | | |
 | 3 | 14 | Hoàn thiện & nghiệm thu tổng | ⬜ | | Deploy giai đoạn 3 |
 
 ## Bàn giao cho phiên tiếp theo
 
-- Giai đoạn 1 (Step 1–5) xong, đã push `main` (`db18cb7`). Giai đoạn 2: Step 6 `d5cf255`, Step 7 `06d9daa`, Step 8 `a9d588a`, Step 9 `258b8a4` đã commit (chưa push); **Step 10 xong trên local, chưa commit**. Deploy cả giai đoạn 2 sau khi người dùng kiểm giao diện: migration `CreateCoursesCurricula`, `CreateClassrooms`, `CreateClassSchedule`, **`CreateGradingDelegations`** chạy lúc container khởi động; **không có env mới**.
-- **Tiếp theo: Step 11 – Chuyên cần, bảng điểm, nhận xét cuối khoá** (plan mục 1.4, 4.7, 5, 6, 7). Xem "Lưu ý cho step sau" của Step 10, prompt ở cuối file.
-- Máy dev: `apps/lang-api/.env` trỏ Postgres local `lang_simulator_dev`. DB local có **18 migration**, 1 System Owner, mẫu bài học hệ thống **Minna no Nihongo – 1 bài**. **Còn giữ dữ liệu thử** để người dùng bấm giao diện:
+- Giai đoạn 1 (Step 1–5) xong, đã push `main` (`db18cb7`). Giai đoạn 2: Step 6 `d5cf255`, Step 7 `06d9daa`, Step 8 `a9d588a`, Step 9 `258b8a4`, Step 10 `90de1a6` đã commit (chưa push). **Step 11 xong trên local, chưa commit.** Deploy giai đoạn 2 + 3 sau khi người dùng kiểm giao diện: migration `CreateCoursesCurricula`, `CreateClassrooms`, `CreateClassSchedule`, `CreateGradingDelegations`, **`ClassProgress`** chạy lúc container khởi động; **không có env mới**. Dependency mới: `exceljs` ở `apps/lang-api` (không có build script, không cần `allowBuilds`).
+- **Tiếp theo: Step 12 – Thông báo** (plan mục 1.4, 4.7, 6, 7). Xem "Lưu ý cho step sau" của Step 11, prompt ở cuối file.
+- Máy dev: `apps/lang-api/.env` trỏ Postgres local `lang_simulator_dev`. DB local có **19 migration**, 1 System Owner, mẫu bài học hệ thống **Minna no Nihongo – 1 bài**. **Còn giữ dữ liệu thử** để người dùng bấm giao diện:
   - Step 3: tenant `step3-test` (4 đề, 1 lượt làm chờ chấm của đề **do Chủ sở hữu soạn** → sau Step 10 `step3-teacher` **không còn thấy bài này**) + `step3-teacher|student|student2@example.com`.
   - Step 4–5: tenant `step4-test` (System Owner là Chủ sở hữu). Bài **Minna bài 1** của `step4-teacher` (công khai, **version 2**; tab Từ vựng có furigana/callout/khối gập mở, tab Luyện tập có Writing + Speaking, tab Bài tập 2 câu MC + 1 giải thích) và bản sao nháp **Bản của GV2** của `step4-teacher2`. `step4-student@example.com` có 2 lượt học tự do: version 1 (đã học xong, phần Luyện tập **chờ chấm** ở trang Chấm bài → Bài học) và version 2 (mới mở).
   - Step 6 (cũng ở `step4-test`): khoá **Tiếng Nhật N5** (`N5`, 24 buổi) và **Tiếng Nhật N5 – lớp tối** (`N5-TOI`), cả hai gắn giáo trình **Giáo trình N5 – Minna no Nihongo** của `step4-teacher` (3 chương, 7 mục); bản sao **… (bản sao)** của `step4-teacher2`. Bài Minna bài 2–4 và 3 đề JLPT_N2 (hiển thị Chỉ qua lớp) do `step4-teacher` tạo cho giáo trình.
@@ -37,6 +37,7 @@
   - Step 8 (cũng ở `step4-test`): lớp `N5-2026-01` có thời khoá biểu **T2 + T4 18:00–19:30, 10 buổi từ 05/10/2026**; ngày nghỉ **Ngày nghỉ thử (Step 8)** T4 21/10 (buổi 6–10 đã lùi, kết thúc 09/11); buổi 5 **đã huỷ** + **buổi bù** T7 24/10 09:00; buổi 3 dạy thế `step4-teacher2` và đang có cảnh báo **Đã dời – kiểm tra lại**; buổi 1 map chương 1 + Minna bài 1. Lớp **Lớp thử trùng lịch** (`TRUNG-LICH`, Sắp mở, T2 19:00–20:30, 4 buổi, giáo viên `step4-teacher2`, học viên `step4-student`). Tham số chuyên cần của `step4-test` giữ mặc định 0,5 / 70.
   - Step 9 (cũng ở `step4-test`, do `accept9.js` dựng): giáo trình lớp `N5-2026-01` đặt **Chương 1 mở 01/09/2026**, mục **Kiểm tra chương 1** (ngưỡng 70, hạn 31/12/2026, **không nhận bài quá hạn**), mục **Thi lại** cùng đề (ngưỡng 70), mục **Kiểm tra chương 2** mở **01/12/2026**. Lượt trong lớp: `step7-student1` trượt 50% lần 1 → **đã được "Cho làm lại"** rồi làm lại đạt 100%, thi lại 100%; `step7-student2` đậu 100% lần 1 và thi lại 50%; `step4-student` có 1 lượt bị **chốt** (0/2); `step7-student1` còn 1 lượt học đang làm ở bài **Ôn tập riêng lớp**.
   - Step 10 (cũng ở `step4-test`, do `accept10.js` dựng): `step7-student1` có **lượt học bài Minna bài 1 trong lớp** đã nộp cả hai phần → 2 câu chấm tay, trong đó **1 câu đã được `step4-teacher2` chấm 7,5** lúc thử chuyển giao (chuyển giao đã gỡ lại, bảng `grading_delegations` hiện **rỗng**). Đây là dữ liệu tốt để bấm thử: `step4-teacher` mở Chấm bài → Bài học thấy cả bài trong lớp lẫn bài tự do, `step4-teacher2` **không thấy gì** cho tới khi được chuyển giao.
+  - Step 11 (cũng ở `step4-test`, do `accept11.js` dựng): lớp `N5-2026-01` có thêm hạn nộp ở 2 mục đề thi — **Thi cuối khoá N5** hạn **18/09/2026 17:00** (quá hạn, chưa ai làm → ô "Chưa nộp") và **Kiểm tra chương 2** hạn **20/12/2026 17:00** (chưa tới hạn); mục **Kiểm tra chương 1** giữ hạn 31/12/2026. Nhờ vậy tab Tiến độ & Chuyên cần có đủ 4 loại ô (Đúng hạn · Chưa tới hạn · Chưa nộp · Không tính) và cả 3 học viên đều **50% < ngưỡng 70%** (hiện cảnh báo). `step7-student1` có **nhận xét cuối khoá** "Tiến bộ tốt ở phần nghe, cần luyện nói thêm."; tham số của lớp để trống (theo trung tâm 0,5 / 70).
   - Dọn dẹp: như Step 9, thêm `delete from grading_delegations where tenant_id in (...)` trước khi xoá tenant (FK CASCADE theo tenant/membership nên xoá tenant cũng tự dọn).
 - Chạy thử: API `node dist/main.js` (:3101, sau `pnpm build`), app `pnpm start` (:3100, cần `BACKEND_INTERNAL_URL=http://127.0.0.1:3101`); **đang chạy** bản build Step 10. Dừng Next bằng `pkill -f next-server`; trước khi chạy API mới kiểm `lsof -iTCP:3101 -sTCP:LISTEN`. Kiểm trang qua curl cần cookie `ls_rt=x`. Nghiệm thu API không cần mật khẩu: ký JWT `{ sub, tv }` bằng `JWT_SECRET` trong `.env` (mẫu `lib10.js` + `accept10.js` trong scratchpad phiên Step 10 – `tokenOf(email)` đọc `token_version` từ DB, `jsonwebtoken`/`pg` lấy từ `node_modules/.pnpm/…`; Chủ sở hữu `step4-test` là `admin@lang-simulator.com`). Không có công cụ trình duyệt – nhờ người dùng bấm thử; kiểm render không cần trình duyệt: bundle bằng esbuild (`node_modules/.pnpm/esbuild@0.27.7/node_modules/esbuild/bin/esbuild --bundle --platform=node --jsx=automatic --packages=external --alias:@=./src`, chạy trong `apps/lang-app`) rồi `renderToStaticMarkup`, chạy với `NODE_PATH=apps/lang-app/node_modules` (component có `Modal`/portal không render được kiểu này; component gọi API phải tách phần nhận prop như `LearnerClassBoard`, hoặc render thẳng component con nhận prop như `AttemptReviewView`).
 
@@ -563,6 +564,53 @@
 - Step 12: thông báo "được chuyển giao chấm" cho giáo viên (R18) lấy từ `GradingDelegationsService.create`.
 - Step 13 (phụ huynh): `AttemptReview` **không** dùng cho phụ huynh (có đáp án); phụ huynh chỉ xem kết quả như học viên.
 
+### Step 11 – Chuyên cần, bảng điểm, nhận xét cuối khoá (2026-09-20)
+
+**Đã làm**
+- Người dùng chốt đầu phiên (đã ghi vào plan mục 1.4):
+  - Mốc **đúng hạn/muộn** xét theo **lúc bắt đầu** lượt thi (deadline là hạn bắt đầu theo R10.3), không theo lúc nộp.
+  - Bảng điểm: mục **bài học** hiện `%` **chỉ trên câu tự chấm** của lần nộp gần nhất (câu chấm tay của bài học thường chưa chấm).
+  - Sửa **tham số chuyên cần của lớp** ngay trong tab "Tiến độ & Chuyên cần" (lưu qua PATCH lớp, chỉ Owner/Admin).
+- Migration `1789919504329-ClassProgress`: `classrooms.late_weight numeric(3,2) NULL` + `warning_threshold int NULL` (+2 CHECK, `null` = theo trung tâm), `classroom_students.final_comment` + `final_comment_by` (FK users SET NULL) + `final_comment_at`. `migration:generate` sau đó báo "No changes"; revert → chạy lại OK.
+- `@lang/shared` `class-progress.ts`: `AttendanceMark` (`on_time`/`late`/`missed`/`in_progress`/`pending`/`excluded`), `attendanceMarkOf`, `attendanceRate`, `isBelowAttendanceThreshold`, `averagePercent`, `autoScorePercent`; kiểu API `ClassProgressParams`, `ClassProgressStudent`, `AttendanceColumn/Cell/Row`, `ClassAttendance`, `GradebookColumnKind`, `GradebookColumn`, `GradebookExamCell`/`GradebookLessonCell`, `GradebookGroupAverage`, `GradebookRow`, `ClassGradebook`, `ClassFinalComment`, `SaveFinalCommentInput`, `FINAL_COMMENT_MAX_LENGTH`, `LearnerClassSummary`; `LearnerClassDetail.summary`; `UpdateClassroomInput` thêm `lateWeight`/`warningThreshold`; `ClassLogAction.FINAL_COMMENT_SAVED` + `ClassLogDetail.cleared`.
+- lang-api `classrooms/`: `class-progress.ts` (`loadClassProgress` nạp 1 lần rồi `attendanceColumns`/`attendanceRows`/`gradebookGroups`/`gradebookColumns`/`gradebookRows`/`learnerSummary`/`progressParams`), `ClassProgressService` (attendance, gradebook, `saveComment` trong transaction khoá lớp, `workbook` bằng `exceljs`), 4 route mới ở `ClassroomsController` (+4 dòng `ROUTES`), `INFO_FIELDS` thêm 2 tham số; `LearnerClassesService.detail` trả `summary` khi lớp `finished`.
+- lang-app: `ClassAttendancePanel`, `ClassGradebookPanel` (+ hộp nhận xét) và 2 tab mới ở trang lớp; khối **Tổng kết cuối khoá** ở trang lớp của học viên; `api.download` + `lib/download.ts` (`saveBlob`) cho file Excel; API ở `lib/classroom-api.ts`; chuỗi `vi.classes.progress`/`vi.classes.gradebook`/`vi.classLearning.summary`.
+- Tài liệu: `/user-manual` trang mới **Chuyên cần & bảng điểm** (cách tính, tham số lớp, 2 bảng, nhận xét, Excel), trang **Lớp học** (tab mới + 3 dòng quyền), **Lớp học của tôi** (mục "Tổng kết cuối khoá"), **Cài đặt trung tâm** (lớp ghi đè được), ma trận quyền (3 dòng), thuật ngữ (Chuyên cần, Nhận xét cuối khoá), vai trò Giáo viên/Học viên; CLAUDE.md; plan (quyết định chốt đầu phiên + route thực tế).
+
+**Sai khác so với plan**
+- Nhận xét cuối khoá dùng **cột trên `classroom_students`** như thiết kế mục 4.5 (lưu ý Step 10 đoán là bảng mới).
+- Thêm mark `in_progress`: lượt đang làm dở không tính là đã nộp nhưng cũng không phải "quá hạn chưa nộp" (khi hết giờ lượt bị chốt rồi mới tính theo lúc bắt đầu).
+- Tham số của lớp lưu qua `PATCH t/:slug/classes/:id` (không thêm route riêng); `canManageParams` trong `ClassAttendance` để UI biết ai sửa được.
+- Route xuất Excel trả `StreamableFile` + `Content-Disposition` (`filename*=UTF-8''…`); client tải bằng `api.download` vì access token nằm trong bộ nhớ (không mở link trực tiếp được).
+- Bảng chuyên cần/bảng điểm trả **cả** học viên đã rời lớp (`removed: true`), client ẩn mặc định và có checkbox "Hiện học viên đã rời lớp" (giả định 15) — không thêm query param.
+- `GET learner/classes/:id` chỉ nạp phần tổng kết khi lớp `finished` (lớp `cancelled` không có – giả định 3).
+
+**Nghiệm thu (local)**
+- 5 lệnh kiểm tra pass: `@lang/shared` **142 test** (+27 hàm thuần chuyên cần), lang-api **329 test** (+9 `classrooms.service.spec.ts`, +3 `learner-classes.service.spec.ts`); `migration:generate` → "No changes".
+- API thật (:3101), `accept11.js` **41/41 mục đạt** trên lớp `N5-2026-01`:
+  - Quyền: giáo viên của lớp xem được, giáo viên ngoài lớp 403, học viên gọi route giáo viên 403.
+  - Cột chuyên cần chỉ gồm mục đề thi có hạn nộp; đậu lần 1 → lần thi lại **Không tính**; trượt lần 1 → lần thi lại bắt buộc.
+  - Hạ hạn nộp xuống giữa hai lượt: người bắt đầu trước hạn **Đúng hạn**, hai người bắt đầu sau hạn **Muộn**; mục quá hạn chưa ai làm **Chưa nộp** → tỉ lệ 50% / 25% / 25% khớp tính tay (k = 0,5).
+  - Tham số lớp k = 0,2 → 10%; giáo viên PATCH lớp 403; bỏ ghi đè quay về 0,5.
+  - Bảng điểm: 8 cột (nhóm thi KT1 + thi lại gộp 1 cột), điểm nhóm = cao nhất lượt đã chấm (bỏ lượt đã "Cho làm lại"), thi lại thấp hơn không hạ điểm, bài học 0% (nộp 0/2) và "chưa nộp → chưa có %", trung bình chương 100/—/—.
+  - Nhận xét: giáo viên của lớp viết được (trim), giáo viên ngoài lớp 403, membership lạ 404, ghi nhật ký `final_comment_saved`.
+  - Excel: tải được với `Content-Disposition` đúng tên, đọc lại bằng `exceljs` thấy 2 sheet, tiêu đề cột, 3 dòng học viên, ô điểm dạng chữ và nội dung nhận xét (`file` báo "Microsoft Excel 2007+").
+  - Học viên: lớp đang học → `summary = null`; chuyển lớp sang **Đã kết thúc** → tỉ lệ 25%, cảnh báo dưới ngưỡng, 4 mục kèm nhãn, trung bình chương, nhận xét; mở lại lớp → **thời khoá biểu không đổi** (so sánh bảng `class_sessions` trước/sau).
+- lang-app (`next start`): trang lớp `?tab=progress`, `?tab=gradebook` và trang lớp của học viên đều **200**; render `LearnerClassBoard` bằng `react-dom/server` với JSON thật: khối "Tổng kết cuối khoá" hiện 50%, "Đúng hạn 1 · Muộn 0 · Chưa nộp 1", cảnh báo dưới ngưỡng 70%, 4 mục kèm nhãn, trung bình chương và nhận xét.
+- **Chưa bấm giao diện bằng trình duyệt**:
+  - Tab Tiến độ & Chuyên cần: bảng ô màu, ô tham số của lớp (lưu/để trống), checkbox "Hiện học viên đã rời lớp".
+  - Tab Bảng điểm: lọc chương, cột nhóm thi (tooltip các lần), cột trung bình, hộp nhận xét cuối khoá.
+  - Nút **Xuất Excel** (tải file trong trình duyệt) và mở file bằng Excel/Numbers.
+  - Khối "Tổng kết cuối khoá" của học viên khi lớp đã kết thúc, và màn hình hẹp.
+
+**Lưu ý cho step sau**
+- Step 12 (thông báo):
+  - Sự kiện của Step 11: **nhận xét cuối khoá** được công bố (lớp chuyển `finished`) hoặc sửa sau đó → thông báo cho học viên (T5.3); `ClassProgressService.saveComment` và `ClassroomsService.changeStatus` là chỗ gọi.
+  - Sự kiện khác đã có chỗ gọi sẵn: giao mục mới (`ClassCurriculumService.save`), chấm xong (`GradingService`/`LessonGradingService`), dời lịch (`applySchedule`/`recomputeClassroom`), được chuyển giao chấm (`GradingDelegationsService.create`).
+  - Cron "sắp hết hạn/quá hạn" dùng `class_items.deadline_at` của mục đề thi **chưa có lượt nộp** của từng học viên trong lớp (`attendanceMarkOf` đang tính `missed` theo đúng dữ liệu đó).
+- Step 13 (phụ huynh): `LearnerClassSummary` dùng lại được cho "Con của tôi" (`learnerSummary(data, membershipId, now)` nhận membership của con); tài liệu `/user-manual` hiện ghi phụ huynh **chưa** xem được chuyên cần/bảng điểm — Step 13 phải cập nhật lại ma trận quyền và trang phụ huynh.
+- Xoá dữ liệu thử: hạn nộp mới ở 2 mục và nhận xét cuối khoá nằm trong lớp `N5-2026-01` nên xoá tenant `step4-test` là sạch.
+
 ## Prompt cho Step 11
 
 ```
@@ -572,4 +620,15 @@ Bắt đầu Step 11 của req-3 (Chuyên cần, bảng điểm, nhận xét cu�
 2. Trước khi code, tóm tắt ngắn cho tôi cách làm: hàm thuần tính chuyên cần và bảng điểm trong @lang/shared, migration (tham số ghi đè của lớp + nhận xét cuối khoá), API attendance/gradebook/comment/export.xlsx, tab "Tiến độ & Chuyên cần" và "Bảng điểm" ở trang lớp, phần học viên/phụ huynh chỉ thấy khi lớp đã kết thúc. Chỗ nào chưa rõ thì hỏi tôi, không tự đoán.
 3. Làm lần lượt: migration → hàm thuần + unit test → service + controller kèm unit test (thêm dòng ROUTES) → lang-app → tài liệu. Sau mỗi phần chạy test.
 4. Nghiệm thu thật theo tiêu chí của plan trên lớp N5-2026-01 của step4-test (dữ liệu Step 9–10 đã có lượt đúng hạn, muộn, chưa làm, thi lại). Cập nhật /user-manual, CLAUDE.md, req-3-progress.md và ghi prompt cho Step 12 ở cuối file. Chưa commit, chờ tôi yêu cầu.
+```
+
+## Prompt cho Step 12
+
+```
+Bắt đầu Step 12 của req-3 (Thông báo).
+
+1. Làm theo mục "Bắt đầu phiên làm việc" trong CLAUDE.md: đọc docs/requirements/req-3-progress.md (phần "Bàn giao cho phiên tiếp theo" và "Lưu ý cho step sau" của Step 11), rồi đọc trong docs/requirements/req-3-plan.md: mục 1.4 (dòng Thông báo), giả định 11 ở mục 2, DB mục 4.7 (bảng notifications), phân quyền mục 5, route mục 6 (me: notifications) và Step 12 ở mục 7. Chỉ mở req-3-question*.md (R18, E11) khi cần lý do của một quyết định.
+2. Trước khi code, tóm tắt ngắn cho tôi cách làm: migration notifications, NotificationsService.notify gọi từ những service nào cho từng sự kiện R18.1, 2 cron (sắp hết hạn 24 giờ / quá hạn, và dọn thông báo > 90 ngày), API /me/notifications, NotificationBell ở header khu vực chính + dashboard, trang /me/notifications, chuỗi vi.notifications. Chỗ nào chưa rõ thì hỏi tôi, không tự đoán.
+3. Làm lần lượt: migration → service + cron kèm unit test (thêm dòng ROUTES) → gọi notify từ các service sự kiện → lang-app → tài liệu. Sau mỗi phần chạy test.
+4. Nghiệm thu thật theo tiêu chí của plan trên tenant step4-test (lớp N5-2026-01 đã có mục có hạn nộp, bài chờ chấm, lịch có thể dời). Cập nhật /user-manual, CLAUDE.md, req-3-progress.md và ghi prompt cho Step 13 ở cuối file. Chưa commit, chờ tôi yêu cầu.
 ```

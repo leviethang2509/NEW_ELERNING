@@ -7,6 +7,7 @@ import {
 } from '@nestjs/common';
 import {
   AttemptStatus,
+  AttendanceMark,
   ClassLogAction,
   ClassSessionKind,
   ClassSessionStatus,
@@ -28,6 +29,7 @@ import {
   type ScheduleSlot,
 } from '@lang/shared';
 import { plainToInstance } from 'class-transformer';
+import ExcelJS from 'exceljs';
 import { validate } from 'class-validator';
 import { randomUUID } from 'node:crypto';
 import type { AttemptsService } from '../attempts/attempts.service';
@@ -59,6 +61,7 @@ import { ClassCurriculumService } from './class-curriculum.service';
 import { ClassGroup } from './class-group.entity';
 import { ClassItem } from './class-item.entity';
 import { ClassMembersService } from './class-members.service';
+import { ClassProgressService } from './class-progress.service';
 import { ClassStudentAttemptsService } from './class-student-attempts.service';
 import { ClassroomStudent } from './classroom-student.entity';
 import { ClassroomTeacher } from './classroom-teacher.entity';
@@ -193,6 +196,7 @@ function setup() {
     dataSource,
     {} as never,
   );
+  const progressService = new ClassProgressService(dataSource);
   const curriculumService = new ClassCurriculumService(dataSource);
   const scheduleService = new ClassScheduleService(dataSource);
   const sessionsService = new ClassSessionsService(dataSource);
@@ -367,6 +371,7 @@ function setup() {
     classroomsService,
     membersService,
     studentAttemptsService,
+    progressService,
     examAnswers,
     curriculumService,
     scheduleService,
@@ -378,6 +383,7 @@ function setup() {
     attemptsService,
     dataSource,
     classrooms,
+    memberships,
     students,
     items,
     logs,
@@ -1848,5 +1854,426 @@ describe('Thời khoá biểu & buổi học', () => {
       'Hệ số nộp muộn là số từ 0 đến 1',
       'Ngưỡng cảnh báo phải là số nguyên',
     ]);
+  });
+});
+
+describe('Chuyên cần, bảng điểm, nhận xét cuối khoá (Step 11)', () => {
+  const NOW = '2026-09-20T10:00:00+07:00';
+  const DEADLINE = '2026-09-10T17:00:00.000Z';
+  beforeEach(() => fakeDate(NOW));
+  afterEach(() => jest.useRealTimers());
+
+  /**
+   * Lớp N5 đang học với 3 học viên; mục "Kiểm tra chương 1" có deadline
+   * 10/09 và một mục "Thi lại" cùng đề đứng sau.
+   */
+  async function classWithAttempts() {
+    const harness = setup();
+    const {
+      classroomsService,
+      membersService,
+      curriculumService,
+      createClass,
+    } = harness;
+    const { id } = await createClass();
+    await membersService.addStudents(ownerCtx, OWNER, id, [
+      'm-student-1',
+      'm-student-2',
+      'm-student-3',
+    ]);
+    await classroomsService.changeStatus(
+      ownerCtx,
+      OWNER,
+      id,
+      ClassroomStatus.ONGOING,
+    );
+    const before = await curriculumService.get(ownerCtx, id);
+    const quizId = before.groups[0].items[1].id;
+    const saved = await curriculumService.save(
+      ownerCtx,
+      OWNER,
+      id,
+      payload(before, (draft) => {
+        draft.groups[0].items[1] = {
+          ...draft.groups[0].items[1],
+          deadlineAt: DEADLINE,
+          passThreshold: 50,
+        };
+        draft.groups[0].items.push(
+          examItem(harness.ids.quiz, {
+            title: 'Thi lại chương 1',
+            deadlineAt: DEADLINE,
+            passThreshold: 50,
+            retakeOfItemId: quizId,
+          }),
+        );
+      }),
+    );
+    const group = saved.groups[0];
+    return {
+      ...harness,
+      id,
+      lessonItem: saved.ungrouped[0],
+      homeworkItem: group.items[0],
+      quizItem: group.items[1],
+      retakeItem: group.items[2],
+    };
+  }
+
+  const attempt = (
+    over: Partial<ExamAttempt> & Pick<ExamAttempt, 'id' | 'classItemId'>,
+  ) =>
+    ({
+      tenantId: TENANT,
+      status: AttemptStatus.GRADED,
+      submittedAt: new Date('2026-09-11T00:00:00Z'),
+      autoCorrect: 2,
+      autoTotal: 2,
+      manualCount: 0,
+      manualGradedCount: 0,
+      voidedAt: null,
+      ...over,
+    }) as ExamAttempt;
+
+  it('đúng hạn 1, muộn k, quá hạn 0; lần thi lại không bắt buộc không tính', async () => {
+    const { progressService, examAttempts, id, quizItem, retakeItem } =
+      await classWithAttempts();
+    examAttempts.rows.push(
+      // Học viên 1 vào thi trước hạn, đạt 100% → thi lại không bắt buộc.
+      attempt({
+        id: 'a1',
+        classItemId: quizItem.id,
+        userId: 'user-m-student-1',
+        startedAt: new Date('2026-09-10T16:00:00Z'),
+      }),
+      attempt({
+        id: 'a1-retake',
+        classItemId: retakeItem.id,
+        userId: 'user-m-student-1',
+        startedAt: new Date('2026-09-12T01:00:00Z'),
+        autoCorrect: 1,
+      }),
+      // Học viên 2 vào thi sau hạn và trượt → muộn, thi lại vẫn bắt buộc.
+      attempt({
+        id: 'a2',
+        classItemId: quizItem.id,
+        userId: 'user-m-student-2',
+        startedAt: new Date('2026-09-10T17:30:00Z'),
+        autoCorrect: 0,
+      }),
+    );
+
+    const view = await progressService.attendance(teacherCtx, id);
+    expect(view.params).toEqual(
+      expect.objectContaining({
+        lateWeight: 0.5,
+        warningThreshold: 70,
+        classLateWeight: null,
+        classWarningThreshold: null,
+      }),
+    );
+    // Chỉ mục đề thi có deadline thành cột; mục bài học không tính (R11.5).
+    expect(view.columns.map((column) => column.itemId)).toEqual([
+      quizItem.id,
+      retakeItem.id,
+    ]);
+    expect(view.columns[1].attemptIndex).toBe(2);
+    const rowOf = (name: string) =>
+      view.rows.find((row) => row.student.fullName === name)!;
+
+    expect(rowOf('Học viên 1').cells.map((cell) => cell.mark)).toEqual([
+      AttendanceMark.ON_TIME,
+      AttendanceMark.EXCLUDED,
+    ]);
+    expect(rowOf('Học viên 1').rate).toEqual(
+      expect.objectContaining({ counted: 1, score: 1, percent: 100 }),
+    );
+    expect(rowOf('Học viên 1').belowThreshold).toBe(false);
+
+    expect(rowOf('Học viên 2').cells.map((cell) => cell.mark)).toEqual([
+      AttendanceMark.LATE,
+      AttendanceMark.MISSED,
+    ]);
+    expect(rowOf('Học viên 2').rate).toEqual(
+      expect.objectContaining({ counted: 2, score: 0.5, percent: 25 }),
+    );
+    expect(rowOf('Học viên 2').belowThreshold).toBe(true);
+
+    expect(rowOf('Học viên 3').rate).toEqual(
+      expect.objectContaining({ counted: 2, score: 0, percent: 0 }),
+    );
+  });
+
+  it('lượt đã "Cho làm lại" và lượt đang làm dở không tính là đã nộp', async () => {
+    const { progressService, examAttempts, id, quizItem, retakeItem } =
+      await classWithAttempts();
+    examAttempts.rows.push(
+      attempt({
+        id: 'a-voided',
+        classItemId: quizItem.id,
+        userId: 'user-m-student-1',
+        startedAt: new Date('2026-09-09T01:00:00Z'),
+        voidedAt: new Date('2026-09-09T02:00:00Z'),
+      }),
+      attempt({
+        id: 'a-open',
+        classItemId: retakeItem.id,
+        userId: 'user-m-student-1',
+        status: AttemptStatus.IN_PROGRESS,
+        submittedAt: null,
+        startedAt: new Date('2026-09-09T03:00:00Z'),
+      }),
+    );
+    const view = await progressService.attendance(ownerCtx, id);
+    const row = view.rows.find(
+      (item) => item.student.membershipId === 'm-student-1',
+    )!;
+    expect(row.cells.map((cell) => cell.mark)).toEqual([
+      AttendanceMark.MISSED,
+      AttendanceMark.IN_PROGRESS,
+    ]);
+    expect(row.rate).toEqual(
+      expect.objectContaining({ counted: 1, percent: 0 }),
+    );
+  });
+
+  it('mục bỏ khỏi giáo trình lớp không còn là cột chuyên cần', async () => {
+    const { progressService, curriculumService, id, retakeItem } =
+      await classWithAttempts();
+    const current = await curriculumService.get(ownerCtx, id);
+    await curriculumService.save(
+      ownerCtx,
+      OWNER,
+      id,
+      payload(current, (draft) => {
+        draft.groups[0].items = draft.groups[0].items.filter(
+          (item) => item.id !== retakeItem.id,
+        );
+      }),
+    );
+    const view = await progressService.attendance(ownerCtx, id);
+    expect(view.columns).toHaveLength(1);
+  });
+
+  it('tham số của lớp ghi đè trung tâm', async () => {
+    const { progressService, classroomsService, examAttempts, id, quizItem } =
+      await classWithAttempts();
+    examAttempts.rows.push(
+      attempt({
+        id: 'a2',
+        classItemId: quizItem.id,
+        userId: 'user-m-student-2',
+        startedAt: new Date('2026-09-10T17:30:00Z'),
+        autoCorrect: 0,
+      }),
+    );
+    await classroomsService.update(ownerCtx, OWNER, id, {
+      lateWeight: 0.2,
+      warningThreshold: 90,
+    });
+    const view = await progressService.attendance(ownerCtx, id);
+    expect(view.params).toEqual(
+      expect.objectContaining({
+        lateWeight: 0.2,
+        warningThreshold: 90,
+        classLateWeight: 0.2,
+        tenantLateWeight: 0.5,
+      }),
+    );
+    const row = view.rows.find(
+      (item) => item.student.membershipId === 'm-student-2',
+    )!;
+    // Muộn 1 + chưa nộp 1 → 0.2 / 2 = 10%.
+    expect(row.rate.percent).toBe(10);
+    expect(row.belowThreshold).toBe(true);
+  });
+
+  it('bảng điểm: nhóm thi gộp 1 cột lấy điểm cao nhất, bài học tính % câu tự chấm', async () => {
+    const {
+      progressService,
+      examAttempts,
+      lessonAttempts,
+      id,
+      lessonItem,
+      quizItem,
+      retakeItem,
+    } = await classWithAttempts();
+    examAttempts.rows.push(
+      attempt({
+        id: 'a2',
+        classItemId: quizItem.id,
+        userId: 'user-m-student-2',
+        startedAt: new Date('2026-09-10T16:00:00Z'),
+        autoCorrect: 0,
+      }),
+      attempt({
+        id: 'a2-retake',
+        classItemId: retakeItem.id,
+        userId: 'user-m-student-2',
+        startedAt: new Date('2026-09-12T01:00:00Z'),
+        autoCorrect: 1,
+      }),
+      attempt({
+        id: 'a3',
+        classItemId: quizItem.id,
+        userId: 'user-m-student-3',
+        status: AttemptStatus.SUBMITTED,
+        startedAt: new Date('2026-09-10T16:00:00Z'),
+        manualCount: 1,
+      }),
+    );
+    lessonAttempts.rows.push({
+      id: 'la-1',
+      tenantId: TENANT,
+      classItemId: lessonItem.id,
+      userId: 'user-m-student-2',
+      lessonVersion: 1,
+      status: LessonAttemptStatus.COMPLETED,
+      startedAt: new Date('2026-09-05T01:00:00Z'),
+      submittedAt: new Date('2026-09-05T01:30:00Z'),
+      completedAt: new Date('2026-09-05T01:30:00Z'),
+      autoCorrect: 3,
+      autoTotal: 4,
+      manualCount: 1,
+      manualGradedCount: 0,
+    } as LessonAttempt);
+
+    const view = await progressService.gradebook(teacherCtx, id);
+    // Cột: 2 mục bài học + 1 nhóm thi (mục gốc + thi lại gộp).
+    expect(
+      view.columns.map((column) => [column.kind, column.itemIds.length]),
+    ).toEqual([
+      ['lesson', 1],
+      ['lesson', 1],
+      ['exam', 2],
+    ]);
+    expect(view.groups.map((group) => group.title)).toEqual([
+      'Chưa xếp chương',
+      'Chương 1',
+    ]);
+    const row = view.rows.find(
+      (item) => item.student.membershipId === 'm-student-2',
+    )!;
+    const [lesson, , exam] = row.cells;
+    expect(lesson).toEqual(
+      expect.objectContaining({ percent: 75, completed: true, started: true }),
+    );
+    expect(exam).toEqual(
+      expect.objectContaining({ percent: 50, passed: true, hasPending: false }),
+    );
+    expect(row.groupAverages).toEqual([
+      { groupId: view.columns[2].groupId, percent: 50 },
+    ]);
+    // Lượt còn câu chấm tay chưa chấm: chưa có điểm, đánh dấu chờ chấm.
+    const pending = view.rows.find(
+      (item) => item.student.membershipId === 'm-student-3',
+    )!;
+    expect(pending.cells[2]).toEqual(
+      expect.objectContaining({ percent: null, hasPending: true }),
+    );
+  });
+
+  it('nhận xét cuối khoá: giáo viên của lớp viết, xoá được, lớp chưa học thì 409', async () => {
+    const { progressService, classroomsService, id, logs } =
+      await classWithAttempts();
+    const saved = await progressService.saveComment(
+      teacherCtx,
+      'user-m-teacher',
+      id,
+      'm-student-1',
+      '  Tiến bộ tốt  ',
+    );
+    expect(saved).toEqual(expect.objectContaining({ text: 'Tiến bộ tốt' }));
+    const view = await progressService.gradebook(ownerCtx, id);
+    expect(view.canComment).toBe(true);
+    expect(
+      view.rows.find((row) => row.student.membershipId === 'm-student-1')!
+        .comment,
+    ).toEqual(
+      expect.objectContaining({
+        text: 'Tiến bộ tốt',
+        author: { id: 'user-m-teacher', fullName: 'Giáo viên A' },
+      }),
+    );
+    expect(
+      logs.rows.filter(
+        (row) => row.action === ClassLogAction.FINAL_COMMENT_SAVED,
+      ),
+    ).toHaveLength(1);
+
+    // Chuỗi rỗng = xoá nhận xét.
+    expect(
+      await progressService.saveComment(
+        ownerCtx,
+        OWNER,
+        id,
+        'm-student-1',
+        '   ',
+      ),
+    ).toBeNull();
+
+    await classroomsService.changeStatus(
+      ownerCtx,
+      OWNER,
+      id,
+      ClassroomStatus.UPCOMING,
+    );
+    await expect(
+      progressService.saveComment(ownerCtx, OWNER, id, 'm-student-1', 'Ghi'),
+    ).rejects.toBeInstanceOf(ConflictException);
+  });
+
+  it('giáo viên ngoài lớp không xem/không viết được; học viên không thuộc lớp 404', async () => {
+    const { progressService, id } = await classWithAttempts();
+    await expect(
+      progressService.attendance(otherTeacherCtx, id),
+    ).rejects.toBeInstanceOf(ForbiddenException);
+    await expect(
+      progressService.gradebook(otherTeacherCtx, id),
+    ).rejects.toBeInstanceOf(ForbiddenException);
+    await expect(
+      progressService.saveComment(ownerCtx, OWNER, id, 'm-student-4', 'Ghi'),
+    ).rejects.toBeInstanceOf(NotFoundException);
+  });
+
+  it('học viên đã rời lớp xuống cuối bảng; thành viên bị ngừng vẫn tính (giả định 16)', async () => {
+    const { progressService, membersService, memberships, id } =
+      await classWithAttempts();
+    await membersService.removeStudent(ownerCtx, OWNER, id, 'm-student-1');
+    // Ngừng thành viên sau khi đã vào lớp (lúc thêm phải đang hoạt động).
+    memberships.rows.find((row) => row.id === 'm-student-3')!.status =
+      MembershipStatus.INACTIVE;
+    const view = await progressService.attendance(ownerCtx, id);
+    expect(
+      view.rows.map((row) => [row.student.fullName, row.student.removed]),
+    ).toEqual([
+      ['Học viên 2', false],
+      ['Học viên 3', false],
+      ['Học viên 1', true],
+    ]);
+    const inactive = view.rows.find(
+      (row) => row.student.membershipId === 'm-student-3',
+    )!;
+    expect(inactive.student.inactive).toBe(true);
+    // Vẫn tính chuyên cần: 2 mục quá hạn chưa nộp.
+    expect(inactive.rate).toEqual(
+      expect.objectContaining({ counted: 2, percent: 0 }),
+    );
+  });
+
+  it('xuất Excel 2 sheet đọc được', async () => {
+    const { progressService, id } = await classWithAttempts();
+    const { fileName, buffer } = await progressService.workbook(ownerCtx, id);
+    expect(fileName).toBe('bang-diem-n5-01.xlsx');
+    const workbook = new ExcelJS.Workbook();
+    // Kiểu `Buffer` trong .d.ts của exceljs khác Buffer của Node 24.
+    await workbook.xlsx.load(buffer as never);
+    expect(workbook.worksheets.map((sheet) => sheet.name)).toEqual([
+      'Chuyên cần',
+      'Bảng điểm',
+    ]);
+    const attendance = workbook.getWorksheet('Chuyên cần')!;
+    expect(attendance.getRow(4).getCell(1).value).toBe('Học viên');
+    expect(attendance.actualRowCount).toBeGreaterThan(4);
   });
 });

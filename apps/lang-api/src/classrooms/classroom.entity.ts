@@ -11,7 +11,7 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 import { CATALOG_CODE_CHECK } from '../catalog/catalog-scope';
-import { sqlInList } from '../common/sql';
+import { numericTransformer, sqlInList } from '../common/sql';
 import { Tenant } from '../tenants/tenant.entity';
 import { Course } from '../training/course.entity';
 import { Curriculum } from '../training/curriculum.entity';
@@ -31,6 +31,14 @@ import { User } from '../users/user.entity';
 @Check(
   'CHK_classrooms_max_students',
   '"max_students" IS NULL OR "max_students" >= 1',
+)
+@Check(
+  'CHK_classrooms_late_weight',
+  '"late_weight" IS NULL OR ("late_weight" >= 0 AND "late_weight" <= 1)',
+)
+@Check(
+  'CHK_classrooms_warning_threshold',
+  '"warning_threshold" IS NULL OR ("warning_threshold" >= 0 AND "warning_threshold" <= 100)',
 )
 export class Classroom {
   @PrimaryGeneratedColumn('uuid', {
@@ -103,6 +111,25 @@ export class Classroom {
     foreignKeyConstraintName: 'FK_classrooms_source_curriculum_id',
   })
   sourceCurriculum?: Curriculum | null;
+
+  /** Hệ số nộp muộn k của lớp; `null` = theo trung tâm (R11.1, Step 11). */
+  @Column({
+    name: 'late_weight',
+    type: 'numeric',
+    precision: 3,
+    scale: 2,
+    nullable: true,
+    transformer: numericTransformer,
+  })
+  lateWeight: number | null;
+
+  /** Ngưỡng cảnh báo chuyên cần của lớp; `null` = theo trung tâm (R11.2). */
+  @Column({
+    name: 'warning_threshold',
+    type: 'int',
+    nullable: true,
+  })
+  warningThreshold: number | null;
 
   /** Tăng mỗi lần lưu giáo trình lớp (`baseRevision`, E2). */
   @Column({ name: 'curriculum_revision', type: 'int', default: 1 })

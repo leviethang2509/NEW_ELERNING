@@ -5,11 +5,13 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { ArrowLeft, CalendarDays, Play } from 'lucide-react';
 import {
+  AttendanceMark,
   ClassItemLock,
   CurriculumItemType,
   LessonAttemptStatus,
   type LearnerClassDetail,
   type LearnerClassItemView,
+  type LearnerClassSummary,
 } from '@lang/shared';
 import { ClassroomStatusBadge } from '@/components/classes/classes-ui';
 import {
@@ -18,6 +20,7 @@ import {
   SectionCard,
   compactPrimaryButtonClass,
   secondaryButtonClass,
+  type BadgeTone,
 } from '@/components/ui';
 import { vi } from '@/i18n/vi';
 import { ApiError } from '@/lib/api';
@@ -312,6 +315,8 @@ export function LearnerClassBoard({
         )}
       </SectionCard>
 
+      {data.summary && <ClassSummaryCard summary={data.summary} />}
+
       {data.examGroups.length > 0 && (
         <SectionCard title={text.groupsHeading}>
           <ul className="flex flex-col gap-2">
@@ -386,3 +391,92 @@ export function LearnerClassBoard({
     </>
   );
 }
+
+/** Tổng kết cuối khoá: chuyên cần, trung bình chương, nhận xét (Step 11). */
+function ClassSummaryCard({ summary }: { summary: LearnerClassSummary }) {
+  const label = vi.classLearning.summary;
+  const rate = summary.attendance;
+  return (
+    <SectionCard title={label.heading}>
+      <div className="flex flex-col gap-3 text-[13.5px] text-[var(--body)]">
+        <p className="text-[12.5px] text-[var(--muted)]">{label.hint}</p>
+        <div className="flex flex-wrap items-center gap-2">
+          <span className="font-medium">{label.attendance}:</span>
+          <span
+            className={`text-[16px] font-bold ${
+              summary.belowThreshold
+                ? 'text-[var(--danger)]'
+                : 'text-[var(--heading)]'
+            }`}
+          >
+            {rate.percent === null ? vi.classes.noValue : `${rate.percent}%`}
+          </span>
+          <span className="text-[12.5px] text-[var(--muted)]">
+            {label.attendanceHint(rate.onTime, rate.late, rate.missed)}
+          </span>
+        </div>
+        {summary.belowThreshold && (
+          <FormAlert tone="warning">
+            {label.below(summary.warningThreshold)}
+          </FormAlert>
+        )}
+        {summary.attendanceItems.length === 0 ? (
+          <p className="text-[12.5px] text-[var(--muted)]">
+            {label.noAttendance}
+          </p>
+        ) : (
+          <ul className="flex flex-col gap-1.5">
+            {summary.attendanceItems.map((item) => (
+              <li
+                key={item.itemId}
+                className="flex flex-wrap items-center gap-2"
+              >
+                <span className="min-w-0 flex-1 basis-48 truncate">
+                  {item.title}
+                </span>
+                <span className="text-[12.5px] text-[var(--muted)]">
+                  {vi.classLearning.deadlineAt(formatDateTime(item.deadlineAt))}
+                </span>
+                <Badge tone={SUMMARY_MARK_TONE[item.mark]}>
+                  {label.marks[item.mark]}
+                </Badge>
+              </li>
+            ))}
+          </ul>
+        )}
+        {summary.groupAverages.length > 0 && (
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="font-medium">{label.averages}:</span>
+            {summary.groupAverages.map((average) => (
+              <Badge key={average.groupId ?? 'none'} tone="neutral">
+                {average.title}:{' '}
+                {average.percent === null
+                  ? vi.classes.noValue
+                  : `${average.percent}%`}
+              </Badge>
+            ))}
+          </div>
+        )}
+        <div>
+          <span className="font-medium">{label.comment}: </span>
+          {summary.finalComment ? (
+            <span className="whitespace-pre-line">
+              {summary.finalComment.text}
+            </span>
+          ) : (
+            <span className="text-[var(--muted)]">{label.noComment}</span>
+          )}
+        </div>
+      </div>
+    </SectionCard>
+  );
+}
+
+const SUMMARY_MARK_TONE: Record<AttendanceMark, BadgeTone> = {
+  [AttendanceMark.ON_TIME]: 'success',
+  [AttendanceMark.LATE]: 'warning',
+  [AttendanceMark.MISSED]: 'danger',
+  [AttendanceMark.IN_PROGRESS]: 'accent',
+  [AttendanceMark.PENDING]: 'neutral',
+  [AttendanceMark.EXCLUDED]: 'neutral',
+};

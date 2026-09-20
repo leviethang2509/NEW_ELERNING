@@ -59,11 +59,11 @@
 ### 1.4 Theo dõi
 | Mục | Quyết định |
 |---|---|
-| Chuyên cần | Chỉ **mục đề thi có deadline** (bài học không tính). Đúng hạn = 1, muộn = **k**, quá hạn chưa làm = 0; không tính: chưa tới hạn chưa làm, mục đã xoá, lần thi lại không bắt buộc. Tỉ lệ = tổng / số mục tính. "Đã làm" = đã nộp (không chờ chấm) (R11, T1, T2) |
-| Tham số | k (mặc định 0.5) và ngưỡng cảnh báo X% (mặc định 70) đặt ở cài đặt tenant, lớp ghi đè được (R11.1–2) |
+| Chuyên cần | Chỉ **mục đề thi có deadline** (bài học không tính). Đúng hạn = 1, muộn = **k**, quá hạn chưa làm = 0; không tính: chưa tới hạn chưa làm, lượt đang làm dở, mục đã xoá, lần thi lại không bắt buộc. Tỉ lệ = tổng / số mục tính. "Đã làm" = đã nộp (không chờ chấm) (R11, T1, T2). **Chốt Step 11:** mốc đúng hạn/muộn tính theo **lúc bắt đầu** lượt (deadline là hạn bắt đầu theo R10.3 nên vào thi trước hạn rồi làm hết giờ không bị tính muộn) |
+| Tham số | k (mặc định 0.5) và ngưỡng cảnh báo X% (mặc định 70) đặt ở cài đặt tenant, lớp ghi đè được bằng `classrooms.late_weight`/`warning_threshold` (R11.1–2). **Chốt Step 11:** sửa tham số của lớp ngay trong tab "Tiến độ & Chuyên cần" (lưu qua PATCH lớp, chỉ Owner/Admin; giáo viên chỉ xem) |
 | Ai xem | Owner/Admin/giáo viên của lớp: mọi lúc. Học viên, phụ huynh: tỉ lệ chuyên cần, bảng điểm, nhận xét cuối khoá **chỉ khi lớp `finished`**; trong khoá chỉ thấy trạng thái từng mục (đã nộp/chưa/deadline), không thấy nhãn "muộn" (E7.3, R11.3–4) |
-| Bảng điểm | Học viên × mục: bài học `% đúng` lần gần nhất + ✔ học xong; đề thi điểm % + Đậu/Trượt/Chờ chấm; nhóm thi gộp 1 cột; trung bình theo chương; lọc chương. Không trọng số/điểm tổng kết (R12, E4.5) |
-| Nhận xét cuối khoá | 1 nhận xét/học viên/lớp, giáo viên của lớp hoặc Owner/Admin viết khi lớp `ongoing`/`finished`; học viên/phụ huynh thấy khi `finished` (T5) |
+| Bảng điểm | Học viên × mục: bài học `% đúng` **chỉ trên câu tự chấm** của lần nộp gần nhất (chốt Step 11: câu chấm tay của bài học thường chưa chấm) + ✔ học xong; đề thi điểm % + Đậu/Trượt/Chờ chấm; nhóm thi gộp 1 cột; trung bình theo chương; lọc chương. Không trọng số/điểm tổng kết (R12, E4.5) |
+| Nhận xét cuối khoá | 1 nhận xét/học viên/lớp (cột `classroom_students.final_comment*`, không bảng riêng – theo mục 4.5), giáo viên của lớp hoặc Owner/Admin viết khi lớp `ongoing`/`finished`; học viên/phụ huynh thấy khi `finished` (T5) |
 | Excel | 1 file, 2 sheet: Chuyên cần, Bảng điểm (có cột Nhận xét) (E7.4, R12, T5) |
 | Chấm tay | Bài trong lớp: giáo viên của lớp. Bài tự do: người soạn đề/bài học. Owner/Admin: mọi bài. Chuyển giao chấm (mục hoặc từng lượt) cho Teacher khác, người giao vẫn chấm được. Không chấm bài của mình. Bài học chấm ở cùng trang "Chấm bài". Bài học nộp lại → chỉ lượt mới nhất cần chấm (R20, T3.2) |
 | Thông báo | Chuông ở header, gộp mọi tenant, gọi lại mỗi 60 giây + khi quay lại tab, đọc từng cái/tất cả, trang "Tất cả thông báo", giữ 90 ngày, không tắt được; cron 15 phút cho sắp hết hạn/quá hạn (E11, R18) |
@@ -408,7 +408,7 @@ t/:slug:
 
 ### Step 11 – Chuyên cần, bảng điểm, nhận xét cuối khoá
 - Hàm thuần chuyên cần (mục 1.4) + unit test (muộn, quá hạn, thi lại không bắt buộc, `voided`, mục đã xoá, đổi deadline).
-- API tiến độ/chuyên cần/bảng điểm, nhận xét cuối khoá, xuất Excel (`exceljs`); tham số lớp ghi đè tenant.
+- API tiến độ/chuyên cần/bảng điểm, nhận xét cuối khoá, xuất Excel (`exceljs`); tham số lớp ghi đè tenant. Route thực tế: `GET :id/progress/attendance`, `GET :id/progress/gradebook`, `GET :id/progress/export.xlsx`, `PUT :id/students/:membershipId/comment`; phần của học viên trả trong `GET learner/classes/:id` (`summary`, chỉ khi lớp `finished`).
 - lang-app: tab Tiến độ & Chuyên cần (ô màu, cảnh báo dưới X%), tab Bảng điểm (lọc chương, cột nhóm thi), ô nhận xét; học viên xem sau tổng kết.
 - **Nghiệm thu:** số liệu khớp tính tay trên lớp mẫu; Excel mở được bằng Excel/Numbers; học viên không thấy chuyên cần khi lớp đang học, thấy khi `finished`.
 

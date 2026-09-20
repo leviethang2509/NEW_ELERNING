@@ -321,6 +321,14 @@
               "Điểm % tối thiểu để đậu một mục đề thi của lớp (mặc định 50)."
             ],
             [
+              "Chuyên cần",
+              "Tỉ lệ đo việc nộp bài đúng hạn của học viên trong một lớp: chỉ tính mục **đề thi có hạn nộp**, đúng hạn 1 điểm, muộn tính theo hệ số **k**, quá hạn chưa nộp 0 điểm. Xem [Chuyên cần & bảng điểm](page:chuyen-can-bang-diem)"
+            ],
+            [
+              "Nhận xét cuối khoá",
+              "Một nhận xét của giáo viên cho mỗi học viên trong một lớp; học viên thấy khi lớp **Đã kết thúc**"
+            ],
+            [
               "Cho làm lại",
               "Giáo viên của lớp huỷ một lượt thi khi học viên gặp sự cố: lượt cũ giữ lịch sử nhưng không tính điểm, học viên làm lượt mới."
             ],
@@ -726,6 +734,30 @@
               "mọi lớp",
               "mọi lớp",
               "lớp mình phụ trách",
+              "✘",
+              "✘"
+            ],
+            [
+              "Xem chuyên cần & bảng điểm của lớp, xuất Excel",
+              "mọi lớp",
+              "mọi lớp",
+              "lớp mình phụ trách",
+              "của mình, khi lớp đã kết thúc",
+              "✘"
+            ],
+            [
+              "Viết nhận xét cuối khoá cho học viên",
+              "mọi lớp",
+              "mọi lớp",
+              "lớp mình phụ trách",
+              "✘",
+              "✘"
+            ],
+            [
+              "Sửa tham số chuyên cần của một lớp (hệ số k, ngưỡng cảnh báo)",
+              "✔",
+              "✔",
+              "✘ (chỉ xem)",
               "✘",
               "✘"
             ]

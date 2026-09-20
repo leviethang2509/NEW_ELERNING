@@ -77,6 +77,9 @@ const INFO_FIELDS = [
   'description',
   'maxStudents',
   'location',
+  // Tham số chuyên cần ghi đè của lớp (Step 11); `null` = theo trung tâm.
+  'lateWeight',
+  'warningThreshold',
 ] as const;
 
 /**

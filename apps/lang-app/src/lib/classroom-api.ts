@@ -1,5 +1,8 @@
 import type {
   AttemptReview,
+  ClassAttendance,
+  ClassFinalComment,
+  ClassGradebook,
   ClassStudentAttempts,
   ClassCurriculum,
   ClassLogEntry,
@@ -11,6 +14,7 @@ import type {
   MembershipListItem,
   Paginated,
   SaveClassCurriculumInput,
+  SaveFinalCommentInput,
   TenantRole,
   UpdateClassroomInput,
 } from '@lang/shared';
@@ -198,4 +202,27 @@ export const getClassStudentLessonRecordingUrl = (
 ) =>
   api.get<{ url: string }>(
     `${studentBase(slug, id, membershipId)}/lesson-attempts/${attemptId}/recordings/${answerId}/url`,
+  );
+
+// --- Chuyên cần, bảng điểm, nhận xét cuối khoá (Step 11) --------------------
+
+export const getClassAttendance = (slug: string, id: string) =>
+  api.get<ClassAttendance>(`${classesPath(slug)}/${id}/progress/attendance`);
+
+export const getClassGradebook = (slug: string, id: string) =>
+  api.get<ClassGradebook>(`${classesPath(slug)}/${id}/progress/gradebook`);
+
+/** Tải file Excel (2 sheet: Chuyên cần, Bảng điểm). */
+export const downloadClassProgress = (slug: string, id: string) =>
+  api.download(`${classesPath(slug)}/${id}/progress/export.xlsx`);
+
+export const saveFinalComment = (
+  slug: string,
+  id: string,
+  membershipId: string,
+  text: string,
+) =>
+  api.put<ClassFinalComment | null>(
+    `${studentBase(slug, id, membershipId)}/comment`,
+    { text } satisfies SaveFinalCommentInput,
   );

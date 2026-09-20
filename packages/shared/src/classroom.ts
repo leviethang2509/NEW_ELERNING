@@ -169,6 +169,9 @@ export interface UpdateClassroomInput {
   description?: string | null;
   maxStudents?: number | null;
   location?: string | null;
+  /** Tham số chuyên cần của lớp; `null` = theo trung tâm (R11.1–2, Step 11). */
+  lateWeight?: number | null;
+  warningThreshold?: number | null;
 }
 
 export interface ChangeClassroomStatusInput {
@@ -301,6 +304,8 @@ export const ClassLogAction = {
   SESSION_LINKS_SAVED: 'session_links_saved',
   /** Step 9: giáo viên "Cho làm lại" một lượt thi trong lớp (R10.5). */
   ATTEMPT_VOIDED: 'attempt_voided',
+  /** Step 11: viết/sửa/xoá nhận xét cuối khoá của một học viên (T5). */
+  FINAL_COMMENT_SAVED: 'final_comment_saved',
 } as const;
 export type ClassLogAction =
   (typeof ClassLogAction)[keyof typeof ClassLogAction];
@@ -364,6 +369,8 @@ export interface ClassLogDetail {
   /** `attempt_voided`: tên mục và họ tên học viên được cho làm lại. */
   itemTitle?: string;
   studentName?: string;
+  /** `final_comment_saved`: đã xoá nhận xét (không phải viết/sửa). */
+  cleared?: boolean;
 }
 
 /** Trường của buổi học có thể đổi (nhật ký). */

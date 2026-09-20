@@ -13,6 +13,7 @@ import { ClassCurriculumService } from './class-curriculum.service';
 import { ClassGroup } from './class-group.entity';
 import { ClassItem } from './class-item.entity';
 import { ClassMembersService } from './class-members.service';
+import { ClassProgressService } from './class-progress.service';
 import { ClassScheduleSlot } from './class-schedule-slot.entity';
 import { ClassScheduleService } from './class-schedule.service';
 import { ClassStudentAttemptsService } from './class-student-attempts.service';
@@ -33,7 +34,8 @@ import { ScheduleController } from './schedule.controller';
 /**
  * Lớp học, giáo viên/học viên, giáo trình lớp (Step 7), thời khoá biểu và lịch
  * (Step 8), khu vực học viên trong lớp và "Cho làm lại" (Step 9), bài làm chi
- * tiết của học viên (Step 10).
+ * tiết của học viên (Step 10), chuyên cần/bảng điểm/nhận xét cuối khoá
+ * (Step 11).
  */
 @Module({
   imports: [
@@ -71,6 +73,7 @@ import { ScheduleController } from './schedule.controller';
     ScheduleFeedService,
     ClassAttemptsService,
     ClassStudentAttemptsService,
+    ClassProgressService,
     LearnerClassesService,
   ],
   exports: [TypeOrmModule],

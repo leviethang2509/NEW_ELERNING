@@ -295,6 +295,8 @@ export interface LearnerClassDetail extends LearnerClassItem {
   examGroups: LearnerExamGroupView[];
   /** Buổi sắp tới, sớm nhất trước. */
   upcomingSessions: LearnerSessionRef[];
+  /** Chuyên cần, trung bình chương, nhận xét — chỉ khi lớp `finished` (R11.3). */
+  summary: LearnerClassSummary | null;
 }
 
 /** `POST t/:slug/learner/classes/:id/items/:itemId/start`. */
@@ -419,4 +421,325 @@ export interface AttemptReview {
   manualCount: number;
   manualGradedCount: number;
   sections: AttemptReviewSection[];
+}
+
+// ---------------------------------------------------------------------------
+// Chuyên cần (req-3 Step 11; R11, T1, T2, E7)
+
+/** Trạng thái chuyên cần của một học viên trên một mục đề thi có deadline. */
+export const AttendanceMark = {
+  /** Bắt đầu lượt trước hạn và đã nộp → 1 điểm. */
+  ON_TIME: 'on_time',
+  /** Bắt đầu lượt sau hạn và đã nộp → `lateWeight` điểm. */
+  LATE: 'late',
+  /** Quá hạn mà chưa nộp → 0 điểm. */
+  MISSED: 'missed',
+  /** Đang làm dở, chưa nộp → chưa tính (lượt bỏ dở sẽ bị chốt, T6). */
+  IN_PROGRESS: 'in_progress',
+  /** Chưa tới hạn và chưa nộp → chưa tính. */
+  PENDING: 'pending',
+  /** Không tính: lần thi lại không bắt buộc, mục đã bỏ khỏi giáo trình lớp. */
+  EXCLUDED: 'excluded',
+} as const;
+export type AttendanceMark =
+  (typeof AttendanceMark)[keyof typeof AttendanceMark];
+
+/** Lượt thi còn hiệu lực của học viên trên mục (đã bỏ lượt "Cho làm lại"). */
+export interface AttendanceAttemptInput {
+  state: ClassAttemptState;
+  startedAt: string;
+}
+
+export interface AttendanceItemInput {
+  /** Hạn **bắt đầu** lượt thi (R10.3); `null` = mục không tính chuyên cần. */
+  deadlineAt: string | null;
+  /** Mục đã bỏ khỏi giáo trình lớp → không tính (E3). */
+  removed: boolean;
+  /** `false` = lần thi lại không bắt buộc vì đã đậu lần trước (T2.2). */
+  required: boolean;
+  attempt: AttendanceAttemptInput | null;
+}
+
+/**
+ * Chuyên cần của một mục với một học viên. Mốc đúng hạn/muộn tính theo **lúc
+ * bắt đầu** lượt (người dùng chốt Step 11): deadline là hạn bắt đầu nên học
+ * viên vào thi trước hạn rồi làm hết giờ không bị tính muộn.
+ */
+export function attendanceMarkOf(
+  input: AttendanceItemInput,
+  now: Date,
+): AttendanceMark {
+  if (input.deadlineAt === null || input.removed || !input.required) {
+    return AttendanceMark.EXCLUDED;
+  }
+  const deadline = Date.parse(input.deadlineAt);
+  const attempt = input.attempt;
+  if (!attempt) {
+    return now.getTime() > deadline
+      ? AttendanceMark.MISSED
+      : AttendanceMark.PENDING;
+  }
+  if (attempt.state === ClassAttemptState.IN_PROGRESS) {
+    return AttendanceMark.IN_PROGRESS;
+  }
+  return Date.parse(attempt.startedAt) > deadline
+    ? AttendanceMark.LATE
+    : AttendanceMark.ON_TIME;
+}
+
+/** Tỉ lệ chuyên cần của một học viên trong một lớp. */
+export interface AttendanceRate {
+  onTime: number;
+  late: number;
+  missed: number;
+  /** Số mục được tính (đúng hạn + muộn + quá hạn chưa nộp). */
+  counted: number;
+  /** Tổng điểm chuyên cần (đúng hạn 1, muộn `lateWeight`). */
+  score: number;
+  /** `null` khi chưa có mục nào được tính. */
+  percent: number | null;
+}
+
+/**
+ * Tỉ lệ chuyên cần = tổng điểm / số mục được tính × 100, làm tròn 1 chữ số
+ * thập phân (R11). Mục chưa tới hạn, đang làm dở và mục không tính không vào
+ * mẫu số.
+ */
+export function attendanceRate(
+  marks: readonly AttendanceMark[],
+  lateWeight: number,
+): AttendanceRate {
+  let onTime = 0;
+  let late = 0;
+  let missed = 0;
+  for (const mark of marks) {
+    if (mark === AttendanceMark.ON_TIME) onTime += 1;
+    else if (mark === AttendanceMark.LATE) late += 1;
+    else if (mark === AttendanceMark.MISSED) missed += 1;
+  }
+  const counted = onTime + late + missed;
+  const score = onTime + late * lateWeight;
+  return {
+    onTime,
+    late,
+    missed,
+    counted,
+    score: Math.round(score * 100) / 100,
+    percent: counted === 0 ? null : Math.round((score / counted) * 1000) / 10,
+  };
+}
+
+/** Dưới ngưỡng cảnh báo X% (R11.2); chưa có số liệu → không cảnh báo. */
+export function isBelowAttendanceThreshold(
+  percent: number | null,
+  warningThreshold: number,
+): boolean {
+  return percent !== null && percent < warningThreshold;
+}
+
+/** Trung bình các điểm % đã có, làm tròn 1 chữ số thập phân (giả định 9). */
+export function averagePercent(
+  values: readonly (number | null)[],
+): number | null {
+  const known = values.filter((value): value is number => value !== null);
+  if (known.length === 0) return null;
+  const sum = known.reduce((total, value) => total + value, 0);
+  return Math.round((sum / known.length) * 10) / 10;
+}
+
+/** % câu tự chấm đúng của một lượt học (người dùng chốt Step 11). */
+export function autoScorePercent(
+  autoCorrect: number,
+  autoTotal: number,
+): number | null {
+  if (autoTotal <= 0) return null;
+  return Math.round((autoCorrect / autoTotal) * 1000) / 10;
+}
+
+// ---------------------------------------------------------------------------
+// Kiểu dữ liệu API chuyên cần, bảng điểm, nhận xét cuối khoá (Step 11)
+
+/** Tham số chuyên cần đang áp dụng cho lớp (R11.1–2). */
+export interface ClassProgressParams {
+  /** Giá trị hiệu lực (của lớp nếu có, không thì của trung tâm). */
+  lateWeight: number;
+  warningThreshold: number;
+  /** `null` = lớp không ghi đè, dùng của trung tâm. */
+  classLateWeight: number | null;
+  classWarningThreshold: number | null;
+  tenantLateWeight: number;
+  tenantWarningThreshold: number;
+}
+
+/** Một học viên trong bảng chuyên cần/bảng điểm. */
+export interface ClassProgressStudent extends ClassStudentRef {
+  /** Đã rời lớp (giả định 15): chỉ hiện khi bật "Hiện học viên đã rời lớp". */
+  removed: boolean;
+  /** Tài khoản trong trung tâm đã ngừng, vẫn tính chuyên cần (giả định 16). */
+  inactive: boolean;
+}
+
+/** Cột bảng chuyên cần: mục đề thi có deadline, theo thứ tự giáo trình lớp. */
+export interface AttendanceColumn {
+  itemId: string;
+  title: string;
+  label: CurriculumItemLabel;
+  /** Chương chứa mục; `null` = chưa xếp chương. */
+  groupTitle: string | null;
+  deadlineAt: string;
+  acceptLate: boolean;
+  /** Lần thứ mấy trong nhóm thi (1 = mục gốc). */
+  attemptIndex: number;
+}
+
+export interface AttendanceCell {
+  itemId: string;
+  mark: AttendanceMark;
+  /** Lượt còn hiệu lực: lúc bắt đầu (mốc xét đúng hạn/muộn). */
+  startedAt: string | null;
+  submittedAt: string | null;
+}
+
+export interface AttendanceRow {
+  student: ClassProgressStudent;
+  cells: AttendanceCell[];
+  rate: AttendanceRate;
+  /** Dưới ngưỡng cảnh báo của lớp. */
+  belowThreshold: boolean;
+}
+
+/** `GET t/:slug/classes/:id/progress/attendance`. */
+export interface ClassAttendance {
+  classroom: ClassroomRef;
+  params: ClassProgressParams;
+  /** Owner/Admin sửa được tham số của lớp; giáo viên chỉ xem. */
+  canManageParams: boolean;
+  columns: AttendanceColumn[];
+  rows: AttendanceRow[];
+}
+
+/** Cột bảng điểm: mục bài học, hoặc **nhóm thi** gộp mục gốc + lần thi lại. */
+export const GradebookColumnKind = {
+  LESSON: 'lesson',
+  EXAM: 'exam',
+} as const;
+export type GradebookColumnKind =
+  (typeof GradebookColumnKind)[keyof typeof GradebookColumnKind];
+
+export interface GradebookColumn {
+  /** Mục bài học: `itemId`; nhóm thi: `itemId` của mục gốc. */
+  id: string;
+  kind: GradebookColumnKind;
+  title: string;
+  label: CurriculumItemLabel;
+  /** `null` = chưa xếp chương. */
+  groupId: string | null;
+  groupTitle: string | null;
+  /** Nhóm thi: các mục theo thứ tự lần (1 mục = không có thi lại). */
+  itemIds: string[];
+  /** Nhóm thi: ngưỡng đậu của mục gốc; bài học `null`. */
+  passThreshold: number | null;
+}
+
+/** Một lần trong nhóm thi (tooltip cột nhóm). */
+export interface GradebookAttemptRef {
+  itemId: string;
+  attemptIndex: number;
+  state: ClassAttemptState;
+  percent: number | null;
+  passed: boolean | null;
+}
+
+export interface GradebookExamCell {
+  kind: typeof GradebookColumnKind.EXAM;
+  columnId: string;
+  /** Điểm cao nhất các lượt đã chấm xong; `null` = chưa có điểm. */
+  percent: number | null;
+  passed: boolean;
+  /** Còn lượt chờ chấm → điểm có thể tăng (T3.1). */
+  hasPending: boolean;
+  attempts: GradebookAttemptRef[];
+}
+
+export interface GradebookLessonCell {
+  kind: typeof GradebookColumnKind.LESSON;
+  columnId: string;
+  /** % câu tự chấm của lần nộp gần nhất (người dùng chốt Step 11). */
+  percent: number | null;
+  /** Đã học xong ở bất kỳ version nào (giả định 2). */
+  completed: boolean;
+  /** Đã mở bài (có lượt học). */
+  started: boolean;
+}
+
+export type GradebookCell = GradebookExamCell | GradebookLessonCell;
+
+/** Trung bình một chương = trung bình điểm nhóm thi đã có điểm (giả định 9). */
+export interface GradebookGroupAverage {
+  /** `null` = mục chưa xếp chương. */
+  groupId: string | null;
+  percent: number | null;
+}
+
+/** Nhận xét cuối khoá của một học viên (T5). */
+export interface ClassFinalComment {
+  text: string;
+  updatedAt: string;
+  /** Người sửa cuối; `null` khi tài khoản đã xoá. */
+  author: ExamUserRef | null;
+}
+
+export interface GradebookRow {
+  student: ClassProgressStudent;
+  cells: GradebookCell[];
+  groupAverages: GradebookGroupAverage[];
+  comment: ClassFinalComment | null;
+}
+
+/** Chương của lớp (để lọc cột bảng điểm). */
+export interface GradebookGroup {
+  /** `null` = mục chưa xếp chương. */
+  id: string | null;
+  title: string;
+}
+
+/** `GET t/:slug/classes/:id/progress/gradebook`. */
+export interface ClassGradebook {
+  classroom: ClassroomRef;
+  groups: GradebookGroup[];
+  columns: GradebookColumn[];
+  rows: GradebookRow[];
+  /** Viết/sửa nhận xét cuối khoá được (lớp `ongoing`/`finished`, T5.2). */
+  canComment: boolean;
+}
+
+export const FINAL_COMMENT_MAX_LENGTH = 4000;
+
+/** `PUT t/:slug/classes/:id/students/:membershipId/comment`. */
+export interface SaveFinalCommentInput {
+  /** Chuỗi rỗng = xoá nhận xét. */
+  text: string;
+}
+
+/** Một mục chuyên cần của chính học viên (chỉ khi lớp `finished`). */
+export interface LearnerAttendanceItem {
+  itemId: string;
+  title: string;
+  deadlineAt: string;
+  mark: AttendanceMark;
+  startedAt: string | null;
+}
+
+/**
+ * Kết quả cuối khoá học viên (và phụ huynh, Step 13) thấy khi lớp `finished`
+ * (R11.3–4, T5.3): trong khoá chỉ thấy trạng thái từng mục, không thấy tỉ lệ.
+ */
+export interface LearnerClassSummary {
+  attendance: AttendanceRate;
+  warningThreshold: number;
+  belowThreshold: boolean;
+  attendanceItems: LearnerAttendanceItem[];
+  /** Trung bình theo chương (kèm tên chương). */
+  groupAverages: (GradebookGroupAverage & { title: string })[];
+  finalComment: ClassFinalComment | null;
 }

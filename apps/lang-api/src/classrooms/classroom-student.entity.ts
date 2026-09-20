@@ -13,7 +13,9 @@ import { Classroom } from './classroom.entity';
 
 /**
  * Học viên của lớp (D7–D9): xoá khỏi lớp là xoá mềm (`removed_at`), bài làm
- * giữ nguyên; thêm lại thì khôi phục dòng cũ. Nhận xét cuối khoá ở Step 11.
+ * giữ nguyên; thêm lại thì khôi phục dòng cũ. Nhận xét cuối khoá (Step 11, T5):
+ * 1 nhận xét/học viên/lớp, giáo viên của lớp hoặc Owner/Admin viết khi lớp
+ * `ongoing`/`finished`; học viên chỉ thấy khi lớp `finished`.
  */
 @Entity('classroom_students')
 @Unique('UQ_classroom_students_member', ['classroomId', 'membershipId'])
@@ -60,4 +62,21 @@ export class ClassroomStudent {
     foreignKeyConstraintName: 'FK_classroom_students_added_by',
   })
   adder?: User | null;
+
+  /** Nhận xét cuối khoá; `null` = chưa viết. */
+  @Column({ name: 'final_comment', type: 'text', nullable: true })
+  finalComment: string | null;
+
+  @Column({ name: 'final_comment_by', type: 'uuid', nullable: true })
+  finalCommentBy: string | null;
+
+  @ManyToOne(() => User, { onDelete: 'SET NULL' })
+  @JoinColumn({
+    name: 'final_comment_by',
+    foreignKeyConstraintName: 'FK_classroom_students_final_comment_by',
+  })
+  finalCommenter?: User | null;
+
+  @Column({ name: 'final_comment_at', type: 'timestamptz', nullable: true })
+  finalCommentAt: Date | null;
 }

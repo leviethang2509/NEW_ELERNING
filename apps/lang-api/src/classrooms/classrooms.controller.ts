@@ -3,6 +3,7 @@ import {
   Controller,
   Delete,
   Get,
+  Header,
   HttpCode,
   HttpStatus,
   Param,
@@ -10,13 +11,18 @@ import {
   Post,
   Put,
   Query,
+  Res,
+  StreamableFile,
   UseGuards,
 } from '@nestjs/common';
 import {
   EXAM_AUTHOR_ROLES,
   TENANT_MANAGER_ROLES,
   type AttemptReview,
+  type ClassAttendance,
   type ClassCurriculum,
+  type ClassFinalComment,
+  type ClassGradebook,
   type ClassItemAttemptRow,
   type ClassLogEntry,
   type ClassScheduleView,
@@ -29,6 +35,7 @@ import {
   type ScheduleChangeSummary,
   type VoidClassAttemptResult,
 } from '@lang/shared';
+import type { Response as ExpressResponse } from 'express';
 import {
   CurrentUser,
   type RequestUser,
@@ -43,12 +50,14 @@ import {
 import { TenantGuard } from '../tenants/tenant.guard';
 import { ClassAttemptsService } from './class-attempts.service';
 import { ClassCurriculumService } from './class-curriculum.service';
+import { ClassProgressService } from './class-progress.service';
 import { ClassStudentAttemptsService } from './class-student-attempts.service';
 import { ClassMembersService } from './class-members.service';
 import { ClassScheduleService } from './class-schedule.service';
 import { ClassSessionsService } from './class-sessions.service';
 import { ClassroomsService } from './classrooms.service';
 import { SaveClassCurriculumDto } from './dto/class-curriculum.dto';
+import { SaveFinalCommentDto } from './dto/class-progress.dto';
 import {
   CancelClassSessionDto,
   CreateMakeupSessionDto,
@@ -84,6 +93,7 @@ export class ClassroomsController {
     private readonly sessions: ClassSessionsService,
     private readonly classAttempts: ClassAttemptsService,
     private readonly studentAttempts: ClassStudentAttemptsService,
+    private readonly progress: ClassProgressService,
   ) {}
 
   @Get()
@@ -428,6 +438,58 @@ export class ClassroomsController {
     @Param('attemptId', ParseIdPipe()) attemptId: string,
   ): Promise<VoidClassAttemptResult> {
     return this.classAttempts.voidAttempt(ctx, actor.id, id, itemId, attemptId);
+  }
+
+  /** Chuyên cần của lớp (R11): Owner/Admin và giáo viên của lớp. */
+  @Get(':id/progress/attendance')
+  @TenantRoles(...EXAM_AUTHOR_ROLES)
+  attendance(
+    @TenantCtx() ctx: TenantContext,
+    @Param('id', ParseIdPipe()) id: string,
+  ): Promise<ClassAttendance> {
+    return this.progress.attendance(ctx, id);
+  }
+
+  @Get(':id/progress/gradebook')
+  @TenantRoles(...EXAM_AUTHOR_ROLES)
+  gradebook(
+    @TenantCtx() ctx: TenantContext,
+    @Param('id', ParseIdPipe()) id: string,
+  ): Promise<ClassGradebook> {
+    return this.progress.gradebook(ctx, id);
+  }
+
+  /** Excel 2 sheet: Chuyên cần, Bảng điểm (E7.4). */
+  @Get(':id/progress/export.xlsx')
+  @TenantRoles(...EXAM_AUTHOR_ROLES)
+  @Header(
+    'Content-Type',
+    'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+  )
+  async exportProgress(
+    @TenantCtx() ctx: TenantContext,
+    @Param('id', ParseIdPipe()) id: string,
+    @Res({ passthrough: true }) res: ExpressResponse,
+  ): Promise<StreamableFile> {
+    const { fileName, buffer } = await this.progress.workbook(ctx, id);
+    res.setHeader(
+      'Content-Disposition',
+      `attachment; filename="${fileName}"; filename*=UTF-8''${encodeURIComponent(fileName)}`,
+    );
+    return new StreamableFile(buffer);
+  }
+
+  /** Nhận xét cuối khoá của một học viên (T5). */
+  @Put(':id/students/:membershipId/comment')
+  @TenantRoles(...EXAM_AUTHOR_ROLES)
+  saveFinalComment(
+    @TenantCtx() ctx: TenantContext,
+    @CurrentUser() actor: RequestUser,
+    @Param('id', ParseIdPipe()) id: string,
+    @Param('membershipId', ParseIdPipe()) membershipId: string,
+    @Body() dto: SaveFinalCommentDto,
+  ): Promise<ClassFinalComment | null> {
+    return this.progress.saveComment(ctx, actor.id, id, membershipId, dto.text);
   }
 
   @Get(':id/logs')

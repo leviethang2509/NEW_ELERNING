@@ -221,6 +221,10 @@ const ROUTES: Record<string, Access> = {
     STAFF,
   'GET /t/:slug/classes/:id/students/:membershipId/lesson-attempts/:attemptId/recordings/:answerId/url':
     STAFF,
+  'GET /t/:slug/classes/:id/progress/attendance': STAFF,
+  'GET /t/:slug/classes/:id/progress/gradebook': STAFF,
+  'GET /t/:slug/classes/:id/progress/export.xlsx': STAFF,
+  'PUT /t/:slug/classes/:id/students/:membershipId/comment': STAFF,
   'GET /t/:slug/classes/:id/logs': STAFF,
   'POST /t/:slug/classes/:id/conflicts': MANAGER,
   'GET /t/:slug/classes/:id/schedule': STAFF,
