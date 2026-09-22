@@ -30,7 +30,7 @@
             [
               "`apps/lang-api`",
               "NestJS 10, TypeORM, PostgreSQL",
-              "REST API, xác thực, phân quyền, chấm bài, cron chốt bài quá giờ"
+              "REST API, xác thực, phân quyền, chấm bài, thời khoá biểu, cron chốt bài quá giờ và cron thông báo"
             ],
             [
               "`packages/exam-core`",
@@ -61,7 +61,7 @@
         {
           "type": "list",
           "items": [
-            "PostgreSQL trên VPS, database `lang-simulator`, schema `public`. **Máy dev và container VPS dùng chung database này** (chưa có production) – dữ liệu thử trên máy dev hiện ngay trên VPS và ngược lại.",
+            "PostgreSQL, schema `public`. Container trên VPS dùng database `lang-simulator` của Postgres trên VPS; **máy dev dùng database riêng trên Postgres local** nên dữ liệu thử của máy dev không còn hiện trên VPS. Chưa có môi trường production tách biệt.",
             "Schema chỉ thay đổi bằng migration; container tự chạy migration khi khởi động. Migration phải tương thích ngược (thêm trước, xoá sau).",
             "Dữ liệu các trung tâm nằm chung bảng, tách bằng cột `tenant_id`; mọi API trung tâm luôn lọc theo trung tâm của đường dẫn.",
             "Tài khoản, trung tâm, thành viên, đề thi dùng xoá mềm (`deleted_at`)."
@@ -83,7 +83,7 @@
             ],
             [
               "Private",
-              "Ghi âm Speaking (`tenants/{tenantId}/attempts/{attemptId}/…`)",
+              "Ghi âm Speaking của lượt thi (`tenants/{tenantId}/attempts/{attemptId}/…`) và của lượt học bài học (`tenants/{tenantId}/lesson-attempts/{attemptId}/…`)",
               "Link ký tạm thời, chỉ chủ lượt làm và người chấm"
             ]
           ]
@@ -199,7 +199,7 @@
         },
         {
           "type": "paragraph",
-          "text": "Chạy một lần từ máy dev (database dùng chung): đặt các biến `SEED_OWNER_*` trong `apps/lang-api/.env` rồi chạy lệnh dưới. Các Owner sau đó tạo qua giao diện ([System Owner](page:system-owner))."
+          "text": "Chạy một lần cho mỗi database: đặt các biến `SEED_OWNER_*` trong `apps/lang-api/.env` (trỏ đúng database cần seed) rồi chạy lệnh dưới. Các Owner sau đó tạo qua giao diện ([System Owner](page:system-owner))."
         },
         {
           "type": "code",
@@ -233,7 +233,11 @@
             "`docker compose ps` trạng thái healthy; `curl -s http://127.0.0.1:3001/api/health` trả `database: up`.",
             "Đăng nhập System Owner → `/admin` có số liệu; `/admin/exam-blueprints` có TOEIC/IELTS/JLPT N2.",
             "Thư viện media của một trung tâm thử không báo thiếu R2, upload thử được ảnh.",
-            "Luồng soạn → publish → làm bài → chấm → xem kết quả chạy được; xoá dữ liệu thử sau khi kiểm tra."
+            "Luồng soạn → publish → làm bài → chấm → xem kết quả chạy được.",
+            "Bài học: soạn → publish → học một phần → nộp thấy đáp án và giải thích.",
+            "Đào tạo: mở một khoá học thử, tạo giáo trình, tạo lớp, xếp thời khoá biểu và kiểm tab **Tiến độ & Chuyên cần**, **Bảng điểm**, nút **Xuất Excel**.",
+            "Chuông **Thông báo** có số và mở được trang `/me/notifications`.",
+            "Xoá dữ liệu thử sau khi kiểm tra."
           ]
         }
       ]
@@ -302,6 +306,55 @@
             ["Writing: giới hạn ký tự", "1–3000"],
             ["Pick-n: số đáp án cần chọn", "1–20"],
             ["Media đề", "Ảnh 5MB (→ WebP), audio 50MB, video 100MB"]
+          ]
+        },
+        {
+          "type": "heading",
+          "level": 2,
+          "text": "Đào tạo: khoá học, giáo trình, lớp, lịch"
+        },
+        {
+          "type": "table",
+          "columns": ["Mục", "Giới hạn"],
+          "rows": [
+            [
+              "Mã khoá học / mã lớp",
+              "In hoa, số, `-`/`_`, tối đa 32 ký tự; duy nhất trong trung tâm"
+            ],
+            [
+              "Tên khoá học / lớp / giáo trình",
+              "Tối đa 200 ký tự; mô tả tối đa 2000"
+            ],
+            ["Trình độ khoá học", "Tối đa 50 ký tự"],
+            ["Số buổi dự kiến của khoá học / tổng số buổi của lớp", "1–500"],
+            [
+              "Chương mỗi giáo trình (tham khảo và giáo trình lớp)",
+              "Tối đa 100; tên chương tối đa 200 ký tự"
+            ],
+            [
+              "Mục mỗi giáo trình",
+              "Tối đa 300; tên hiển thị 200 ký tự, ghi chú 1000 ký tự"
+            ],
+            ["Ngưỡng đậu của mục đề thi", "0–100 %, mặc định 50"],
+            ["Sĩ số tối đa của lớp", "1–1000; thêm tối đa 200 người mỗi lần"],
+            ["Phòng / link của lớp, buổi", "Tối đa 500 ký tự"],
+            ["Buổi trong tuần (lịch lặp)", "1–14 dòng; không lặp cách tuần"],
+            [
+              "Một buổi học",
+              "Tối đa 12 giờ; ghi chú 1000 ký tự, lý do huỷ 500 ký tự"
+            ],
+            ["Nội dung map vào một buổi", "Tối đa 50 mục/chương"],
+            [
+              "Ngày nghỉ của trung tâm",
+              "Tên tối đa 200 ký tự, một ngày nghỉ dài tối đa 366 ngày; không lặp hằng năm"
+            ],
+            ["Khoảng ngày mỗi lần đọc lịch", "Tối đa 93 ngày"],
+            [
+              "Hệ số nộp muộn (k) / ngưỡng cảnh báo",
+              "0–1 (2 chữ số thập phân), mặc định 0,5 / 0–100 %, mặc định 70"
+            ],
+            ["Nhận xét cuối khoá", "Tối đa 4000 ký tự mỗi học viên mỗi lớp"],
+            ["Bài làm ngoài lớp hiện cho phụ huynh", "20 lượt mới nhất mỗi con"]
           ]
         },
         {
@@ -416,6 +469,65 @@
         {
           "type": "heading",
           "level": 2,
+          "text": "Lớp học, lịch và theo dõi"
+        },
+        {
+          "type": "table",
+          "columns": ["Triệu chứng", "Nguyên nhân / xử lý"],
+          "rows": [
+            [
+              "Học viên không vào được mục của lớp",
+              "Lớp chưa **Đang học**, mục **Chưa tới ngày mở** (lấy mốc muộn hơn của chương và mục), hoặc đã quá hạn mà mục tắt **Nhận bài quá hạn**"
+            ],
+            [
+              "“Lớp học đã kết thúc…” khi nộp bài",
+              "Lớp đã chuyển **Đã kết thúc**/**Đã huỷ**; lượt đang làm đã bị chốt. Xem lại kết quả vẫn được"
+            ],
+            [
+              "Học viên muốn làm lại một bài kiểm tra",
+              "Mỗi mục chỉ làm một lần – giáo viên của lớp bấm **Cho làm lại**, hoặc thêm mục **Thi lại cho**"
+            ],
+            [
+              "Giáo viên không thấy lớp / không chấm được bài của lớp",
+              "Chưa được thêm làm giáo viên của lớp đó; nhờ Chủ sở hữu/Quản trị viên thêm, hoặc dùng **Chuyển giao chấm**"
+            ],
+            [
+              "“Giáo trình vừa được người khác lưu” / “Thời khoá biểu vừa đổi”",
+              "Hai người cùng sửa – tải lại trang rồi sửa lại"
+            ],
+            [
+              "Buổi học không sửa được ngày",
+              "Buổi thường chỉ đổi ngày qua **Sửa lịch lặp**; buổi đã bắt đầu chỉ sửa phòng, ghi chú, nội dung"
+            ],
+            [
+              "Buổi hiện **Đã dời – kiểm tra lại**",
+              "Buổi có giờ sửa tay hoặc giáo viên riêng vừa bị dời; kiểm rồi bấm **Đã kiểm tra**"
+            ],
+            [
+              "Nhãn **Trùng lịch** đỏ",
+              "Hai lớp chung giáo viên hoặc học viên trùng giờ – chỉ cảnh báo, không chặn"
+            ],
+            [
+              "Không xoá được lớp / khoá học / giáo trình / bài học / đề thi",
+              "Đã có bài làm, đã có lớp, đang gắn khoá học hoặc đang nằm trong giáo trình – dùng **Huỷ lớp** / **Lưu trữ** / **Bỏ gắn**"
+            ],
+            [
+              "Chuyên cần của cả lớp bằng 0 hoặc trống",
+              "Chưa mục đề thi nào đặt **hạn nộp** – chỉ mục có hạn mới vào bảng chuyên cần"
+            ],
+            [
+              "Phụ huynh không thấy con",
+              "Chưa gắn liên kết ở [Thành viên](page:thanh-vien#lien-ket-phu-huynh), hoặc membership thiếu vai trò Phụ huynh/Học viên"
+            ],
+            [
+              "Không nhận được thông báo mốc giáo trình",
+              "Cron chạy 15 phút một lần và chỉ xét mốc trong 3 ngày gần đây; lớp phải **Đang học** và học viên chưa nộp"
+            ]
+          ]
+        },
+        {
+          "type": "heading",
+          "level": 2,
           "text": "Ghi âm Speaking"
         },
         {
@@ -482,7 +594,7 @@
       "blocks": [
         {
           "type": "paragraph",
-          "text": "Các mục dưới đây **chưa có** trong hệ thống (ghi nhận từ req-1). Khi người dùng hỏi, trả lời là chưa hỗ trợ."
+          "text": "Các mục dưới đây **chưa có** trong hệ thống (ghi nhận từ req-1 tới req-3). Khi người dùng hỏi, trả lời là chưa hỗ trợ."
         },
         {
           "type": "table",
@@ -494,24 +606,36 @@
             ],
             ["Trung tâm", "Chuyển quyền Chủ sở hữu, tự xin tham gia trung tâm"],
             [
-              "Học tập",
-              "Vai trò theo khoá học; giới hạn khung giờ làm bài; trọng số điểm và điểm tổng kết; gia hạn deadline riêng cho từng học viên; điểm danh; nhập học viên từ file; nhân bản lớp/khoá học"
+              "Khoá học & lớp",
+              "Học phí, ghi danh, học viên tự đăng ký lớp, trang giới thiệu khoá học công khai; nhân bản lớp/khoá học; nhập học viên từ file; phân quyền theo khoá học; điểm danh buổi học"
+            ],
+            [
+              "Giáo trình & bài tập",
+              "Gia hạn deadline riêng cho từng học viên; deadline/ngày mở gắn theo buổi học; flashcard; nhúng YouTube; đếm tham chiếu media khi nhân bản"
+            ],
+            [
+              "Thời khoá biểu",
+              "Ngày nghỉ của hệ thống hoặc lặp hằng năm; lịch lặp cách tuần; kiểm trùng phòng; lịch gộp mọi trung tâm ở `/me`"
+            ],
+            [
+              "Điểm & theo dõi",
+              "Trọng số và điểm tổng kết toàn khoá, tham số điểm theo hình thức thi, điểm liệt theo section; quy đổi thang điểm (TOEIC 990, IELTS band); thống kê tỉ lệ đúng theo câu; so sánh version; đánh số câu liên tục qua các section"
+            ],
+            [
+              "Thông báo",
+              "Email và thông báo đẩy ngoài ứng dụng; tắt từng loại thông báo"
             ],
             [
               "Phụ huynh",
-              "Nhắn tin/liên hệ giáo viên; xem nội dung bài học, đề thi và đáp án của con; nhận email hoặc thông báo đẩy ngoài ứng dụng"
+              "Nhắn tin/liên hệ giáo viên; xem nội dung bài học, đề thi và đáp án của con"
             ],
             [
               "Gói dịch vụ",
               "Thanh toán, thời hạn gói, hạ gói vào cuối kỳ, quota dung lượng upload"
             ],
             [
-              "Đề thi & kết quả",
-              "Quy đổi thang điểm (TOEIC 990, IELTS band), thống kê tỉ lệ đúng theo câu, so sánh version, đánh số câu liên tục qua các section"
-            ],
-            [
               "Thi",
-              "Giới hạn nghe audio 1 lần, thời gian chuẩn bị Speaking, xem đáp án sau khi thi"
+              "Giới hạn nghe audio 1 lần, thời gian chuẩn bị Speaking, giới hạn khung giờ làm bài, xem đáp án đề thi sau khi thi (bài học thì có)"
             ],
             [
               "Hạ tầng",

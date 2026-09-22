@@ -16,7 +16,7 @@
         },
         {
           "type": "paragraph",
-          "text": "**Lang Simulator** là nền tảng multi-tenant cho trung tâm ngoại ngữ: mỗi trung tâm (tenant) có không gian riêng để quản lý thành viên, soạn đề theo cấu trúc kỳ thi (TOEIC, IELTS, JLPT…), cho học viên thi thử có tính giờ, chấm tự động phần trắc nghiệm và để giáo viên chấm Writing/Speaking."
+          "text": "**Lang Simulator** là nền tảng multi-tenant cho trung tâm ngoại ngữ: mỗi trung tâm (tenant) có không gian riêng để quản lý thành viên, soạn đề theo cấu trúc kỳ thi (TOEIC, IELTS, JLPT…) và soạn bài học, cho học viên thi thử có tính giờ, chấm tự động phần trắc nghiệm và để giáo viên chấm Writing/Speaking. Trung tâm còn mở khoá học và lớp học có giáo trình, thời khoá biểu, theo dõi chuyên cần – bảng điểm, và cho phụ huynh xem kết quả của con."
         },
         {
           "type": "heading",
@@ -53,6 +53,26 @@
               "`/t/{slug}/attempts/{id}`",
               "Thành viên đang làm bài"
             ],
+            [
+              "Màn hình học bài học",
+              "`/t/{slug}/lesson-attempts/{id}`",
+              "Thành viên đang học bài"
+            ],
+            [
+              "Lớp của tôi, lịch học của tôi",
+              "`/t/{slug}/classes/{id}`, `/t/{slug}/schedule`",
+              "Học viên của lớp"
+            ],
+            [
+              "Con của tôi",
+              "`/t/{slug}/children`",
+              "Phụ huynh đã liên kết với học viên"
+            ],
+            [
+              "Tất cả thông báo",
+              "`/me/notifications`",
+              "Mọi người dùng đã đăng nhập"
+            ],
             ["Tài liệu nội bộ", "`/user-manual`", "System Owner, System Admin"]
           ]
         },
@@ -81,8 +101,12 @@
               "text": "Chủ sở hữu/Quản trị viên thêm giáo viên, học viên, phụ huynh. Xem [Thành viên](page:thanh-vien)."
             },
             {
-              "title": "Giáo viên soạn và publish đề",
-              "text": "Tạo đề từ loại đề, soạn nội dung từng section, publish. Xem [Vòng đời đề thi](page:vong-doi-de-thi)."
+              "title": "Giáo viên soạn và publish đề, bài học",
+              "text": "Tạo đề từ loại đề, bài học từ mẫu bài học, soạn nội dung từng section rồi publish. Xem [Vòng đời đề thi](page:vong-doi-de-thi) và [Bài học](page:bai-hoc)."
+            },
+            {
+              "title": "Trung tâm mở khoá học và lớp học",
+              "text": "Gom bài học + đề thi thành giáo trình, gắn vào khoá học, mở lớp rồi xếp thời khoá biểu. Xem [Khoá học](page:khoa-hoc), [Lớp học](page:lop-hoc) và [Thời khoá biểu & buổi học](page:thoi-khoa-bieu)."
             },
             {
               "title": "Học viên làm bài",
@@ -91,6 +115,10 @@
             {
               "title": "Chấm và xem kết quả",
               "text": "Phần trắc nghiệm chấm ngay khi nộp; Writing/Speaking do giáo viên chấm. Xem [Chấm bài](page:cham-bai) và [Kết quả & lịch sử](page:ket-qua-lich-su)."
+            },
+            {
+              "title": "Theo dõi lớp và báo cho phụ huynh",
+              "text": "Giáo viên theo dõi chuyên cần, bảng điểm, viết nhận xét cuối khoá; học viên và phụ huynh nhận thông báo. Xem [Chuyên cần & bảng điểm](page:chuyen-can-bang-diem), [Con của tôi](page:con-cua-toi) và [Thông báo](page:thong-bao)."
             }
           ]
         },
@@ -433,17 +461,17 @@
             [
               "Teacher",
               "Giáo viên",
-              "Tạo đề, sửa/publish đề mình tạo, upload media, chấm bài. Xem [hướng dẫn](page:teacher)."
+              "Tạo đề và bài học, sửa/publish nội dung mình tạo, upload media, dạy lớp được phân công (giáo trình lớp, buổi học), chấm bài trong phạm vi của mình. Xem [hướng dẫn](page:teacher)."
             ],
             [
               "Student",
               "Học viên",
-              "Làm đề đã publish, xem kết quả của mình. Không vào dashboard. Xem [hướng dẫn](page:student)."
+              "Học bài học, làm đề đã publish, học trong lớp được xếp và xem kết quả của mình. Không vào dashboard. Xem [hướng dẫn](page:student)."
             ],
             [
               "Parent",
               "Phụ huynh",
-              "Được gắn với học viên. Hiện dùng như thành viên thường (làm đề); trang xem kết quả của con để req sau. Xem [hướng dẫn](page:parent)."
+              "Được gắn với học viên; xem lớp, lịch học và kết quả của con ở **Con của tôi**. Vẫn học bài/làm đề như thành viên thường. Xem [hướng dẫn](page:parent)."
             ]
           ]
         },

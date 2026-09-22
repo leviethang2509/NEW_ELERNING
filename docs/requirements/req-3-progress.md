@@ -23,12 +23,12 @@
 | 3 | 11 | Chuyên cần, bảng điểm, nhận xét cuối khoá | ✅ | 2026-09-20 | Chưa commit; dữ liệu thử lớp `N5-2026-01` có thêm 2 mục đề thi đặt hạn nộp |
 | 3 | 12 | Thông báo | ✅ | 2026-09-21 | Chưa commit; thông báo thử còn trong DB để bấm chuông |
 | 3 | 13 | Phụ huynh | ✅ | 2026-09-22 | Chưa commit; phụ huynh thử `step13-parent@example.com` ở `step4-test` |
-| 3 | 14 | Hoàn thiện & nghiệm thu tổng | ⬜ | | Deploy giai đoạn 3 |
+| 3 | 14 | Hoàn thiện & nghiệm thu tổng | ✅ | 2026-09-22 | Chưa commit; chờ người dùng bấm [checklist](req-3-acceptance.md) rồi deploy giai đoạn 3 |
 
 ## Bàn giao cho phiên tiếp theo
 
 - Giai đoạn 1 (Step 1–5) xong, đã push `main` (`db18cb7`). Giai đoạn 2: Step 6 `d5cf255`, Step 7 `06d9daa`, Step 8 `a9d588a`, Step 9 `258b8a4`, Step 10 `90de1a6`, Step 11 + Step 12 `f7a573e` đã commit (chưa push). **Step 13 xong trên local, chưa commit.** Deploy giai đoạn 2 + 3 sau khi người dùng kiểm giao diện: migration `CreateCoursesCurricula`, `CreateClassrooms`, `CreateClassSchedule`, `CreateGradingDelegations`, `ClassProgress`, `CreateNotifications`, **`GuardianNotifications`** chạy lúc container khởi động; **không có env mới**. Dependency mới: `exceljs` ở `apps/lang-api` (không có build script, không cần `allowBuilds`).
-- **Tiếp theo: Step 14 – Hoàn thiện & nghiệm thu tổng** (plan mục 7). Xem "Lưu ý cho step sau" của Step 13, prompt ở cuối file.
+- **Step 14 xong trên local (chưa commit).** Việc còn lại của req-3: người dùng bấm [req-3-acceptance.md](req-3-acceptance.md) trên máy dev → commit → push `main` để deploy giai đoạn 3 (migration `ClassProgress`, `CreateNotifications`, `GuardianNotifications` chạy lúc container khởi động, **không có env mới**) → chạy lại phần "Sau khi deploy giai đoạn 3" của checklist.
 - Máy dev: `apps/lang-api/.env` trỏ Postgres local `lang_simulator_dev`. DB local có **21 migration**, 1 System Owner, mẫu bài học hệ thống **Minna no Nihongo – 1 bài**. **Còn giữ dữ liệu thử** để người dùng bấm giao diện:
   - Step 3: tenant `step3-test` (4 đề, 1 lượt làm chờ chấm của đề **do Chủ sở hữu soạn** → sau Step 10 `step3-teacher` **không còn thấy bài này**) + `step3-teacher|student|student2@example.com`.
   - Step 4–5: tenant `step4-test` (System Owner là Chủ sở hữu). Bài **Minna bài 1** của `step4-teacher` (công khai, **version 2**; tab Từ vựng có furigana/callout/khối gập mở, tab Luyện tập có Writing + Speaking, tab Bài tập 2 câu MC + 1 giải thích) và bản sao nháp **Bản của GV2** của `step4-teacher2`. `step4-student@example.com` có 2 lượt học tự do: version 1 (đã học xong; phần Luyện tập **đã chấm xong** từ Step 12 – bài đang chờ chấm hiện là lượt **trong lớp** của `step7-student1`) và version 2 (mới mở).
@@ -697,6 +697,43 @@
 - Trang **Ngoài phạm vi hiện tại** của `/user-manual` đến Step 12 vẫn liệt kê chấm bài theo lớp, chuyên cần, thông báo là "chưa có" – Step 13 đã sửa; rà nốt các trang khác xem còn câu nào lỗi thời.
 - Dọn dữ liệu thử: `student_guardians` CASCADE theo membership nên xoá tenant `step4-test` là sạch; phụ huynh thử là **user riêng** (`step13-parent@example.com`), xoá tenant xong nhớ xoá luôn user nếu muốn sạch hẳn.
 - Máy dev đang chạy API :3101 và Next :3100 của bản build Step 13.
+
+### Step 14 – Hoàn thiện & nghiệm thu tổng (2026-09-22)
+
+**Đã làm**
+- **Rà `ROUTES`** (`access-control.e2e.spec.ts`, 157 dòng) so với plan mục 5–6: khớp hoàn toàn, **không phải sửa**. Test tự báo lỗi nếu thiếu route nên bảng luôn đủ; đã đối chiếu tay mức quyền của từng nhóm (`MANAGER` cho lớp · lịch lặp · cài đặt · gắn giáo trình; `STAFF` cho giáo trình lớp · buổi học · chuyên cần · nhận xét · chấm · chuyển giao; `MEMBER` cho `learner/*`; `PARENT_ONLY` cho `children/*`). Route frontend thực tế cũng khớp plan mục 6.1. Plan mục 6.2 đã được cập nhật ở cuối Step 13 (nằm trong diff chưa commit).
+- **Rà `/user-manual`** – 12 chỗ lỗi thời/thiếu đã sửa (`updatedAt` giữ 2026-09-22):
+  - `vong-doi-de-thi`, `bai-hoc`: bỏ câu "học viên làm đề/học bài trong lớp có ở **giai đoạn sau**" → trỏ sang [Lớp học của tôi].
+  - `trinh-soan-de`: "Bài học **(sắp có)**" → "Bài học: hiện cho học viên sau khi nộp phần".
+  - `ket-qua-lich-su`: bỏ "Chưa có trang thống kê kết quả hay trang phụ huynh xem kết quả con" → trỏ Chuyên cần & bảng điểm + Con của tôi.
+  - `kien-truc`: DB (máy dev dùng Postgres local riêng từ 2026-09-19, **không** còn dùng chung với VPS), bucket private thêm prefix ghi âm bài học, vai trò lang-api thêm thời khoá biểu + cron thông báo.
+  - `deploy-moi-truong`: seed bỏ "(database dùng chung)"; "Kiểm tra sau deploy" thêm bước bài học, đào tạo (khoá học → lớp → chuyên cần → Xuất Excel) và chuông thông báo.
+  - `gioi-han-he-thong`: thêm bảng **Đào tạo: khoá học, giáo trình, lớp, lịch** (17 dòng: mã/tên, 1–500 buổi, 100 chương – 300 mục, sĩ số 1–1000, 1–14 ô lặp, buổi ≤ 12 giờ, ngày nghỉ ≤ 366 ngày, lịch ≤ 93 ngày, k/ngưỡng, nhận xét 4000 ký tự, 20 lượt ngoài lớp của con).
+  - `su-co-thuong-gap`: thêm bảng **Lớp học, lịch và theo dõi** (12 triệu chứng của req-3).
+  - `ngoai-pham-vi`: viết lại theo req-1 + req-3 mục 8 (bỏ các việc đã làm; thêm học phí/ghi danh, tắt loại thông báo, ngày nghỉ lặp hằng năm, lặp cách tuần, kiểm trùng phòng, điểm tổng kết, deadline theo buổi…).
+  - `con-cua-toi`: `roles` thu từ `[PARENT, TEACHER, TENANT_ADMIN, TENANT_OWNER]` về `["PARENT"]` cho đúng phân quyền (Owner/Admin/Teacher không vào khu vực này).
+  - `dashboard-trung-tam`: thêm đoạn giải thích thẻ **Bài chờ chấm** (xem mục dưới).
+- **Sửa thẻ "Bài chờ chấm"** của dashboard tenant (phát hiện khi rà, người dùng chốt sửa trong Step 14): trước đây đếm mọi lượt **đề thi** `submitted` của trung tâm trừ bài của chính mình – không lọc phạm vi chấm (Step 10), không bỏ lượt `voided` (Step 9), không đếm lượt học (Step 5). Thêm `grading/grading-pending.ts` (`countPendingGrading`, dùng lại `loadGraderScope`/`applyGraderScope`, nhận `EntityManager` nên `TenantDashboardModule` **không** phải import `GradingModule`); `TenantDashboardController` truyền thêm `@CurrentUser()`, `getStats(ctx, graderId)`.
+- **Rà CLAUDE.md**: thêm mục 4 "Bắt đầu phiên làm việc" trỏ checklist nghiệm thu; ghi `countPendingGrading` vào phần Quyền chấm & chuyển giao.
+- **Checklist nghiệm thu tổng**: file mới [req-3-acceptance.md](req-3-acceptance.md) – 5 nhóm vai trò (System Owner/Admin · Chủ sở hữu/Quản trị viên · Giáo viên · Học viên · Phụ huynh), 54 mục kèm đường dẫn, kết quả mong đợi, tài khoản thử và phần "Sau khi deploy giai đoạn 3".
+
+**Sai khác so với plan**
+- Plan Step 14 chỉ ghi "rà ROUTES, tài liệu, CLAUDE.md + checklist"; thực tế phát sinh **một sửa code** (thẻ Bài chờ chấm) vì rà tài liệu mới lộ ra số liệu không khớp trang Chấm bài.
+- Checklist nghiệm thu để ở **file riêng** (người dùng chốt) thay vì viết trong progress, để dùng lại sau mỗi lần deploy.
+- Nghiệm thu chạy trên máy dev (:3100/:3101), **chưa** chạy trên :3001 như plan – deploy giai đoạn 3 làm sau khi người dùng bấm xong.
+
+**Nghiệm thu (local)**
+- 5 lệnh kiểm tra pass (553 test: shared 142, exam-core 63, lang-api 348 – không thêm test mới, đường query builder không unit test được bằng repository giả).
+- `accept14.js` (script chỉ đọc, trừ 1 phép thử có khôi phục – xem dưới): **60/60 đạt** trên `step4-test` + `step3-test`, chia theo 5 vai trò như checklist. Gồm: tài liệu không còn 4 câu lỗi thời, giáo viên đọc tài liệu → 403; khoá học/giáo trình/lớp/thời khoá biểu/chuyên cần (4 loại ô, 3 học viên dưới ngưỡng)/bảng điểm/Xuất Excel/lịch trung tâm/cài đặt/nhật ký; giáo viên ngoài lớp 403, không thấy bài chấm, không vào cài đặt/lịch trung tâm/tạo lớp; học viên thấy lớp – mục khoá theo ngày mở – nhóm thi, chưa có tổng kết, không lộ `answer_key`/`content_public`, bị chặn khỏi dashboard và `children/*`; phụ huynh 2 con, lịch từng con, học viên không liên kết → 404, Chủ sở hữu vào `children` → 403.
+- Thẻ **Bài chờ chấm** kiểm chéo với bộ lọc "Chờ chấm" của trang Chấm bài cho 3 vai trò × 2 tenant: đều khớp. Trên `step3-test` (1 lượt thi chờ chấm của đề do Chủ sở hữu soạn): Chủ sở hữu 1/1, `step3-teacher` 0/0 (trước khi sửa thẻ sẽ hiện 1 trong khi danh sách rỗng). Nhánh **lượt học** kiểm bằng cách tạm đặt `manual_graded_count = 1` cho lượt học trong lớp của `step7-student1` → thẻ của `step4-teacher` = 1, `step4-teacher2` = 0, rồi **trả lại 2** (đã xác nhận giá trị sau khi trả lại).
+- 17 route frontend trả 200 (`next start` :3100), gồm `/user-manual/gioi-han-he-thong`, `/ngoai-pham-vi`, `/su-co-thuong-gap`, `/con-cua-toi`, `/dashboard-trung-tam` và trang dashboard tenant.
+- **Chưa bấm giao diện bằng trình duyệt** – đó chính là việc còn lại của req-3: người dùng chạy [req-3-acceptance.md](req-3-acceptance.md) (cột **Bấm**).
+
+**Lưu ý cho step sau**
+- Dữ liệu thử **giữ nguyên** trên DB local (người dùng chốt) để bấm checklist; dọn sau khi xong: `delete from grading_delegations where tenant_id in (...)` → xoá tenant `step3-test`, `step4-test` → xoá user `step13-parent@example.com`.
+- Máy dev đang chạy API :3101 và Next :3100 của bản build Step 14.
+- Script nghiệm thu nằm trong scratchpad của phiên này (`lib14.js` + `accept14.js`); muốn giữ lâu dài thì chép vào repo, hiện **không** commit.
+- Deploy giai đoạn 3: migration `ClassProgress`, `CreateNotifications`, `GuardianNotifications` chạy lúc container khởi động, **không có env mới**; dependency mới duy nhất của giai đoạn 2–3 là `exceljs` (`apps/lang-api`).
 
 ## Prompt cho Step 11
 

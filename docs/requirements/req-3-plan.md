@@ -299,22 +299,27 @@ t/:slug:
   exams:   + PATCH visibility (qua metadata) · POST :id/clone
   lessons: list · creators · POST · GET :id · PATCH · PUT :id/content · versions · restore · publish · archive · DELETE · POST :id/clone
   courses: CRUD · POST/DELETE :id/curricula/:curriculumId · GET :id/sessions (lịch gộp)
-  curricula: CRUD · PUT :id/items (toàn bộ chương + mục, baseRevision) · POST :id/clone
+  curricula: CRUD · GET creators · PUT :id/items (toàn bộ chương + mục, baseRevision) · POST :id/clone
   classes: list · POST · GET :id · PATCH · POST :id/status · DELETE
            teachers/students: GET · POST · DELETE · POST :id/conflicts {membershipIds} (Step 8: POST vì gửi nhiều người)
-           curriculum: GET · PUT (baseRevision) · POST import/:curriculumId · GET logs
+           curriculum: GET · PUT (baseRevision) · GET logs
+             ("Nhập từ giáo trình" gộp ở client rồi PUT, không có route import riêng – Step 7)
            schedule: GET · PUT (slots + planned_sessions, start_date, apply_tenant_holidays) · POST schedule/preview (cùng body với PUT)
            sessions: PATCH :sid (phòng, ghi chú, giờ, giáo viên) · POST :sid/cancel · POST :sid/restore · POST makeup · DELETE :sid (buổi bù) · PUT :sid/links
-           attempts: POST items/:itemId/void/:attemptId · GET students/:membershipId/attempts
+           attempts: GET items/:itemId/attempts · POST items/:itemId/void/:attemptId
+             GET students/:membershipId/attempts · GET …/attempts/:attemptId · GET …/lesson-attempts/:attemptId
+             (+ …/recordings/:answerId/url cho cả hai loại – Step 10)
            progress: GET attendance · GET gradebook · GET export.xlsx · PUT students/:membershipId/comment
   sessions: GET :sid (chi tiết, cho giáo viên dạy thế)
   schedule: GET mine (giáo viên) · GET center (Owner/Admin)
   settings: GET · PATCH · holidays CRUD (+ POST holidays/impact {holidayId?, startDate, endDate, remove?} – ngày nghỉ mới chưa có id)
   grading: GET attempts (+ kind exam/lesson, classId, itemId) · GET attempts/:id · PUT answers/:answerId
-           lesson-attempts/:id · PUT lesson-answers/:answerId · delegations CRUD
+           GET lesson-attempts · GET lesson-attempts/:id · PUT lesson-answers/:answerId · delegations CRUD
+           (+ GET attempts/:id|lesson-attempts/:id/recordings/:answerId/url – ghi âm cho người chấm)
   learner: GET lessons (visibility tenant) · GET lessons/:id · POST lessons/:id/attempts
            GET lesson-attempts/:id · PUT .../sections/:sid/view · PUT .../sections/:sid/responses
-           POST .../sections/:sid/submit · POST .../recordings
+           POST .../sections/:sid/submit · POST .../sections/:sid/retry · POST .../recordings
+           GET .../sections/:sid/recordings/:number/url · GET .../answers/:answerId/recording-url
            GET classes · GET classes/:id · POST classes/:id/items/:itemId/start · GET schedule
   guardian: GET children · GET children/:membershipId (lớp, kết quả, bài tự do) · GET children/:membershipId/classes/:classId · GET children/:membershipId/schedule
 ```

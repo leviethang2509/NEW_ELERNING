@@ -112,6 +112,10 @@
         },
         {
           "type": "paragraph",
+          "text": "Thẻ **Bài chờ chấm** đếm đúng những bài **bạn** chấm được (lượt thi và lượt học còn câu Writing/Speaking chưa chấm), nên khớp số dòng **Chờ chấm** ở [Chấm bài](page:cham-bai): Chủ sở hữu/Quản trị viên thấy cả trung tâm, Giáo viên chỉ thấy phạm vi của mình. Không tính bài của chính bạn và lượt thi đã **Cho làm lại**."
+        },
+        {
+          "type": "paragraph",
           "text": "Khi trung tâm vượt giới hạn gói (sau khi bị hạ gói), Chủ sở hữu/Quản trị viên thấy banner cảnh báo kèm nút **Quản lý thành viên** và **Xem gợi ý**."
         },
         {

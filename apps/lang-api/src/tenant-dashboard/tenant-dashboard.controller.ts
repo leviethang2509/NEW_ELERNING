@@ -4,6 +4,10 @@ import {
   type TenantDashboardStats,
 } from '@lang/shared';
 import {
+  CurrentUser,
+  type RequestUser,
+} from '../common/decorators/current-user.decorator';
+import {
   TenantCtx,
   TenantRoles,
   type TenantContext,
@@ -18,7 +22,10 @@ export class TenantDashboardController {
   constructor(private readonly dashboard: TenantDashboardService) {}
 
   @Get('stats')
-  stats(@TenantCtx() ctx: TenantContext): Promise<TenantDashboardStats> {
-    return this.dashboard.getStats(ctx);
+  stats(
+    @TenantCtx() ctx: TenantContext,
+    @CurrentUser() actor: RequestUser,
+  ): Promise<TenantDashboardStats> {
+    return this.dashboard.getStats(ctx, actor.id);
   }
 }

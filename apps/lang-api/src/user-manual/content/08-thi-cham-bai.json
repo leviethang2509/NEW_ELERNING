@@ -173,7 +173,7 @@
           "items": [
             "Trang đề: **Lịch sử lượt làm** của chính mình với đề đó (vẫn xem được khi đề đã lưu trữ).",
             "Trang trung tâm: **Lượt làm gần đây** trên mọi đề.",
-            "Người quản lý trung tâm xem bài của học viên qua [Chấm bài](page:cham-bai) (chỉ bài có câu chấm tay). Chưa có trang thống kê kết quả hay trang phụ huynh xem kết quả con."
+            "Người quản lý trung tâm xem bài có câu chấm tay qua [Chấm bài](page:cham-bai); với lượt làm **trong lớp** thì xem đủ bài làm và điểm ở trang lớp – [Chuyên cần & bảng điểm](page:chuyen-can-bang-diem). Phụ huynh xem kết quả của con ở [Con của tôi](page:con-cua-toi). Chưa có trang thống kê tỉ lệ đúng theo câu."
           ]
         }
       ]
@@ -430,7 +430,7 @@
       "id": "con-cua-toi",
       "title": "Con của tôi",
       "summary": "Phụ huynh xem lớp, lịch học, tiến độ và kết quả của con.",
-      "roles": ["PARENT", "TEACHER", "TENANT_ADMIN", "TENANT_OWNER"],
+      "roles": ["PARENT"],
       "blocks": [
         {
           "type": "roles",

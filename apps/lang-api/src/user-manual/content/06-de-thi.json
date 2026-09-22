@@ -79,7 +79,7 @@
             ],
             [
               "**Chỉ qua lớp**",
-              "Không hiện ở trang trung tâm; mở đề hoặc bắt đầu lượt làm tự do đều báo không tìm thấy. Dùng cho đề giao qua [giáo trình lớp](page:giao-trinh-lop); học viên làm đề trong lớp có ở giai đoạn sau"
+              "Không hiện ở trang trung tâm; mở đề hoặc bắt đầu lượt làm tự do đều báo không tìm thấy. Dùng cho đề giao qua [giáo trình lớp](page:giao-trinh-lop): học viên vào làm từ trang lớp – xem [Lớp học của tôi](page:lop-cua-toi)"
             ]
           ]
         },
@@ -209,7 +209,7 @@
             "Gắn với **Question ngay phía trên** (bỏ qua các Explanation khác). Nếu giữa chúng có Part/Subpart hoặc phía trên không có Question thì không gắn câu nào – mini map ghi “không gắn câu hỏi nào”.",
             "Nội dung giải thích kéo tới indicator kế tiếp: muốn viết tiếp nội dung khác, chèn indicator mới.",
             "Một câu có nhiều Explanation được. Giải thích không tính vào số câu, không chấm điểm.",
-            "Nội dung giải thích **không gửi cho học viên** (server bỏ khỏi đề phát cho học viên, chỉ giữ chỗ trống). Đề thi: học viên không bao giờ thấy, người chấm thấy ở trang chấm. Bài học (sắp có): hiện sau khi học viên nộp phần."
+            "Nội dung giải thích **không gửi cho học viên** (server bỏ khỏi đề phát cho học viên, chỉ giữ chỗ trống). Đề thi: học viên không bao giờ thấy, người chấm thấy ở trang chấm. Bài học: hiện cho học viên **sau khi nộp** phần đó."
           ]
         },
         { "type": "heading", "level": 2, "text": "Thanh công cụ" },
@@ -568,7 +568,7 @@
           "rows": [
             [
               "**Chỉ qua lớp** (mặc định)",
-              "Dùng cho bài giao qua [giáo trình lớp](page:giao-trinh-lop); học viên học bài trong lớp có ở giai đoạn sau"
+              "Dùng cho bài giao qua [giáo trình lớp](page:giao-trinh-lop): học viên vào học từ trang lớp – xem [Lớp học của tôi](page:lop-cua-toi)"
             ],
             [
               "**Công khai trong trung tâm**",

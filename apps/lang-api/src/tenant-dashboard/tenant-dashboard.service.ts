@@ -1,7 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import {
-  AttemptStatus,
   ExamStatus,
   MembershipStatus,
   TENANT_MANAGER_ROLES,
@@ -9,9 +8,10 @@ import {
   hasAnyRole,
   type TenantDashboardStats,
 } from '@lang/shared';
-import { Not, type Repository } from 'typeorm';
+import { DataSource, type Repository } from 'typeorm';
 import { ExamAttempt } from '../attempts/exam-attempt.entity';
 import { Exam } from '../exams/exam.entity';
+import { countPendingGrading } from '../grading/grading-pending';
 import { MembershipRole } from '../memberships/membership-role.entity';
 import { Membership } from '../memberships/membership.entity';
 import { MembershipsService } from '../memberships/memberships.service';
@@ -26,14 +26,19 @@ export class TenantDashboardService {
     @InjectRepository(ExamAttempt)
     private readonly attempts: Repository<ExamAttempt>,
     private readonly memberships: MembershipsService,
+    private readonly dataSource: DataSource,
   ) {}
 
   /**
    * Tổng quan tenant. Teacher chỉ có bản rút gọn (học viên, đề, lượt làm, bài
-   * chờ chấm); số liệu thành viên và gói chỉ cho Owner/Admin. Bài chờ chấm
-   * không tính bài của chính người xem (không được tự chấm).
+   * chờ chấm); số liệu thành viên và gói chỉ cho Owner/Admin. Thẻ "Bài chờ
+   * chấm" đếm đúng phạm vi chấm của người xem (`countPendingGrading`), gồm cả
+   * lượt học, nên khớp số dòng "Chờ chấm" ở trang Chấm bài.
    */
-  async getStats(ctx: TenantContext): Promise<TenantDashboardStats> {
+  async getStats(
+    ctx: TenantContext,
+    graderId: string,
+  ): Promise<TenantDashboardStats> {
     const rows = await this.membershipRoles
       .createQueryBuilder('r')
       .innerJoin(Membership, 'm', 'm.id = r.membershipId')
@@ -57,11 +62,7 @@ export class TenantDashboardService {
         .groupBy('exam.status')
         .getRawMany<{ status: ExamStatus; count: string }>(),
       this.attempts.countBy({ tenantId: ctx.tenantId }),
-      this.attempts.countBy({
-        tenantId: ctx.tenantId,
-        status: AttemptStatus.SUBMITTED,
-        membershipId: Not(ctx.membershipId),
-      }),
+      countPendingGrading(this.dataSource.manager, ctx, graderId),
     ]);
     const examsByStatus = new Map(
       examRows.map((row) => [row.status, Number(row.count)]),
