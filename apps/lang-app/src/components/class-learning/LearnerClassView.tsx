@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useState, type ReactNode } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { ArrowLeft, CalendarDays, Play } from 'lucide-react';
@@ -42,6 +42,7 @@ import {
 
 const text = vi.classLearning;
 const common = vi.curricula;
+const guardian = vi.guardian;
 
 /** Trang lớp của học viên: giáo trình + trạng thái từng mục + buổi sắp tới. */
 export function LearnerClassView({
@@ -127,18 +128,30 @@ export function LearnerClassView({
  * Phần hiển thị của trang lớp (nhận dữ liệu qua prop nên render/kiểm được
  * không cần gọi API): thông tin lớp, buổi sắp tới, kết quả nhóm thi, giáo
  * trình lớp kèm trạng thái từng mục.
+ *
+ * `readOnly` là góc nhìn phụ huynh (Step 13): bỏ nút vào học/làm bài và link
+ * mở bài làm (route của học viên chỉ cho chủ lượt), chỉ còn trạng thái và kết
+ * quả. Mỗi mục có thể kèm phần phụ (`itemExtra`) – phụ huynh dùng để hiện nhận
+ * xét chấm tay.
  */
 export function LearnerClassBoard({
   slug,
   detail: data,
   starting,
   onStart,
+  readOnly = false,
+  scheduleHref,
+  itemExtra,
 }: {
   slug: string;
   detail: LearnerClassDetail;
   /** Id mục đang mở (nút hiện "Đang mở…"). */
   starting: string | null;
   onStart: (item: LearnerClassItemView) => void;
+  readOnly?: boolean;
+  /** Link "lịch học"; mặc định lịch của chính học viên. */
+  scheduleHref?: string;
+  itemExtra?: (item: LearnerClassItemView) => ReactNode;
 }) {
   const titleOf = (itemId: string) =>
     [...data.ungrouped, ...data.groups.flatMap((g) => g.items)].find(
@@ -151,10 +164,12 @@ export function LearnerClassBoard({
     const isLesson = item.itemType === CurriculumItemType.LESSON;
     // Bài học đã có lượt: link "Học tiếp"/"Xem lại" mở đúng lượt đó, không cần
     // thêm nút "Vào học".
-    const canOpen = item.lock === null && !(isLesson && lessonAttempt);
+    const canOpen =
+      !readOnly && item.lock === null && !(isLesson && lessonAttempt);
     // Đã làm xong mục đề thi: xem lại kết quả thay vì vào làm.
-    const reviewHref =
-      !isLesson && item.attempt
+    const reviewHref = readOnly
+      ? null
+      : !isLesson && item.attempt
         ? attemptResultPath(slug, item.attempt.id)
         : isLesson && lessonAttempt
           ? lessonAttemptPath(slug, lessonAttempt.attemptId)
@@ -179,7 +194,9 @@ export function LearnerClassBoard({
                 </Badge>
               )}
               {item.retakeOfItemId && !item.required && (
-                <Badge tone="success">{text.notRequired}</Badge>
+                <Badge tone="success">
+                  {readOnly ? guardian.notRequired : text.notRequired}
+                </Badge>
               )}
               {item.opensAt && (
                 <Badge tone="neutral">
@@ -222,6 +239,7 @@ export function LearnerClassBoard({
                 )}
               </span>
             )}
+            {itemExtra?.(item)}
           </span>
           <span className="flex shrink-0 items-center gap-2">
             {reviewHref && (
@@ -287,14 +305,19 @@ export function LearnerClassBoard({
         </dl>
         <Link
           prefetch={false}
-          href={learnerSchedulePath(slug)}
+          href={scheduleHref ?? learnerSchedulePath(slug)}
           className="inline-flex w-fit items-center gap-1.5 text-[13px] font-medium text-[var(--muted)] transition hover:text-[var(--accent)]"
         >
-          <CalendarDays size={15} /> {text.myScheduleLink}
+          <CalendarDays size={15} />{' '}
+          {readOnly ? guardian.scheduleHeading : text.myScheduleLink}
         </Link>
       </header>
 
-      {!data.isOpen && <FormAlert tone="info">{text.classNotOpen}</FormAlert>}
+      {!data.isOpen && (
+        <FormAlert tone="info">
+          {readOnly ? guardian.classNotOpen : text.classNotOpen}
+        </FormAlert>
+      )}
 
       <SectionCard title={text.upcomingSessions}>
         {data.upcomingSessions.length === 0 ? (

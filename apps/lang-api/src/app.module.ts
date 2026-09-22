@@ -14,6 +14,7 @@ import { ExamsModule } from './exams/exams.module';
 import { LessonAttemptsModule } from './lesson-attempts/lesson-attempts.module';
 import { LessonsModule } from './lessons/lessons.module';
 import { GradingModule } from './grading/grading.module';
+import { GuardianModule } from './guardian/guardian.module';
 import { HealthModule } from './health/health.module';
 import { MembershipsModule } from './memberships/memberships.module';
 import { NotificationsModule } from './notifications/notifications.module';
@@ -67,6 +68,7 @@ import { UsersModule } from './users/users.module';
     GradingModule,
     TrainingModule,
     ClassroomsModule,
+    GuardianModule,
     TenantSettingsModule,
     NotificationsModule,
     AdminModule,

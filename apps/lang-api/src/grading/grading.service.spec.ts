@@ -26,6 +26,8 @@ import { ExamPart } from '../exams/exam-part.entity';
 import { ExamQuestion } from '../exams/exam-question.entity';
 import { ExamSection } from '../exams/exam-section.entity';
 import { prepareSection } from '../exams/section-content';
+import { Membership } from '../memberships/membership.entity';
+import { StudentGuardian } from '../memberships/student-guardian.entity';
 import type { R2Service } from '../storage/r2.service';
 import type { UploadedFile } from '../storage/media-file';
 import type { TenantContext } from '../tenants/tenant-context';
@@ -164,6 +166,8 @@ function setup() {
     .register(Tenant, tenants)
     .register(ClassroomTeacher, new InMemoryRepository<ClassroomTeacher>())
     .register(GradingDelegation, new InMemoryRepository<GradingDelegation>())
+    .register(Membership, new InMemoryRepository<Membership>())
+    .register(StudentGuardian, new InMemoryRepository<StudentGuardian>())
     .asDataSource();
   const notifications = fakeNotifications();
   const attemptsService = new AttemptsService(

@@ -41,6 +41,7 @@ import { Exam } from '../exams/exam.entity';
 import { LessonAttempt } from '../lesson-attempts/lesson-attempt.entity';
 import { Lesson } from '../lessons/lesson.entity';
 import { MembershipRole } from '../memberships/membership-role.entity';
+import { StudentGuardian } from '../memberships/student-guardian.entity';
 import { Membership } from '../memberships/membership.entity';
 import { TenantHoliday } from '../tenant-settings/tenant-holiday.entity';
 import { TenantSettingsService } from '../tenant-settings/tenant-settings.service';
@@ -132,6 +133,7 @@ function setup() {
     () => ({}),
     ['membershipId', 'role'],
   );
+  const guardians = new InMemoryRepository<StudentGuardian>();
   const users = new InMemoryRepository<User>(timestamps);
   const examAttempts = new InMemoryRepository<ExamAttempt>();
   const examAnswers = new InMemoryRepository<ExamAttemptAnswer>();
@@ -167,6 +169,7 @@ function setup() {
     .register(Exam, exams)
     .register(Membership, memberships)
     .register(MembershipRole, roles)
+    .register(StudentGuardian, guardians)
     .register(User, users)
     .register(ExamAttempt, examAttempts)
     .register(ExamAttemptAnswer, examAnswers)
@@ -410,6 +413,7 @@ function setup() {
     dataSource,
     classrooms,
     memberships,
+    guardians,
     students,
     items,
     logs,
@@ -2330,6 +2334,50 @@ describe('Chuyên cần, bảng điểm, nhận xét cuối khoá (Step 11)', ()
     expect(
       notifications.ofType(NotificationType.FINAL_COMMENT_PUBLISHED),
     ).toHaveLength(2);
+  });
+
+  it('lớp kết thúc: phụ huynh của con dưới ngưỡng chuyên cần được báo (Step 13)', async () => {
+    const {
+      notifications,
+      classroomsService,
+      guardians,
+      examAttempts,
+      id,
+      quizItem,
+    } = await classWithAttempts();
+    // Cùng một phụ huynh của hai con: chỉ con dưới ngưỡng được báo.
+    for (const student of ['m-student-1', 'm-student-2']) {
+      guardians.rows.push({
+        id: `g-${student}`,
+        tenantId: TENANT,
+        studentMembershipId: student,
+        parentMembershipId: 'm-parent',
+      } as StudentGuardian);
+    }
+    // Học viên 1 thi đúng hạn và đậu (lần thi lại thành không bắt buộc) →
+    // 100%; học viên 2 không làm gì → 0% < ngưỡng 70.
+    examAttempts.rows.push(
+      attempt({
+        id: 'a-ontime',
+        classItemId: quizItem.id,
+        userId: 'user-m-student-1',
+        startedAt: new Date('2026-09-10T00:00:00Z'),
+      }),
+    );
+
+    await classroomsService.changeStatus(
+      ownerCtx,
+      OWNER,
+      id,
+      ClassroomStatus.FINISHED,
+    );
+    const low = notifications.ofType(NotificationType.CHILD_ATTENDANCE_LOW);
+    expect(low).toHaveLength(1);
+    expect(low[0].userIds).toEqual(['user-m-parent']);
+    expect(low[0].params?.childName).toBe('Học viên 2');
+    expect(low[0].params?.percent).toBe(0);
+    expect(low[0].link).toBe('/t/a/children/m-student-2');
+    expect(low[0].dedupeKey).toBe(`child_attendance:${id}:m-student-2`);
   });
 
   it('xuất Excel 2 sheet đọc được', async () => {

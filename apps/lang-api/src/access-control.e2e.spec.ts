@@ -60,6 +60,8 @@ const SYSTEM: Access = { kind: 'system', roles: [SYSTEM_OWNER, SYSTEM_ADMIN] };
 const SYSTEM_OWNER_ONLY: Access = { kind: 'system', roles: [SYSTEM_OWNER] };
 const MEMBER: Access = { kind: 'tenant' };
 const MANAGER: Access = { kind: 'tenant', roles: [TENANT_OWNER, TENANT_ADMIN] };
+/** "Con của tôi": chỉ Phụ huynh, còn liên kết với con kiểm trong service. */
+const PARENT_ONLY: Access = { kind: 'tenant', roles: [PARENT] };
 /** Tạo/sửa đề, media, chấm bài, dashboard tenant. */
 const STAFF: Access = {
   kind: 'tenant',
@@ -295,6 +297,11 @@ const ROUTES: Record<string, Access> = {
     MEMBER,
   'GET /t/:slug/learner/lesson-attempts/:id/answers/:answerId/recording-url':
     MEMBER,
+
+  'GET /t/:slug/children': PARENT_ONLY,
+  'GET /t/:slug/children/:membershipId': PARENT_ONLY,
+  'GET /t/:slug/children/:membershipId/classes/:classId': PARENT_ONLY,
+  'GET /t/:slug/children/:membershipId/schedule': PARENT_ONLY,
 };
 
 interface ModuleLike {

@@ -67,7 +67,7 @@
 | Excel | 1 file, 2 sheet: Chuyên cần, Bảng điểm (có cột Nhận xét) (E7.4, R12, T5) |
 | Chấm tay | Bài trong lớp: giáo viên của lớp. Bài tự do: người soạn đề/bài học. Owner/Admin: mọi bài. Chuyển giao chấm (mục hoặc từng lượt) cho Teacher khác, người giao vẫn chấm được. Không chấm bài của mình. Bài học chấm ở cùng trang "Chấm bài". Bài học nộp lại → chỉ lượt mới nhất cần chấm (R20, T3.2) |
 | Thông báo | Chuông ở header, gộp mọi tenant, gọi lại mỗi 60 giây + khi quay lại tab, đọc từng cái/tất cả, trang "Tất cả thông báo", giữ 90 ngày, không tắt được; cron 15 phút cho sắp hết hạn/quá hạn (E11, R18) | **Chốt Step 12:** "có bài mới cần chấm" chỉ gửi cho người có **quyền chấm gốc** (giáo viên của lớp với bài trong lớp, người soạn đề/bài với bài tự do), không gửi Owner/Admin hay người được chuyển giao; **không** làm thông báo cấp hệ thống (tenant chờ duyệt…); 3 loại thông báo cho phụ huynh dời sang Step 13 cùng trang "Con của tôi" |
-| Phụ huynh | "Con của tôi" ở `/t/{slug}`: lớp, lịch, giáo trình + trạng thái mục, kết quả từng bài (không đáp án), bài làm tự do; chuyên cần/bảng điểm/nhận xét sau tổng kết. Không xem nội dung bài/đề, không nhắn tin (D12, R19) |
+| Phụ huynh | "Con của tôi" ở `/t/{slug}`: lớp, lịch, giáo trình + trạng thái mục, kết quả từng bài (không đáp án), bài làm tự do; chuyên cần/bảng điểm/nhận xét sau tổng kết. Không xem nội dung bài/đề, không nhắn tin (D12, R19). **Chốt Step 13:** "nhận xét chấm tay" hiện **inline** dưới mỗi lượt (tên phần · số câu · điểm · nhận xét), không có trang chi tiết lượt riêng; route `children/*` chỉ mở cho role **Phụ huynh** (Owner/Admin/Teacher xem học viên ở dashboard lớp); "con có kết quả bài mới" gửi **mọi lúc** lượt thành đã chấm xong (kể cả đề/bài không có câu chấm tay – báo ngay khi nộp); "chuyên cần con dưới ngưỡng" gửi khi lớp chuyển **Đã kết thúc** |
 
 ### 1.5 Hạ tầng
 | Mục | Quyết định |
@@ -283,7 +283,8 @@ Guard: route mới dưới `/t/:slug/*` dùng `TenantGuard` + `@TenantRoles`; qu
   lessons/[lessonId]                    thông tin bài học tự do
   classes/[classId]                     trang lớp của học viên
   schedule                              Lịch học của tôi
-  children, children/[membershipId]     phụ huynh
+  children, children/[membershipId]     phụ huynh ("Con của tôi")
+  children/[membershipId]/classes/[classId]   trang lớp của con (chỉ đọc)
   lesson-attempts/[id]                  màn hình học bài (layout (site), không toàn màn hình)
 (site)/me/notifications                 tất cả thông báo
 ```
@@ -419,7 +420,7 @@ t/:slug:
 
 ### Step 13 – Phụ huynh
 - Thêm 3 loại thông báo cho phụ huynh (con quá hạn, con có kết quả bài mới, chuyên cần con dưới ngưỡng) – dời từ Step 12 vì link đích là trang "Con của tôi" (bảng `notifications` không đổi).
-- Guardian API (kiểm liên kết `student_guardians` + role Parent) + trang "Con của tôi": chọn con, lớp, lịch, trạng thái mục, kết quả từng bài (không đáp án), bài làm tự do, chuyên cần/bảng điểm/nhận xét sau tổng kết.
+- Guardian API (kiểm liên kết `student_guardians` + role Parent) + trang "Con của tôi": chọn con, lớp, lịch, trạng thái mục, kết quả từng bài (không đáp án), bài làm tự do, chuyên cần/bảng điểm/nhận xét sau tổng kết. Route thực tế: `GET children`, `GET children/:membershipId`, `GET children/:membershipId/classes/:classId`, `GET children/:membershipId/schedule`.
 - **Nghiệm thu:** phụ huynh 2 con lọc được lịch theo con; không xem được học viên không liên kết (403/404).
 
 ### Step 14 – Hoàn thiện & nghiệm thu tổng

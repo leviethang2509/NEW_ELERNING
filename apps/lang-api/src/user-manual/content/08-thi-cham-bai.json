@@ -427,6 +427,81 @@
       ]
     },
     {
+      "id": "con-cua-toi",
+      "title": "Con của tôi",
+      "summary": "Phụ huynh xem lớp, lịch học, tiến độ và kết quả của con.",
+      "roles": ["PARENT", "TEACHER", "TENANT_ADMIN", "TENANT_OWNER"],
+      "blocks": [
+        {
+          "type": "roles",
+          "roles": ["PARENT"]
+        },
+        {
+          "type": "paragraph",
+          "text": "Thành viên có vai trò **Phụ huynh** và đã được gắn với học viên (xem [Thành viên](page:thanh-vien#lien-ket-phu-huynh)) thấy khối **Con của tôi** ở trang trung tâm `/t/{slug}`. Bấm vào một người con để mở trang tổng quan của con đó."
+        },
+        {
+          "type": "callout",
+          "tone": "info",
+          "text": "Phụ huynh chỉ xem được học viên đã liên kết với mình. Mở học viên khác – kể cả khi biết đường dẫn – hệ thống báo **không tìm thấy**. Chủ sở hữu, Quản trị viên và Giáo viên **không** dùng khu vực này; họ xem học viên ở [Lớp học](page:lop-hoc) và [Chuyên cần & bảng điểm](page:chuyen-can-bang-diem)."
+        },
+        {
+          "type": "heading",
+          "level": 2,
+          "text": "Trang tổng quan của con"
+        },
+        {
+          "type": "list",
+          "items": [
+            "**Lớp của con**: các lớp con còn là học viên, kèm khoá học, trạng thái lớp, tiến độ (số mục đã xong) và buổi kế tiếp.",
+            "**Bài làm ngoài lớp**: các lượt thi và lượt học con tự làm (không thuộc lớp nào), 20 lượt mới nhất, kèm số câu tự chấm đúng và điểm khi đã chấm xong.",
+            "**Lịch học của con**: lịch tuần/tháng/danh sách của các lớp con đang học. Mỗi con có lịch riêng. Phụ huynh không mở được trang chi tiết buổi học."
+          ]
+        },
+        {
+          "type": "heading",
+          "level": 2,
+          "text": "Trang lớp của con"
+        },
+        {
+          "type": "paragraph",
+          "text": "Bấm một lớp để xem đúng những gì con thấy ở [Lớp học của tôi](page:lop-cua-toi), nhưng **chỉ đọc**: không có nút vào học/làm bài và không mở được bài làm của con."
+        },
+        {
+          "type": "list",
+          "items": [
+            "Thông tin lớp, giáo viên, buổi sắp tới.",
+            "Giáo trình lớp theo chương, mỗi mục kèm ngày mở, hạn nộp, ngưỡng đậu, lần thi lại và lý do mục chưa vào được.",
+            "Kết quả từng mục: trạng thái (đang làm / chờ chấm / đã chấm), điểm %, Đậu hoặc Chưa đạt; mục bài học có dấu đã học xong.",
+            "**Nhận xét của giáo viên**: với câu Writing/Speaking đã chấm, hiện tên phần, số câu, điểm và nhận xét."
+          ]
+        },
+        {
+          "type": "callout",
+          "tone": "warning",
+          "text": "Phụ huynh **không** xem được đề bài, câu trả lời của con hay đáp án – chỉ tên bài và kết quả."
+        },
+        {
+          "type": "heading",
+          "level": 2,
+          "text": "Tổng kết cuối khoá"
+        },
+        {
+          "type": "paragraph",
+          "text": "Tỉ lệ chuyên cần, trung bình theo chương và nhận xét cuối khoá chỉ hiện **khi lớp đã kết thúc**, giống như với học viên. Trong khi lớp đang học, phụ huynh chỉ thấy trạng thái từng mục (đã nộp / chưa nộp / hạn nộp), không thấy nhãn “muộn” và không thấy tỉ lệ. Xem [Chuyên cần & bảng điểm](page:chuyen-can-bang-diem)."
+        },
+        {
+          "type": "heading",
+          "level": 2,
+          "text": "Thông báo cho phụ huynh"
+        },
+        {
+          "type": "paragraph",
+          "text": "Phụ huynh nhận ba loại thông báo, mỗi con một thông báo riêng và đều mở trang của đúng con đó: **con quá hạn chưa nộp** (hệ thống quét 15 phút một lần), **bài của con đã có kết quả** (kể cả đề tự chấm hết, có kết quả ngay khi nộp) và **chuyên cần của con dưới ngưỡng** (khi lớp chuyển Đã kết thúc). Xem [Thông báo](page:thong-bao)."
+        }
+      ]
+    },
+    {
       "id": "cham-bai",
       "title": "Chấm bài",
       "summary": "Chấm Writing/Speaking của đề thi và bài học: danh sách bài, chấm từng câu, chấm lại.",

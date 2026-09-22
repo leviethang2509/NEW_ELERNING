@@ -417,7 +417,7 @@
     {
       "id": "parent",
       "title": "Phụ huynh",
-      "summary": "Parent: liên kết với học viên; hiện quyền như một thành viên làm bài.",
+      "summary": "Parent: liên kết với học viên, xem lớp – lịch – kết quả của con.",
       "roles": ["PARENT"],
       "blocks": [
         {
@@ -431,21 +431,34 @@
         {
           "type": "heading",
           "level": 2,
-          "text": "Hiện tại"
+          "text": "Làm được gì"
+        },
+        {
+          "type": "list",
+          "items": [
+            "Vào trang trung tâm `/t/{slug}`, mục **Con của tôi**: xem lớp, lịch học, giáo trình lớp và kết quả của từng con – xem [Con của tôi](page:con-cua-toi).",
+            "Nhận thông báo về con: con quá hạn chưa nộp, bài của con đã có kết quả, chuyên cần của con dưới ngưỡng – xem [Thông báo](page:thong-bao).",
+            "Xem và làm đề, học bài học **công khai trong trung tâm** như mọi thành viên (tài khoản của chính mình)."
+          ]
+        },
+        {
+          "type": "heading",
+          "level": 2,
+          "text": "Không làm được gì"
         },
         {
           "type": "list",
           "items": [
             "Không vào dashboard trung tâm.",
-            "Vào trang trung tâm, xem và làm đề đã publish như mọi thành viên.",
-            "Liên kết phụ huynh ↔ học viên chỉ được lưu và quản lý ở trang [Thành viên](page:thanh-vien#lien-ket-phu-huynh)."
+            "Không xem nội dung bài học/đề thi và **không xem đáp án** của con.",
+            "Không làm bài thay con, không sửa gì trong lớp, không nhắn tin cho giáo viên.",
+            "Không xem học viên chưa được gắn với mình (hệ thống trả “không tìm thấy”)."
           ]
         },
         {
           "type": "callout",
-          "tone": "warning",
-          "title": "Chưa có",
-          "text": "Trang để phụ huynh xem kết quả học tập của con **chưa làm** (ngoài phạm vi req-1). Khi phụ huynh hỏi, hướng dẫn họ xem cùng con trên tài khoản của học viên. Xem [Ngoài phạm vi hiện tại](page:ngoai-pham-vi)."
+          "tone": "info",
+          "text": "Liên kết phụ huynh ↔ học viên chỉ được tạo và gỡ ở trang [Thành viên](page:thanh-vien#lien-ket-phu-huynh). Bỏ vai trò Học viên hoặc Phụ huynh thì liên kết tương ứng bị gỡ, và Phụ huynh mất quyền xem ngay."
         },
         {
           "type": "paragraph",

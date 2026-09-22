@@ -8,6 +8,7 @@ export * from './class-progress';
 export * from './classroom';
 export * from './exam-content';
 export * from './grading';
+export * from './guardian';
 export * from './lesson-attempt';
 export * from './lesson-content';
 export * from './media';

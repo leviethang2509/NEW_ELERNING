@@ -36,6 +36,13 @@ export const NotificationType = {
   CLASS_CURRICULUM_CHANGED: 'class_curriculum_changed',
   /** Nhận xét cuối khoá đã công bố (lớp kết thúc hoặc sửa sau đó – T5.3). */
   FINAL_COMMENT_PUBLISHED: 'final_comment_published',
+  // Phụ huynh (Step 13, R19): gửi cho phụ huynh đã liên kết với học viên.
+  /** Con có mục quá hạn mà chưa nộp (cron 15 phút). */
+  CHILD_ITEM_OVERDUE: 'child_item_overdue',
+  /** Bài của con đã chấm xong (kể cả đề tự chấm hết lúc nộp). */
+  CHILD_ATTEMPT_GRADED: 'child_attempt_graded',
+  /** Chuyên cần của con dưới ngưỡng khi lớp kết thúc. */
+  CHILD_ATTENDANCE_LOW: 'child_attendance_low',
 } as const;
 export type NotificationType =
   (typeof NotificationType)[keyof typeof NotificationType];
@@ -60,8 +67,10 @@ export interface NotificationParams {
   seq?: number | null;
   /** Ngày giờ liên quan (ISO): hạn nộp, ngày buổi học… */
   at?: string;
-  /** Điểm phần trăm của lượt đã chấm. */
+  /** Điểm phần trăm của lượt đã chấm hoặc tỉ lệ chuyên cần. */
   percent?: number;
+  /** Tên con trong thông báo gửi cho phụ huynh (Step 13). */
+  childName?: string;
 }
 
 export interface NotificationItem {

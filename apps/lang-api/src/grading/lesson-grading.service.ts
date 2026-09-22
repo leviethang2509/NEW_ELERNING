@@ -46,6 +46,7 @@ import {
 import { LessonQuestion } from '../lessons/lesson-question.entity';
 import { LessonSection } from '../lessons/lesson-section.entity';
 import { Lesson } from '../lessons/lesson.entity';
+import { notifyGuardiansAttemptGraded } from '../notifications/guardian-notifications';
 import { lessonAttemptLink } from '../notifications/notification-targets';
 import { NotificationsService } from '../notifications/notifications.service';
 import { R2Service } from '../storage/r2.service';
@@ -362,16 +363,22 @@ export class LessonGradingService {
       await manager.getRepository(LessonAttempt).update(attempt.id, totals);
       if (totals.gradedAt && !attempt.gradedAt) {
         const lessons = await this.lessonsById([attempt.lessonId]);
+        const title = lessons.get(attempt.lessonId)?.title ?? '';
+        // Nộp lại rồi chấm lại là một lần chấm xong mới.
+        const round = attempt.submittedAt?.toISOString() ?? '';
         await this.notifications.notify(manager, {
           userIds: [attempt.userId],
           tenantId: ctx.tenantId,
           type: NotificationType.ATTEMPT_GRADED,
-          params: { title: lessons.get(attempt.lessonId)?.title ?? '' },
+          params: { title },
           link: lessonAttemptLink(ctx.slug, attempt.id),
-          // Nộp lại rồi chấm lại là một lần chấm xong mới.
-          dedupeKey: `lesson_graded:${attempt.id}:${
-            attempt.submittedAt?.toISOString() ?? ''
-          }`,
+          dedupeKey: `lesson_graded:${attempt.id}:${round}`,
+        });
+        await notifyGuardiansAttemptGraded(manager, this.notifications, {
+          tenantId: ctx.tenantId,
+          studentMembershipId: attempt.membershipId,
+          title,
+          dedupeKey: `child_lesson_graded:${attempt.id}:${round}`,
         });
       }
       Object.assign(attempt, totals);

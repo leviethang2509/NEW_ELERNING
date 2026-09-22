@@ -4,6 +4,7 @@ import {
   type RecomputeScheduleResult,
 } from '@lang/shared';
 import { IsNull, type EntityManager } from 'typeorm';
+import { notifyGuardians } from '../notifications/guardian-notifications';
 import {
   classroomStudentUserIds,
   classroomTeacherUserIds,
@@ -13,10 +14,15 @@ import {
   userIdsOfMemberships,
 } from '../notifications/notification-targets';
 import type { NotificationsService } from '../notifications/notifications.service';
+import {
+  attendanceColumns,
+  attendanceRows,
+  loadClassProgress,
+} from './class-progress';
 import { movedCount } from './class-schedule';
 import type { ClassSession } from './class-session.entity';
 import { ClassroomStudent } from './classroom-student.entity';
-import type { Classroom } from './classroom.entity';
+import { Classroom } from './classroom.entity';
 
 /** Lớp đủ để dựng thông báo (không cần cả entity). */
 export type ClassroomRefRow = Pick<Classroom, 'id' | 'tenantId' | 'name'>;
@@ -195,5 +201,44 @@ export async function notifySessionTeachers(
     },
     link: sessionLink(input.slug, input.session.id),
     exceptUserId: input.actorId,
+  });
+}
+
+/**
+ * Lớp chuyển "Đã kết thúc": phụ huynh của học viên có chuyên cần **dưới
+ * ngưỡng** được báo (R19, Step 13). Gọi sau khi đã chốt các lượt đang làm dở
+ * để số liệu khớp tab Tiến độ & Chuyên cần; học viên đã rời lớp không tính
+ * (giả định 15).
+ */
+export async function notifyGuardiansAttendance(
+  manager: EntityManager,
+  notifications: NotificationsService,
+  input: { classroom: Classroom; slug: string; now?: Date },
+): Promise<number> {
+  const data = await loadClassProgress(manager, input.classroom);
+  const columns = attendanceColumns(data);
+  if (columns.length === 0) return 0;
+  const rows = attendanceRows(data, columns, input.now ?? new Date()).filter(
+    (row) => row.belowThreshold && !row.student.removed,
+  );
+  if (rows.length === 0) return 0;
+  const percentOf = new Map(
+    rows.map((row) => [row.student.membershipId, row.rate.percent] as const),
+  );
+  return notifyGuardians(manager, notifications, {
+    tenantId: input.classroom.tenantId,
+    slug: input.slug,
+    students: rows.map((row) => ({
+      membershipId: row.student.membershipId,
+      fullName: row.student.fullName,
+    })),
+    type: NotificationType.CHILD_ATTENDANCE_LOW,
+    params: (student) => ({
+      className: input.classroom.name,
+      percent: percentOf.get(student.membershipId) ?? 0,
+      count: data.params.warningThreshold,
+    }),
+    dedupeKey: (student) =>
+      `child_attendance:${input.classroom.id}:${student.membershipId}`,
   });
 }

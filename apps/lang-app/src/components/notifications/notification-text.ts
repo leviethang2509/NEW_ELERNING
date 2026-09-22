@@ -10,7 +10,14 @@ const t = vi.notifications.types;
  * → `NotificationRow` bỏ qua dòng đó.
  */
 export function notificationText(item: NotificationItem): string {
-  const { className = '', title = '', actorName = '', count = 1 } = item.params;
+  const {
+    className = '',
+    title = '',
+    actorName = '',
+    count = 1,
+    childName = '',
+    percent = 0,
+  } = item.params;
   const at = item.params.at;
   const session = vi.notifications.session(item.params.seq);
   switch (item.type) {
@@ -46,6 +53,18 @@ export function notificationText(item: NotificationItem): string {
       return t.class_curriculum_changed(className);
     case NotificationType.FINAL_COMMENT_PUBLISHED:
       return t.final_comment_published(className);
+    case NotificationType.CHILD_ITEM_OVERDUE:
+      return t.child_item_overdue(
+        childName,
+        className,
+        title,
+        formatDateTime(at),
+      );
+    case NotificationType.CHILD_ATTEMPT_GRADED:
+      return t.child_attempt_graded(childName, title);
+    case NotificationType.CHILD_ATTENDANCE_LOW:
+      // `count` mang ngưỡng cảnh báo hiệu lực của lớp.
+      return t.child_attendance_low(childName, className, percent, count);
     default:
       return '';
   }

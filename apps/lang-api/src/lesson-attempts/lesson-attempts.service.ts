@@ -46,6 +46,7 @@ import { LessonQuestion } from '../lessons/lesson-question.entity';
 import { LessonSection } from '../lessons/lesson-section.entity';
 import { Lesson } from '../lessons/lesson.entity';
 import { notifyPendingGrading } from '../notifications/grading-notifications';
+import { notifyGuardiansAttemptGraded } from '../notifications/guardian-notifications';
 import { NotificationsService } from '../notifications/notifications.service';
 import {
   LESSON_NOT_FOUND,
@@ -489,6 +490,22 @@ export class LessonAttemptsService {
             title: lesson?.title ?? '',
             // Nộp lại section là một lần chờ chấm mới.
             dedupeKey: `lesson_pending:${target.id}:${changes.submitCount}`,
+          });
+        } else if (
+          locked.attempt.status === LessonAttemptStatus.COMPLETED &&
+          locked.attempt.manualCount === 0
+        ) {
+          // Bài không có câu chấm tay: học xong là đã có kết quả cuối cùng,
+          // báo cho phụ huynh một lần cho mỗi lượt học (Step 13).
+          const lesson = await manager.getRepository(Lesson).findOne({
+            where: { id: locked.attempt.lessonId },
+            withDeleted: true,
+          });
+          await notifyGuardiansAttemptGraded(manager, this.notifications, {
+            tenantId: locked.attempt.tenantId,
+            studentMembershipId: locked.attempt.membershipId,
+            title: lesson?.title ?? '',
+            dedupeKey: `child_lesson_done:${locked.attempt.id}`,
           });
         }
       },

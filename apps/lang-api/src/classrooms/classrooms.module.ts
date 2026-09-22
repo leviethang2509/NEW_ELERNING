@@ -78,6 +78,6 @@ import { ScheduleController } from './schedule.controller';
     ClassProgressService,
     LearnerClassesService,
   ],
-  exports: [TypeOrmModule],
+  exports: [TypeOrmModule, LearnerClassesService],
 })
 export class ClassroomsModule {}

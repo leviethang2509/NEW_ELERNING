@@ -22,14 +22,14 @@
 | 2 | 10 | Chấm theo lớp & chuyển giao | ✅ | 2026-09-20 | Chưa commit; deploy giai đoạn 2 sau khi người dùng kiểm giao diện |
 | 3 | 11 | Chuyên cần, bảng điểm, nhận xét cuối khoá | ✅ | 2026-09-20 | Chưa commit; dữ liệu thử lớp `N5-2026-01` có thêm 2 mục đề thi đặt hạn nộp |
 | 3 | 12 | Thông báo | ✅ | 2026-09-21 | Chưa commit; thông báo thử còn trong DB để bấm chuông |
-| 3 | 13 | Phụ huynh | ⬜ | | |
+| 3 | 13 | Phụ huynh | ✅ | 2026-09-22 | Chưa commit; phụ huynh thử `step13-parent@example.com` ở `step4-test` |
 | 3 | 14 | Hoàn thiện & nghiệm thu tổng | ⬜ | | Deploy giai đoạn 3 |
 
 ## Bàn giao cho phiên tiếp theo
 
-- Giai đoạn 1 (Step 1–5) xong, đã push `main` (`db18cb7`). Giai đoạn 2: Step 6 `d5cf255`, Step 7 `06d9daa`, Step 8 `a9d588a`, Step 9 `258b8a4`, Step 10 `90de1a6` đã commit (chưa push). **Step 11 và Step 12 xong trên local, chưa commit.** Deploy giai đoạn 2 + 3 sau khi người dùng kiểm giao diện: migration `CreateCoursesCurricula`, `CreateClassrooms`, `CreateClassSchedule`, `CreateGradingDelegations`, **`ClassProgress`**, **`CreateNotifications`** chạy lúc container khởi động; **không có env mới**. Dependency mới: `exceljs` ở `apps/lang-api` (không có build script, không cần `allowBuilds`).
-- **Tiếp theo: Step 13 – Phụ huynh** (plan mục 1.4, 5, 6, 7). Xem "Lưu ý cho step sau" của Step 12, prompt ở cuối file.
-- Máy dev: `apps/lang-api/.env` trỏ Postgres local `lang_simulator_dev`. DB local có **20 migration**, 1 System Owner, mẫu bài học hệ thống **Minna no Nihongo – 1 bài**. **Còn giữ dữ liệu thử** để người dùng bấm giao diện:
+- Giai đoạn 1 (Step 1–5) xong, đã push `main` (`db18cb7`). Giai đoạn 2: Step 6 `d5cf255`, Step 7 `06d9daa`, Step 8 `a9d588a`, Step 9 `258b8a4`, Step 10 `90de1a6`, Step 11 + Step 12 `f7a573e` đã commit (chưa push). **Step 13 xong trên local, chưa commit.** Deploy giai đoạn 2 + 3 sau khi người dùng kiểm giao diện: migration `CreateCoursesCurricula`, `CreateClassrooms`, `CreateClassSchedule`, `CreateGradingDelegations`, `ClassProgress`, `CreateNotifications`, **`GuardianNotifications`** chạy lúc container khởi động; **không có env mới**. Dependency mới: `exceljs` ở `apps/lang-api` (không có build script, không cần `allowBuilds`).
+- **Tiếp theo: Step 14 – Hoàn thiện & nghiệm thu tổng** (plan mục 7). Xem "Lưu ý cho step sau" của Step 13, prompt ở cuối file.
+- Máy dev: `apps/lang-api/.env` trỏ Postgres local `lang_simulator_dev`. DB local có **21 migration**, 1 System Owner, mẫu bài học hệ thống **Minna no Nihongo – 1 bài**. **Còn giữ dữ liệu thử** để người dùng bấm giao diện:
   - Step 3: tenant `step3-test` (4 đề, 1 lượt làm chờ chấm của đề **do Chủ sở hữu soạn** → sau Step 10 `step3-teacher` **không còn thấy bài này**) + `step3-teacher|student|student2@example.com`.
   - Step 4–5: tenant `step4-test` (System Owner là Chủ sở hữu). Bài **Minna bài 1** của `step4-teacher` (công khai, **version 2**; tab Từ vựng có furigana/callout/khối gập mở, tab Luyện tập có Writing + Speaking, tab Bài tập 2 câu MC + 1 giải thích) và bản sao nháp **Bản của GV2** của `step4-teacher2`. `step4-student@example.com` có 2 lượt học tự do: version 1 (đã học xong; phần Luyện tập **đã chấm xong** từ Step 12 – bài đang chờ chấm hiện là lượt **trong lớp** của `step7-student1`) và version 2 (mới mở).
   - Step 6 (cũng ở `step4-test`): khoá **Tiếng Nhật N5** (`N5`, 24 buổi) và **Tiếng Nhật N5 – lớp tối** (`N5-TOI`), cả hai gắn giáo trình **Giáo trình N5 – Minna no Nihongo** của `step4-teacher` (3 chương, 7 mục); bản sao **… (bản sao)** của `step4-teacher2`. Bài Minna bài 2–4 và 3 đề JLPT_N2 (hiển thị Chỉ qua lớp) do `step4-teacher` tạo cho giáo trình.
@@ -39,8 +39,9 @@
   - Step 10 (cũng ở `step4-test`, do `accept10.js` dựng): `step7-student1` có **lượt học bài Minna bài 1 trong lớp** đã nộp cả hai phần → 2 câu chấm tay, trong đó **1 câu đã được `step4-teacher2` chấm 7,5** lúc thử chuyển giao (chuyển giao đã gỡ lại, bảng `grading_delegations` hiện **rỗng**). Đây là dữ liệu tốt để bấm thử: `step4-teacher` mở Chấm bài → Bài học thấy cả bài trong lớp lẫn bài tự do, `step4-teacher2` **không thấy gì** cho tới khi được chuyển giao.
   - Step 11 (cũng ở `step4-test`, do `accept11.js` dựng): lớp `N5-2026-01` có thêm hạn nộp ở 2 mục đề thi — **Thi cuối khoá N5** hạn **18/09/2026 17:00** (quá hạn, chưa ai làm → ô "Chưa nộp") và **Kiểm tra chương 2** hạn **20/12/2026 17:00** (chưa tới hạn); mục **Kiểm tra chương 1** giữ hạn 31/12/2026. Nhờ vậy tab Tiến độ & Chuyên cần có đủ 4 loại ô (Đúng hạn · Chưa tới hạn · Chưa nộp · Không tính) và cả 3 học viên đều **50% < ngưỡng 70%** (hiện cảnh báo). `step7-student1` có **nhận xét cuối khoá** "Tiến bộ tốt ở phần nghe, cần luyện nói thêm."; tham số của lớp để trống (theo trung tâm 0,5 / 70).
   - Step 12 (cũng ở `step4-test`, do `accept12.js`/`accept12b.js` dựng): bảng `notifications` giữ **7 thông báo thật, tất cả chưa đọc** để bấm chuông — 3 học viên của lớp `N5-2026-01` có **"Quá hạn chưa nộp: Thi cuối khoá N5"** (cron sinh), `step7-student1` và `step4-student` có **"Bài Minna bài 1 đã chấm xong"**, `step4-teacher` có **"có bài mới cần chấm"**, `step4-teacher2` có **"được chuyển giao chấm"** (chuyển giao đã gỡ lại, bảng `grading_delegations` vẫn **rỗng**). Lượt học **trong lớp** của `step7-student1` đã **nộp lại** phần Luyện tập nên đang **chờ chấm 2 câu** (điểm 7,5 cũ bị bỏ khi nộp lại, đúng thiết kế); lượt học **tự do** version 1 của `step4-student` đã **chấm xong** (trước đây đang chờ chấm). Lớp thử `TB-STEP12` và mọi thông báo của nó (kể cả thông báo buổi học) đã xoá.
+  - Step 13 (cũng ở `step4-test`, do `seed13.js` dựng): **phụ huynh thử** `step13-parent@example.com` (mật khẩu `Step13-Passw0rd`, đã bỏ cờ đổi mật khẩu), liên kết **2 con** `step7-student1` và `step7-student2` (quan hệ "Mẹ"). Lượt học **trong lớp** của `step7-student1` đã được `step4-teacher` chấm xong (Câu 1 = 8 "Viết rõ ý, chú ý chia động từ", Câu 2 = 6,5 "Phát âm tốt, nói chậm lại") nên trang lớp của con có sẵn khối **Nhận xét của giáo viên**. Chuông của phụ huynh có **2 thông báo "con quá hạn chưa nộp"** (mỗi con một dòng, do chạy cron thử với hạn quá khứ rồi trả lại hạn cũ). Lớp thử `PH-STEP13` đã xoá.
   - Dọn dẹp: như Step 9, thêm `delete from grading_delegations where tenant_id in (...)` trước khi xoá tenant (FK CASCADE theo tenant/membership nên xoá tenant cũng tự dọn).
-- Chạy thử: API `node dist/main.js` (:3101, sau `pnpm build`), app `pnpm start` (:3100, cần `BACKEND_INTERNAL_URL=http://127.0.0.1:3101`); **đang chạy** bản build Step 10. Dừng Next bằng `pkill -f next-server`; trước khi chạy API mới kiểm `lsof -iTCP:3101 -sTCP:LISTEN`. Kiểm trang qua curl cần cookie `ls_rt=x`. Nghiệm thu API không cần mật khẩu: ký JWT `{ sub, tv }` bằng `JWT_SECRET` trong `.env` (mẫu `lib10.js` + `accept10.js` trong scratchpad phiên Step 10 – `tokenOf(email)` đọc `token_version` từ DB, `jsonwebtoken`/`pg` lấy từ `node_modules/.pnpm/…`; Chủ sở hữu `step4-test` là `admin@lang-simulator.com`). Không có công cụ trình duyệt – nhờ người dùng bấm thử; kiểm render không cần trình duyệt: bundle bằng esbuild (`node_modules/.pnpm/esbuild@0.27.7/node_modules/esbuild/bin/esbuild --bundle --platform=node --jsx=automatic --packages=external --alias:@=./src`, chạy trong `apps/lang-app`) rồi `renderToStaticMarkup`, chạy với `NODE_PATH=apps/lang-app/node_modules` (component có `Modal`/portal không render được kiểu này; component gọi API phải tách phần nhận prop như `LearnerClassBoard`, hoặc render thẳng component con nhận prop như `AttemptReviewView`).
+- Chạy thử: API `node dist/main.js` (:3101, sau `pnpm build`), app `pnpm start` (:3100, cần `BACKEND_INTERNAL_URL=http://127.0.0.1:3101`); **đang chạy** bản build Step 13. Dừng Next bằng `pkill -f next-server`; trước khi chạy API mới kiểm `lsof -iTCP:3101 -sTCP:LISTEN`. Kiểm trang qua curl cần cookie `ls_rt=x`. Nghiệm thu API không cần mật khẩu: ký JWT `{ sub, tv }` bằng `JWT_SECRET` trong `.env` (mẫu `lib13.js` + `accept13*.js` trong scratchpad phiên Step 13 – `tokenOf(email)` đọc `token_version` từ DB, `jsonwebtoken`/`pg` lấy từ `node_modules/.pnpm/…`; Chủ sở hữu `step4-test` là `admin@lang-simulator.com`). Không có công cụ trình duyệt – nhờ người dùng bấm thử; kiểm render không cần trình duyệt: bundle bằng esbuild (`node_modules/.pnpm/esbuild@0.27.7/node_modules/esbuild/bin/esbuild --bundle --platform=node --jsx=automatic --packages=external --alias:@=./src`, chạy trong `apps/lang-app`) rồi `renderToStaticMarkup`, chạy với `NODE_PATH=apps/lang-app/node_modules` (component có `Modal`/portal không render được kiểu này; component gọi API phải tách phần nhận prop như `LearnerClassBoard`, hoặc render thẳng component con nhận prop như `AttemptReviewView`).
 
 ## Nhật ký
 
@@ -655,6 +656,48 @@
 - Tài liệu `/user-manual` trang **Thông báo** hiện không liệt kê sự kiện nào cho phụ huynh và ma trận quyền ghi Phụ huynh ✘ — Step 13 phải cập nhật lại.
 - Xoá dữ liệu thử: `notifications` CASCADE theo user và tenant nên xoá tenant `step4-test` là sạch.
 
+### Step 13 – Phụ huynh (2026-09-22)
+
+**Đã làm**
+- Người dùng chốt đầu phiên (đã ghi vào plan mục 1.4):
+  - "Nhận xét chấm tay" của con hiện **inline** dưới mỗi lượt (tên phần · số câu · điểm · nhận xét), **không** làm trang chi tiết một lượt cho phụ huynh.
+  - "Con có kết quả bài mới" gửi **mọi lúc** lượt chuyển sang đã chấm xong, kể cả đề/bài không có câu chấm tay (có kết quả ngay khi nộp) → thêm chỗ gửi ở `AttemptsService` và `LessonAttemptsService`.
+  - "Chuyên cần con dưới ngưỡng" gửi **khi lớp chuyển Đã kết thúc** (1 lần/lớp/con), không quét trong khoá.
+- Migration `1790035806542-GuardianNotifications`: chỉ nới CHECK `CHK_notifications_type` 16 → 19 giá trị (`child_item_overdue`, `child_attempt_graded`, `child_attendance_low`); `down` xoá thông báo của 3 loại mới trước khi gắn lại CHECK cũ. `migration:generate` sau đó báo "No changes"; revert → chạy lại OK.
+- `@lang/shared` `guardian.ts`: `GuardianChild`, `ChildManualAnswer`/`ChildManualAnswers`, `ChildExamAttempt`, `ChildLessonAttempt`, `ChildOverview`, `ChildClassDetail`, `CHILD_FREE_ATTEMPT_LIMIT`; `NotificationParams.childName`.
+- lang-api `guardian/`: `GuardianService` + `GuardianController` (`t/:slug/children`, `@TenantRoles(PARENT)`, 4 dòng `ROUTES`), unit test `guardian.service.spec.ts` (5 test). `LearnerClassesService` tách `listFor`/`detailFor`/`scheduleFor` nhận `LearnerViewer`; `ClassroomsModule` export service này.
+- Thông báo: `notifications/guardian-notifications.ts` (`guardianUserIdsByStudent`, `notifyGuardians`, `notifyGuardiansAttemptGraded`), `guardianChildLink`, `notifyGuardiansAttendance` trong `classrooms/class-notifications.ts`; gọi từ `sweepClassItems`, `GradingService`, `LessonGradingService`, `AttemptsService.submitSections`, `LessonAttemptsService.submitSection`, `ClassroomsService.changeStatus`.
+- lang-app: `components/guardian` (`MyChildrenList`, `ChildrenView`, `ChildView` + `ChildBoard`, `ChildClassBoard`, `guardian-ui.tsx`), trang `(site)/t/[slug]/children`, `/children/[membershipId]`, `/children/[membershipId]/classes/[classId]`; `LearnerClassBoard` thêm prop `readOnly`/`scheduleHref`/`itemExtra`; `lib/guardian-api.ts`; chuỗi `vi.guardian` + 3 câu mới ở `vi.notifications.types` và `notification-text.ts`.
+- Tài liệu: viết lại trang **Phụ huynh** (bỏ callout "Chưa có"), thêm trang **Con của tôi** ở nhóm Học, thi & chấm bài; cập nhật **Thông báo** (3 sự kiện mới), **Thành viên**, **Lịch**, **Kết quả & lịch sử**, ma trận quyền (thêm dòng "Con của tôi", Phụ huynh nhận thông báo ✔) và **Ngoài phạm vi** (bỏ các mục Step 10–13 đã làm); `updatedAt` 2026-09-22. CLAUDE.md, plan (quyết định chốt + route thực tế + route frontend lớp của con).
+
+**Sai khác so với plan**
+- Plan mục 6.1 chưa có route frontend trang lớp của con; đã thêm `children/[membershipId]/classes/[classId]` vào plan.
+- Route `children/*` chỉ mở cho role **Phụ huynh** (đúng ma trận mục 5: Owner/Admin/Teacher ✘) – Owner/Admin muốn xem học viên thì dùng dashboard lớp.
+- Lịch của con nằm **trong** trang tổng quan của con (không có trang lịch riêng), nên mỗi con có lịch riêng như tiêu chí nghiệm thu đòi.
+- Thông báo cho phụ huynh gửi **mỗi con một dòng** (link phải trỏ đúng con) chứ không gộp; `notifyGuardians` cho phép `params` là hàm theo từng con (dùng cho tỉ lệ chuyên cần).
+- `ClassroomsService.changeStatus` đổi thứ tự: chốt lượt dở dang (`finalizeForClassItems`) **trước** rồi mới gửi thông báo nhận xét cuối khoá + chuyên cần, để số liệu chuyên cần là số cuối cùng.
+- Thông báo "con có kết quả bài mới" với **bài học**: chỉ gửi khi lượt học xong mà `manual_count = 0` (bài có câu chấm tay thì đã có đường chấm tay lo), dedupe `child_lesson_done:{attemptId}` – tránh mỗi lần nộp một section lại báo.
+
+**Nghiệm thu (local)**
+- 5 lệnh kiểm tra pass: lang-api **348 test** (+5 `guardian.service.spec.ts`, +1 chuyên cần dưới ngưỡng ở `classrooms.service.spec.ts`, +1 phụ huynh quá hạn ở `notification-sweep.spec.ts`); `migration:generate` → "No changes".
+- API thật (:3101) trên `step4-test`, 48/48 mục đạt (`accept13.js` 29, `accept13b.js` 10, `accept13c.js` 5, `accept13d.js` 14):
+  - Quyền: phụ huynh 200; học viên/giáo viên/Chủ sở hữu **403**; chưa đăng nhập 401; học viên **không liên kết** → 404 ở cả 3 route con.
+  - Tổng quan con: đúng lớp của con, chỉ lượt **ngoài lớp** (kiểm chéo `class_item_id` trong DB).
+  - Trang lớp của con: giáo trình + trạng thái từng mục, điểm %/đậu-trượt, **không** có `content_public`/`answer_key`; nhận xét chấm tay đúng 6 trường; lớp đang học → `summary = null`.
+  - Lịch: mỗi con một lịch, khoảng > 93 ngày → 400.
+  - Thông báo: giáo viên chấm bài của con → phụ huynh nhận "bài của con đã có kết quả" (kèm tên con, link đúng con); cron sinh "con quá hạn chưa nộp" cho **cả 2 con**, chạy lại → 0 thông báo mới; lớp thử `PH-STEP13` nộp đề **tự chấm hết** → phụ huynh được báo ngay khi nộp; chuyển lớp sang Đã kết thúc → "chuyên cần của con 50%, dưới ngưỡng 70%" và phụ huynh xem được tổng kết (4 loại ô chuyên cần khớp).
+- lang-app (`next start`): `/t/step4-test/children`, `/children/{id}`, `/children/{id}/classes/{id}` và `/user-manual/con-cua-toi` đều **200**; render `ChildBoard` + `ChildClassBoard` bằng `react-dom/server` với dữ liệu thật – chế độ chỉ đọc (không có nút "Vào học"/"Xem kết quả"), nhận xét chấm tay hiện đúng dưới mục **Minna bài 1**, 3 câu thông báo mới đúng tiếng Việt.
+- **Chưa bấm giao diện bằng trình duyệt**:
+  - Khối **Con của tôi** ở trang trung tâm, trang danh sách con, trang con (lớp · bài làm ngoài lớp · **Lịch học của con** tuần/tháng/danh sách), trang lớp của con.
+  - Chuông của phụ huynh: 2 thông báo "con quá hạn chưa nộp", bấm vào đi đúng trang của từng con.
+  - Tài khoản bấm thử: `step13-parent@example.com` / `Step13-Passw0rd`.
+
+**Lưu ý cho step sau**
+- Step 14 rà `ROUTES`: bảng hiện có 4 dòng `children/*`; kiểm lại toàn bộ so với plan mục 5–6.
+- Trang **Ngoài phạm vi hiện tại** của `/user-manual` đến Step 12 vẫn liệt kê chấm bài theo lớp, chuyên cần, thông báo là "chưa có" – Step 13 đã sửa; rà nốt các trang khác xem còn câu nào lỗi thời.
+- Dọn dữ liệu thử: `student_guardians` CASCADE theo membership nên xoá tenant `step4-test` là sạch; phụ huynh thử là **user riêng** (`step13-parent@example.com`), xoá tenant xong nhớ xoá luôn user nếu muốn sạch hẳn.
+- Máy dev đang chạy API :3101 và Next :3100 của bản build Step 13.
+
 ## Prompt cho Step 11
 
 ```
@@ -686,4 +729,15 @@ Bắt đầu Step 13 của req-3 (Phụ huynh).
 2. Trước khi code, tóm tắt ngắn cho tôi cách làm: API "Con của tôi" (kiểm liên kết `student_guardians` + role Parent), trang `/t/{slug}/children` và `/children/{membershipId}` (lớp, lịch, giáo trình + trạng thái mục, kết quả từng bài không đáp án, bài làm tự do, chuyên cần/bảng điểm/nhận xét sau tổng kết), 3 loại thông báo cho phụ huynh (migration thêm CHECK). Chỗ nào chưa rõ thì hỏi tôi, không tự đoán.
 3. Làm lần lượt: migration (loại thông báo mới) → service + controller kèm unit test (thêm dòng ROUTES) → thông báo cho phụ huynh → lang-app → tài liệu. Sau mỗi phần chạy test.
 4. Nghiệm thu thật theo tiêu chí của plan trên tenant step4-test (tạo phụ huynh liên kết 2 học viên trong lớp N5-2026-01). Cập nhật /user-manual, CLAUDE.md, req-3-progress.md và ghi prompt cho Step 14 ở cuối file. Chưa commit, chờ tôi yêu cầu.
+```
+
+## Prompt cho Step 14
+
+```
+Bắt đầu Step 14 của req-3 (Hoàn thiện & nghiệm thu tổng).
+
+1. Làm theo mục "Bắt đầu phiên làm việc" trong CLAUDE.md: đọc docs/requirements/req-3-progress.md (phần "Bàn giao cho phiên tiếp theo" và "Lưu ý cho step sau" của Step 13), rồi đọc trong docs/requirements/req-3-plan.md: phân quyền mục 5, route mục 6 và Step 14 ở mục 7.
+2. Trước khi code, tóm tắt ngắn cho tôi việc sẽ làm: rà bảng ROUTES của access-control.e2e.spec.ts so với plan mục 5–6, rà toàn bộ tài liệu /user-manual (bài học, khoá học, giáo trình, lớp, lịch, chuyên cần, thông báo, phụ huynh, ma trận quyền, giới hạn, ngoài phạm vi) xem còn câu nào lỗi thời, rà CLAUDE.md, và checklist nghiệm thu req-3 theo từng vai trò. Chỗ nào chưa rõ thì hỏi tôi, không tự đoán.
+3. Làm lần lượt: rà ROUTES → rà tài liệu → checklist nghiệm thu → chạy thử theo checklist trên step4-test. Sau mỗi phần chạy 5 lệnh kiểm tra.
+4. Cập nhật req-3-progress.md. Sau khi tôi kiểm giao diện xong mới commit và deploy giai đoạn 3 (migration ClassProgress, CreateNotifications, GuardianNotifications chạy lúc container khởi động; không có env mới).
 ```

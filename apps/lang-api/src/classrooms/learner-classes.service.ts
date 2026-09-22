@@ -81,6 +81,16 @@ interface Enrollment {
 }
 
 /**
+ * Người mà dữ liệu nói về: chính học viên đang đăng nhập, hoặc con của phụ
+ * huynh (Step 13) – khi đó `membershipId`/`userId` là của con, còn quyền đã
+ * được `GuardianService` kiểm trước bằng `student_guardians`.
+ */
+export interface LearnerViewer {
+  membershipId: string;
+  userId: string;
+}
+
+/**
  * Khu vực học viên trong lớp (req-3 Step 9): lớp của tôi, giáo trình lớp kèm
  * trạng thái từng mục, bắt đầu mục và lịch học của tôi. Chỉ thấy lớp mà mình
  * còn là học viên (`classroom_students.removed_at IS NULL`); lớp `ongoing` mới
@@ -96,10 +106,18 @@ export class LearnerClassesService {
   ) {}
 
   /** Lớp tôi đang học, lớp đang học trước rồi sắp mở, đã kết thúc, đã huỷ. */
-  async list(ctx: TenantContext, userId: string): Promise<LearnerClassItem[]> {
+  list(ctx: TenantContext, userId: string): Promise<LearnerClassItem[]> {
+    return this.listFor(ctx, { membershipId: ctx.membershipId, userId });
+  }
+
+  /** Như `list` nhưng cho một học viên bất kỳ (phụ huynh xem lớp của con). */
+  async listFor(
+    ctx: TenantContext,
+    viewer: LearnerViewer,
+  ): Promise<LearnerClassItem[]> {
     const manager = this.dataSource.manager;
     const rows = await manager.getRepository(ClassroomStudent).findBy({
-      membershipId: ctx.membershipId,
+      membershipId: viewer.membershipId,
       removedAt: IsNull(),
     });
     if (rows.length === 0) return [];
@@ -114,7 +132,7 @@ export class LearnerClassesService {
       .findBy({ classroomId: In(classroomIds), removedAt: IsNull() });
     const [base, progress] = await Promise.all([
       this.baseItems(manager, classrooms),
-      this.myProgress(manager, userId, items),
+      this.myProgress(manager, viewer.userId, items),
     ]);
     return classrooms
       .map((classroom) => {
@@ -128,13 +146,31 @@ export class LearnerClassesService {
       .sort(byClassroomOrder);
   }
 
-  async detail(
+  detail(
     ctx: TenantContext,
     userId: string,
     classroomId: string,
   ): Promise<LearnerClassDetail> {
+    return this.detailFor(
+      ctx,
+      { membershipId: ctx.membershipId, userId },
+      classroomId,
+    );
+  }
+
+  /** Như `detail` nhưng cho một học viên bất kỳ (phụ huynh xem lớp của con). */
+  async detailFor(
+    ctx: TenantContext,
+    viewer: LearnerViewer,
+    classroomId: string,
+  ): Promise<LearnerClassDetail> {
     const manager = this.dataSource.manager;
-    const { classroom } = await this.enrollment(manager, ctx, classroomId);
+    const { classroom } = await this.enrollment(
+      manager,
+      ctx,
+      viewer.membershipId,
+      classroomId,
+    );
     const now = new Date();
     const [groups, items] = await Promise.all([
       manager.getRepository(ClassGroup).findBy({ classroomId }),
@@ -146,14 +182,14 @@ export class LearnerClassesService {
       await Promise.all([
         this.baseItems(manager, [classroom]),
         loadContents(manager, items),
-        this.myProgress(manager, userId, items),
+        this.myProgress(manager, viewer.userId, items),
         this.sessionLinks(manager, classroom),
         this.upcomingSessions(manager, classroom, now),
         // Chuyên cần, trung bình chương, nhận xét: chỉ khi lớp đã kết thúc
         // (R11.3–4; lớp đã huỷ không tổng kết – giả định 3).
         classroom.status === ClassroomStatus.FINISHED
           ? loadClassProgress(manager, classroom).then((data) =>
-              learnerSummary(data, ctx.membershipId, now),
+              learnerSummary(data, viewer.membershipId, now),
             )
           : Promise.resolve(null),
       ]);
@@ -272,6 +308,7 @@ export class LearnerClassesService {
       const { classroom } = await this.enrollment(
         manager,
         ctx,
+        ctx.membershipId,
         classroomId,
         true,
       );
@@ -334,13 +371,22 @@ export class LearnerClassesService {
   }
 
   /** "Lịch học của tôi": buổi của các lớp mình đang học (R16). */
-  async schedule(
+  schedule(
     ctx: TenantContext,
+    range: CalendarRangeQueryDto,
+  ): Promise<CalendarFeed> {
+    return this.scheduleFor(ctx, ctx.membershipId, range);
+  }
+
+  /** Lịch của một học viên bất kỳ (phụ huynh xem lịch học của con). */
+  async scheduleFor(
+    ctx: TenantContext,
+    membershipId: string,
     range: CalendarRangeQueryDto,
   ): Promise<CalendarFeed> {
     const rows = await this.dataSource.manager
       .getRepository(ClassroomStudent)
-      .findBy({ membershipId: ctx.membershipId, removedAt: IsNull() });
+      .findBy({ membershipId, removedAt: IsNull() });
     return this.feeds.forClassrooms(
       ctx,
       range,
@@ -350,10 +396,11 @@ export class LearnerClassesService {
 
   // --- Nội bộ ---------------------------------------------------------------
 
-  /** Lớp của tenant mà mình còn là học viên; không thì 404 (giấu lớp khác). */
+  /** Lớp của tenant mà học viên còn theo học; không thì 404 (giấu lớp khác). */
   private async enrollment(
     manager: EntityManager,
     ctx: TenantContext,
+    membershipId: string,
     classroomId: string,
     lock = false,
   ): Promise<Enrollment> {
@@ -364,7 +411,7 @@ export class LearnerClassesService {
     if (!classroom) throw new NotFoundException(CLASSROOM_NOT_FOUND);
     const student = await manager.getRepository(ClassroomStudent).findOneBy({
       classroomId,
-      membershipId: ctx.membershipId,
+      membershipId,
       removedAt: IsNull(),
     });
     if (!student) throw new NotFoundException(CLASSROOM_NOT_FOUND);

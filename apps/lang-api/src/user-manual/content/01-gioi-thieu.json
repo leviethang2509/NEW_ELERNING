@@ -766,12 +766,20 @@
               "✘"
             ],
             [
+              "Xem lớp, lịch học, kết quả, chuyên cần của con (\"Con của tôi\")",
+              "✘",
+              "✘",
+              "✘",
+              "✘",
+              "con đã liên kết"
+            ],
+            [
               "Nhận thông báo của mình (chuông, trang Tất cả thông báo)",
               "✔",
               "✔",
               "✔",
               "✔",
-              "✘"
+              "✔"
             ]
           ]
         },

@@ -917,7 +917,7 @@
         },
         {
           "type": "paragraph",
-          "text": "Học viên có **Lịch học của tôi** ở trang trung tâm (`/t/{slug}/schedule`) – xem [Lớp học của tôi](page:lop-cua-toi). Phụ huynh chưa có lịch – xem [Ngoài phạm vi hiện tại](page:ngoai-pham-vi)."
+          "text": "Học viên có **Lịch học của tôi** ở trang trung tâm (`/t/{slug}/schedule`) – xem [Lớp học của tôi](page:lop-cua-toi). Phụ huynh xem lịch học của từng con ở [Con của tôi](page:con-cua-toi)."
         }
       ]
     }

@@ -54,6 +54,10 @@ export async function classroomTeacherUserIds(
 export const learnerClassLink = (slug: string, classroomId: string) =>
   `/t/${slug}/classes/${classroomId}`;
 
+/** Trang "Con của tôi" của một đứa con (phụ huynh, Step 13). */
+export const guardianChildLink = (slug: string, studentMembershipId: string) =>
+  `/t/${slug}/children/${studentMembershipId}`;
+
 export const dashboardClassLink = (
   slug: string,
   classroomId: string,

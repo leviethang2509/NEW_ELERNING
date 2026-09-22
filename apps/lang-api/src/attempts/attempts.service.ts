@@ -42,6 +42,7 @@ import { Exam } from '../exams/exam.entity';
 import { EXAM_NOT_FOUND, currentSections } from '../exams/exams.service';
 import { insertable } from '../exams/section-content';
 import { notifyPendingGrading } from '../notifications/grading-notifications';
+import { notifyGuardiansAttemptGraded } from '../notifications/guardian-notifications';
 import { NotificationsService } from '../notifications/notifications.service';
 import { R2Service } from '../storage/r2.service';
 import type { UploadedFile } from '../storage/media-file';
@@ -933,6 +934,15 @@ export class AttemptsService {
         studentUserId: attempt.userId,
         title: exam?.title ?? '',
         dedupeKey: `grade_pending:${attempt.id}`,
+      });
+    } else if (changes.status === AttemptStatus.GRADED) {
+      // Đề tự chấm hết: có kết quả ngay khi nộp, báo cho phụ huynh (Step 13).
+      const exam = await this.examOf(manager, attempt);
+      await notifyGuardiansAttemptGraded(manager, this.notifications, {
+        tenantId: attempt.tenantId,
+        studentMembershipId: attempt.membershipId,
+        title: exam?.title ?? '',
+        dedupeKey: `child_graded:${attempt.id}`,
       });
     }
   }

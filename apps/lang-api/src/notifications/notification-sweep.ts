@@ -15,6 +15,11 @@ import { Classroom } from '../classrooms/classroom.entity';
 import { LessonAttempt } from '../lesson-attempts/lesson-attempt.entity';
 import { Membership } from '../memberships/membership.entity';
 import { Tenant } from '../tenants/tenant.entity';
+import { User } from '../users/user.entity';
+import {
+  notifyGuardians,
+  type GuardianStudentRef,
+} from './guardian-notifications';
 import { learnerClassLink } from './notification-targets';
 import type { NotificationsService } from './notifications.service';
 
@@ -34,6 +39,13 @@ export interface SweepCounts {
   deadlineSoon: number;
   /** Mục quá hạn mà học viên chưa nộp. */
   overdue: number;
+  /** Thông báo "con quá hạn chưa nộp" gửi cho phụ huynh (Step 13). */
+  guardianOverdue: number;
+}
+
+/** Học viên của lớp: user để gửi thông báo, membership để tra phụ huynh. */
+interface SweepStudent extends GuardianStudentRef {
+  userId: string;
 }
 
 /**
@@ -46,7 +58,12 @@ export async function sweepClassItems(
   notifications: NotificationsService,
   now = new Date(),
 ): Promise<SweepCounts> {
-  const counts: SweepCounts = { opened: 0, deadlineSoon: 0, overdue: 0 };
+  const counts: SweepCounts = {
+    opened: 0,
+    deadlineSoon: 0,
+    overdue: 0,
+    guardianOverdue: 0,
+  };
   const windowStart = new Date(now.getTime() - SWEEP_WINDOW_DAYS * DAY);
   const soonLimit = new Date(
     now.getTime() + NOTIFICATION_DEADLINE_SOON_HOURS * 60 * 60 * 1000,
@@ -80,8 +97,9 @@ export async function sweepClassItems(
     const classroom = classrooms.get(item.classroomId)!;
     const tenant = tenants.get(classroom.tenantId);
     if (!tenant) continue;
-    const learners = students.get(classroom.id) ?? [];
-    if (learners.length === 0) continue;
+    const enrolled = students.get(classroom.id) ?? [];
+    if (enrolled.length === 0) continue;
+    const learners = enrolled.map((student) => student.userId);
 
     const contentId = item.examId ?? item.lessonId;
     const params = {
@@ -119,7 +137,10 @@ export async function sweepClassItems(
 
     if (!item.deadlineAt) continue;
     const submitted = done.get(item.id) ?? new Set<string>();
-    const waiting = learners.filter((userId) => !submitted.has(userId));
+    const pendingStudents = enrolled.filter(
+      (student) => !submitted.has(student.userId),
+    );
+    const waiting = pendingStudents.map((student) => student.userId);
     if (waiting.length === 0) continue;
     const deadline = item.deadlineAt.getTime();
     if (deadline > now.getTime() && deadline <= soonLimit.getTime()) {
@@ -136,6 +157,15 @@ export async function sweepClassItems(
         waiting,
         item.deadlineAt,
       );
+      // Phụ huynh cũng được báo con quá hạn chưa nộp (R19, Step 13).
+      counts.guardianOverdue += await notifyGuardians(manager, notifications, {
+        tenantId: classroom.tenantId,
+        slug: tenant.slug,
+        students: pendingStudents,
+        type: NotificationType.CHILD_ITEM_OVERDUE,
+        params: { ...params, at: item.deadlineAt.toISOString() },
+        dedupeKey: (student) => `child_late:${item.id}:${student.membershipId}`,
+      });
     }
   }
   return counts;
@@ -191,7 +221,7 @@ async function tenantsById(
 async function studentsByClassroom(
   manager: EntityManager,
   classroomIds: string[],
-): Promise<Map<string, string[]>> {
+): Promise<Map<string, SweepStudent[]>> {
   const rows = await manager
     .getRepository(ClassroomStudent)
     .findBy({ classroomId: In(classroomIds), removedAt: IsNull() });
@@ -200,15 +230,26 @@ async function studentsByClassroom(
     select: { id: true, userId: true },
     where: { id: In([...new Set(rows.map((row) => row.membershipId))]) },
   });
+  // Họ tên để dựng câu "Con bạn … chưa nộp" cho phụ huynh (Step 13).
+  const users = await manager.getRepository(User).find({
+    select: { id: true, fullName: true },
+    where: { id: In([...new Set(memberships.map((row) => row.userId))]) },
+  });
+  const nameByUser = new Map(users.map((row) => [row.id, row.fullName]));
   const userByMembership = new Map(
     memberships.map((membership) => [membership.id, membership.userId]),
   );
-  const result = new Map<string, string[]>();
+  const result = new Map<string, SweepStudent[]>();
   for (const row of rows) {
     const userId = userByMembership.get(row.membershipId);
     if (!userId) continue;
     const list = result.get(row.classroomId) ?? [];
-    if (!list.includes(userId)) list.push(userId);
+    if (list.some((student) => student.userId === userId)) continue;
+    list.push({
+      userId,
+      membershipId: row.membershipId,
+      fullName: nameByUser.get(userId) ?? '',
+    });
     result.set(row.classroomId, list);
   }
   return result;

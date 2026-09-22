@@ -313,8 +313,21 @@
             [
               "Nhận xét cuối khoá đã công bố",
               "Học viên có nhận xét, khi lớp chuyển **Đã kết thúc**"
+            ],
+            ["Con quá hạn chưa nộp", "Phụ huynh đã liên kết với học viên đó"],
+            [
+              "Bài của con đã có kết quả",
+              "Phụ huynh đã liên kết (kể cả đề tự chấm hết, có kết quả ngay khi nộp)"
+            ],
+            [
+              "Chuyên cần của con dưới ngưỡng",
+              "Phụ huynh đã liên kết, khi lớp chuyển **Đã kết thúc**"
             ]
           ]
+        },
+        {
+          "type": "paragraph",
+          "text": "Ba dòng cuối gửi cho **Phụ huynh** và mở trang [Con của tôi](page:con-cua-toi); mỗi con một thông báo riêng."
         },
         {
           "type": "paragraph",

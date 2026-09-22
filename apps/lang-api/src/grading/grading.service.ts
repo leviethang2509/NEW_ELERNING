@@ -45,6 +45,7 @@ import { escapeLike } from '../common/sql';
 import { ExamQuestion } from '../exams/exam-question.entity';
 import { ExamSection } from '../exams/exam-section.entity';
 import { Exam } from '../exams/exam.entity';
+import { notifyGuardiansAttemptGraded } from '../notifications/guardian-notifications';
 import { examResultLink } from '../notifications/notification-targets';
 import { NotificationsService } from '../notifications/notifications.service';
 import { R2Service } from '../storage/r2.service';
@@ -347,14 +348,21 @@ export class GradingService {
         .update({ id: attempt.id, status: attempt.status }, attemptChanges);
       if (attemptChanges.status === AttemptStatus.GRADED) {
         const exams = await this.examsById([attempt.examId]);
+        const title = exams.get(attempt.examId)?.title ?? '';
         await this.notifications.notify(manager, {
           userIds: [attempt.userId],
           tenantId: ctx.tenantId,
           type: NotificationType.ATTEMPT_GRADED,
-          params: { title: exams.get(attempt.examId)?.title ?? '' },
+          params: { title },
           link: examResultLink(ctx.slug, attempt.id),
           // Chấm lại sau khi đã chấm xong không báo thêm lần nữa.
           dedupeKey: `graded:${attempt.id}`,
+        });
+        await notifyGuardiansAttemptGraded(manager, this.notifications, {
+          tenantId: ctx.tenantId,
+          studentMembershipId: attempt.membershipId,
+          title,
+          dedupeKey: `child_graded:${attempt.id}`,
         });
       }
       Object.assign(attempt, attemptChanges);

@@ -24,6 +24,8 @@ import { Classroom } from '../classrooms/classroom.entity';
 import { GradingDelegation } from '../grading/grading-delegation.entity';
 import { LessonGradingService } from '../grading/lesson-grading.service';
 import { LessonPart } from '../lessons/lesson-part.entity';
+import { Membership } from '../memberships/membership.entity';
+import { StudentGuardian } from '../memberships/student-guardian.entity';
 import { LessonQuestion } from '../lessons/lesson-question.entity';
 import { prepareLessonSection } from '../lessons/lesson-section-content';
 import { LessonSection } from '../lessons/lesson-section.entity';
@@ -212,6 +214,8 @@ function setup({
     .register(Classroom, classrooms)
     .register(ClassroomTeacher, new InMemoryRepository<ClassroomTeacher>())
     .register(GradingDelegation, new InMemoryRepository<GradingDelegation>())
+    .register(Membership, new InMemoryRepository<Membership>())
+    .register(StudentGuardian, new InMemoryRepository<StudentGuardian>())
     .asDataSource();
   const notifications = fakeNotifications();
   const service = new LessonAttemptsService(

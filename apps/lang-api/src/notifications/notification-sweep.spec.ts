@@ -13,7 +13,9 @@ import { Exam } from '../exams/exam.entity';
 import { LessonAttempt } from '../lesson-attempts/lesson-attempt.entity';
 import { Lesson } from '../lessons/lesson.entity';
 import { Membership } from '../memberships/membership.entity';
+import { StudentGuardian } from '../memberships/student-guardian.entity';
 import { Tenant } from '../tenants/tenant.entity';
+import { User } from '../users/user.entity';
 import { fakeNotifications } from '../testing/fake-notifications';
 import { InMemoryDataSource } from '../testing/in-memory-data-source';
 import { InMemoryRepository } from '../testing/in-memory-repository';
@@ -31,6 +33,8 @@ function setup() {
   const items = new InMemoryRepository<ClassItem>();
   const enrollments = new InMemoryRepository<ClassroomStudent>();
   const memberships = new InMemoryRepository<Membership>();
+  const users = new InMemoryRepository<User>();
+  const guardians = new InMemoryRepository<StudentGuardian>();
   const tenants = new InMemoryRepository<Tenant>();
   const exams = new InMemoryRepository<Exam>();
   const lessons = new InMemoryRepository<Lesson>();
@@ -45,11 +49,12 @@ function setup() {
     status: ClassroomStatus.ONGOING,
   } as Classroom);
   exams.rows.push({ id: EXAM, title: 'Kiểm tra chương 1' } as Exam);
-  for (const [membershipId, userId] of [
-    ['m-1', 'u-1'],
-    ['m-2', 'u-2'],
+  for (const [membershipId, userId, fullName] of [
+    ['m-1', 'u-1', 'Học viên 1'],
+    ['m-2', 'u-2', 'Học viên 2'],
   ]) {
     memberships.rows.push({ id: membershipId, userId } as Membership);
+    users.rows.push({ id: userId, fullName } as User);
     enrollments.rows.push({
       id: `e-${membershipId}`,
       classroomId: CLASS,
@@ -82,6 +87,8 @@ function setup() {
     .register(ClassItem, items)
     .register(ClassroomStudent, enrollments)
     .register(Membership, memberships)
+    .register(User, users)
+    .register(StudentGuardian, guardians)
     .register(Tenant, tenants)
     .register(Exam, exams)
     .register(Lesson, lessons)
@@ -99,6 +106,9 @@ function setup() {
     groups,
     classrooms,
     examAttempts,
+    guardians,
+    memberships,
+    users,
   };
 }
 
@@ -157,7 +167,12 @@ describe('sweepClassItems', () => {
     } as ExamAttempt);
 
     const counts = await sweep();
-    expect(counts).toEqual({ opened: 0, deadlineSoon: 1, overdue: 2 });
+    expect(counts).toEqual({
+      opened: 0,
+      deadlineSoon: 1,
+      overdue: 2,
+      guardianOverdue: 0,
+    });
     const soon = notifications.ofType(NotificationType.ITEM_DEADLINE_SOON);
     expect(soon[0].userIds).toEqual(['u-2']);
     expect(soon[0].dedupeKey).toBe('soon:sap-het-han');
@@ -188,8 +203,33 @@ describe('sweepClassItems', () => {
       opened: 0,
       deadlineSoon: 0,
       overdue: 0,
+      guardianOverdue: 0,
     });
     expect(notifications.sent).toHaveLength(0);
+  });
+
+  it('quá hạn: phụ huynh của con chưa nộp cũng được báo (Step 13)', async () => {
+    const { sweep, notifications, addItem, guardians, memberships, users } =
+      setup();
+    memberships.rows.push({ id: 'm-ph', userId: 'u-ph' } as Membership);
+    users.rows.push({ id: 'u-ph', fullName: 'Phụ huynh' } as User);
+    guardians.rows.push({
+      id: 'g-1',
+      tenantId: TENANT,
+      studentMembershipId: 'm-1',
+      parentMembershipId: 'm-ph',
+    } as StudentGuardian);
+    addItem({ id: 'qua-han', deadlineAt: hoursFromNow(-3) });
+
+    const counts = await sweep();
+    expect(counts.guardianOverdue).toBe(1);
+    const sent = notifications.ofType(NotificationType.CHILD_ITEM_OVERDUE);
+    expect(sent).toHaveLength(1);
+    expect(sent[0].userIds).toEqual(['u-ph']);
+    expect(sent[0].params?.childName).toBe('Học viên 1');
+    expect(sent[0].link).toBe('/t/a/children/m-1');
+    // Khoá chống trùng theo từng con: cron chạy lại không báo lại.
+    expect(sent[0].dedupeKey).toBe('child_late:qua-han:m-1');
   });
 
   it('mục đã bỏ khỏi giáo trình không báo', async () => {

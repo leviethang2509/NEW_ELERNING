@@ -37,6 +37,7 @@ import { ClassChangeLog } from './class-change-log.entity';
 import { copyCurriculumIntoClassroom } from './class-curriculum.service';
 import {
   notifyFinalComments,
+  notifyGuardiansAttendance,
   notifySessionsMoved,
 } from './class-notifications';
 import { ClassItem } from './class-item.entity';
@@ -354,13 +355,6 @@ export class ClassroomsService {
           });
         }
       }
-      if (status === ClassroomStatus.FINISHED) {
-        await notifyFinalComments(manager, this.notifications, {
-          classroom,
-          slug: ctx.slug,
-          actorId,
-        });
-      }
       let finalized: number | undefined;
       if (isClassroomClosed(status)) {
         const items = await manager.getRepository(ClassItem).find({
@@ -371,6 +365,18 @@ export class ClassroomsService {
           manager,
           items.map((item) => item.id),
         );
+      }
+      if (status === ClassroomStatus.FINISHED) {
+        await notifyFinalComments(manager, this.notifications, {
+          classroom,
+          slug: ctx.slug,
+          actorId,
+        });
+        // Sau khi đã chốt lượt dở dang thì chuyên cần mới là số cuối cùng.
+        await notifyGuardiansAttendance(manager, this.notifications, {
+          classroom: { ...classroom, status },
+          slug: ctx.slug,
+        });
       }
       await writeClassLog(manager, id, actorId, ClassLogAction.STATUS_CHANGED, {
         from,

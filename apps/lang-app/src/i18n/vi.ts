@@ -1790,6 +1790,45 @@ export const vi = {
     groupNoScore: 'Chưa có điểm',
     groupPending: 'còn lượt chờ chấm',
   },
+  // Khu vực phụ huynh "Con của tôi" (req-3 Step 13, R19).
+  guardian: {
+    heading: 'Con của tôi',
+    hint: 'Bạn xem được lớp, lịch học và kết quả của con. Nội dung bài học/đề thi và đáp án không hiện ở đây.',
+    empty:
+      'Bạn chưa được liên kết với học viên nào. Liên hệ trung tâm để được gắn với con.',
+    loadError: 'Không tải được thông tin của con',
+    notFound: 'Không tìm thấy học viên đã liên kết với bạn.',
+    relationship: (value: string) => `Quan hệ: ${value}`,
+    inactive: 'Đã ngừng',
+    classCount: (value: number) =>
+      value === 0 ? 'Chưa có lớp' : `${value} lớp`,
+    backToChildren: 'Về danh sách con',
+    backToChild: (name: string) => `Về trang của ${name}`,
+    classesHeading: 'Lớp của con',
+    noClasses: 'Con bạn chưa được xếp vào lớp nào.',
+    openClass: 'Xem lớp',
+    scheduleHeading: 'Lịch học của con',
+    scheduleHint:
+      'Buổi học của các lớp con đang học. Ngày nghỉ của trung tâm tô xám, buổi đã huỷ gạch ngang.',
+    freeHeading: 'Bài làm ngoài lớp',
+    freeExams: 'Bài thi',
+    freeLessons: 'Bài học',
+    noFree: 'Con bạn chưa làm bài nào ngoài lớp.',
+    startedAt: (value: string) => `Bắt đầu ${value}`,
+    autoScore: (correct: number, total: number) =>
+      `Đúng ${correct}/${total} câu tự chấm`,
+    pendingGrading: (value: number) => `Còn ${value} câu chờ chấm`,
+    percent: (value: number) => `${value}%`,
+    lessonCompleted: 'Đã học xong',
+    manualHeading: 'Nhận xét của giáo viên',
+    manualRow: (section: string, number: number) =>
+      section ? `${section} · Câu ${number}` : `Câu ${number}`,
+    manualScore: (score: number | null, max: number) =>
+      `${score ?? 0}/${max} điểm`,
+    manualNoComment: 'Không có nhận xét',
+    classNotOpen: 'Lớp chưa bắt đầu hoặc đã kết thúc, đây chỉ là bản xem lại.',
+    notRequired: 'Không bắt buộc (đã đậu lần trước)',
+  },
   classAttempts: {
     title: 'Bài làm của học viên',
     open: 'Bài làm',
@@ -2288,6 +2327,22 @@ export const vi = {
         `Giáo trình lớp ${className} vừa được cập nhật`,
       final_comment_published: (className: string) =>
         `Lớp ${className} đã có nhận xét cuối khoá của bạn`,
+      // Phụ huynh (Step 13).
+      child_item_overdue: (
+        child: string,
+        className: string,
+        title: string,
+        at: string,
+      ) => `${child} chưa nộp ${title} (lớp ${className}), hạn ${at}`,
+      child_attempt_graded: (child: string, title: string) =>
+        `Bài ${title} của ${child} đã có kết quả`,
+      child_attendance_low: (
+        child: string,
+        className: string,
+        percent: number,
+        threshold: number,
+      ) =>
+        `Chuyên cần của ${child} ở lớp ${className} là ${percent}%, dưới ngưỡng ${threshold}%`,
     },
   },
   nav: {

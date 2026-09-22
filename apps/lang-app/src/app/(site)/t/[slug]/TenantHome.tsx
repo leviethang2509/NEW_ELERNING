@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { Mail, MapPin, Phone } from 'lucide-react';
 import {
   TENANT_DASHBOARD_ROLES,
+  TenantRole,
   TenantStatus,
   hasAnyRole,
   type PublicTenant,
@@ -12,6 +13,7 @@ import {
 } from '@lang/shared';
 import { useAuth } from '@/components/auth/AuthProvider';
 import { MyClassList } from '@/components/class-learning/MyClassList';
+import { MyChildrenList } from '@/components/guardian/MyChildrenList';
 import { LearnerExamList } from '@/components/learner/LearnerExamList';
 import { LearnerLessonList } from '@/components/lesson-learning/LearnerLessonList';
 import { MyRecentAttempts } from '@/components/learner/MyRecentAttempts';
@@ -177,6 +179,9 @@ export function TenantHome({ slug: rawSlug }: { slug: string }) {
             ))}
           </div>
           <MyClassList slug={tenant.slug} />
+          {member.roles.includes(TenantRole.PARENT) && (
+            <MyChildrenList slug={tenant.slug} />
+          )}
           <MyRecentAttempts slug={tenant.slug} />
           <section className="mt-10">
             <h2 className="mb-3 text-[12px] font-semibold uppercase tracking-[0.09em] text-[var(--muted)]">
