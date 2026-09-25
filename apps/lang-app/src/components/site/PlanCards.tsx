@@ -60,7 +60,7 @@ export function PlanCards() {
             key={plan.id}
             className={`flex flex-col gap-3.5 rounded-[18px] border p-6 ${
               featured
-                ? 'border-[var(--accent)] bg-[var(--accent)] text-[var(--on-accent)] shadow-[0_16px_38px_var(--accent-shadow)]'
+                ? 'border-[var(--accent)] bg-[var(--accent-bg)] text-[var(--on-accent)] shadow-[0_16px_38px_var(--accent-shadow)]'
                 : 'border-[var(--border-strong)] bg-[var(--bg)]'
             }`}
           >

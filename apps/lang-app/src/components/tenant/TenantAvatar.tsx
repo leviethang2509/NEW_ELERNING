@@ -18,12 +18,14 @@ export function TenantAvatar({
   if (logoUrl) {
     return (
       // Ảnh từ R2 (domain đặt trong env, cố định lúc build) nên không dùng next/image.
+      // Logo nền trong suốt: lót `--img-mat` (trắng ở theme tối) thay vì lọc sáng
+      // ảnh của người dùng; logo đặc thì `object-cover` che kín nền lót.
       // eslint-disable-next-line @next/next/no-img-element
       <img
         src={logoUrl}
         alt=""
         aria-hidden
-        className={`shrink-0 bg-[var(--hover)] object-cover ${sizeClass[size]}`}
+        className={`shrink-0 bg-[var(--img-mat)] object-cover ${sizeClass[size]}`}
       />
     );
   }

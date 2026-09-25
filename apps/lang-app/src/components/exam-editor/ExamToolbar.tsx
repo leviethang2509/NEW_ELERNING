@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { type CSSProperties, useEffect, useRef, useState } from 'react';
 import {
   AlignCenter,
   AlignJustify,
@@ -158,7 +158,7 @@ function Dropdown({
         <ChevronDown size={12} />
       </button>
       {open && (
-        <div className="absolute left-0 top-9 z-30 min-w-[190px] rounded-xl border border-[var(--border-strong)] bg-[var(--bg)] p-1.5 shadow-lg">
+        <div className="absolute left-0 top-9 z-30 min-w-[190px] rounded-xl border border-[var(--border-strong)] bg-[var(--raised)] p-1.5 shadow-lg">
           {children(() => setOpen(false))}
         </div>
       )}
@@ -480,8 +480,10 @@ export function ExamToolbar({
               }}
             >
               <span
-                className="h-2 w-2 shrink-0 rounded-full"
-                style={{ backgroundColor: CALLOUT_COLORS[variant] }}
+                className="ls-tint ls-tint-dot h-2 w-2 shrink-0 rounded-full"
+                style={
+                  { '--tint-raw': CALLOUT_COLORS[variant] } as CSSProperties
+                }
               />
               {richText.callouts[variant]}
             </MenuItem>
@@ -587,8 +589,8 @@ export function ExamToolbar({
               }}
             >
               <span
-                className="h-2 w-2 shrink-0 rounded-full"
-                style={{ backgroundColor: meta.color }}
+                className="ls-tint ls-tint-dot h-2 w-2 shrink-0 rounded-full"
+                style={{ '--tint-raw': meta.color } as CSSProperties}
               />
               <span className="flex-1">{meta.label}</span>
               <span className="text-[11.5px] text-[var(--muted)]">

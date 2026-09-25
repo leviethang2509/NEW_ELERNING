@@ -30,7 +30,7 @@ export function ConfirmDialog({
   const confirmClass =
     tone === 'danger'
       ? 'bg-[var(--danger)] text-[var(--on-status)] hover:brightness-105'
-      : 'bg-[var(--accent)] text-white hover:brightness-105';
+      : 'bg-[var(--accent-bg)] text-white hover:brightness-105';
 
   return (
     <Modal open={open} onClose={onCancel} title={title} widthClass="max-w-md">

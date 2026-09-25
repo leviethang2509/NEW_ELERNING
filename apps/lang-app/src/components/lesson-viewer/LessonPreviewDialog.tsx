@@ -73,7 +73,7 @@ function PreviewBody({
       onClose={onClose}
       title={text.previewTitle}
       widthClass="max-w-[1100px] h-[85vh]"
-      surfaceClass="bg-[var(--bg)]"
+      surfaceClass="bg-[var(--raised)]"
     >
       <LessonViewer
         sections={state}

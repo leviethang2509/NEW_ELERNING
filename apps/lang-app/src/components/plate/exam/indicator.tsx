@@ -1,5 +1,6 @@
 'use client';
 
+import type { CSSProperties } from 'react';
 import {
   INDICATOR_KEY,
   createIndicator,
@@ -119,7 +120,7 @@ function removeSiblingIndicator(
 
 function IndicatorElement(props: PlateElementProps) {
   const el = props.element as unknown as TIndicatorElement;
-  const { color, soft } = indicatorColor(el);
+  const { color } = indicatorColor(el);
   const suffix = indicatorSuffix(el);
   // Mọi indicator câu hỏi đều bấm được để đổi dạng / sửa tham số.
   const editable = el.kind === 'question' && !props.editor.api.isReadOnly();
@@ -138,16 +139,17 @@ function IndicatorElement(props: PlateElementProps) {
         }
         className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-[12.5px] font-semibold tracking-[0.02em] ${
           editable ? 'cursor-pointer' : 'cursor-default'
-        } ${missing ? 'border-dashed' : ''}`}
-        style={{
-          color: missing ? 'var(--danger)' : color,
-          backgroundColor: missing ? 'var(--danger-soft)' : soft,
-          borderColor: missing ? 'var(--danger)' : color,
-        }}
+        } ${missing ? 'border-dashed' : ''} ${
+          missing
+            ? 'border-[var(--danger)] bg-[var(--danger-soft)] text-[var(--danger)]'
+            : 'ls-tint ls-tint-fg ls-tint-line ls-tint-soft'
+        }`}
+        style={missing ? undefined : ({ '--tint-raw': color } as CSSProperties)}
       >
         <span
-          className="h-1.5 w-1.5 rounded-full"
-          style={{ backgroundColor: missing ? 'var(--danger)' : color }}
+          className={`h-1.5 w-1.5 rounded-full ${
+            missing ? 'bg-[var(--danger)]' : 'ls-tint-dot'
+          }`}
         />
         {indicatorLabel(el)}
         {suffix && <span className="font-normal opacity-80">· {suffix}</span>}

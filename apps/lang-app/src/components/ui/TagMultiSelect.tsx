@@ -269,7 +269,7 @@ export function TagMultiSelect({
                       <span
                         className={`grid h-4 w-4 shrink-0 place-items-center rounded border transition ${
                           checked
-                            ? 'border-[var(--accent)] bg-[var(--accent)] text-white'
+                            ? 'border-[var(--accent)] bg-[var(--accent-bg)] text-white'
                             : 'border-[var(--border-strong)] text-transparent'
                         }`}
                       >

@@ -66,7 +66,7 @@ export function ImageElement(props: PlateElementProps) {
         <img
           src={el.url}
           alt={el.name ?? ''}
-          className="max-h-[420px] max-w-full rounded-lg border border-[var(--border)]"
+          className="exam-media max-h-[420px] max-w-full rounded-lg border border-[var(--border)]"
         />
       </div>
       {props.children}

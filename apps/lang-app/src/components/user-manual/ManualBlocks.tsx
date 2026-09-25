@@ -220,7 +220,9 @@ function Block({ block }: { block: ManualBlock }) {
       );
     case 'code':
       return (
-        <pre className="mt-4 overflow-x-auto rounded-xl bg-[var(--code-bg)] px-4 py-3 font-mono text-[13px] leading-[1.6] text-[var(--code-fg)]">
+        // Viền: ở theme tối khối mã chỉ tối hơn nền trang một bậc, không có
+        // viền thì không thấy đâu là mép khối.
+        <pre className="mt-4 overflow-x-auto rounded-xl border border-[var(--border)] bg-[var(--code-bg)] px-4 py-3 font-mono text-[13px] leading-[1.6] text-[var(--code-fg)]">
           {block.text}
         </pre>
       );

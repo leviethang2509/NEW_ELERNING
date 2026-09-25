@@ -9,7 +9,7 @@ export const labelTextClass = 'text-[13px] font-semibold text-[var(--body)]';
 
 /** Nút trong dialog/toolbar (cùng cỡ với nút của `ConfirmDialog`). */
 export const compactPrimaryButtonClass =
-  'inline-flex items-center justify-center gap-1.5 rounded-lg bg-[var(--accent)] px-4 py-2 text-[14px] font-semibold text-white transition hover:brightness-105 disabled:cursor-not-allowed disabled:opacity-50';
+  'inline-flex items-center justify-center gap-1.5 rounded-lg bg-[var(--accent-bg)] px-4 py-2 text-[14px] font-semibold text-white transition hover:brightness-105 disabled:cursor-not-allowed disabled:opacity-50';
 
 export const compactDangerButtonClass =
   'inline-flex items-center justify-center gap-1.5 rounded-lg bg-[var(--danger)] px-4 py-2 text-[14px] font-semibold text-[var(--on-status)] transition hover:brightness-105 disabled:cursor-not-allowed disabled:opacity-50';
@@ -22,4 +22,4 @@ export const iconButtonClass =
   'grid h-8 w-8 place-items-center rounded-lg text-[var(--muted)] transition hover:bg-[var(--hover)] hover:text-[var(--accent)] disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-transparent disabled:hover:text-[var(--muted)]';
 
 export const primaryButtonClass =
-  'rounded-xl bg-[var(--accent)] px-4 py-3 text-[15px] font-semibold text-white shadow-[0_10px_24px_var(--accent-shadow)] transition hover:brightness-[1.05] disabled:cursor-not-allowed disabled:opacity-60';
+  'rounded-xl bg-[var(--accent-bg)] px-4 py-3 text-[15px] font-semibold text-white shadow-[0_10px_24px_var(--accent-shadow)] transition hover:brightness-[1.05] disabled:cursor-not-allowed disabled:opacity-60';

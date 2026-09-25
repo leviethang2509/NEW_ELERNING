@@ -1,5 +1,7 @@
 'use client';
 
+import type { CSSProperties } from 'react';
+
 export interface SlashItem {
   key: string;
   label: string;
@@ -27,7 +29,7 @@ export function SlashMenu({
     <div
       role="listbox"
       style={{ top: position.top, left: position.left }}
-      className="fixed z-40 max-h-[280px] w-[280px] overflow-auto rounded-xl border border-[var(--border-strong)] bg-[var(--bg)] p-1.5 shadow-lg"
+      className="fixed z-40 max-h-[280px] w-[280px] overflow-auto rounded-xl border border-[var(--border-strong)] bg-[var(--raised)] p-1.5 shadow-lg"
     >
       {items.map((item, index) => (
         <button
@@ -45,8 +47,8 @@ export function SlashMenu({
         >
           {item.color && (
             <span
-              className="h-2 w-2 shrink-0 rounded-full"
-              style={{ backgroundColor: item.color }}
+              className="ls-tint ls-tint-dot h-2 w-2 shrink-0 rounded-full"
+              style={{ '--tint-raw': item.color } as CSSProperties}
             />
           )}
           <span className="flex-1 text-[13.5px] text-[var(--body)]">

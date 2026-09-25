@@ -14,7 +14,7 @@ interface ModalProps {
   children: React.ReactNode;
   /** Tailwind width class cho panel, mặc định max-w-lg. */
   widthClass?: string;
-  /** Tailwind class nền panel, mặc định bg-[var(--card)]. */
+  /** Tailwind class nền panel, mặc định bg-[var(--panel)]. */
   surfaceClass?: string;
   /** Class thay cho cách cuộn/padding mặc định của phần thân. */
   bodyClass?: string;
@@ -31,7 +31,7 @@ export function Modal({
   title,
   children,
   widthClass = 'max-w-lg',
-  surfaceClass = 'bg-[var(--card)]',
+  surfaceClass = 'bg-[var(--panel)]',
   bodyClass = 'overflow-auto px-5 py-4',
   footer,
 }: ModalProps) {

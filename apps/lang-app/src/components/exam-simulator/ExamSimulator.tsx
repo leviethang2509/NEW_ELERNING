@@ -146,14 +146,23 @@ function renderLeaf(leaf: ExamNode, key: string): ReactNode {
       </mark>
     );
 
-  const style: CSSProperties = {
-    color: stringProp(leaf, 'color'),
-    backgroundColor: stringProp(leaf, 'backgroundColor'),
+  // Màu chữ/nền do người soạn chọn đi qua biến CSS + class của `globals.css`
+  // (`.ls-leaf-*`): bảng màu của toolbar "nướng" cho nền sáng nên ở theme tối
+  // phải sáng lên mới đọc được. Đặt thẳng `color` thì không đổi được.
+  const fg = stringProp(leaf, 'color');
+  const bg = stringProp(leaf, 'backgroundColor');
+  const style = {
+    ...(fg ? { '--leaf-fg': fg } : {}),
+    ...(bg ? { '--leaf-bg': bg } : {}),
     fontSize: stringProp(leaf, 'fontSize'),
-  };
+  } as CSSProperties;
 
   return (
-    <span key={key} style={style}>
+    <span
+      key={key}
+      className={`${fg ? 'ls-leaf-fg' : ''} ${bg ? 'ls-leaf-bg' : ''}`.trim()}
+      style={style}
+    >
       {node}
     </span>
   );
@@ -305,7 +314,7 @@ function renderBlock(
         key={key}
         src={stringProp(node, 'url')}
         alt={stringProp(node, 'name') ?? ''}
-        className="my-3 max-h-[420px] max-w-full rounded-lg border border-[var(--border)]"
+        className="exam-media my-3 max-h-[420px] max-w-full rounded-lg border border-[var(--border)]"
       />
     );
   }
@@ -433,10 +442,10 @@ function renderBlock(
     return (
       <div
         key={key}
-        style={{ ...padded, borderColor: color, backgroundColor: `${color}14` }}
-        className="my-3 whitespace-pre-wrap rounded-lg border-l-4 px-3 py-2"
+        style={{ ...padded, '--tint-raw': color } as CSSProperties}
+        className="ls-tint ls-tint-line ls-tint-faint my-3 whitespace-pre-wrap rounded-lg border-l-4 px-3 py-2"
       >
-        <div className="text-[12px] font-semibold" style={{ color }}>
+        <div className="ls-tint-fg text-[12px] font-semibold">
           {text.callouts[variant]}
         </div>
         {content}

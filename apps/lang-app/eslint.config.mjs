@@ -23,13 +23,13 @@ const noHardcodedColor = [
   },
 ];
 
-// Bảng màu minh hoạ (người dùng chọn màu danh mục / màu chữ trong trình soạn
-// đề / khối màu trang chủ) đọc được ở cả 3 theme nên giữ hex; `global-error`
-// tự dựng <html> riêng, không có `data-theme` để ăn theo biến.
+// Bảng màu **người dùng chọn** (màu danh mục, màu chữ/nền trong trình soạn đề):
+// ô chọn màu phải hiện đúng mã màu sẽ lưu, nên giữ hex. Đọc được ở theme tối
+// nhờ `.ls-tint-*` / `.ls-leaf-*` (globals.css) đổi cách hiển thị.
+// `global-error` tự dựng <html> riêng, không có `data-theme` để ăn theo biến.
+// Trang chủ ra khỏi danh sách ở Step 3, bảng màu lịch ở Step 4 (đều dùng token).
 const colorPalettes = [
   'src/app/global-error.tsx',
-  'src/app/(site)/page.tsx',
-  'src/components/calendar/calendar-model.ts',
   'src/components/catalog/catalog-ui.tsx',
   'src/components/exam-editor/ExamToolbar.tsx',
 ];

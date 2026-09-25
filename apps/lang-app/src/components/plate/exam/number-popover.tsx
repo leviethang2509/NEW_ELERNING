@@ -71,7 +71,7 @@ export function NumberPopover({
       ref={ref}
       contentEditable={false}
       style={{ top: pos.top, left: pos.left }}
-      className="fixed z-50 w-[264px] rounded-xl border border-[var(--border-strong)] bg-[var(--bg)] p-3 shadow-lg"
+      className="fixed z-50 w-[264px] rounded-xl border border-[var(--border-strong)] bg-[var(--raised)] p-3 shadow-lg"
       onMouseDown={(event) => event.stopPropagation()}
     >
       <span className="mb-1.5 block text-[12.5px] font-semibold text-[var(--body)]">
@@ -122,7 +122,7 @@ export function NumberPopover({
             type="button"
             disabled={!!error}
             onClick={submit}
-            className="rounded-lg bg-[var(--accent)] px-3 py-1 text-[12.5px] font-semibold text-white transition hover:brightness-105 disabled:cursor-not-allowed disabled:opacity-50"
+            className="rounded-lg bg-[var(--accent-bg)] px-3 py-1 text-[12.5px] font-semibold text-white transition hover:brightness-105 disabled:cursor-not-allowed disabled:opacity-50"
           >
             {text.save}
           </button>

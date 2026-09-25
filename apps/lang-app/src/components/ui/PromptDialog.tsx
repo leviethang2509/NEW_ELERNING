@@ -80,7 +80,7 @@ export function PromptDialog({
           type="button"
           disabled={invalid}
           onClick={submit}
-          className="rounded-lg bg-[var(--accent)] px-4 py-2 text-[14px] font-semibold text-white transition hover:brightness-105 disabled:cursor-not-allowed disabled:opacity-50"
+          className="rounded-lg bg-[var(--accent-bg)] px-4 py-2 text-[14px] font-semibold text-white transition hover:brightness-105 disabled:cursor-not-allowed disabled:opacity-50"
         >
           {confirmLabel}
         </button>

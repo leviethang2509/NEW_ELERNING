@@ -3,7 +3,7 @@ import { vi } from '@/i18n/vi';
 
 const tabBase =
   'flex-1 rounded-[9px] py-2.5 text-center text-[14px] transition';
-const tabActive = `${tabBase} bg-[var(--bg)] font-semibold text-[var(--heading)] shadow-[0_2px_6px_var(--shadow-1)]`;
+const tabActive = `${tabBase} bg-[var(--raised)] font-semibold text-[var(--heading)] shadow-[0_2px_6px_var(--shadow-1)]`;
 const tabIdle = `${tabBase} font-medium text-[var(--muted)] hover:text-[var(--body)]`;
 
 // Khung trang đăng nhập/đăng ký theo design/Auth.html (tab + tiêu đề + form),

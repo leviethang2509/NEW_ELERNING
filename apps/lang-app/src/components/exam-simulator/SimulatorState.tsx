@@ -479,7 +479,7 @@ export function AnswerNav({ plan }: { plan: PreviewPlan }) {
                 type="button"
                 onClick={submit}
                 disabled={state.locked}
-                className={`${buttonClass} bg-[var(--accent)] text-white hover:opacity-90`}
+                className={`${buttonClass} bg-[var(--accent-bg)] text-white hover:opacity-90`}
               >
                 <Send size={14} /> {text.submitAnyway}
               </button>
@@ -496,7 +496,7 @@ export function AnswerNav({ plan }: { plan: PreviewPlan }) {
                     ? setConfirming(true)
                     : submit()
                 }
-                className={`${buttonClass} bg-[var(--accent)] text-white hover:opacity-90`}
+                className={`${buttonClass} bg-[var(--accent-bg)] text-white hover:opacity-90`}
               >
                 <Send size={14} /> {submitLabel}
               </button>

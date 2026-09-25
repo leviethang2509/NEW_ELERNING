@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { type CSSProperties, useEffect, useRef, useState } from 'react';
 import type { OutlineItem } from '@lang/exam-core';
 import { vi } from '@/i18n/vi';
 
@@ -80,8 +80,8 @@ export function Minimap({ items, scrollerRef, active }: MinimapProps) {
                 }`}
               >
                 <span
-                  className="h-2 w-2 shrink-0 rounded-full"
-                  style={{ backgroundColor: item.color }}
+                  className="ls-tint ls-tint-dot h-2 w-2 shrink-0 rounded-full"
+                  style={{ '--tint-raw': item.color } as CSSProperties}
                 />
                 <span className="min-w-0 flex-1">
                   <span

@@ -75,7 +75,7 @@ function PreviewBody({
         title={text.title}
         widthClass="max-w-[1280px] h-[85vh]"
         // Nền giống trang chính cho giống tờ đề.
-        surfaceClass="bg-[var(--bg)]"
+        surfaceClass="bg-[var(--raised)]"
         // Thân popup không tự cuộn: từng cột trong tab cuộn riêng.
         bodyClass="flex flex-col overflow-hidden"
         footer={hasNumbers ? <AnswerNav plan={plan} /> : undefined}
@@ -95,7 +95,7 @@ function PreviewBody({
                 onClick={() => setKey(item.key)}
                 className={`shrink-0 rounded-lg px-3 py-1.5 text-[13px] font-semibold transition ${
                   item.key === section.key
-                    ? 'bg-[var(--card)] text-[var(--heading)] shadow-sm'
+                    ? 'bg-[var(--panel)] text-[var(--heading)] shadow-sm'
                     : 'text-[var(--muted)] hover:text-[var(--body)]'
                 }`}
               >

@@ -210,7 +210,7 @@ export function SectionTabs<M extends SectionTabModule>({
               <Plus size={15} /> {text.add} <ChevronDown size={13} />
             </button>
             {addOpen && (
-              <div className="absolute right-0 top-9 z-30 w-[260px] rounded-xl border border-[var(--border-strong)] bg-[var(--bg)] p-1.5 shadow-lg">
+              <div className="absolute right-0 top-9 z-30 w-[260px] rounded-xl border border-[var(--border-strong)] bg-[var(--raised)] p-1.5 shadow-lg">
                 <button
                   type="button"
                   onClick={() => {

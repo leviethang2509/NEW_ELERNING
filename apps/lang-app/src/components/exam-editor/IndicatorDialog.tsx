@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { type CSSProperties, useEffect, useState } from 'react';
 import { QUESTION_TYPES, type IndicatorProps } from '@lang/exam-core';
 import type { QuestionType } from '@lang/shared';
 import {
@@ -134,8 +134,8 @@ export function IndicatorDialog({
               }`}
             >
               <span
-                className="h-2.5 w-2.5 shrink-0 rounded-full"
-                style={{ backgroundColor: item.color }}
+                className="ls-tint ls-tint-dot h-2.5 w-2.5 shrink-0 rounded-full"
+                style={{ '--tint-raw': item.color } as CSSProperties}
               />
               <span className="min-w-0 flex-1">
                 <span className="block text-[14px] font-semibold text-[var(--heading)]">

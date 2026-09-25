@@ -12,7 +12,7 @@ export function Brand({
 }) {
   return (
     <span className="flex items-center gap-3">
-      <span className="grid h-9 w-9 place-items-center rounded-[10px] bg-[var(--accent)] text-white shadow-[0_2px_8px_var(--accent-shadow)]">
+      <span className="grid h-9 w-9 place-items-center rounded-[10px] bg-[var(--accent-bg)] text-white shadow-[0_2px_8px_var(--accent-shadow)]">
         <Languages size={20} />
       </span>
       <span

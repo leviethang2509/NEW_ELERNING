@@ -12,38 +12,46 @@ import {
 import { PlanCards } from '@/components/site/PlanCards';
 import { vi } from '@/i18n/vi';
 
-// Màu nhấn Solarized cho các khối minh hoạ, theo design/Home.html.
-const SECTION_STYLES: { icon: LucideIcon; color: string }[] = [
-  { icon: Headphones, color: '#268bd2' },
-  { icon: BookOpen, color: '#859900' },
-  { icon: PenLine, color: '#6c71c4' },
-  { icon: Mic, color: '#cb4b16' },
+// Màu nhấn Solarized cho các khối minh hoạ, theo design/Home.html. Trước req-4
+// đây là 6 mã hex viết thẳng; nay đi qua token nên theme tối sáng lên được (ở
+// `solarized-light` token giữ đúng các mã cũ, chỉ nền ô lệch ≤ 3% alpha).
+interface DecoStyle {
+  icon: LucideIcon;
+  /** Màu chữ/biểu tượng. */
+  color: string;
+  /** Nền nhạt của ô biểu tượng, cùng sắc với `color`. */
+  soft: string;
+}
+const BLUE = { color: 'var(--info)', soft: 'var(--info-soft)' };
+const GREEN = { color: 'var(--ok)', soft: 'var(--ok-soft)' };
+const VIOLET = { color: 'var(--violet)', soft: 'var(--violet-soft)' };
+const ORANGE = { color: 'var(--orange)', soft: 'var(--orange-soft)' };
+const CYAN = { color: 'var(--cyan)', soft: 'var(--cyan-soft)' };
+const MAGENTA = { color: 'var(--accent)', soft: 'var(--accent-soft)' };
+
+const SECTION_STYLES: DecoStyle[] = [
+  { icon: Headphones, ...BLUE },
+  { icon: BookOpen, ...GREEN },
+  { icon: PenLine, ...VIOLET },
+  { icon: Mic, ...ORANGE },
 ];
-const STAT_COLORS = ['#268bd2', '#859900', '#cb4b16'];
-const FEATURE_STYLES: { icon: LucideIcon; color: string }[] = [
-  { icon: FileText, color: '#268bd2' },
-  { icon: Timer, color: '#2aa198' },
-  { icon: ClipboardCheck, color: '#d33682' },
+const STAT_COLORS = [BLUE.color, GREEN.color, ORANGE.color];
+const FEATURE_STYLES: DecoStyle[] = [
+  { icon: FileText, ...BLUE },
+  { icon: Timer, ...CYAN },
+  { icon: ClipboardCheck, ...MAGENTA },
 ];
 
 function IconTile({
   icon: Icon,
   color,
+  soft,
   size = 40,
-}: {
-  icon: LucideIcon;
-  color: string;
-  size?: number;
-}) {
+}: DecoStyle & { size?: number }) {
   return (
     <span
       className="grid shrink-0 place-items-center rounded-xl"
-      style={{
-        width: size,
-        height: size,
-        background: `${color}22`,
-        color,
-      }}
+      style={{ width: size, height: size, background: soft, color }}
     >
       <Icon size={Math.round(size / 2)} />
     </span>
@@ -77,7 +85,7 @@ export default function HomePage() {
             <Link
               href="/me/tenants/new"
               prefetch={false}
-              className="rounded-xl bg-[var(--accent)] px-6 py-3.5 text-[15.5px] font-semibold text-[var(--on-accent)] shadow-[0_10px_24px_var(--accent-shadow)] transition hover:bg-[var(--accent-hover)]"
+              className="rounded-xl bg-[var(--accent-bg)] px-6 py-3.5 text-[15.5px] font-semibold text-[var(--on-accent)] shadow-[0_10px_24px_var(--accent-shadow)] transition hover:bg-[var(--accent-hover)]"
             >
               {vi.site.registerCenter}
             </Link>
@@ -107,7 +115,7 @@ export default function HomePage() {
               {preview.sections.map((section, index) => (
                 <div
                   key={section.title}
-                  className="flex items-center gap-3.5 rounded-[13px] border border-[var(--border)] bg-[var(--bg)] px-4 py-3.5"
+                  className="flex items-center gap-3.5 rounded-[13px] border border-[var(--border)] bg-[var(--raised)] px-4 py-3.5"
                 >
                   <IconTile {...SECTION_STYLES[index]} />
                   <div className="min-w-0 flex-1">
@@ -175,7 +183,7 @@ export default function HomePage() {
             {vi.site.features.map((feature, index) => (
               <div
                 key={feature.title}
-                className="flex flex-col gap-3.5 rounded-[18px] border border-[var(--border)] bg-[var(--bg)] p-7 shadow-[0_8px_22px_var(--shadow-1)]"
+                className="flex flex-col gap-3.5 rounded-[18px] border border-[var(--border)] bg-[var(--raised)] p-7 shadow-[0_8px_22px_var(--shadow-1)]"
               >
                 <IconTile {...FEATURE_STYLES[index]} size={48} />
                 <div className="text-[19px] font-bold tracking-[-0.015em] text-[var(--heading)]">

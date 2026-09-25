@@ -12,8 +12,8 @@
 | 0 | Câu hỏi + plan | ✅ | 2026-09-23 | 4 câu chặn đã chốt (A1 3 theme, B1 cookie, B2 có "Theo hệ thống", C2 chỉ ở màn giới thiệu section); A2/A3/C1/D1–D6 đi theo Đề xuất |
 | 1 | Nền tảng theme (token 3 theme, cookie, `ThemeToggle`, chống nháy) | ✅ | 2026-09-23 | Chưa commit. Dark mode **đổi được** nhưng chưa dọn màu cứng – Step 2 mới sạch |
 | 2 | Dọn màu cứng sang token (~70 `rgba` + hex, 33 file) + ESLint chặn tái phát | ✅ | 2026-09-25 | Chưa commit. Không còn màu cứng nào ngoài 5 file bảng màu trong danh sách cho phép |
-| 3 | Rà theme tối: khu vực chính, dashboard, docs | ⬜ | | |
-| 4 | Rà theme tối: soạn thảo, thi, chấm bài, lịch | ⬜ | | |
+| 3 | Rà theme tối: khu vực chính, dashboard, docs | ✅ | 2026-09-25 | Chưa commit. Chỉ giá trị khối `dark` đổi (25 biến) – `light`/`solarized-light` **không đổi một giá trị nào**, chỉ thêm token mới |
+| 4 | Rà theme tối: soạn thảo, thi, chấm bài, lịch | ✅ | 2026-09-25 | Chưa commit. Thêm 1 token (`--panel`) + 3 cơ chế `.ls-*`; `light`/`solarized-light` vẫn **không đổi một giá trị nào** |
 | 5 | Tài liệu `/user-manual`, `CLAUDE.md`, nghiệm thu, epic-1 | ⬜ | | |
 
 ## Nhật ký
@@ -110,3 +110,130 @@ Phép thử chính của step ("so bằng mắt từng trang ở `solarized-ligh
 - Nút nhấn magenta vẫn `bg-[var(--accent)] text-white` (~2.9:1 ở theme tối vì `--accent` đã sáng lên). Cần quyết ở Step 3: hạ `--accent` riêng cho nền, hay cho nút dùng `--on-status`/`--on-accent`.
 - `(site)/page.tsx` dùng bảng màu Solarized trang trí (`IconTile`, `STAT_COLORS`) với `${color}22` – ở theme tối nền 13% của các màu này khá mờ, xem lại khi rà trang chủ.
 - Máy có một tiến trình `next start` lạ đang giữ cổng 3100 (không phải của phiên này) – dùng cổng khác khi chạy thử.
+
+### Step 3 – Rà theme tối: khu vực chính, dashboard, docs (2026-09-25)
+
+**Cách rà (không có tool trình duyệt nên đo bằng script)**
+
+Viết 5 script trong scratchpad, đều đọc thẳng `globals.css`:
+
+1. Parser bảng màu: tách 3 khối `:root[data-theme=…]` + khối `:root` chung, giải `var()` lồng nhau, trộn alpha lên nền rồi tính tỉ số tương phản WCAG.
+2. Bóc **cặp chữ/nền thật trong code**: quét mọi chuỗi trong `src`, gom `bg-*`/`text-*`/`border-*`/`ring-*` cùng một `className` → 130 cặp, kèm file:dòng.
+3. Ma trận **chữ trên nền thừa hưởng** (chữ của con nằm trên nền của cha, ví dụ chữ `--fg` trong callout `--warn-soft` của `/user-manual`) – dựng mọi token chữ trên `--bg`/`--card`/`--sidebar`.
+4. **So dark với 2 theme sáng**: chỉ coi là lỗi khi dark **kém hơn mốc sáng**, vì nhiều cặp ở `solarized-light` cũng đã dưới 4.5 (`--muted` trên `--sidebar` chỉ 2.18) – sửa cho dark hơn mốc sáng thì phải đổi cả 2 theme sáng, ngoài phạm vi step.
+5. Đối chiếu `globals.css` với `git show HEAD:` theo từng biến, cho cả 3 theme.
+
+**Đã làm**
+
+- **`color-scheme` cho từng theme** (`light`/`light`/`dark`) – phát hiện quan trọng nhất của step. Checkbox (14 chỗ), radio (6), mũi lên-xuống ô số (16), ô `date` (10) / `time` (6) / `datetime-local` (3), `type="file"` (3), bảng chọn ngày, danh sách `<option>` của mọi `<select>`, nền autofill: tất cả do **trình duyệt vẽ**, không ăn theo CSS của mình. Thiếu 1 dòng này thì theme tối lọt mảng trắng ở mọi ô đó (nặng nhất là bảng chọn ngày của Thời khoá biểu / Giáo trình lớp).
+- **Quyết việc 1 để lại từ Step 2 – nút nhấn magenta:** tách token `--accent-bg` (nền đặc, `#d33682` ở **cả 3 theme**, `text-white` = 4.55) khỏi `--accent` (chữ/viền, theme tối sáng lên). 18 chỗ `bg-[var(--accent)]` có chữ đổi sang `--accent-bg`; 3 chỗ trang trí (thanh loading, thanh tiến độ hero, dấu chưa đọc) giữ `--accent` vì cần sáng để nổi trên nền tối. `--accent-hover` (chỉ dùng làm hover của nền nút) dồn về `:root` chung, `#b32c6d` cả 3 theme – trước đó theme tối để `#f27ab0`, hover xong chữ chỉ còn **2.38**.
+- **Quyết việc 2 để lại từ Step 2 – khối minh hoạ trang chủ:** 6 hex viết thẳng trong `(site)/page.tsx` chuyển sang token (`--info`/`--ok`/`--violet`/`--orange`/`--cyan`/`--accent` + `*-soft`), thêm `--violet`/`--orange` vào 3 khối theme. Ô biểu tượng dùng `--x-soft` thay cho `${color}22`. Nền ô ở theme tối từ **1.05–1.07** (cam/magenta 13% trên nền base03 gần như không thấy) lên **1.19–1.36**, biểu tượng trên ô 4.45–5.24. `solarized-light` giữ đúng 3 mã cũ (`#6c71c4`, `#cb4b16`, `#d33682`); chỉ alpha nền ô lệch ≤ .033. **Trang chủ ra khỏi danh sách miễn ESLint** – giờ chỉ còn 4 file bảng màu.
+- **Token `--raised`** (mặt nổi trên `--sidebar`/`--card`). Ở 2 theme sáng "nổi lên" = sáng hơn nền nên `--bg` (trắng/kem) làm được; ở theme tối `--bg` là mặt **tối nhất** nên mọi chỗ đó đang **lõm xuống**. Giá trị 2 theme sáng để đúng `--bg` cũ → không đổi gì. Áp cho: tab đang chọn của `AuthPanel` (đăng nhập/đăng ký), 2 khối trong nền `--sidebar` của trang chủ (dòng phần thi ở hero, thẻ tính năng), ngăn kéo sidebar mobile của `/user-manual`, panel `PreviewDialog`/`LessonPreviewDialog`, 4 popover của trình soạn đề (`SectionTabs`, `ExamToolbar`, `SlashMenu`, `number-popover` – thuộc Step 4 nhưng cùng một lỗi, đổi 1 token nên làm luôn).
+- **Token `--img-mat`** (quyết định D2): logo trung tâm nền trong suốt vẽ bằng mực đậm sẽ mất hút trên nền tối. `TenantAvatar` lót `--img-mat` (trắng ở theme tối) thay cho `--hover`; **không** lọc sáng ảnh người dùng. Logo đặc thì `object-cover` che kín nền lót. `LogoPicker` dùng lại `TenantAvatar` nên sửa 1 chỗ là xong.
+- **Chữ & nền theme tối sáng lên** (chi tiết ở plan 4.3): `--accent` `#ea5c9e → #ef70ab` (4.04 → 4.69 trên `--card`, mốc sáng 4.46), `--danger` `#e9635f → #ef7b77` (3.97 → 4.81, mốc 4.54), `--ok-text`/`--warn-text`/`--info-text` lên `#a8bd00`/`#d8a800`/`#63b4e8`, alpha `--ok/warn/info/danger-soft` từ .16 về **.12** như 2 theme sáng (.16 làm chìm chữ ~0.3 điểm mà chip cũng không rõ hơn), `--muted`/`--muted-2` `#82969a → #8ba0a4` (4.2 → 4.74 trên `--card`).
+- **Nền mờ sau modal** `--overlay` .6 → **.72** ở theme tối: bóng đổ đen của panel không nhìn ra trên nền tối nên panel `--card` phải tự nổi bằng chênh lệch với nền đã tối đi.
+- **Khối mã `/user-manual`**: `--code-bg` `#00212b → #001820` và thêm `border` cho `<pre>`. Ở 2 theme sáng khối mã là mảng tối trên nền sáng (13:1) nên rất rõ; ở theme tối nó chỉ tối hơn nền trang 1.12 → không thấy mép khối. Viền vô hại ở 2 theme sáng.
+- **Viền trên của footer** `--footer-border` alpha .14 → .2: nền footer chỉ tối hơn nền trang 1.12 (quyết định D1) nên đường kẻ phải rõ bằng `--border` (1.4) mới ra được cảm giác kết trang.
+
+**Sai khác so với plan**
+
+- Plan Step 3 chỉ nói "soát tương phản/viền/backdrop-blur/thanh cuộn/các dialog". Thực tế phải **thêm 8 token** và 1 thuộc tính `color-scheme` (bảng lý do ở plan 4.3, đã cập nhật). Hai token `--raised`, `--img-mat` là **sửa cấu trúc** chứ không phải sửa màu: cùng một token `--bg` không thể vừa là "nền trang" vừa là "mặt nổi" khi thứ tự sáng-tối đảo chiều giữa theme sáng và theme tối.
+- Đổi **9 file thuộc Step 4** (trình soạn đề, giả lập, `PreviewDialog`, `CalendarView`): đều là đổi tên token (`--accent` → `--accent-bg`, `--bg` → `--raised`) chứ không phải rà giao diện. Làm gộp ở đây để không có nửa số nút nhấn dùng token này, nửa dùng token kia. Step 4 vẫn phải rà nội dung các màn hình đó.
+- Viền ở theme tối **không phải sửa**: `--border` trên `--card` là 1.33 (mốc `solarized-light` chỉ 1.20), `--border-strong` 1.63 (mốc 1.34), viền trạng thái 1.67–1.75 (mốc 1.29–1.37). Thanh cuộn cũng vậy (con trượt alpha .28 trên nền tối rõ hơn .24 trên nền trắng). `backdrop-blur` của 2 header dính dùng `--bg-blur` (alpha .9) – không có gì phải đổi.
+
+**Đã nghiệm thu**
+
+- `pnpm build && lint && typecheck && test && format:check` pass.
+- **Đối chiếu từng biến với `HEAD`**: `light` và `solarized-light` **không có biến nào đổi giá trị**, chỉ thêm 7 token mới; chỉ khối `dark` đổi 25 giá trị. 3 khối theme vẫn có **đúng cùng 57 tên biến**.
+- Mọi `var(--…)` được dùng đều có khai báo và **mọi token khai báo đều có nơi dùng** (66/66, script 2 chiều).
+- **Không còn cặp chữ/nền nào ở theme tối kém hơn mốc 2 theme sáng.** Còn 7 cặp dưới 4.5 (3.99–4.18) nhưng tất cả đều **cao hơn** con số tương ứng ở `solarized-light`/`light` – muốn hơn nữa phải đổi cả 2 theme sáng. Ba "cặp" còn báo đỏ là dương tính giả: `--on-status` và `--highlight-fg` chỉ tồn tại kèm nền của chúng (đã kiểm từng chỗ dùng).
+- Mọi nền **đặc** màu trạng thái/nhấn (`--ok`/`--warn`/`--info`/`--danger`/`--accent-bg`, 28 chỗ) đều có màu chữ khai báo tường minh (`--on-status` hoặc `text-white`) – không chỗ nào để chữ thừa hưởng từ trang.
+- Chỉ còn **16 `text-white`**, đều nằm trên `--accent-bg` (4.55 cả 3 theme) trừ 1 dấu tích trên ô màu danh mục người dùng chọn. Không còn `bg-white`, không còn class màu Tailwind cố định nào khác.
+- CSS đã build có `color-scheme: light` ×2 + `dark` ×1 **đúng trong khối theme tương ứng**, `--raised`/`--img-mat` ×3, `--accent-bg` ×1 (khối `:root` chung), và 2 utility mới `bg-[var(--accent-bg)]`/`bg-[var(--img-mat)]` **đều sinh ra CSS**.
+- Chạy server thật (bản `standalone`, cổng 3177 – cổng 3100 có tiến trình lạ): `/`, `/login`, `/register`, trang 404 trả 200 ở cả 3 theme + cookie rác (rơi về `light`), `data-theme` đúng trong HTML server render, và **0 mã màu cứng** trong HTML của cả 4 trang.
+
+**Chưa nghiệm thu được ở phiên này**
+
+Không có tool trình duyệt và các trang trong danh sách [req-3-acceptance.md](req-3-acceptance.md) đều **cần đăng nhập** (dữ liệu render ở client nên đọc HTML server cũng không thấy gì). Phần đo được đã đo bằng script trên **toàn bộ `src`**, không chỉ trang công khai, nên rủi ro còn lại là mỹ quan. Đề nghị bạn mở **theme tối** và xem:
+
+1. **Tông màu chung** – `--accent` và `--danger` đã sáng lên (hồng/đỏ nhạt hơn Step 1) để đủ tương phản làm chữ; nút nhấn thì vẫn đúng magenta `#d33682`. Nếu thấy hồng quá nhạt, nói để hạ lại (đổi 1 dòng, chỉ ảnh hưởng theme tối).
+2. **Ô ngày/giờ và checkbox** ở Giáo trình lớp, Thời khoá biểu, Cài đặt → bảng chọn ngày phải tối theo (đây là chỗ `color-scheme` xử lý, chưa ai xem bằng mắt).
+3. **Độ nổi của modal** (`Modal`/`ConfirmDialog`/`PromptDialog`): nền mờ đã đậm .72 nhưng panel `--card` trên nền tối chỉ chênh 1.52 (2 theme sáng là 2.85–2.99) – bóng đổ đen vốn không nhìn ra trên nền tối. Nếu thấy panel "phẳng" thì nên cho `Modal` dùng `--raised` (2 theme sáng sẽ đổi nhẹ từ `#fffdf5`/`#ffffff`, cần bạn đồng ý).
+4. **Tab đang chọn của 2 khối 2 nút** – trang Chấm bài (Bài thi/Bài học) và `PreviewDialog`. Hai chỗ này để `bg-[var(--card)] shadow-sm`: ở theme tối `shadow-sm` (bóng đen mặc định của Tailwind) không thấy và nền chỉ chênh `--sidebar` 1.09, nên chỉ còn màu chữ phân biệt. **Cố ý không sửa** vì đổi sang `--raised` sẽ làm `solarized-light` đổi (pill từ `#fffdf5` sang `#fdf6e3`) – phạm điều kiện nghiệm thu của step. Bạn xem thấy chìm thì cho phép đổi.
+5. **Logo trung tâm nền trong suốt** ở theme tối: giờ có nền trắng lót (D2). Xem có bị "tem trắng" khó coi không.
+6. Footer và khối mã `/user-manual`: cả hai chỉ tối hơn nền trang ~1.1 nên phải dựa vào viền.
+
+**Lưu ý cho Step 4**
+
+- Đã có `--accent-bg` (nền nút) / `--accent` (chữ, viền) và `--raised` (mặt nổi). Rà các màn hình soạn thảo/thi/chấm bài thì **dùng đúng token theo vai trò**, đừng lấy `--accent` làm nền có chữ hay `--bg` làm popover.
+- **Bút dạ quang** (`--highlight-bg` `#fff3bf` + `--highlight-fg` `#1f2328`, không đổi theo theme) hiện chỉ đúng ở 2 chỗ có khai báo cả cặp. `HighlightPlugin` của Plate render thẻ `<mark>` **mặc định của trình duyệt** trong editor – cần xem thẻ đó ở theme tối có ra vàng/chữ đen hay không.
+- Còn 6 chỗ `bg-[var(--bg)]` làm **ô nhập** nằm trong panel `--card` (`SectionEditor`, `ExamSimulator`, `pair.tsx`, `ExamToolbar` select…): ở theme tối ô nhập thành tối hơn panel (lõm), ở 2 theme sáng thì sáng hơn (nổi). Không phải lỗi tương phản, nhưng nếu muốn đồng nhất với các ô nhập khác (đang dùng `--sidebar`) thì sửa ở Step 4.
+- `CalendarView` dùng `hover:brightness-95` (tối đi khi hover) cho ô buổi học – trên nền tối nên là sáng lên. Xem lại ở Step 4.
+- 5 script đo tương phản nằm trong scratchpad của phiên này (mất khi đổi phiên). Nếu Step 4 cần đo lại thì viết lại theo mô tả ở đầu mục này; phần khó duy nhất là bóc cặp chữ/nền từ `className`.
+
+### Step 4 – Rà theme tối: soạn thảo, thi, chấm bài, lịch (2026-09-25)
+
+**Cách rà**
+
+Viết lại 3 script trong scratchpad (bản Step 3 mất theo phiên): parser `globals.css` → 3 bảng màu + tỉ số tương phản WCAG; bóc cặp chữ/nền thật từ mọi chuỗi trong `src` (79 cặp) + ma trận "chữ trên nền thừa hưởng"; đối chiếu từng biến với `git show`. Hai cái bẫy khi viết lại:
+
+- Regex tách khối `:root` phải **không nuốt dấu `}`** (nuốt thì các khối chẵn bị bỏ qua – lúc đầu `solarized-light` ra 0 biến), và phải **bỏ các khối `:root[data-theme='dark'] .lớp-nào-đó`** ra khỏi bảng màu.
+- Nền bán trong suốt (`--x-soft`, `--hover`, `--danger-bg`) phải trộn lên **mặt thật của theme** rồi mới tính; trộn lên trắng thì mọi cặp ở theme tối ra số sai hoàn toàn (`--ok-text/--ok-soft` báo 1.92 thay vì 5.06).
+
+**Phát hiện chính: phần việc của step này không nằm trong bảng token.** Step 2–3 đã tokenise hết các màn hình soạn thảo/thi/chấm bài/lịch, nên đo cặp chữ/nền chỉ còn đúng 1 chỗ lệch nhẹ. Cái hỏng ở theme tối là **3 nhóm màu đứng ngoài bảng token**, đều "nướng" cho nền sáng:
+
+| Nhóm | Nguồn màu | Tệ nhất ở theme tối (trước) |
+|---|---|---|
+| Màu chữ/nền người soạn chọn trong nội dung đề | 8 + 6 mã màu trong `ExamToolbar`, lưu vào dữ liệu đề | chữ `#1f2328` **1.05:1**; nền `#ffe3e3` với chữ thừa hưởng **1.01:1** |
+| Indicator, dạng câu hỏi, callout | `@lang/exam-core` (`INDICATORS`, `QUESTION_TYPES`, `CALLOUT_COLORS`) | `#a61e4d` trên `--card` **1.80:1** (ở `solarized-light` là 6.68) |
+| Màu lớp trong lịch | `PALETTE` của `calendar-model.ts` | không hỏng, nhưng hex cố định nên không sáng lên được |
+
+**Đã làm**
+
+- **Quyết định D7 (bạn chọn phương án (d))** – giữ vùng nội dung theo theme, ở theme tối tự chuyển màu người dùng sang bản sáng cùng sắc. Cơ chế đặt trong `globals.css`, không có mã màu nào thêm vào component:
+  - `.ls-leaf-fg` / `.ls-leaf-bg`: component ghi màu ra biến `--leaf-fg`/`--leaf-bg`; theme tối `color-mix(in srgb, var(--leaf-fg) 35%, var(--heading))` cho chữ và `color-mix(… var(--leaf-bg) 22%, transparent)` cho nền.
+  - Áp cho **cả hai đường render**: bản giả lập (`renderLeaf` của `ExamSimulator` – dùng ở xem trước, thi, học bài, chấm bài, xem lại bài làm) và **trình soạn đề**, bằng cách cấu hình `FontColorPlugin`/`FontBackgroundColorPlugin` của Plate với `transformClassName` + `transformStyle` (ghi biến CSS thay cho `color`/`background-color`). Plate merge sâu nên `nodeKey`/parser của plugin gốc giữ nguyên.
+  - Tỉ lệ 35% chọn theo **màu tối nhất phải đỡ**: `#1f2328` đạt **4.48** trên cả `--bg`/`--card`/`--raised` (trộn 55% thì chỉ 3.09). 7 màu chữ còn lại 5.39–7.15. 6 màu nền dạ quang: chữ `--heading` trên nền mới **5.51–5.86** (trước 1.01–1.16), mảng nền vẫn nổi 1.81–1.92 so với `--card`.
+- **`.ls-tint` + `-fg`/`-line`/`-dot`/`-soft`/`-faint`** cho bảng màu cố định của trình soạn đề, cùng công thức 35%: 15 màu indicator/dạng câu hỏi từ 1.80–5.23 lên **5.11–7.15**. Áp cho chip indicator (`plate/exam/indicator.tsx`), callout ở cả editor (`rich-blocks.tsx`) lẫn giả lập, và 4 chỗ chấm màu (`Minimap`, `SlashMenu`, `IndicatorDialog`, 2 menu của `ExamToolbar`).
+- **Lịch** (quyết định 2): `PALETTE` của `calendar-model.ts` đổi sang 8 token (`--info`, `--accent`, `--ok`, `--orange`, `--violet`, `--cyan`, `--warn`, `--danger`) – ở `solarized-light` là **đúng 8 mã cũ**, ở theme tối tự sáng lên. Nền/viền ô buổi học chuyển vào class `.ls-event`; nền ô ở theme tối chênh nền trang **1.15–1.25** (2 theme sáng 1.12–1.19). File ra khỏi danh sách miễn ESLint → **chỉ còn 3 file** bảng màu.
+- **`hover:brightness-95` của `CalendarView`** (2 chỗ, quyết định 4): bỏ, thay bằng `.ls-event:hover` tăng độ đậm 12% → 22%. Trên nền tối "tối đi khi hover" là sai chiều; cách mới đổi một lượng tương đương ở cả 3 theme (1.16–1.23).
+- **Bút dạ quang trong editor** (quyết định 3): `HighlightPlugin` render `<mark>` trần nên trong trình soạn đề nó ăn **màu mặc định của trình duyệt** (vàng gắt, và sau Step 3 còn đổi theo `color-scheme: dark`), lệch hẳn với bản giả lập vốn dùng `--highlight-bg`/`--highlight-fg`. Thêm `.exam-editor mark` khai báo cả cặp → 3 theme và mọi trình duyệt ra cùng một màu.
+- **Token `--panel`** (quyết định D8, câu Step 3 để lại): mặt của `Modal` (nên cả `ConfirmDialog`/`PromptDialog`) và tab đang chọn của 2 khối 2 nút (trang Chấm bài, `PreviewDialog`). Ở 2 theme sáng bằng **đúng `--card` cũ** nên không đổi gì; ở theme tối nhấc lên `--raised`: panel dialog chênh nền mờ **1.52 → 1.75**, pill chênh thanh `--sidebar` **1.06 → 1.21** (mốc `solarized-light` 1.20).
+- **Ảnh trong nội dung đề**: hình vẽ nền trong suốt mực đậm mất hút trên nền tối. Lót `--img-mat` như logo trung tâm (quyết định D2), chỉ trong `:root[data-theme='dark']` nên 2 theme sáng không đổi gì; ảnh đặc thì che kín nền lót.
+- **3 màu chữ của theme tối sáng thêm một nấc**: `--accent` `#ef70ab → #f177ae`, `--danger` `#ef7b77 → #f2837f`, `--orange` `#e8834f → #eb8a58` (kèm `*-soft`/`-border`/`-bg` cho khớp rgb). Lý do: `--panel`/`--raised` sáng hơn `--card` nên chữ trên dialog tụt ~0.6 điểm – ba màu này đang **kém mốc 2 theme sáng** 0.08–0.13 khi nằm trên mặt đó. Sau khi sửa: 4.30 / 4.49 / 4.48.
+
+**Sai khác so với plan**
+
+- Plan Step 4 viết là "rà theme tối" các màn hình. Thực tế chỉ **1 token mới**; phần lớn công việc là **3 cơ chế hiển thị** trong `globals.css` (`.ls-tint*`, `.ls-leaf-*`, `.ls-event`) cho màu nằm ngoài bảng token. Plan mục 4.3 đã thêm bảng mô tả, mục 1 thêm quyết định D7/D8.
+- Dùng `color-mix()` – lần đầu trong dự án. Baseline từ 2023 (Chrome 111, Safari 16.2, Firefox 113); project không khai báo `browserslist` nên Next đã nhắm trình duyệt hiện đại.
+- **Quyết định 5 (6 chỗ `bg-[var(--bg)]` làm ô nhập): không gom về `--sidebar`.** Không phải lỗi tương phản (chữ `--heading` trên `--bg` ở theme tối đạt 12.25), "lõm xuống" là đúng ngữ nghĩa của ô nhập, và gom lại sẽ **đổi `solarized-light`** (`#fdf6e3` → `#eee8d5`) – phạm điều kiện nghiệm thu. Nếu muốn đồng nhất thì làm thành một việc riêng, đổi cả 3 theme cùng lúc.
+- `ExamToolbar` **vẫn ở danh sách miễn ESLint**: 8 màu chữ + 6 màu nền là **ô chọn màu**, phải hiện đúng mã màu sẽ lưu vào dữ liệu. Chỉ chỗ *hiển thị* màu đó mới đi qua `.ls-leaf-*`. `catalog-ui.tsx` giữ nguyên theo plan mục 2.8.
+- Chip indicator thiếu dạng câu (`missing`) trước đây trộn `var(--danger)` vào cùng chỗ với màu bảng; nay tách hẳn sang class Tailwind (`border-[var(--danger)] bg-[var(--danger-soft)]`) cho khỏi lẫn hai cơ chế.
+
+**Đã nghiệm thu**
+
+- `pnpm build && lint && typecheck && test && format:check` pass.
+- **Đối chiếu từng biến với `HEAD` và với `67b82ce`**: `light` và `solarized-light` **không có biến nào đổi giá trị**, chỉ thêm 8 token (7 của Step 3 + `--panel`). Khối `dark` đổi 18 giá trị so với `67b82ce`, trong đó Step 4 đụng 8 (`--accent`, `--accent-soft`, `--danger`, `--danger-soft`, `--danger-border`, `--danger-bg`, `--orange`, `--orange-soft`). 3 khối theme vẫn có **đúng cùng 67 tên biến**.
+- **Không còn cặp chữ/nền nào ở theme tối kém hơn mốc 2 theme sáng** – cả trong 79 cặp bóc từ `className` lẫn ma trận nền thừa hưởng (đây là chỗ Step 3 còn 3 cặp lệch trên `--raised`).
+- Mọi `var(--…)` được dùng đều có khai báo và mọi token khai báo đều có nơi dùng (script 2 chiều; 4 biến `--tint-raw`/`--leaf-fg`/`--leaf-bg`/`--event-color` là biến đặt bằng inline style từ dữ liệu, không thuộc bảng màu).
+- **Không còn `rgba()`/hex nào** trong `src` ngoài `globals.css` và 3 file bảng màu người dùng chọn.
+- CSS đã build có đủ: `.ls-tint*` (7 rule), 3 rule `:root[data-theme='dark'] .ls-*`, `.ls-event` + `:hover`, `:root[data-theme='dark'] .exam-media`, `.exam-editor mark`, `--panel` × 3 theme và utility `bg-[var(--panel)]`.
+- Chạy server thật (bản `standalone`, cổng 3188): `/`, `/login`, `/register` trả 200 ở cả 3 theme + cookie rác (rơi về `light`), `data-theme` đúng trong HTML server render, **0 mã màu cứng** trong HTML, và CSS lấy qua HTTP có đúng các rule mới.
+
+**Chưa nghiệm thu được ở phiên này**
+
+Phép thử của step ("soạn một đề có đủ khối → xem trước → thi thử → chấm tay ở theme tối") **cần bạn bấm**: máy không có tool trình duyệt, và mọi trang trong phạm vi Step 4 đều cần đăng nhập + render ở client nên đọc HTML server không thấy gì. Những chỗ chỉ bạn xác nhận được:
+
+1. **Màu chữ/nền người dùng chọn ở theme tối** (D7) – mở một đề đã soạn có màu chữ/bút nền. Số đo nói là đọc được (4.48–7.15), nhưng màu hiện ra **nhạt hơn màu đã chọn** và hai màu gần nhau (2 sắc hồng, 2 sắc tím) sẽ khó phân biệt hơn. Muốn đậm hơn thì đổi `35%` thành `45%` trong `globals.css` (`--tint` và `.ls-leaf-fg`), đổi lại màu gần đen tụt xuống 4.03.
+2. **Trình soạn đề ở theme tối** – chip indicator, callout, `<mark>` bút dạ quang, chấm màu trong `SlashMenu`/`Minimap`. Riêng đường đi trong editor (cấu hình `transformClassName`/`transformStyle` của Plate) là chỗ mình **không chạy thử được**: nếu Plate không áp, màu chữ sẽ vẫn hiện y như đã chọn (tức là chữ đen trên nền tối) – đây là dấu hiệu duy nhất cần để mắt.
+3. **Ô buổi học trong lịch** (tuần/tháng): màu lớp giờ theo token nên **ở `light` có 3 sắc đổi nhẹ** (tím/cam/mòng dùng bản đậm hơn của theme trắng); `solarized-light` giữ đúng 8 mã cũ. Xem hover có thấy đổi không.
+4. **Dialog ở theme tối** (D8): panel đã nhấc lên nhưng vẫn thấp hơn mốc 2 theme sáng (1.75 vs 2.85). Nếu còn thấy phẳng thì nói, đổi 1 dòng `--panel` của khối `dark`.
+5. **Tông hồng/đỏ/cam** đã sáng thêm một nấc so với Step 3 – nếu thấy nhạt quá, 3 dòng đó lùi lại được mà không ảnh hưởng 2 theme sáng.
+6. **Ảnh trong đề có nền trong suốt** ở theme tối: giờ có nền sáng lót, xem có bị "tem trắng" khó coi không.
+
+**Lưu ý cho Step 5**
+
+- `/user-manual` cần thêm: mục đổi theme (D4 đã ghi) **và** một câu ở trang soạn đề rằng màu chữ/nền tự chọn sẽ được làm sáng lên ở giao diện Tối để đọc được (D7) – người soạn sẽ thấy màu hiện ra không đúng y mã đã chọn.
+- `CLAUDE.md` (mục lang-app) nên ghi thêm, cạnh quy ước "màu phải qua token": **màu đến từ dữ liệu hoặc bảng màu cố định thì đi qua `.ls-tint*` / `.ls-leaf-*` của `globals.css`, không đặt thẳng `color`/`backgroundColor`**.
+- Còn 3 file được miễn luật ESLint màu cứng: `global-error.tsx`, `catalog-ui.tsx`, `ExamToolbar.tsx` – đều có lý do đã ghi trong `eslint.config.mjs`.
+- Việc để ngỏ (ngoài phạm vi req-4, cần đổi cả 3 theme): gom 6 chỗ `bg-[var(--bg)]` làm ô nhập về `--sidebar`.

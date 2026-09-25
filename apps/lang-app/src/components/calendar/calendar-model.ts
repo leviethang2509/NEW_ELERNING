@@ -29,16 +29,16 @@ export interface CalendarEvent {
   href?: string;
 }
 
-/** Màu theo lớp: bảng màu Solarized. */
+/** Màu theo lớp: 8 sắc Solarized, lấy qua token nên tự sáng lên ở theme tối. */
 const PALETTE = [
-  '#268bd2',
-  '#d33682',
-  '#859900',
-  '#cb4b16',
-  '#6c71c4',
-  '#2aa198',
-  '#b58900',
-  '#dc322f',
+  'var(--info)',
+  'var(--accent)',
+  'var(--ok)',
+  'var(--orange)',
+  'var(--violet)',
+  'var(--cyan)',
+  'var(--warn)',
+  'var(--danger)',
 ];
 
 export function colorFor(key: string): string {

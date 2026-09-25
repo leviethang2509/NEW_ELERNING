@@ -66,7 +66,7 @@ export function SiteHeaderNav() {
       </Link>
       <Link
         href="/register"
-        className="whitespace-nowrap rounded-lg bg-[var(--accent)] px-3 py-2 text-[14px] font-semibold text-white transition hover:brightness-105 sm:px-4"
+        className="whitespace-nowrap rounded-lg bg-[var(--accent-bg)] px-3 py-2 text-[14px] font-semibold text-white transition hover:brightness-105 sm:px-4"
       >
         {vi.auth.register}
       </Link>

@@ -1,5 +1,6 @@
 'use client';
 
+import type { CSSProperties } from 'react';
 import { ChevronDown } from 'lucide-react';
 import {
   CALLOUT_KEY,
@@ -108,13 +109,12 @@ function CalloutElement(props: PlateElementProps) {
   return (
     <PlateElement
       {...props}
-      className="my-2.5 whitespace-pre-wrap rounded-lg border-l-4 px-3 py-2"
-      style={{ borderColor: color, backgroundColor: `${color}14` }}
+      className="ls-tint ls-tint-line ls-tint-faint my-2.5 whitespace-pre-wrap rounded-lg border-l-4 px-3 py-2"
+      style={{ '--tint-raw': color } as CSSProperties}
     >
       <div
         contentEditable={false}
-        className="mb-0.5 select-none text-[12px] font-semibold"
-        style={{ color }}
+        className="ls-tint-fg mb-0.5 select-none text-[12px] font-semibold"
       >
         {readOnly ? (
           text.callouts[variant]

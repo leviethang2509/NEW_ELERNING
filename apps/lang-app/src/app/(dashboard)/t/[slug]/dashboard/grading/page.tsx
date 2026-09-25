@@ -261,7 +261,7 @@ export default function GradingPage({
             onClick={() => changeKind(item)}
             className={`rounded-lg px-3.5 py-1.5 text-[13px] font-semibold transition ${
               item === kind
-                ? 'bg-[var(--card)] text-[var(--heading)] shadow-sm'
+                ? 'bg-[var(--panel)] text-[var(--heading)] shadow-sm'
                 : 'text-[var(--muted)] hover:text-[var(--body)]'
             }`}
           >

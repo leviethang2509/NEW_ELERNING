@@ -75,6 +75,34 @@ const ExamIndentPlugin = IndentPlugin.configure({
   inject: { targetPlugins: ALIGN_TARGETS },
 });
 
+// Màu chữ / màu nền người soạn chọn: ghi ra biến CSS + class thay vì đặt thẳng
+// `color`/`background-color`, để `globals.css` đổi được cách hiển thị ở theme
+// tối (bảng màu của toolbar "nướng" cho nền sáng – xem `.ls-leaf-*`).
+const leafColorStyle =
+  (name: string) =>
+  ({ value }: { value?: unknown }) =>
+    // Kiểu của Plate là `CSSStyleDeclaration`, nhưng chỗ nhận thật là `style`
+    // của React – nơi duy nhất đặt được biến CSS.
+    ({ [name]: String(value ?? '') }) as unknown as CSSStyleDeclaration;
+
+const ExamFontColorPlugin = FontColorPlugin.configure({
+  inject: {
+    nodeProps: {
+      transformClassName: () => 'ls-leaf-fg',
+      transformStyle: leafColorStyle('--leaf-fg'),
+    },
+  },
+});
+
+const ExamFontBackgroundColorPlugin = FontBackgroundColorPlugin.configure({
+  inject: {
+    nodeProps: {
+      transformClassName: () => 'ls-leaf-bg',
+      transformStyle: leafColorStyle('--leaf-bg'),
+    },
+  },
+});
+
 /** Plugin của trình soạn đề (bộ của lightc-general + callout, gập/mở, furigana). */
 export const EXAM_EDITOR_PLUGINS = [
   BoldPlugin,
@@ -85,8 +113,8 @@ export const EXAM_EDITOR_PLUGINS = [
   HighlightPlugin,
   SuperscriptPlugin,
   SubscriptPlugin,
-  FontColorPlugin,
-  FontBackgroundColorPlugin,
+  ExamFontColorPlugin,
+  ExamFontBackgroundColorPlugin,
   FontSizePlugin,
   H1Plugin,
   H2Plugin,

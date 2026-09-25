@@ -116,7 +116,7 @@ export function CalendarView({
                 onClick={() => onViewChange(value)}
                 className={`px-3 py-1.5 text-[13px] font-medium transition ${
                   view === value
-                    ? 'bg-[var(--accent)] text-white'
+                    ? 'bg-[var(--accent-bg)] text-white'
                     : 'text-[var(--body)] hover:bg-[var(--hover)]'
                 }`}
               >
@@ -187,15 +187,15 @@ function EventLink({
   );
 }
 
+// Nền/viền của ô buổi học nằm ở class `.ls-event` (globals.css) để pha loãng
+// và hover đổi theo theme; ở đây chỉ truyền màu của lớp.
 function eventStyle(event: CalendarEvent): React.CSSProperties {
-  const color = colorFor(event.colorKey);
   return {
-    backgroundColor: `${color}1f`,
-    borderLeft: `3px solid ${color}`,
+    '--event-color': colorFor(event.colorKey),
     ...(event.conflict
       ? { outline: '2px solid var(--danger)', outlineOffset: '-1px' }
       : {}),
-  };
+  } as React.CSSProperties;
 }
 
 function DayHeader({
@@ -217,7 +217,7 @@ function DayHeader({
       </span>
       <span
         className={`grid h-7 w-7 place-items-center rounded-full text-[14px] font-semibold ${
-          today ? 'bg-[var(--accent)] text-white' : 'text-[var(--heading)]'
+          today ? 'bg-[var(--accent-bg)] text-white' : 'text-[var(--heading)]'
         }`}
       >
         {Number(date.slice(8, 10))}
@@ -311,7 +311,7 @@ function WeekGrid({
                     <EventLink
                       key={event.id}
                       event={event}
-                      className={`absolute overflow-hidden rounded-md px-1.5 py-1 text-[11.5px] leading-tight text-[var(--heading)] transition hover:brightness-95 ${
+                      className={`ls-event absolute overflow-hidden rounded-md px-1.5 py-1 text-[11.5px] leading-tight text-[var(--heading)] transition ${
                         event.cancelled ? 'opacity-50' : ''
                       }`}
                       style={{
@@ -395,7 +395,7 @@ function MonthGrid({
                 <span
                   className={`grid h-6 min-w-6 place-items-center rounded-full px-1 text-[12.5px] font-semibold ${
                     day === todayDate()
-                      ? 'bg-[var(--accent)] text-white'
+                      ? 'bg-[var(--accent-bg)] text-white'
                       : 'text-[var(--heading)]'
                   }`}
                 >
@@ -414,7 +414,7 @@ function MonthGrid({
                 <EventLink
                   key={event.id}
                   event={event}
-                  className={`block truncate rounded px-1 py-0.5 text-[11.5px] text-[var(--heading)] hover:brightness-95 ${
+                  className={`ls-event block truncate rounded px-1 py-0.5 text-[11.5px] text-[var(--heading)] ${
                     event.cancelled ? 'line-through opacity-50' : ''
                   }`}
                   style={eventStyle(event)}

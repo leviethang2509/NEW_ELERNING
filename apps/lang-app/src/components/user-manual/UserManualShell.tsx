@@ -175,7 +175,7 @@ function ManualLayout({
             }`}
           />
           <aside
-            className={`fixed bottom-0 left-0 top-[64px] z-20 flex w-[290px] flex-col border-r border-[var(--border)] bg-[var(--bg)] transition-transform duration-200 lg:sticky lg:h-[calc(100vh-64px)] lg:translate-x-0 lg:bg-transparent ${
+            className={`fixed bottom-0 left-0 top-[64px] z-20 flex w-[290px] flex-col border-r border-[var(--border)] bg-[var(--raised)] transition-transform duration-200 lg:sticky lg:h-[calc(100vh-64px)] lg:translate-x-0 lg:bg-transparent ${
               sidebarOpen ? 'translate-x-0' : '-translate-x-full'
             }`}
           >

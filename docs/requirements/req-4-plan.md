@@ -26,6 +26,8 @@
 - D4 – Cập nhật `/user-manual` (`03-tai-khoan.json`) + `updatedAt`; trang docs cũng phải chạy đúng ở dark.
 - D5 – Nhóm P0 của [epic-1](../epic/epic-1.md) dời sang req-5; ghi chú vào epic-1.
 - D6 – Sửa tiêu đề `req-4.md` thành `# Requirement 4`.
+- **D7 (chốt ở Step 4, 2026-09-25)** – Màu chữ/nền người soạn tự chọn trong nội dung đề: **giữ vùng nội dung theo theme**, ở theme tối tự chuyển màu sang bản sáng cùng sắc bằng `color-mix` (phương án (d)). Không làm "tờ giấy sáng" ở cả 3 theme, không đổi dữ liệu đã lưu.
+- **D8 (chốt ở Step 4)** – Độ nổi của dialog ở theme tối: nhấc lên đúng `--raised` (chênh nền mờ 1.52 → 1.75), **không** chọn giá trị sáng hơn để bằng mốc 2 theme sáng (2.85).
 
 ---
 
@@ -104,6 +106,31 @@ Caret `<select>` trong `globals.css` đang nhúng `stroke='%236b7280'` trong dat
 | `--footer-muted` · `--footer-divider` | Dòng bản quyền và đường kẻ trong footer |
 | `--on-accent` · `--on-accent-muted` · `--on-accent-line` · `--on-accent-fg` · `--highlight-bg` · `--highlight-fg` | Màu **không đổi theo theme**: nằm trên nền `--accent` (thẻ gói nổi, CTA) hoặc là màu bút dạ quang. Khai báo một lần trong `:root` |
 
+**Token thêm ở Step 3** (rà theme tối mới thấy thiếu; đã có trong `globals.css`):
+
+| Token | Vì sao cần |
+|---|---|
+| `--accent-bg` | Nền **đặc** của nút nhấn, `#d33682` ở **cả 3 theme** (chữ `text-white` đạt 4.55). `--accent` ở theme tối phải sáng lên để làm chữ/viền nên dùng nó làm nền thì chữ trắng chỉ còn 3.2. Không đổi theo theme → khai báo ở `:root` chung, cùng chỗ với `--on-accent`. `--accent-hover` cũng dồn về đây |
+| `--raised` | Mặt **nổi lên trên** `--sidebar`/`--card`: popover, tab đang chọn, panel `PreviewDialog`, ngăn kéo sidebar mobile. 2 theme sáng để đúng giá trị `--bg` cũ (trắng/kem) nên không đổi gì; theme tối `--bg` là mặt **tối nhất** nên các chỗ đó đang bị lõm xuống |
+| `--img-mat` | Nền lót ảnh logo có nền trong suốt (quyết định D2: không lọc sáng ảnh người dùng). Trắng ở theme tối, bằng `--hover` cũ ở 2 theme sáng |
+| `--violet` · `--violet-soft` · `--orange` · `--orange-soft` | 2 sắc Solarized còn lại của khối minh hoạ trang chủ. Trước đây là hex viết thẳng trong `(site)/page.tsx` nên ở theme tối nền ô 13% gần như không thấy (1.05) |
+
+**Token thêm ở Step 4** (rà trình soạn đề / thi / lịch; đã có trong `globals.css`):
+
+| Token | Vì sao cần |
+|---|---|
+| `--panel` | Mặt của **dialog** (`Modal`, nên cả `ConfirmDialog`/`PromptDialog`) và tab đang chọn của 2 khối 2 nút (trang Chấm bài, `PreviewDialog`). Bằng đúng `--card` ở 2 theme sáng nên **không đổi gì**; ở theme tối nhấc lên `--raised` vì bóng đổ đen không nhìn ra trên nền tối – panel `--card` chỉ chênh nền mờ 1.52 (2 theme sáng 2.85–2.99) |
+
+Ngoài token, Step 4 còn thêm **3 cơ chế trong `globals.css`** cho những màu **không** đến từ bảng token (dữ liệu người dùng hoặc bảng màu cố định của trình soạn đề) – chúng "nướng" cho nền sáng nên trên nền tối có cái chỉ còn 1.05:1:
+
+| Class | Dùng ở đâu | Làm gì ở theme tối |
+|---|---|---|
+| `.ls-tint` + `-fg`/`-line`/`-dot`/`-soft`/`-faint` | indicator & dạng câu hỏi, callout, chấm màu trong `SlashMenu`/`Minimap`/`IndicatorDialog`/`ExamToolbar` (màu nằm ở `@lang/exam-core`) | `--tint = color-mix(in srgb, var(--tint-raw) 35%, var(--heading))` |
+| `.ls-leaf-fg` / `.ls-leaf-bg` | màu chữ & màu nền **người soạn tự chọn** trong nội dung đề (quyết định D7) | chữ trộn 35% như trên; nền đặc đổi thành mảng mờ 22% cùng sắc |
+| `.ls-event` | ô buổi học trong lịch | không cần trộn (màu lớp đã là token); hover tăng độ đậm 12% → 22% thay cho `brightness-95` (trên nền tối "tối đi" là sai chiều) |
+
+Ngoài token, mỗi khối theme còn khai báo **`color-scheme`** (`light`/`light`/`dark`): checkbox, radio, mũi lên-xuống của ô số, ô ngày/giờ + bảng chọn ngày, nền autofill và thanh cuộn mặc định do trình duyệt vẽ, không ăn theo CSS của mình – thiếu dòng này thì theme tối lọt mảng trắng ở mọi ô đó.
+
 Sửa so với bản Step 1: `--overlay` để `rgba(0,0,0,.4)` ở 2 theme sáng (đúng `bg-black/40` của `Modal` trước req-4), `--info-text` của `solarized-light` để `#1f6fa8` (đúng chữ callout/`FormAlert` trước req-4), alpha của `--ok-soft`/`--warn-soft`/`--info-soft` gom về .12/.12/.10 (giữa dải .06–.15 đang dùng, mọi chỗ lệch ≤ .06 alpha).
 
 ### 4.4 Chặn tái phát
@@ -156,6 +183,8 @@ Bằng **ESLint** (`no-restricted-syntax` trong config của lang-app): báo l�
 ### Step 4 – Rà theme tối: soạn thảo, thi, chấm bài, lịch
 - Trình soạn đề & bài học (Plate: toolbar, callout, khối gập mở, furigana, indicator, ô điền, cặp ghép), `PreviewDialog`/`LessonPreviewDialog`, giả lập (`ExamSimulator`, ô số câu, cờ), trang thi `(exam)` + `Countdown` + `SpeakingRecorder`, học bài, chấm bài (`GradingAttemptView`), `CalendarView` + `ClassSchedulePanel`, `MediaDialog`/thư viện media, `DataTable`/`Pagination`.
 - **Nghiệm thu:** soạn một đề có đủ khối → xem trước → thi thử → chấm tay, toàn bộ ở theme tối.
+
+> Sai khác khi làm: phần lớn công việc **không phải** chỉnh giá trị token (Step 2–3 đã tokenise hết các màn hình này) mà là xử lý 3 nhóm màu nằm ngoài bảng token – xem 3 cơ chế `.ls-*` ở mục 4.3 và quyết định D7/D8.
 
 ### Step 5 – Tài liệu & khép lại
 - `/user-manual`: mục đổi theme trong `03-tai-khoan.json` + `updatedAt`.
