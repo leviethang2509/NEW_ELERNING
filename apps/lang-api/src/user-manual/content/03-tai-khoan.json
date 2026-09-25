@@ -348,6 +348,89 @@
           "text": "Nếu API dừng quá 3 ngày, các mốc rơi đúng khoảng dừng sẽ không được báo lại; xem [Sự cố thường gặp](page:su-co-thuong-gap)."
         }
       ]
+    },
+    {
+      "id": "giao-dien",
+      "title": "Giao diện",
+      "summary": "Ba bảng màu Sáng / Giấy / Tối, nút đổi giao diện nằm ở đâu và lựa chọn được nhớ thế nào.",
+      "roles": [
+        "REGISTERED_USER",
+        "SYSTEM_OWNER",
+        "SYSTEM_ADMIN",
+        "TENANT_OWNER",
+        "TENANT_ADMIN",
+        "TEACHER",
+        "STUDENT",
+        "PARENT"
+      ],
+      "blocks": [
+        {
+          "type": "paragraph",
+          "text": "Nút **Giao diện** nằm ở góc trên bên phải, cạnh chuông **Thông báo**. Bấm để mở menu 4 mục; mục đang dùng có dấu tích."
+        },
+        {
+          "type": "table",
+          "columns": ["Mục", "Nền", "Dùng khi"],
+          "rows": [
+            ["**Sáng**", "Trắng", "Mặc định khi chưa chọn gì"],
+            [
+              "**Giấy**",
+              "Kem (Solarized Light)",
+              "Giao diện của hệ thống trước đây"
+            ],
+            [
+              "**Tối**",
+              "Tối (Solarized Dark)",
+              "Phòng thiếu sáng, làm việc buổi tối"
+            ],
+            [
+              "**Theo hệ thống**",
+              "Theo cài đặt sáng/tối của máy",
+              "Máy đang tự đổi sáng/tối theo giờ"
+            ]
+          ]
+        },
+        {
+          "type": "list",
+          "items": [
+            "**Theo hệ thống** khi máy đang ở chế độ sáng ra **Sáng** (nền trắng), không ra **Giấy**.",
+            "Nút có ở header khu vực chính, header dashboard (`/admin` và dashboard trung tâm) và trang tài liệu này.",
+            "Trang thi toàn màn hình chỉ có nút ở **màn hình giới thiệu section** (trước khi bấm Bắt đầu); khi đồng hồ đang chạy thì không đổi giao diện được."
+          ]
+        },
+        {
+          "type": "heading",
+          "level": 2,
+          "text": "Lựa chọn được nhớ ở đâu"
+        },
+        {
+          "type": "list",
+          "items": [
+            "Nhớ theo **trình duyệt đang dùng** (cookie `ls_theme` + một bản sao trong bộ nhớ trình duyệt), **không** lưu theo tài khoản: máy khác hoặc trình duyệt khác phải chọn lại.",
+            "Cookie sống 1 năm và không liên quan tới đăng nhập – xoá nó chỉ làm giao diện quay về **Sáng**.",
+            "Giao diện được áp ngay từ HTML đầu tiên nên mở trang không bị loé sáng rồi mới tối."
+          ]
+        },
+        {
+          "type": "callout",
+          "tone": "info",
+          "text": "Người dùng báo “đổi giao diện xong, tải lại trang lại về Sáng”: trình duyệt đang chặn cookie hoặc bộ nhớ cục bộ của trang (cửa sổ ẩn danh, thiết lập chặn cookie quá chặt, tiện ích tự dọn cookie)."
+        },
+        {
+          "type": "heading",
+          "level": 2,
+          "text": "Màu trong nội dung đề thi và bài học"
+        },
+        {
+          "type": "paragraph",
+          "text": "Màu chữ và màu nền do người soạn chọn trong [Trình soạn đề](page:trinh-soan-de) được **làm sáng lên** khi đang ở giao diện **Tối** – nếu giữ nguyên thì chữ tô màu đậm sẽ chìm hẳn vào nền tối. Vì vậy ở giao diện Tối, màu hiện ra nhạt hơn mã màu đã chọn và hai màu gần nhau khó phân biệt hơn. Nội dung đã lưu **không đổi**: chuyển về **Sáng** hoặc **Giấy** là thấy đúng màu gốc."
+        },
+        {
+          "type": "callout",
+          "tone": "tip",
+          "text": "Khi soạn đề mà muốn kiểm tra màu học viên sẽ thấy, đổi giao diện rồi bấm **Xem trước** – cửa sổ xem trước dùng đúng cách hiển thị của màn hình thi."
+        }
+      ]
     }
   ]
 }

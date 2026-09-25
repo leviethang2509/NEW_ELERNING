@@ -16,7 +16,11 @@
           "type": "paragraph",
           "text": "Menu **Đề thi & Bài học → Đề thi** (`/t/{slug}/dashboard/exams`). Danh sách tìm theo tên đề, lọc trạng thái, danh mục, loại đề, người tạo. Mỗi dòng hiện số section, tổng phút, số câu, version hiện tại, người tạo; đề **Chỉ qua lớp** có thêm nhãn cạnh trạng thái, bản nhân bản ghi “Bản sao của …”."
         },
-        { "type": "heading", "level": 2, "text": "Trạng thái" },
+        {
+          "type": "heading",
+          "level": 2,
+          "text": "Trạng thái"
+        },
         {
           "type": "table",
           "columns": ["Trạng thái", "Học viên thấy?", "Chuyển tiếp"],
@@ -34,16 +38,24 @@
           "type": "paragraph",
           "text": "Không có đường quay về Nháp. Sửa đề đang publish vẫn được, nhưng nội dung lưu phải không còn lỗi."
         },
-        { "type": "heading", "level": 2, "text": "Tạo đề" },
+        {
+          "type": "heading",
+          "level": 2,
+          "text": "Tạo đề"
+        },
         {
           "type": "steps",
           "items": [
-            { "title": "Bấm Tạo đề" },
+            {
+              "title": "Bấm Tạo đề"
+            },
             {
               "title": "Chọn Loại đề",
               "text": "Chỉ loại đề đang dùng (hệ thống hoặc trung tâm). Form cho biết đề sẽ có những section nào."
             },
-            { "title": "Nhập Tên đề (tối đa 200 ký tự) và Mô tả" },
+            {
+              "title": "Nhập Tên đề (tối đa 200 ký tự) và Mô tả"
+            },
             {
               "title": "Chọn Hiển thị",
               "text": "**Công khai trong trung tâm** (mặc định) hoặc **Chỉ qua lớp**. Xem mục Hiển thị bên dưới."
@@ -54,7 +66,11 @@
             }
           ]
         },
-        { "type": "heading", "level": 2, "text": "Soạn, xem trước, publish" },
+        {
+          "type": "heading",
+          "level": 2,
+          "text": "Soạn, xem trước, publish"
+        },
         {
           "type": "list",
           "items": [
@@ -63,12 +79,20 @@
             "**Publish** từ trình soạn hoặc danh sách. Phải lưu hết thay đổi trước; còn lỗi thì API trả 422 và bảng **Kiểm tra** liệt kê lỗi theo section."
           ]
         },
-        { "type": "heading", "level": 2, "text": "Sửa thông tin đề" },
+        {
+          "type": "heading",
+          "level": 2,
+          "text": "Sửa thông tin đề"
+        },
         {
           "type": "paragraph",
           "text": "Nút **Thông tin đề** trong trình soạn: đổi tên, mô tả, loại đề, **Hiển thị**. Không tạo version mới. Đổi loại đề **không** đổi các section đang có; dùng **Thêm section → Từ module của loại đề** để thêm section của loại đề mới."
         },
-        { "type": "heading", "level": 2, "text": "Hiển thị" },
+        {
+          "type": "heading",
+          "level": 2,
+          "text": "Hiển thị"
+        },
         {
           "type": "table",
           "columns": ["Hiển thị", "Ý nghĩa"],
@@ -90,7 +114,11 @@
             "Ai sửa được đề thì đổi được hiển thị (form **Thông tin đề** hoặc khi **Tạo đề**)."
           ]
         },
-        { "type": "heading", "level": 2, "text": "Nhân bản" },
+        {
+          "type": "heading",
+          "level": 2,
+          "text": "Nhân bản"
+        },
         {
           "type": "paragraph",
           "text": "Nút **Nhân bản** ở danh sách đề tạo một đề **Nháp** mới của bạn rồi mở trình soạn:"
@@ -103,7 +131,11 @@
             "Ảnh/audio/video **dùng chung URL** với đề gốc: xoá file trong Thư viện media sẽ làm hỏng cả hai đề."
           ]
         },
-        { "type": "heading", "level": 2, "text": "Lưu trữ và xoá" },
+        {
+          "type": "heading",
+          "level": 2,
+          "text": "Lưu trữ và xoá"
+        },
         {
           "type": "table",
           "columns": ["Thao tác", "Kết quả"],
@@ -123,7 +155,11 @@
             ]
           ]
         },
-        { "type": "heading", "level": 2, "text": "Quyền trên đề" },
+        {
+          "type": "heading",
+          "level": 2,
+          "text": "Quyền trên đề"
+        },
         {
           "type": "list",
           "items": [
@@ -149,7 +185,11 @@
           "type": "paragraph",
           "text": "Mở bằng **Soạn đề** trong danh sách (`/t/{slug}/dashboard/exams/{id}/edit`). Thanh trên cùng: về danh sách, version hiện tại, tổng section/phút, trạng thái lưu, **Xem trước**, **Version**, **Thông tin đề**, **Lưu**, Publish/Lưu trữ."
         },
-        { "type": "heading", "level": 2, "text": "Section" },
+        {
+          "type": "heading",
+          "level": 2,
+          "text": "Section"
+        },
         {
           "type": "list",
           "items": [
@@ -201,7 +241,11 @@
           "tone": "info",
           "text": "Số câu **đánh lại từ 1 ở mỗi section**, tự tính theo dạng câu hỏi (vd. mỗi ô trống là 1 câu). Không cần gõ số câu bằng tay."
         },
-        { "type": "heading", "level": 2, "text": "Giải thích (Explanation)" },
+        {
+          "type": "heading",
+          "level": 2,
+          "text": "Giải thích (Explanation)"
+        },
         {
           "type": "list",
           "items": [
@@ -212,7 +256,11 @@
             "Nội dung giải thích **không gửi cho học viên** (server bỏ khỏi đề phát cho học viên, chỉ giữ chỗ trống). Đề thi: học viên không bao giờ thấy, người chấm thấy ở trang chấm. Bài học: hiện cho học viên **sau khi nộp** phần đó."
           ]
         },
-        { "type": "heading", "level": 2, "text": "Thanh công cụ" },
+        {
+          "type": "heading",
+          "level": 2,
+          "text": "Thanh công cụ"
+        },
         {
           "type": "table",
           "columns": ["Nhóm", "Công cụ"],
@@ -251,7 +299,16 @@
             "**Mini map** liệt kê indicator để cuộn nhanh; chân editor đếm số từ/ký tự."
           ]
         },
-        { "type": "heading", "level": 2, "text": "Lưu" },
+        {
+          "type": "callout",
+          "tone": "info",
+          "text": "**Màu chữ** và **màu nền** chọn ở đây được làm sáng lên khi người xem đang dùng giao diện **Tối**, nên màu hiện ra sẽ nhạt hơn mã màu đã chọn (nội dung lưu không đổi). Xem [Giao diện](page:giao-dien)."
+        },
+        {
+          "type": "heading",
+          "level": 2,
+          "text": "Lưu"
+        },
         {
           "type": "list",
           "items": [
@@ -261,12 +318,20 @@
             "Hai người (hoặc hai tab) cùng sửa: người lưu sau nhận “Nội dung đề vừa được lưu ở nơi khác…” – tải lại trang để lấy bản mới, tránh ghi đè."
           ]
         },
-        { "type": "heading", "level": 3, "text": "Bản nháp trong trình duyệt" },
+        {
+          "type": "heading",
+          "level": 3,
+          "text": "Bản nháp trong trình duyệt"
+        },
         {
           "type": "paragraph",
           "text": "Thay đổi chưa lưu được giữ tự động trong trình duyệt đang dùng. Mở lại đề sẽ thấy hộp **Khôi phục bản chưa lưu**: **Khôi phục** hoặc **Dùng bản trên server**. Nếu đề đã được lưu ở nơi khác sau đó, hộp thoại cảnh báo khôi phục rồi lưu sẽ ghi đè lần lưu kia. Bản nháp không đồng bộ giữa các máy."
         },
-        { "type": "heading", "level": 2, "text": "Kiểm tra lỗi" },
+        {
+          "type": "heading",
+          "level": 2,
+          "text": "Kiểm tra lỗi"
+        },
         {
           "type": "paragraph",
           "text": "Bảng **Kiểm tra · n lỗi** liệt kê lỗi theo section; bấm để nhảy tới vị trí. Lỗi thường gặp:"
@@ -342,7 +407,11 @@
           "type": "paragraph",
           "text": "Chèn indicator **Question** rồi chọn dạng. Phần trắc nghiệm được **chấm tự động ở server** khi nộp section (học viên không bao giờ nhận đáp án); Speaking/Writing **chấm tay**. Xem trước trong trình soạn dùng cùng logic chấm."
         },
-        { "type": "heading", "level": 2, "text": "Bảng tổng hợp" },
+        {
+          "type": "heading",
+          "level": 2,
+          "text": "Bảng tổng hợp"
+        },
         {
           "type": "table",
           "columns": ["Dạng", "Cách soạn đáp án", "Số câu tính", "Đúng khi"],
@@ -415,7 +484,11 @@
             ]
           ]
         },
-        { "type": "heading", "level": 2, "text": "Mẹo soạn" },
+        {
+          "type": "heading",
+          "level": 2,
+          "text": "Mẹo soạn"
+        },
         {
           "type": "list",
           "items": [
@@ -443,7 +516,11 @@
           "type": "roles",
           "roles": ["TENANT_OWNER", "TENANT_ADMIN", "TEACHER"]
         },
-        { "type": "heading", "level": 2, "text": "Quy tắc lưu" },
+        {
+          "type": "heading",
+          "level": 2,
+          "text": "Quy tắc lưu"
+        },
         {
           "type": "table",
           "columns": ["Version hiện tại", "Khi bấm Lưu"],
@@ -466,12 +543,20 @@
             "Học viên đang làm dở version cũ vẫn làm tiếp trên version cũ."
           ]
         },
-        { "type": "heading", "level": 2, "text": "Trang Các version" },
+        {
+          "type": "heading",
+          "level": 2,
+          "text": "Trang Các version"
+        },
         {
           "type": "paragraph",
           "text": "Nút **Version** trong trình soạn hoặc **Các version** ở danh sách (`/t/{slug}/dashboard/exams/{id}/versions`). Mỗi version hiện thời điểm lưu, người lưu, số bài làm, số câu; **Xem nội dung** để đọc lại."
         },
-        { "type": "heading", "level": 2, "text": "Khôi phục version" },
+        {
+          "type": "heading",
+          "level": 2,
+          "text": "Khôi phục version"
+        },
         {
           "type": "paragraph",
           "text": "**Khôi phục version** = lưu lại nội dung của version đó theo đúng quy tắc lưu ở trên:"
@@ -510,16 +595,24 @@
           "tone": "info",
           "text": "Bài học **Công khai trong trung tâm** đã publish hiện ở trang trung tâm cho mọi thành viên học – xem [Học bài học](page:hoc-bai-hoc). Câu Writing/Speaking trong bài tập được chấm ở [Chấm bài](page:cham-bai) (lọc **Bài học**)."
         },
-        { "type": "heading", "level": 2, "text": "Tạo bài học" },
+        {
+          "type": "heading",
+          "level": 2,
+          "text": "Tạo bài học"
+        },
         {
           "type": "steps",
           "items": [
-            { "title": "Bấm Tạo bài học" },
+            {
+              "title": "Bấm Tạo bài học"
+            },
             {
               "title": "Chọn Mẫu bài học",
               "text": "Chỉ mẫu đang dùng (hệ thống hoặc trung tâm), danh mục cũng phải đang dùng. Form cho biết bài học sẽ có những section nào."
             },
-            { "title": "Nhập Tên bài học (tối đa 200 ký tự) và Mô tả" },
+            {
+              "title": "Nhập Tên bài học (tối đa 200 ký tự) và Mô tả"
+            },
             {
               "title": "Chọn Hiển thị",
               "text": "Mặc định **Chỉ qua lớp** (khác đề thi, mặc định công khai). Xem mục Hiển thị bên dưới."
@@ -530,7 +623,11 @@
             }
           ]
         },
-        { "type": "heading", "level": 2, "text": "Soạn nội dung" },
+        {
+          "type": "heading",
+          "level": 2,
+          "text": "Soạn nội dung"
+        },
         {
           "type": "list",
           "items": [
@@ -541,7 +638,11 @@
             "**Explanation** được tách khỏi nội dung gửi học viên như đề thi; với bài học, học viên sẽ thấy giải thích **sau khi nộp** phần đó."
           ]
         },
-        { "type": "heading", "level": 2, "text": "Xem trước" },
+        {
+          "type": "heading",
+          "level": 2,
+          "text": "Xem trước"
+        },
         {
           "type": "paragraph",
           "text": "Nút **Xem trước** (trình soạn và trang Version) mở bài học trong **màn hình học bài** như học viên thấy: mỗi phần là một tab, nội dung liền mạch; bấm **Nộp phần này** để thấy đúng/sai, đáp án đúng và giải thích; thử **Làm lại** và **Xem kết quả lần trước**. Chấm ngay trên trình duyệt, không lưu, không tạo lượt học; câu Speaking không ghi âm được ở đây."
@@ -561,7 +662,11 @@
             "Bài **Lưu trữ**, xoá hoặc chuyển **Chỉ qua lớp**: biến khỏi trang trung tâm, lượt học đã có chỉ còn xem lại."
           ]
         },
-        { "type": "heading", "level": 2, "text": "Hiển thị" },
+        {
+          "type": "heading",
+          "level": 2,
+          "text": "Hiển thị"
+        },
         {
           "type": "table",
           "columns": ["Hiển thị", "Ý nghĩa"],
@@ -580,7 +685,11 @@
           "type": "paragraph",
           "text": "Đổi lúc nào cũng được trong **Thông tin bài học** (hoặc khi tạo); không tạo version mới. Ai sửa được bài thì đổi được hiển thị."
         },
-        { "type": "heading", "level": 2, "text": "Nhân bản" },
+        {
+          "type": "heading",
+          "level": 2,
+          "text": "Nhân bản"
+        },
         {
           "type": "list",
           "items": [
@@ -589,12 +698,20 @@
             "Media **dùng chung URL** với bài gốc: xoá file trong Thư viện media làm hỏng cả hai."
           ]
         },
-        { "type": "heading", "level": 2, "text": "Version" },
+        {
+          "type": "heading",
+          "level": 2,
+          "text": "Version"
+        },
         {
           "type": "paragraph",
           "text": "Nút **Version** (hoặc biểu tượng lịch sử ở danh sách) mở `/t/{slug}/dashboard/lessons/{id}/versions`: xem nội dung từng version, **Khôi phục version** = lưu lại nội dung version đó. Cơ chế giống [Version đề thi](page:version-de-thi): version mới chỉ được tạo khi lưu mà version hiện tại **đã có lượt học**; chưa có thì lưu ghi đè version hiện tại. Trang Version có cột **Lượt học** của từng version; khôi phục version khi version hiện tại đã có lượt học cũng tạo version mới. Học viên đang học version cũ thì lượt đó **chỉ còn xem lại**; mở bài sẽ học version mới."
         },
-        { "type": "heading", "level": 2, "text": "Quyền trên bài học" },
+        {
+          "type": "heading",
+          "level": 2,
+          "text": "Quyền trên bài học"
+        },
         {
           "type": "list",
           "items": [

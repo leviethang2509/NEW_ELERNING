@@ -463,6 +463,14 @@
             [
               "Người chấm không chấm được bài",
               "Bài của chính họ (403) hoặc lượt làm chưa nộp xong (409)"
+            ],
+            [
+              "Đổi giao diện xong, tải lại trang lại về Sáng",
+              "Trình duyệt đang chặn cookie/bộ nhớ cục bộ của trang – xem [Giao diện](page:giao-dien#lua-chon-duoc-nho-o-dau)"
+            ],
+            [
+              "“Màu chữ trong đề hiện không đúng màu tôi chọn”",
+              "Đang ở giao diện **Tối**: màu trong nội dung được làm sáng lên cho đọc được, nội dung lưu không đổi – đổi sang **Sáng**/**Giấy** để thấy màu gốc"
             ]
           ]
         },
@@ -640,6 +648,10 @@
             [
               "Hạ tầng",
               "Domain + SSL (ghi âm cần HTTPS), môi trường production tách biệt, i18n đa ngôn ngữ"
+            ],
+            [
+              "Giao diện",
+              "Lưu giao diện theo tài khoản (hiện chỉ nhớ trên trình duyệt đang dùng), bảng màu riêng theo trung tâm, chế độ tương phản cao, đổi cỡ chữ, lọc sáng ảnh tải lên ở giao diện Tối"
             ]
           ]
         }

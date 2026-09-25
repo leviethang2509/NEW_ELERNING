@@ -192,6 +192,8 @@ Bằng **ESLint** (`no-restricted-syntax` trong config của lang-app): báo l�
 - `req-4-acceptance.md` (nghiệm thu theo vai trò, dùng lại sau mỗi deploy), `req-4-progress.md`.
 - Sửa tiêu đề `req-4.md`; ghi chú dời P0 vào `docs/epic/epic-1.md`.
 
+> Sai khác khi làm: `/user-manual` sửa **3 file** chứ không chỉ `03-tai-khoan.json` – thêm callout ở trang *Trình soạn đề* (`06-de-thi.json`) và 3 dòng ở *Ngoài phạm vi* / *Sự cố thường gặp* (`09-van-hanh.json`), vì D7 đổi cách hiển thị màu người soạn chọn. `CLAUDE.md` sửa thêm mục *Bắt đầu phiên làm việc* (đang trỏ cứng vào req-3). D6 không còn việc: tiêu đề `req-4.md` đã đúng từ commit Step 1.
+
 Mỗi step kết thúc: `pnpm build && pnpm lint && pnpm typecheck && pnpm test && pnpm format:check` pass, chạy thử thật, rồi cập nhật `req-4-progress.md`.
 
 ---

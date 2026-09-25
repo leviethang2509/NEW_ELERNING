@@ -16,6 +16,8 @@
 
 Phải xong trước khi mở cho khách hàng trả tiền.
 
+> **Dời phase (2026-09-25):** req-4 đã được dùng cho việc khác – giao diện 3 theme (Sáng/Giấy/Tối), yêu cầu đến từ feedback người dùng, xem [req-4.md](../requirements/req-4.md). Nhóm P0 này **dời sang req-5**, thứ tự ưu tiên giữ nguyên.
+
 | # | Việc | Vì sao gấp |
 |---|---|---|
 | 1 | **Domain + HTTPS** | Ghi âm Speaking **không chạy trên HTTP**. Tài liệu đang phải hướng dẫn bật cờ `chrome://flags/#unsafely-treat-insecure-origin-as-secure` – không dùng được với học viên thật. Kéo theo `COOKIE_SECURE=true`. Đây là tính năng lõi đang hỏng ngoài đời. |
@@ -100,9 +102,10 @@ Lặp cách tuần; ngày nghỉ lặp hằng năm / cấp hệ thống; kiểm 
 
 | Phase | Chủ đề | Gồm |
 |---|---|---|
-| **req-4** | Sẵn sàng vận hành thật | 1–6, 25, 26 – không thêm nghiệp vụ, chỉ để dám mở cho khách trả tiền |
-| **req-5** | Đúng nghiệp vụ trung tâm | 7 (điểm danh buổi), 8, 9, 11, 12, 16 |
-| **req-6** | Thương mại hoá | 17, 18, 19, 10, 20, 21 |
+| **req-4** ✅ 2026-09-25 | Giao diện 3 theme | Không có trong danh sách trên (đến từ feedback người dùng): Sáng / Giấy / Tối, mặc định Sáng – [req-4.md](../requirements/req-4.md) |
+| **req-5** | Sẵn sàng vận hành thật | 1–6, 25, 26 – không thêm nghiệp vụ, chỉ để dám mở cho khách trả tiền |
+| **req-6** | Đúng nghiệp vụ trung tâm | 7 (điểm danh buổi), 8, 9, 11, 12, 16 |
+| **req-7** | Thương mại hoá | 17, 18, 19, 10, 20, 21 |
 | Rải kèm | | 13, 14, 15, 22, 23, 24, 27 |
 
 **Nếu chỉ làm được một việc tiếp theo:** mục 1 (domain + HTTPS). Nó đang làm hỏng Speaking – tính năng khác biệt nhất của sản phẩm – và là tiền đề cho mục 2 và 23.

@@ -10,11 +10,11 @@
 | Step | Nội dung | Trạng thái | Ngày xong | Ghi chú |
 |---|---|---|---|---|
 | 0 | Câu hỏi + plan | ✅ | 2026-09-23 | 4 câu chặn đã chốt (A1 3 theme, B1 cookie, B2 có "Theo hệ thống", C2 chỉ ở màn giới thiệu section); A2/A3/C1/D1–D6 đi theo Đề xuất |
-| 1 | Nền tảng theme (token 3 theme, cookie, `ThemeToggle`, chống nháy) | ✅ | 2026-09-23 | Chưa commit. Dark mode **đổi được** nhưng chưa dọn màu cứng – Step 2 mới sạch |
-| 2 | Dọn màu cứng sang token (~70 `rgba` + hex, 33 file) + ESLint chặn tái phát | ✅ | 2026-09-25 | Chưa commit. Không còn màu cứng nào ngoài 5 file bảng màu trong danh sách cho phép |
-| 3 | Rà theme tối: khu vực chính, dashboard, docs | ✅ | 2026-09-25 | Chưa commit. Chỉ giá trị khối `dark` đổi (25 biến) – `light`/`solarized-light` **không đổi một giá trị nào**, chỉ thêm token mới |
-| 4 | Rà theme tối: soạn thảo, thi, chấm bài, lịch | ✅ | 2026-09-25 | Chưa commit. Thêm 1 token (`--panel`) + 3 cơ chế `.ls-*`; `light`/`solarized-light` vẫn **không đổi một giá trị nào** |
-| 5 | Tài liệu `/user-manual`, `CLAUDE.md`, nghiệm thu, epic-1 | ⬜ | | |
+| 1 | Nền tảng theme (token 3 theme, cookie, `ThemeToggle`, chống nháy) | ✅ | 2026-09-23 | Dark mode **đổi được** nhưng chưa dọn màu cứng – Step 2 mới sạch |
+| 2 | Dọn màu cứng sang token (~70 `rgba` + hex, 33 file) + ESLint chặn tái phát | ✅ | 2026-09-25 | Không còn màu cứng nào ngoài 5 file bảng màu trong danh sách cho phép |
+| 3 | Rà theme tối: khu vực chính, dashboard, docs | ✅ | 2026-09-25 | Chỉ giá trị khối `dark` đổi (25 biến) – `light`/`solarized-light` **không đổi một giá trị nào**, chỉ thêm token mới |
+| 4 | Rà theme tối: soạn thảo, thi, chấm bài, lịch | ✅ | 2026-09-25 | Thêm 1 token (`--panel`) + 3 cơ chế `.ls-*`; `light`/`solarized-light` vẫn **không đổi một giá trị nào** |
+| 5 | Tài liệu `/user-manual`, `CLAUDE.md`, nghiệm thu, epic-1 | ✅ | 2026-09-25 | Thêm trang **Giao diện** vào `/user-manual`, `req-4-acceptance.md` (7 mục, 46 dòng bấm tay), quy ước màu vào `CLAUDE.md`, dời P0 sang req-5 |
 
 ## Nhật ký
 
@@ -237,3 +237,38 @@ Phép thử của step ("soạn một đề có đủ khối → xem trước �
 - `CLAUDE.md` (mục lang-app) nên ghi thêm, cạnh quy ước "màu phải qua token": **màu đến từ dữ liệu hoặc bảng màu cố định thì đi qua `.ls-tint*` / `.ls-leaf-*` của `globals.css`, không đặt thẳng `color`/`backgroundColor`**.
 - Còn 3 file được miễn luật ESLint màu cứng: `global-error.tsx`, `catalog-ui.tsx`, `ExamToolbar.tsx` – đều có lý do đã ghi trong `eslint.config.mjs`.
 - Việc để ngỏ (ngoài phạm vi req-4, cần đổi cả 3 theme): gom 6 chỗ `bg-[var(--bg)]` làm ô nhập về `--sidebar`.
+
+
+### Step 5 – Tài liệu & khép lại (2026-09-25)
+
+**Đã làm**
+
+- **`/user-manual` – trang mới `Giao diện`** (nhóm **Tài khoản**, `03-tai-khoan.json`, cho mọi vai trò): bảng 4 mục Sáng · Giấy · Tối · Theo hệ thống; nút nằm ở đâu (3 header + màn hình giới thiệu section, không có khi đồng hồ chạy); lựa chọn nhớ **theo trình duyệt** (cookie `ls_theme` + localStorage) chứ không theo tài khoản; một mục riêng giải thích **màu trong nội dung đề/bài học được làm sáng lên ở giao diện Tối** (D7) và nội dung lưu không đổi.
+- **`06-de-thi.json` → Trình soạn đề**: chèn callout ngay trước mục **Lưu** – màu chữ/màu nền chọn trên thanh công cụ sẽ hiện nhạt hơn mã đã chọn khi người xem dùng giao diện Tối, kèm liên kết tới trang Giao diện.
+- **`09-van-hanh.json`**: thêm dòng **Giao diện** vào bảng *Ngoài phạm vi hiện tại* (lưu theo tài khoản, bảng màu riêng theo trung tâm, tương phản cao, cỡ chữ, lọc sáng ảnh) và 2 dòng vào *Sự cố thường gặp* ("đổi giao diện xong tải lại lại về Sáng" → trình duyệt chặn cookie/bộ nhớ cục bộ; "màu chữ trong đề không đúng màu tôi chọn" → đang ở giao diện Tối).
+- `user-manual.content.ts`: `updatedAt` `2026-09-22 → 2026-09-25`.
+- **`CLAUDE.md`**: mục *Bắt đầu phiên làm việc* trỏ vào `req-N-progress.md` của requirement đang làm (mới nhất là req-4) thay vì cứng req-3, và thêm cả 2 file nghiệm thu. Mục lang-app thêm 3 gạch đầu dòng: quy ước 3 theme + **cấm `rgba()`/hex trong component** (ESLint, 3 file được miễn); **màu từ dữ liệu / bảng màu cố định đi qua `.ls-tint*` / `.ls-leaf-*` / `.ls-event`**, component chỉ truyền mã màu vào biến CSS; **vai trò từng token** (`--accent-bg` là nền nút + `text-white`, `--accent` chỉ chữ/viền, `--raised`/`--panel` là mặt nổi, bộ `--x`/`-text`/`-soft`/`-border`/`--on-status`).
+- **`req-4-acceptance.md`** (mới): checklist bấm tay theo vai trò, 7 mục – cơ chế đổi theme · khách & tài khoản · System Owner/Admin · quản trị trung tâm · giáo viên (soạn thảo/xem trước/chấm bài) · học viên · phụ huynh, cộng mục **"hai giao diện sáng không được đổi"** và mục hướng dẫn sửa màu (kể cả 3 chỗ chỉnh bằng 1 dòng). Cột `Theme` ghi rõ việc nào phải xem ở cả 3 giao diện; 3 dấu hiệu hỏng cần để ý ghi ngay đầu file.
+- **`docs/epic/epic-1.md`** (D5): ghi chú dưới tiêu đề nhóm P0 rằng req-4 đã dùng cho giao diện 3 theme nên **nhóm P0 dời sang req-5**; bảng "Đề xuất chia phase" đánh dấu req-4 ✅ và dời 3 phase còn lại thành req-5/6/7 (giữ nguyên nội dung từng phase).
+
+**Sai khác so với plan**
+
+- **D6 không còn việc**: tiêu đề `req-4.md` đã là `# Requirement 4` từ commit Step 1 (`22ab2a5`).
+- Plan chỉ nói sửa `03-tai-khoan.json`; thực tế sửa thêm `06-de-thi.json` và `09-van-hanh.json` vì D7 đổi **cách hiển thị màu người soạn chọn** – người dùng sẽ hỏi đúng chỗ đó, và quy ước của `CLAUDE.md` là tính năng/giới hạn đổi thì tài liệu phải đổi theo.
+- Sửa thêm mục *Bắt đầu phiên làm việc* của `CLAUDE.md` (plan chỉ yêu cầu thêm quy ước màu): nó đang trỏ cứng vào req-3 nên phiên mới sẽ không biết req-4 tồn tại.
+
+**Đã nghiệm thu**
+
+- `pnpm build && lint && typecheck && test && format:check` pass. `user-manual.content.spec.ts` (kiểm cấu trúc + **liên kết giữa các trang, kể cả anchor `#`**) xanh: 2 liên kết mới `page:trinh-soan-de`, `page:giao-dien` và `page:giao-dien#lua-chon-duoc-nho-o-dau` đều trỏ đúng.
+- 3 file JSON đã format bằng Prettier; `updatedAt` mới nằm trong `user-manual.content.ts` nên trang tài liệu hiện đúng ngày.
+
+**Chưa nghiệm thu được ở phiên này**
+
+Trang `/user-manual` chỉ System Owner/Admin xem được và render ở client → cần bạn mở `/user-manual` → **Tài khoản → Giao diện** xem trang mới hiển thị đúng (bảng 4 mục, 2 callout), và mở **Đề thi & Bài học → Trình soạn đề** xem callout mới nằm đúng trước mục **Lưu**.
+
+**Kết thúc req-4**
+
+- 5/5 step xong. Step 1–4 đã commit (`22ab2a5`, `67b82ce`, `09eb637`); phần Step 5 (8 file tài liệu + `CLAUDE.md`) đang ở working tree, **chưa commit**.
+- Việc còn lại thuộc về bạn: đi hết [req-4-acceptance.md](req-4-acceptance.md) ở giao diện Tối, đặc biệt 6 mục "cần để mắt" ghi ở cuối nhật ký Step 4 (đáng ngờ nhất là màu chữ/nền tự chọn **trong trình soạn đề** – đường đi qua Plate là chỗ duy nhất không chạy thử được bằng script).
+- Việc để ngỏ, ngoài phạm vi req-4: gom 6 chỗ `bg-[var(--bg)]` làm ô nhập về `--sidebar` (đổi cả 3 theme); lưu giao diện **theo tài khoản** (cột `users.theme` + `PATCH /me/theme`) – plan mục 8.
+- Requirement tiếp theo (req-5) là nhóm P0 vận hành thật của [epic-1](../epic/epic-1.md): domain + HTTPS, email & quên mật khẩu, đăng nhập cho học viên không có email, sao lưu, rate limit, môi trường production tách biệt.

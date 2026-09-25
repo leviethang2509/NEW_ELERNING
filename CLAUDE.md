@@ -2,10 +2,10 @@
 
 ## Bắt đầu phiên làm việc
 
-1. Đọc [docs/requirements/req-3-progress.md](docs/requirements/req-3-progress.md) để biết step hiện tại, việc dở dang và lưu ý.
-2. Đọc phần tương ứng trong [docs/requirements/req-3-plan.md](docs/requirements/req-3-plan.md) (quyết định mục 1, giả định mục 2, thiết kế DB mục 4, phân quyền mục 5, route mục 6, step mục 7). Nền tảng req-1 (tài khoản, tenant, đề thi, thi & chấm) ở [req-1-plan.md](docs/requirements/req-1-plan.md).
-3. Chỉ mở các file `req-3-question*.md` (4 vòng) khi cần lý do của một quyết định.
-4. Nghiệm thu tổng req-3 theo từng vai trò: [req-3-acceptance.md](docs/requirements/req-3-acceptance.md) (dùng lại sau mỗi lần deploy).
+1. Đọc `req-N-progress.md` của requirement **đang làm** để biết step hiện tại, việc dở dang và lưu ý. Mới nhất: [req-4-progress.md](docs/requirements/req-4-progress.md) (giao diện & theme, xong 2026-09-25); trước đó [req-3-progress.md](docs/requirements/req-3-progress.md).
+2. Đọc phần tương ứng trong `req-N-plan.md` (quyết định mục 1, giả định mục 2, thiết kế DB mục 4, phân quyền mục 5, route mục 6, step mục 7): [req-4-plan.md](docs/requirements/req-4-plan.md), [req-3-plan.md](docs/requirements/req-3-plan.md). Nền tảng req-1 (tài khoản, tenant, đề thi, thi & chấm) ở [req-1-plan.md](docs/requirements/req-1-plan.md).
+3. Chỉ mở các file `req-N-question*.md` khi cần lý do của một quyết định.
+4. Nghiệm thu tổng theo từng vai trò (dùng lại sau mỗi lần deploy): [req-3-acceptance.md](docs/requirements/req-3-acceptance.md) cho chức năng, [req-4-acceptance.md](docs/requirements/req-4-acceptance.md) cho 3 theme.
 
 ## Quy trình
 
@@ -76,7 +76,10 @@
 
 - Route group: `(site)` khu vực chính, `(dashboard)` dùng `DashboardShell`, `(exam)` toàn màn hình cho thi, `(docs)` tài liệu nội bộ.
 - Server component chỉ truyền dữ liệu thuần sang client component (vd. `NavScope`); menu/icon dựng trong client từ `src/config/navigation.ts`.
-- Chuỗi UI đặt trong `src/i18n/vi.ts`. Màu dùng CSS variables Solarized trong `globals.css` (class tiền tố `ls-`).
+- Chuỗi UI đặt trong `src/i18n/vi.ts`. Màu dùng CSS variables trong `globals.css` (class tiền tố `ls-`).
+- **Màu & theme (req-4)**: 3 theme `light` (mặc định) · `solarized-light` · `dark` khai báo bằng `:root[data-theme='…']` trong `globals.css`; lựa chọn lưu ở cookie `ls_theme` + localStorage (`src/theme/`), server đọc cookie rồi đặt `data-theme` lên `<html>` (không nháy màu). **Không viết `rgba()`/hex thẳng trong component** – khai báo token rồi dùng `var(--…)`; luật ESLint `no-restricted-syntax` chặn, chỉ 3 file bảng màu **người dùng chọn** được miễn (`global-error.tsx`, `catalog-ui.tsx`, `ExamToolbar.tsx`). Sửa màu = sửa **giá trị token**, và đổi token phải kiểm lại `light`/`solarized-light` không bị kéo theo.
+- Màu đến từ **dữ liệu** hoặc bảng màu cố định của `@lang/exam-core` (indicator, callout, dạng câu hỏi, màu lớp, màu chữ/nền người soạn chọn) đi qua `.ls-tint*` / `.ls-leaf-*` / `.ls-event` của `globals.css` – component chỉ truyền mã màu vào biến CSS (`--tint-raw`, `--leaf-fg`, `--leaf-bg`, `--event-color`), **không** đặt thẳng `color`/`backgroundColor`; theme tối pha sáng lại bằng `color-mix`. Trong trình soạn đề, màu leaf đi qua `inject.nodeProps` của plugin Plate (`plate/exam/plugins.ts`).
+- Vai trò token màu: `--accent-bg` (+`--accent-hover`) là **nền** nút đặc, luôn đi với `text-white`; `--accent` chỉ dùng cho **chữ/viền**; `--raised`/`--panel` là mặt nổi trên `--card`/`--sidebar` (popover, tab đang chọn, panel dialog); trạng thái dùng bộ `--ok|warn|danger|info` × `-text`/`-soft`/`-border` và `--on-status` cho chữ trên nền đặc.
 - API gọi qua `src/lib/api.ts` (cùng origin `/api`, access token trong bộ nhớ, tự refresh khi 401; mất mạng / 5xx không có body JSON đổi thành `ApiError` tiếng Việt). `errorMessage` (`lib/error-message.ts`) chỉ hiện message của `ApiError`, lỗi khác (TypeError, DOMException – tiếng Anh) dùng thông báo mặc định. Trang 404 / lỗi render: `app/not-found.tsx`, `app/error.tsx`, `app/global-error.tsx` (`StatusPage`).
 - Media: `lib/media-api.ts`, `MediaDialog` (upload hoặc dán URL, dùng lại ở trình soạn đề), `LogoPicker`, trang Thư viện media `/t/{slug}/dashboard/media`. Chép URL bằng `lib/clipboard.ts` (VPS chạy HTTP nên `navigator.clipboard` không có, phải có đường lùi). Ảnh từ R2 hiển thị bằng `<img>`, không dùng `next/image`.
 - Danh mục/Loại đề/Mẫu bài học: `CategoriesView`/`ExamBlueprintsView`/`LessonBlueprintsView` trong `components/catalog` dùng cho cả `/admin` và dashboard tenant (`apiBase`, `scope`, `canManage`); `ModulesEditor` dùng chung (`variant="lesson"` bỏ thời lượng); icon/màu danh mục qua `CategoryIcon`.
