@@ -56,9 +56,9 @@ export function Countdown({
 
   const tone =
     remaining <= DANGER_MS
-      ? 'bg-[#fdf1ef] text-[var(--danger)]'
+      ? 'bg-[var(--danger-bg)] text-[var(--danger)]'
       : remaining <= WARNING_MS
-        ? 'bg-[rgba(181,137,0,.15)] text-[#8a6900]'
+        ? 'bg-[var(--warn-soft)] text-[var(--warn-text)]'
         : 'bg-[var(--sidebar)] text-[var(--heading)]';
 
   return (

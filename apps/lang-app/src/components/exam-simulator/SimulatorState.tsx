@@ -332,10 +332,10 @@ function statusOf(state: SimulatorState, nos: number[]): AnswerStatus {
 
 const STATUS_CLASS: Record<AnswerStatus, string> = {
   todo: 'border-[var(--border-strong)] bg-[var(--card)] text-[var(--heading)] hover:border-[var(--accent)]',
-  answered: 'border-[#268bd2] bg-[#268bd2] text-white',
-  flagged: 'border-[#b58900] bg-[#b58900] text-white',
-  correct: 'border-[#859900] bg-[#859900] text-white',
-  wrong: 'border-[#dc322f] bg-[#dc322f] text-white',
+  answered: 'border-[var(--info)] bg-[var(--info)] text-[var(--on-status)]',
+  flagged: 'border-[var(--warn)] bg-[var(--warn)] text-[var(--on-status)]',
+  correct: 'border-[var(--ok)] bg-[var(--ok)] text-[var(--on-status)]',
+  wrong: 'border-[var(--danger)] bg-[var(--danger)] text-[var(--on-status)]',
   manual:
     'border-dashed border-[var(--border-strong)] bg-[var(--sidebar)] text-[var(--muted)]',
 };
@@ -463,7 +463,7 @@ export function AnswerNav({ plan }: { plan: PreviewPlan }) {
             </>
           ) : confirming ? (
             <>
-              <span className="text-[#b58900]">
+              <span className="text-[var(--warn)]">
                 {done < numbers.length
                   ? text.unanswered(numbers.length - done)
                   : text.confirmSubmit}

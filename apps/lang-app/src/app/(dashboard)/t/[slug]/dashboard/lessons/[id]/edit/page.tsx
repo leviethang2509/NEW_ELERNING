@@ -107,7 +107,9 @@ export default function LessonEditPage({ params }: { params: { id: string } }) {
               <>
                 <p>{text.message(formatDateTime(draft.savedAt))}</p>
                 {draft.baseRevision !== loaded.lesson.contentRevision && (
-                  <p className="mt-2 text-[#8a6900]">{text.staleNote}</p>
+                  <p className="mt-2 text-[var(--warn-text)]">
+                    {text.staleNote}
+                  </p>
                 )}
               </>
             ) : (

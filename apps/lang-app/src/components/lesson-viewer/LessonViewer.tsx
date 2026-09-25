@@ -155,7 +155,7 @@ export function LessonViewer({
                 {done && (
                   <CheckCircle2
                     size={14}
-                    className="text-[#859900]"
+                    className="text-[var(--ok)]"
                     aria-label={text.status.completed}
                   />
                 )}
@@ -307,7 +307,7 @@ function SubmitBar({ plan, busy }: { plan: PreviewPlan; busy: boolean }) {
     <div className="sticky bottom-0 flex flex-wrap items-center justify-end gap-2 border-t border-[var(--border)] bg-[var(--bg)] py-3">
       {confirming ? (
         <>
-          <span className="text-[13px] text-[#b58900]">
+          <span className="text-[13px] text-[var(--warn)]">
             {left > 0 ? text.unanswered(left) : text.confirmSubmit}
           </span>
           <button
@@ -377,7 +377,9 @@ function ReviewBar({
             .join(' · ')}
         </p>
         {previous && (
-          <p className="text-[12.5px] text-[#b58900]">{text.previousHint}</p>
+          <p className="text-[12.5px] text-[var(--warn)]">
+            {text.previousHint}
+          </p>
         )}
       </div>
       {actions}

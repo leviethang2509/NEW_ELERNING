@@ -162,7 +162,7 @@ export function MemberPickerDialog({
           <FormAlert tone="error">{error ?? loadError}</FormAlert>
         )}
         {conflicts.length > 0 && (
-          <div className="rounded-xl border border-[var(--danger)] bg-[#fdf1ef] px-3 py-2 text-[13px] text-[var(--danger)]">
+          <div className="rounded-xl border border-[var(--danger)] bg-[var(--danger-bg)] px-3 py-2 text-[13px] text-[var(--danger)]">
             <p className="flex items-center gap-1.5 font-semibold">
               <AlertTriangle size={15} /> {text.conflictsTitle}
             </p>

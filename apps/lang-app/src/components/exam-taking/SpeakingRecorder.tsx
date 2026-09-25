@@ -175,7 +175,7 @@ export function SpeakingRecorder({
       <p className="text-[12.5px] text-[var(--muted)]">{text.limit(seconds)}</p>
 
       {!supported ? (
-        <p className="mt-2 text-[#8a6900]">{text.unsupported}</p>
+        <p className="mt-2 text-[var(--warn-text)]">{text.unsupported}</p>
       ) : (
         <div className="mt-2 flex flex-wrap items-center gap-2">
           {phase === 'recording' ? (
@@ -183,7 +183,7 @@ export function SpeakingRecorder({
               <button
                 type="button"
                 onClick={stop}
-                className="inline-flex items-center gap-1.5 rounded-lg bg-[var(--danger)] px-3 py-1.5 text-[13px] font-semibold text-white transition hover:brightness-105"
+                className="inline-flex items-center gap-1.5 rounded-lg bg-[var(--danger)] px-3 py-1.5 text-[13px] font-semibold text-[var(--on-status)] transition hover:brightness-105"
               >
                 <Square size={13} fill="currentColor" /> {text.stop}
               </button>
@@ -225,7 +225,7 @@ export function SpeakingRecorder({
         <p className="mt-2 text-[var(--muted)]">{text.uploading}</p>
       )}
       {saved && !pendingFile && phase !== 'uploading' && (
-        <p className="mt-2 text-[#5f6d00]">
+        <p className="mt-2 text-[var(--ok-text)]">
           {text.uploaded(formatDateTime(saved.uploadedAt))}
         </p>
       )}

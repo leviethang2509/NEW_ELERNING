@@ -188,7 +188,7 @@ export function ExamFormModal({
             </span>
           )}
           {blueprintChanged && (
-            <span className="text-[12.5px] text-[#8a6900]">
+            <span className="text-[12.5px] text-[var(--warn-text)]">
               {text.blueprintChangeHint}
             </span>
           )}

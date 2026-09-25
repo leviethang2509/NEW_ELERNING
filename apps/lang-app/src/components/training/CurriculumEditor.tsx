@@ -430,7 +430,7 @@ export function CurriculumEditor({
             {text.summary(draft.groups.length, total)}
           </span>
           {dirty && (
-            <span className="text-[13px] font-medium text-[#8a6900]">
+            <span className="text-[13px] font-medium text-[var(--warn-text)]">
               {text.unsaved}
             </span>
           )}

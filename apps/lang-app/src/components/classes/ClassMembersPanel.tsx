@@ -164,7 +164,7 @@ export function ClassMembersPanel({
               : text.addedAt(formatDate(member.addedAt))}
           </span>
           {student && student.otherClasses.length > 0 && (
-            <span className="mt-0.5 flex items-center gap-1 text-[12.5px] text-[#8a6900]">
+            <span className="mt-0.5 flex items-center gap-1 text-[12.5px] text-[var(--warn-text)]">
               <AlertTriangle size={13} />
               {text.otherClasses(
                 student.otherClasses.map((row) => row.code).join(', '),

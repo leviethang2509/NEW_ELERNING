@@ -97,7 +97,7 @@ export function NumberPopover({
       />
       <p
         className={`mt-1.5 text-[12px] leading-snug ${
-          error ? 'text-[#dc322f]' : 'text-[var(--muted)]'
+          error ? 'text-[var(--danger)]' : 'text-[var(--muted)]'
         }`}
       >
         {error || text.hint[mode]}

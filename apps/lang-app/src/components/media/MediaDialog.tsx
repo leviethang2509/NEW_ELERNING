@@ -136,7 +136,7 @@ export function MediaDialog({
       />
 
       {error && (
-        <p className="mt-3 rounded-lg bg-[#fdf1ef] px-3 py-2 text-[13px] text-[var(--danger)]">
+        <p className="mt-3 rounded-lg bg-[var(--danger-bg)] px-3 py-2 text-[13px] text-[var(--danger)]">
           {error}
         </p>
       )}

@@ -182,7 +182,7 @@ export function TagMultiSelect({
                     event.stopPropagation();
                     pick(option.id);
                   }}
-                  className="grid place-items-center rounded hover:bg-black/5"
+                  className="grid place-items-center rounded hover:bg-[var(--hover)]"
                 >
                   <X size={13} />
                 </span>
@@ -212,7 +212,7 @@ export function TagMultiSelect({
               bottom: pos.bottom,
               maxHeight: MENU_MAX_H,
             }}
-            className="z-[70] flex flex-col overflow-hidden rounded-xl border border-[var(--border)] bg-[var(--card)] shadow-[0_10px_26px_rgba(0,43,54,.14)]"
+            className="z-[70] flex flex-col overflow-hidden rounded-xl border border-[var(--border)] bg-[var(--card)] shadow-[0_10px_26px_var(--shadow-2)]"
           >
             {searchable && (
               <div className="flex shrink-0 items-center gap-2 border-b border-[var(--border)] px-2.5 py-2">

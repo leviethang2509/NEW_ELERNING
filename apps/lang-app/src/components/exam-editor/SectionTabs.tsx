@@ -147,7 +147,7 @@ export function SectionTabs<M extends SectionTabModule>({
                 {tab.errorCount > 0 && (
                   <span
                     title={text.errors(tab.errorCount)}
-                    className="grid h-[18px] min-w-[18px] place-items-center rounded-full bg-[#dc322f] px-1 text-[11px] font-bold text-white"
+                    className="grid h-[18px] min-w-[18px] place-items-center rounded-full bg-[var(--danger)] px-1 text-[11px] font-bold text-[var(--on-status)]"
                   >
                     {tab.errorCount}
                   </span>

@@ -78,7 +78,7 @@ export function WorkspaceSwitcher({
       {open && (
         <div
           role="listbox"
-          className="absolute inset-x-0 top-full z-50 mt-1 max-h-[320px] overflow-auto rounded-xl border border-[var(--border)] bg-[var(--card)] p-1 shadow-[0_10px_26px_rgba(0,43,54,.14)]"
+          className="absolute inset-x-0 top-full z-50 mt-1 max-h-[320px] overflow-auto rounded-xl border border-[var(--border)] bg-[var(--card)] p-1 shadow-[0_10px_26px_var(--shadow-2)]"
         >
           {workspaces.map((workspace) => {
             const selected = workspace.key === currentKey;

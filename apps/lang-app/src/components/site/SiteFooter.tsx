@@ -2,14 +2,14 @@ import Link from 'next/link';
 import { Brand } from '@/components/Brand';
 import { vi } from '@/i18n/vi';
 
-const linkClass = 'block transition hover:text-[#eee8d5]';
+const linkClass = 'block transition hover:text-[var(--footer-heading)]';
 
 // Footer tối theo design/Home.html của lightc-general.
 // Link tới trang cần đăng nhập tắt prefetch: khách prefetch sẽ nhận redirect
 // `/login` của middleware và router cache giữ redirect đó cả sau khi đăng nhập.
 export function SiteFooter() {
   return (
-    <footer className="bg-[#002b36] px-5 pb-10 pt-12 text-[#93a1a1]">
+    <footer className="border-t border-[var(--footer-border)] bg-[var(--footer-bg)] px-5 pb-10 pt-12 text-[var(--footer-fg)]">
       <div className="mx-auto flex max-w-6xl flex-wrap items-start justify-between gap-10">
         <div className="flex max-w-[320px] flex-col gap-3">
           <Brand inverted />
@@ -17,7 +17,7 @@ export function SiteFooter() {
         </div>
         <div className="flex flex-wrap gap-x-16 gap-y-6 text-[13.5px] leading-8">
           <div>
-            <div className="mb-1.5 font-semibold text-[#eee8d5]">
+            <div className="mb-1.5 font-semibold text-[var(--footer-heading)]">
               {vi.site.footerProduct}
             </div>
             <Link href="/#features" className={linkClass}>
@@ -31,7 +31,7 @@ export function SiteFooter() {
             </Link>
           </div>
           <div>
-            <div className="mb-1.5 font-semibold text-[#eee8d5]">
+            <div className="mb-1.5 font-semibold text-[var(--footer-heading)]">
               {vi.site.footerAccount}
             </div>
             <Link href="/login" className={linkClass}>
@@ -46,7 +46,7 @@ export function SiteFooter() {
           </div>
         </div>
       </div>
-      <div className="mx-auto mt-9 max-w-6xl border-t border-[rgba(147,161,161,.2)] pt-5 font-mono text-[12px] text-[#657b83]">
+      <div className="mx-auto mt-9 max-w-6xl border-t border-[var(--footer-divider)] pt-5 font-mono text-[12px] text-[var(--footer-muted)]">
         © {new Date().getFullYear()} {vi.app.name}
       </div>
     </footer>

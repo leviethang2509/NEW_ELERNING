@@ -68,17 +68,17 @@ const CALLOUT_STYLE: Record<
 > = {
   info: {
     className:
-      'border-[rgba(38,139,210,.3)] bg-[rgba(38,139,210,.07)] text-[#1f6fa8]',
+      'border-[var(--info-border)] bg-[var(--info-soft)] text-[var(--info-text)]',
     icon: Info,
   },
   tip: {
     className:
-      'border-[rgba(133,153,0,.32)] bg-[rgba(133,153,0,.08)] text-[#5f6d00]',
+      'border-[var(--ok-border)] bg-[var(--ok-soft)] text-[var(--ok-text)]',
     icon: Lightbulb,
   },
   warning: {
     className:
-      'border-[rgba(181,137,0,.35)] bg-[rgba(181,137,0,.1)] text-[#8a6900]',
+      'border-[var(--warn-border)] bg-[var(--warn-soft)] text-[var(--warn-text)]',
     icon: AlertTriangle,
   },
 };
@@ -220,7 +220,7 @@ function Block({ block }: { block: ManualBlock }) {
       );
     case 'code':
       return (
-        <pre className="mt-4 overflow-x-auto rounded-xl bg-[#002b36] px-4 py-3 font-mono text-[13px] leading-[1.6] text-[#eee8d5]">
+        <pre className="mt-4 overflow-x-auto rounded-xl bg-[var(--code-bg)] px-4 py-3 font-mono text-[13px] leading-[1.6] text-[var(--code-fg)]">
           {block.text}
         </pre>
       );

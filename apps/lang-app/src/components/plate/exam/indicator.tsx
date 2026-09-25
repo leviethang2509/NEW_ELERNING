@@ -140,14 +140,14 @@ function IndicatorElement(props: PlateElementProps) {
           editable ? 'cursor-pointer' : 'cursor-default'
         } ${missing ? 'border-dashed' : ''}`}
         style={{
-          color: missing ? '#dc322f' : color,
-          backgroundColor: missing ? 'rgba(220,50,47,.1)' : soft,
-          borderColor: missing ? '#dc322f' : color,
+          color: missing ? 'var(--danger)' : color,
+          backgroundColor: missing ? 'var(--danger-soft)' : soft,
+          borderColor: missing ? 'var(--danger)' : color,
         }}
       >
         <span
           className="h-1.5 w-1.5 rounded-full"
-          style={{ backgroundColor: missing ? '#dc322f' : color }}
+          style={{ backgroundColor: missing ? 'var(--danger)' : color }}
         />
         {indicatorLabel(el)}
         {suffix && <span className="font-normal opacity-80">· {suffix}</span>}

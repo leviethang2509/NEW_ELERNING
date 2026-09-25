@@ -63,7 +63,9 @@ export function ExplanationDialog({
         {text.target}{' '}
         <strong
           className={
-            numbers.length > 0 ? 'text-[var(--heading)]' : 'text-[#dc322f]'
+            numbers.length > 0
+              ? 'text-[var(--heading)]'
+              : 'text-[var(--danger)]'
           }
         >
           {target}

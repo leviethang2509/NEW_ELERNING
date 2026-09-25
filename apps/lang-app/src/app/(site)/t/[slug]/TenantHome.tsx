@@ -133,7 +133,7 @@ export function TenantHome({ slug: rawSlug }: { slug: string }) {
 
   return (
     <div className="mx-auto max-w-5xl px-5 py-10">
-      <section className="flex flex-col gap-6 rounded-3xl border border-[var(--border)] bg-[var(--card)] p-6 shadow-[0_18px_44px_rgba(0,43,54,.08)] sm:flex-row sm:items-start sm:p-8">
+      <section className="flex flex-col gap-6 rounded-3xl border border-[var(--border)] bg-[var(--card)] p-6 shadow-[0_18px_44px_var(--shadow-1)] sm:flex-row sm:items-start sm:p-8">
         <TenantAvatar name={tenant.name} logoUrl={tenant.logoUrl} size="lg" />
         <div className="min-w-0 flex-1">
           <h1 className="text-[26px] font-bold leading-tight tracking-[-0.02em] text-[var(--heading)] sm:text-[32px]">

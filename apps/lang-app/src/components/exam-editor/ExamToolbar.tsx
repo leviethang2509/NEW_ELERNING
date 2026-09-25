@@ -418,7 +418,7 @@ export function ExamToolbar({
       <Dropdown
         title={text.backgroundColor}
         icon={
-          <span className="rounded-sm bg-[#fff3bf] px-1 text-[13px] font-bold leading-none text-[#1f2328]">
+          <span className="rounded-sm bg-[var(--highlight-bg)] px-1 text-[13px] font-bold leading-none text-[var(--highlight-fg)]">
             A
           </span>
         }

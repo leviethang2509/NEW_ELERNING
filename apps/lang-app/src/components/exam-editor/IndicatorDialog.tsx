@@ -168,7 +168,7 @@ export function IndicatorDialog({
           />
           <span
             className={`mt-1.5 block text-[12.5px] ${
-              paramInvalid ? 'text-[#dc322f]' : 'text-[var(--muted)]'
+              paramInvalid ? 'text-[var(--danger)]' : 'text-[var(--muted)]'
             }`}
           >
             {text.numberHint(
@@ -194,7 +194,7 @@ export function IndicatorDialog({
           />
           <span
             className={`mt-1.5 block text-[12.5px] ${
-              optionsInvalid ? 'text-[#dc322f]' : 'text-[var(--muted)]'
+              optionsInvalid ? 'text-[var(--danger)]' : 'text-[var(--muted)]'
             }`}
           >
             {duplicated ? text.duplicatedOptions : text.optionsHint}

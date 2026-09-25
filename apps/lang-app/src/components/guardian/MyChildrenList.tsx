@@ -54,7 +54,7 @@ export function MyChildrenList({ slug }: { slug: string }) {
             <Link
               prefetch={false}
               href={childPath(slug, child.membershipId)}
-              className="group flex h-full flex-col gap-2 rounded-2xl border border-[var(--border)] bg-[var(--card)] p-4 transition hover:border-[var(--accent)] hover:shadow-[0_12px_28px_rgba(0,43,54,.08)]"
+              className="group flex h-full flex-col gap-2 rounded-2xl border border-[var(--border)] bg-[var(--card)] p-4 transition hover:border-[var(--accent)] hover:shadow-[0_12px_28px_var(--shadow-1)]"
             >
               <div className="flex items-center gap-2">
                 <Users size={18} className="shrink-0 text-[var(--muted)]" />

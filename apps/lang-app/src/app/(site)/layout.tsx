@@ -14,7 +14,7 @@ export default function SiteLayout({
 }) {
   return (
     <div className="flex min-h-screen flex-col">
-      <header className="sticky top-0 z-20 border-b border-[var(--border)] bg-[rgba(253,246,227,.92)] backdrop-blur-[10px]">
+      <header className="sticky top-0 z-20 border-b border-[var(--border)] bg-[var(--bg-blur)] backdrop-blur-[10px]">
         <div className="mx-auto flex h-[68px] max-w-6xl items-center gap-3 px-5">
           <Link href="/" aria-label={vi.app.name}>
             <Brand hideLabelOnMobile />

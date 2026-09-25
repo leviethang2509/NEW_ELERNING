@@ -134,7 +134,7 @@ function ManualLayout({
   return (
     <UserManualContext.Provider value={context}>
       <div className="min-h-screen">
-        <header className="sticky top-0 z-30 border-b border-[var(--border)] bg-[rgba(253,246,227,.94)] backdrop-blur-[10px]">
+        <header className="sticky top-0 z-30 border-b border-[var(--border)] bg-[var(--bg-blur)] backdrop-blur-[10px]">
           <div className="mx-auto flex h-[64px] max-w-[1440px] items-center gap-3 px-4 sm:px-6">
             <button
               type="button"
@@ -170,7 +170,7 @@ function ManualLayout({
           {/* Backdrop chỉ hiện trên mobile khi sidebar mở. */}
           <div
             onClick={closeSidebar}
-            className={`fixed inset-0 top-[64px] z-20 bg-black/30 lg:hidden ${
+            className={`fixed inset-0 top-[64px] z-20 bg-[var(--overlay)] lg:hidden ${
               sidebarOpen ? 'block' : 'hidden'
             }`}
           />

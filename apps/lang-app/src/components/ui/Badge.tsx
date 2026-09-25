@@ -1,9 +1,9 @@
 const toneClass = {
   neutral: 'bg-[var(--hover)] text-[var(--body)]',
   accent: 'bg-[var(--accent-soft)] text-[var(--accent)]',
-  success: 'bg-[rgba(133,153,0,.13)] text-[#5f6d00]',
-  warning: 'bg-[rgba(181,137,0,.15)] text-[#8a6900]',
-  danger: 'bg-[#fdf1ef] text-[var(--danger)]',
+  success: 'bg-[var(--ok-soft)] text-[var(--ok-text)]',
+  warning: 'bg-[var(--warn-soft)] text-[var(--warn-text)]',
+  danger: 'bg-[var(--danger-bg)] text-[var(--danger)]',
 } as const;
 
 export type BadgeTone = keyof typeof toneClass;

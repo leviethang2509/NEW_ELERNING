@@ -29,7 +29,7 @@ export function ConfirmDialog({
 }: ConfirmDialogProps) {
   const confirmClass =
     tone === 'danger'
-      ? 'bg-[var(--danger)] text-white hover:brightness-105'
+      ? 'bg-[var(--danger)] text-[var(--on-status)] hover:brightness-105'
       : 'bg-[var(--accent)] text-white hover:brightness-105';
 
   return (

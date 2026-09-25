@@ -103,7 +103,9 @@ export default function ExamEditPage({ params }: { params: { id: string } }) {
               <>
                 <p>{text.message(formatDateTime(draft.savedAt))}</p>
                 {draft.baseRevision !== loaded.exam.contentRevision && (
-                  <p className="mt-2 text-[#8a6900]">{text.staleNote}</p>
+                  <p className="mt-2 text-[var(--warn-text)]">
+                    {text.staleNote}
+                  </p>
                 )}
               </>
             ) : (

@@ -42,7 +42,7 @@ function WorkspaceCard({
   return (
     <Link
       href={href}
-      className="flex items-center gap-4 rounded-2xl border border-[var(--border)] bg-[var(--card)] p-5 transition hover:border-[var(--border-strong)] hover:shadow-[0_6px_18px_rgba(0,43,54,.07)]"
+      className="flex items-center gap-4 rounded-2xl border border-[var(--border)] bg-[var(--card)] p-5 transition hover:border-[var(--border-strong)] hover:shadow-[0_6px_18px_var(--shadow-1)]"
     >
       <span className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-[var(--accent-soft)] text-[var(--accent)]">
         <Icon size={22} />
@@ -110,7 +110,7 @@ function TenantContextCard({
           <p className="mt-2.5 text-[13.5px] text-[var(--body)]">{hint}</p>
         )}
         {reason && (
-          <p className="mt-2 whitespace-pre-line rounded-xl bg-[#fdf1ef] px-3.5 py-2.5 text-[13.5px] text-[var(--danger)]">
+          <p className="mt-2 whitespace-pre-line rounded-xl bg-[var(--danger-bg)] px-3.5 py-2.5 text-[13.5px] text-[var(--danger)]">
             <span className="font-semibold">{vi.me.reason}:</span> {reason}
           </p>
         )}

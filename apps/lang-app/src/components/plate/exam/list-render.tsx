@@ -127,7 +127,7 @@ function OrderingItem(props: PlateElementProps) {
         onClick={(event) => setAnchor(event.currentTarget)}
         className={`mt-[3px] grid h-[22px] min-w-[22px] shrink-0 select-none place-items-center rounded-md border px-1 text-[12.5px] font-semibold transition disabled:cursor-default ${
           bad
-            ? 'border-dashed border-[#dc322f] text-[#dc322f]'
+            ? 'border-dashed border-[var(--danger)] text-[var(--danger)]'
             : 'border-[var(--border-strong)] bg-[var(--sidebar)] text-[var(--body)] hover:border-[var(--accent)] hover:text-[var(--accent)]'
         }`}
       >

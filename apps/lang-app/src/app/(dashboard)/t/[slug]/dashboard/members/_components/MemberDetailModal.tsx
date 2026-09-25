@@ -218,7 +218,7 @@ export function MemberDetailModal({
               {saving ? vi.common.processing : text.saveRoles}
             </button>
             {saved && (
-              <span role="status" className="text-[13px] text-[#5f6d00]">
+              <span role="status" className="text-[13px] text-[var(--ok-text)]">
                 {text.rolesSaved}
               </span>
             )}

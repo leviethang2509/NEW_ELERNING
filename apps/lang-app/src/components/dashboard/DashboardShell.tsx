@@ -62,7 +62,7 @@ export function DashboardShell({
       {/* Backdrop chỉ hiện trên mobile khi sidebar mở. */}
       <div
         onClick={() => setSidebarOpen(false)}
-        className={`fixed inset-0 z-30 bg-black/30 sm:hidden ${
+        className={`fixed inset-0 z-30 bg-[var(--overlay)] sm:hidden ${
           sidebarOpen ? 'block' : 'hidden'
         }`}
       />

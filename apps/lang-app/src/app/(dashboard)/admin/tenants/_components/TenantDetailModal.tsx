@@ -163,7 +163,7 @@ export function TenantDetailModal({
           {overLimit && <Badge tone="warning">{text.overLimit}</Badge>}
         </div>
         {overLimit && (
-          <p className="mb-4 rounded-xl bg-[rgba(181,137,0,.1)] px-3.5 py-2.5 text-[13.5px] text-[#8a6900]">
+          <p className="mb-4 rounded-xl bg-[var(--warn-soft)] px-3.5 py-2.5 text-[13.5px] text-[var(--warn-text)]">
             {text.overLimitWarning(
               tenant.activeMembers,
               tenant.plan.maxMembers,

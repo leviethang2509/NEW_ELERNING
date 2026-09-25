@@ -92,6 +92,20 @@
 
 Caret `<select>` trong `globals.css` đang nhúng `stroke='%236b7280'` trong data-URI – không nhận được biến, nên **khai báo lại nguyên dòng `background-image`** trong mỗi khối theme (3 dòng).
 
+**Token thêm ở Step 2** (khi dọn màu cứng mới thấy thiếu; đã có trong `globals.css`):
+
+| Token | Vì sao cần |
+|---|---|
+| `--danger-bg` | Nền **đặc** `#fdf1ef` của thông báo lỗi (`FormAlert`, `Badge` danger, `Countdown`…). `--danger-soft` bán trong suốt cho ra tông cam, không giống bản gốc |
+| `--on-status` | Chữ trên nền màu trạng thái: trắng ở 2 theme sáng, `#002b36` ở theme tối (nền trạng thái ở theme tối là màu sáng nên chữ trắng sẽ chìm) |
+| `--sidebar-hover` · `--accent-hover` | Hover của nút trên nền `--sidebar` (`#e4dcc4`) và của nút nhấn (`#b32c6d`) |
+| `--cyan` · `--cyan-soft` | Nhãn thời lượng ở hero trang chủ (`#2aa198`); gộp vào `--info-*` sẽ đổi tông từ mòng sang lam |
+| `--code-bg` · `--code-fg` | Khối mã trong `/user-manual`: ở theme tối phải tối hơn `--card` mới phân biệt được |
+| `--footer-muted` · `--footer-divider` | Dòng bản quyền và đường kẻ trong footer |
+| `--on-accent` · `--on-accent-muted` · `--on-accent-line` · `--on-accent-fg` · `--highlight-bg` · `--highlight-fg` | Màu **không đổi theo theme**: nằm trên nền `--accent` (thẻ gói nổi, CTA) hoặc là màu bút dạ quang. Khai báo một lần trong `:root` |
+
+Sửa so với bản Step 1: `--overlay` để `rgba(0,0,0,.4)` ở 2 theme sáng (đúng `bg-black/40` của `Modal` trước req-4), `--info-text` của `solarized-light` để `#1f6fa8` (đúng chữ callout/`FormAlert` trước req-4), alpha của `--ok-soft`/`--warn-soft`/`--info-soft` gom về .12/.12/.10 (giữa dải .06–.15 đang dùng, mọi chỗ lệch ≤ .06 alpha).
+
 ### 4.4 Chặn tái phát
 
 Bằng **ESLint** (`no-restricted-syntax` trong config của lang-app): báo lỗi khi gặp chuỗi chứa `rgba(`/hex màu trong `className`, trừ danh sách cho phép (`catalog-ui.tsx` bảng màu danh mục, `calendar-model.ts`, `global-error.tsx`). Cùng tinh thần bảng `ROUTES` của `access-control.e2e.spec.ts`: thêm màu cứng là đỏ ngay, và `pnpm lint` đã nằm trong điều kiện kết thúc step.

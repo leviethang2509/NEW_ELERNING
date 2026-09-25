@@ -379,7 +379,7 @@ export function LessonEditor({
             {!readOnly && (
               <>
                 {' · '}
-                <span className={dirty ? 'text-[#b58900]' : undefined}>
+                <span className={dirty ? 'text-[var(--warn)]' : undefined}>
                   {saveStatus}
                 </span>
               </>

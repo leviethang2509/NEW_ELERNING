@@ -351,7 +351,7 @@ function SessionTable({
                     ? '—'
                     : session.links.map((row) => row.title).join(', ')}
                   {cancelled && session.links.length > 0 && (
-                    <span className="mt-0.5 flex items-center gap-1 text-[12px] text-[#8a6900]">
+                    <span className="mt-0.5 flex items-center gap-1 text-[12px] text-[var(--warn-text)]">
                       <AlertTriangle size={12} /> {text.cancelledContent}
                     </span>
                   )}
@@ -604,7 +604,9 @@ function RecurringForm({
                   {summary.moved.map((row) => (
                     <li
                       key={row.seq}
-                      className={row.movedWarning ? 'text-[#8a6900]' : ''}
+                      className={
+                        row.movedWarning ? 'text-[var(--warn-text)]' : ''
+                      }
                     >
                       {text.sessionLabel(row.seq)}:{' '}
                       {formatSessionStart(row.fromStartsAt)} →{' '}

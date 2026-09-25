@@ -28,7 +28,7 @@ export function ItemTypeIcon({
       className={`grid shrink-0 place-items-center rounded-md p-1 ${
         type === CurriculumItemType.LESSON
           ? 'bg-[var(--accent-soft)] text-[var(--accent)]'
-          : 'bg-[rgba(38,139,210,.12)] text-[#268bd2]'
+          : 'bg-[var(--info-soft)] text-[var(--info)]'
       }`}
     >
       <Icon size={size} />

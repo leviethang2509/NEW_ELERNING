@@ -81,7 +81,7 @@ export function AttemptResultView({
         <ArrowLeft size={15} /> {result.exam.title}
       </Link>
 
-      <section className="rounded-3xl border border-[var(--border)] bg-[var(--card)] p-6 shadow-[0_18px_44px_rgba(0,43,54,.08)] sm:p-8">
+      <section className="rounded-3xl border border-[var(--border)] bg-[var(--card)] p-6 shadow-[0_18px_44px_var(--shadow-1)] sm:p-8">
         <div className="flex flex-wrap items-center gap-3">
           <h1 className="text-[24px] font-bold tracking-[-0.02em] text-[var(--heading)]">
             {text.resultTitle}

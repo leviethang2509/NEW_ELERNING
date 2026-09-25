@@ -314,7 +314,7 @@ export default function SessionDetailPage({
         </FormAlert>
       )}
       {session.conflicts.length > 0 && (
-        <div className="rounded-2xl border border-[var(--danger)] bg-[#fdf1ef] p-4 text-[14px] text-[var(--danger)]">
+        <div className="rounded-2xl border border-[var(--danger)] bg-[var(--danger-bg)] p-4 text-[14px] text-[var(--danger)]">
           <p className="mb-1 flex items-center gap-1.5 font-semibold">
             <AlertTriangle size={16} /> {text.conflictsTitle}
           </p>

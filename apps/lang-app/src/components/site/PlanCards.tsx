@@ -60,20 +60,22 @@ export function PlanCards() {
             key={plan.id}
             className={`flex flex-col gap-3.5 rounded-[18px] border p-6 ${
               featured
-                ? 'border-[var(--accent)] bg-[var(--accent)] text-[#fdf6e3] shadow-[0_16px_38px_rgba(211,54,130,.28)]'
-                : 'border-[rgba(88,110,117,.18)] bg-[var(--bg)]'
+                ? 'border-[var(--accent)] bg-[var(--accent)] text-[var(--on-accent)] shadow-[0_16px_38px_var(--accent-shadow)]'
+                : 'border-[var(--border-strong)] bg-[var(--bg)]'
             }`}
           >
             <div
               className={`text-[14px] font-semibold tracking-[0.02em] ${
-                featured ? 'text-[rgba(253,246,227,.85)]' : 'text-[#839496]'
+                featured
+                  ? 'text-[var(--on-accent-muted)]'
+                  : 'text-[var(--muted-2)]'
               }`}
             >
               {plan.name}
             </div>
             <div
               className={`break-words font-mono text-[24px] font-medium ${
-                featured ? 'text-[#fdf6e3]' : 'text-[var(--fg)]'
+                featured ? 'text-[var(--on-accent)]' : 'text-[var(--fg)]'
               }`}
             >
               {plan.price === null
@@ -82,12 +84,14 @@ export function PlanCards() {
             </div>
             <div
               className={`h-px ${
-                featured ? 'bg-[rgba(253,246,227,.3)]' : 'bg-[var(--border)]'
+                featured ? 'bg-[var(--on-accent-line)]' : 'bg-[var(--border)]'
               }`}
             />
             <div
               className={`flex flex-col gap-2 text-[13.5px] leading-snug ${
-                featured ? 'text-[rgba(253,246,227,.92)]' : 'text-[var(--body)]'
+                featured
+                  ? 'text-[var(--on-accent-muted)]'
+                  : 'text-[var(--body)]'
               }`}
             >
               <div className="font-semibold">
@@ -103,8 +107,8 @@ export function PlanCards() {
               prefetch={false}
               className={`mt-auto rounded-[10px] px-3 py-2.5 text-center text-[14px] font-semibold transition ${
                 featured
-                  ? 'bg-[#fdf6e3] text-[#002b36] hover:bg-white'
-                  : 'bg-[var(--sidebar)] text-[var(--fg)] hover:bg-[#e4dcc4]'
+                  ? 'bg-[var(--on-accent)] text-[var(--on-accent-fg)] hover:brightness-105'
+                  : 'bg-[var(--sidebar)] text-[var(--fg)] hover:bg-[var(--sidebar-hover)]'
               }`}
             >
               {vi.site.choosePlan}

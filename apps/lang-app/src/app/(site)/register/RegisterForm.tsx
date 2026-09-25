@@ -26,7 +26,12 @@ import { safeNextPath } from '@/lib/auth-redirect';
 import { passwordStrength } from '@/lib/password-strength';
 import { errorMessage } from '@/lib/error-message';
 
-const strengthColors = ['var(--muted)', '#dc322f', '#b58900', '#859900'];
+const strengthColors = [
+  'var(--muted)',
+  'var(--danger)',
+  'var(--warn)',
+  'var(--ok)',
+];
 
 function PasswordStrengthMeter({ password }: { password: string }) {
   const score = password ? passwordStrength(password) : 0;

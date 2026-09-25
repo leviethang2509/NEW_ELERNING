@@ -152,7 +152,9 @@ export default function TenantClassesPage() {
       render: (row) => (
         <span
           className={`block truncate text-[13px] ${
-            row.teachers.length === 0 ? 'text-[#8a6900]' : 'text-[var(--body)]'
+            row.teachers.length === 0
+              ? 'text-[var(--warn-text)]'
+              : 'text-[var(--body)]'
           }`}
         >
           {row.teachers.length === 0

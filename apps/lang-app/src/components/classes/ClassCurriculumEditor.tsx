@@ -382,7 +382,7 @@ export function ClassCurriculumEditor({
                 {text.retakeHint}
               </span>
               {root && root.contentId === item.contentId && (
-                <span className="text-[12px] font-medium text-[#8a6900]">
+                <span className="text-[12px] font-medium text-[var(--warn-text)]">
                   {text.sameExamWarning}
                 </span>
               )}
@@ -655,7 +655,7 @@ export function ClassCurriculumEditor({
             {common.summary(draft.groups.length, total)}
           </span>
           {dirty && (
-            <span className="text-[13px] font-medium text-[#8a6900]">
+            <span className="text-[13px] font-medium text-[var(--warn-text)]">
               {common.unsaved}
             </span>
           )}

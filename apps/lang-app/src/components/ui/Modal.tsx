@@ -60,12 +60,12 @@ export function Modal({
   if (!open) return null;
 
   return (
-    <div className="ls-modal-overlay fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
+    <div className="ls-modal-overlay fixed inset-0 z-50 flex items-center justify-center bg-[var(--overlay)] p-4">
       <div
         role="dialog"
         aria-modal="true"
         aria-label={title}
-        className={`flex max-h-[85vh] w-full ${widthClass} flex-col overflow-hidden rounded-2xl border border-[var(--border)] ${surfaceClass} shadow-[0_30px_70px_rgba(0,43,54,.28)]`}
+        className={`flex max-h-[85vh] w-full ${widthClass} flex-col overflow-hidden rounded-2xl border border-[var(--border)] ${surfaceClass} shadow-[0_30px_70px_var(--shadow-3)]`}
       >
         {title && (
           <div className="flex shrink-0 items-center justify-between border-b border-[var(--border)] px-5 py-4">

@@ -151,7 +151,7 @@ export function NotificationBell() {
       {open && (
         <div
           role="menu"
-          className="absolute right-0 top-full z-50 mt-1 w-[min(92vw,380px)] overflow-hidden rounded-xl border border-[var(--border)] bg-[var(--card)] shadow-[0_10px_26px_rgba(0,43,54,.14)]"
+          className="absolute right-0 top-full z-50 mt-1 w-[min(92vw,380px)] overflow-hidden rounded-xl border border-[var(--border)] bg-[var(--card)] shadow-[0_10px_26px_var(--shadow-2)]"
         >
           <div className="flex items-center gap-2 border-b border-[var(--border)] px-3 py-2">
             <span className="flex-1 text-[13.5px] font-semibold text-[var(--heading)]">

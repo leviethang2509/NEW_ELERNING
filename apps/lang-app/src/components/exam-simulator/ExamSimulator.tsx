@@ -112,7 +112,7 @@ function correctChoices(answer: ReviewAnswer | undefined): Set<number> | null {
 /** Dòng "Đáp án: …" sau câu trả lời sai. */
 function CorrectAnswer({ children }: { children: ReactNode }) {
   return (
-    <span className="ml-1.5 inline-flex items-baseline gap-1 text-[13.5px] font-semibold text-[#859900]">
+    <span className="ml-1.5 inline-flex items-baseline gap-1 text-[13.5px] font-semibold text-[var(--ok)]">
       <Check size={13} className="self-center" aria-hidden />
       {text.correctAnswer}: {children}
     </span>
@@ -139,7 +139,12 @@ function renderLeaf(leaf: ExamNode, key: string): ReactNode {
   }
   if (leaf.superscript) node = <sup>{node}</sup>;
   if (leaf.subscript) node = <sub>{node}</sub>;
-  if (leaf.highlight) node = <mark className="bg-[#fff3bf]">{node}</mark>;
+  if (leaf.highlight)
+    node = (
+      <mark className="bg-[var(--highlight-bg)] text-[var(--highlight-fg)]">
+        {node}
+      </mark>
+    );
 
   const style: CSSProperties = {
     color: stringProp(leaf, 'color'),
@@ -218,7 +223,7 @@ function renderInline(node: ExamNode, key: string, ctx: Ctx): ReactNode {
         href={stringProp(node, 'url')}
         target="_blank"
         rel="noreferrer"
-        className="text-[#268bd2] underline"
+        className="text-[var(--link)] underline"
       >
         {children}
       </a>
@@ -558,8 +563,8 @@ function ExplanationReveal({
       : ((nodeId ? review?.explanations.get(nodeId) : undefined) ?? []);
   if (!result || blocks.length === 0) return null;
   return (
-    <aside className="my-3 rounded-lg border border-dashed border-[#b58900] bg-[rgba(181,137,0,0.06)] px-3 py-2">
-      <div className="text-[12px] font-semibold text-[#b58900]">
+    <aside className="my-3 rounded-lg border border-dashed border-[var(--warn)] bg-[var(--warn-soft)] px-3 py-2">
+      <div className="text-[12px] font-semibold text-[var(--warn)]">
         {text.explanation}
       </div>
       {renderPlain(blocks, keyPrefix)}
@@ -636,9 +641,9 @@ function ChoiceGroup({
           const tone = !correct
             ? ''
             : isAnswer
-              ? 'bg-[rgba(133,153,0,0.12)]'
+              ? 'bg-[var(--ok-soft)]'
               : checked
-                ? 'bg-[rgba(220,50,47,0.1)]'
+                ? 'bg-[var(--danger-soft)]'
                 : '';
           return (
             <label
@@ -659,7 +664,7 @@ function ChoiceGroup({
               />
               <span className="min-w-0 flex-1">{row.content}</span>
               {isAnswer && (
-                <span className="mt-[3px] inline-flex shrink-0 items-center gap-1 text-[12px] font-semibold text-[#859900]">
+                <span className="mt-[3px] inline-flex shrink-0 items-center gap-1 text-[12px] font-semibold text-[var(--ok)]">
                   <Check size={13} aria-hidden /> {text.correctAnswer}
                 </span>
               )}
@@ -833,8 +838,8 @@ function OrderingGroup({ rows, nos }: { rows: Row[]; nos: number[] }) {
         );
       })}
       {result?.verdicts[nos[0]] === 'wrong' && Array.isArray(answerOrder) && (
-        <div className="rounded-lg border border-[#859900] bg-[rgba(133,153,0,0.08)] px-3 py-2">
-          <div className="mb-1 inline-flex items-center gap-1 text-[12.5px] font-semibold text-[#859900]">
+        <div className="rounded-lg border border-[var(--ok)] bg-[var(--ok-soft)] px-3 py-2">
+          <div className="mb-1 inline-flex items-center gap-1 text-[12.5px] font-semibold text-[var(--ok)]">
             <Check size={13} aria-hidden /> {text.correctOrder}
           </div>
           {(answerOrder as number[]).map((index, i) => {

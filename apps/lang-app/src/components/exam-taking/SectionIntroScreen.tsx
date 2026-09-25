@@ -95,7 +95,7 @@ export function SectionIntroScreen({
             </FormAlert>
           )}
 
-          <section className="rounded-3xl border border-[var(--border)] bg-[var(--card)] p-6 shadow-[0_18px_44px_rgba(0,43,54,.08)] sm:p-8">
+          <section className="rounded-3xl border border-[var(--border)] bg-[var(--card)] p-6 shadow-[0_18px_44px_var(--shadow-1)] sm:p-8">
             <p className="text-[12px] font-semibold uppercase tracking-[0.09em] text-[var(--accent)]">
               {text.sectionOf(sectionIndex + 1, view.sections.length)}
             </p>
@@ -191,7 +191,7 @@ function SectionSteps({
             <span
               className={`grid h-6 w-6 shrink-0 place-items-center rounded-full text-[12px] font-bold ${
                 done
-                  ? 'bg-[#859900] text-white'
+                  ? 'bg-[var(--ok)] text-[var(--on-status)]'
                   : 'bg-[var(--hover)] text-[var(--body)]'
               }`}
             >

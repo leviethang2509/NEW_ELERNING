@@ -125,7 +125,7 @@ export function ChangePlanModal({
           </select>
         </label>
         {overLimit && selected && (
-          <p className="rounded-xl bg-[rgba(181,137,0,.1)] px-3.5 py-2.5 text-[13.5px] text-[#8a6900]">
+          <p className="rounded-xl bg-[var(--warn-soft)] px-3.5 py-2.5 text-[13.5px] text-[var(--warn-text)]">
             {text.overLimitWarning(tenant.activeMembers, selected.maxMembers)}
           </p>
         )}

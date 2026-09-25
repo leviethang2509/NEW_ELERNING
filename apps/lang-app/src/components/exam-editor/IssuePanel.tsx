@@ -23,9 +23,9 @@ export function IssuePanel({ issues, outline, scrollerRef }: IssuePanelProps) {
     <div className="flex min-h-[128px] shrink-0 flex-col overflow-hidden rounded-xl border border-[var(--border-strong)] bg-[var(--sidebar)] lg:max-h-[45%]">
       <div className="flex items-center gap-1.5 border-b border-[var(--border)] px-3.5 py-2.5 text-[11.5px] font-semibold uppercase tracking-[0.09em] text-[var(--muted)]">
         {errors.length ? (
-          <AlertTriangle size={13} className="text-[#dc322f]" />
+          <AlertTriangle size={13} className="text-[var(--danger)]" />
         ) : (
-          <CheckCircle2 size={13} className="text-[#2f9e44]" />
+          <CheckCircle2 size={13} className="text-[var(--ok)]" />
         )}
         {text.title(errors.length)}
       </div>
@@ -51,7 +51,7 @@ export function IssuePanel({ issues, outline, scrollerRef }: IssuePanelProps) {
                 className={`block text-[12px] font-semibold ${
                   issue.severity === 'error'
                     ? 'text-[var(--accent)]'
-                    : 'text-[#b58900]'
+                    : 'text-[var(--warn)]'
                 }`}
               >
                 {labelOf(issue.indicatorId)}
