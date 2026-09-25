@@ -2,10 +2,74 @@
 @tailwind components;
 @tailwind utilities;
 
-/* --- Solarized Light palette (copy từ lightc-general) ----------------------
-   Dùng qua CSS variables để khu vực chính + dashboard đồng bộ tông màu. Tông
-   "giấy" ấm với điểm nhấn hồng magenta, viền mảnh bán trong suốt. */
-:root {
+/* --- Bảng màu (req-4) ------------------------------------------------------
+   3 theme, chọn qua `data-theme` trên <html>:
+
+   - `light`            trắng, **mặc định** (cũng là giá trị của `:root` trần,
+                        để trang tự dựng <html> riêng như `global-error` vẫn
+                        có màu đúng).
+   - `solarized-light`  tông giấy kem của bộ design lightc-general. Giá trị ở
+                        đây **giữ y nguyên** bản trước req-4 – đây là mốc để
+                        đối chiếu "giao diện không đổi".
+   - `dark`             Solarized Dark.
+
+   Tên biến giữ nguyên như trước req-4 nên 1.673 lượt dùng `var(--…)` trong
+   253 file không phải sửa gì. Giá trị chữ chọn theo tỉ số tương phản đo được
+   trên nền tương ứng (mục tiêu ≥ 4.5 cho chữ thường); ghi kèm sau mỗi dòng. */
+
+:root,
+:root[data-theme='light'] {
+  --bg: #ffffff; /* nền trang */
+  --sidebar: #f5f7f7; /* nền sidebar & ô input */
+  --card: #ffffff; /* panel – phân biệt với nền bằng viền, không bằng sắc */
+  --border: rgba(88, 110, 117, 0.18); /* đậm hơn tông kem để bù tương phản */
+  --border-strong: rgba(88, 110, 117, 0.3);
+  --fg: #586e75; /* base00 – chữ chính · 5.4 */
+  --heading: #002b36; /* base03 – tiêu đề · 15.0 */
+  --body: #5f747b; /* chữ phụ · 4.9 */
+  --muted: #66787b; /* chữ mờ · 4.6 (base1 #93a1a1 chỉ 2.7, không dùng) */
+  --muted-2: #647a7d; /* 4.5 */
+  --accent: #d33682; /* magenta – điểm nhấn · 4.6 */
+  --accent-soft: rgba(211, 54, 130, 0.1);
+  --danger: #dc322f; /* 4.6 */
+  --hover: rgba(88, 110, 117, 0.07);
+  --scroll-thumb: rgba(88, 110, 117, 0.24);
+  --scroll-thumb-hover: rgba(88, 110, 117, 0.42);
+
+  --bg-blur: rgba(255, 255, 255, 0.88); /* header dính, có backdrop-blur */
+  --overlay: rgba(0, 43, 54, 0.3); /* nền mờ sau modal */
+  --shadow-1: rgba(0, 43, 54, 0.07); /* bóng nhẹ */
+  --shadow-2: rgba(0, 43, 54, 0.13); /* bóng popover/dialog */
+  --shadow-3: rgba(0, 43, 54, 0.28); /* bóng sâu */
+  --accent-shadow: rgba(211, 54, 130, 0.22); /* bóng dưới nút chính */
+
+  --ok: #859900; /* lục – nền/viền trạng thái tốt */
+  --ok-text: #5f6d00; /* lục làm chữ · 4.8 */
+  --ok-soft: rgba(133, 153, 0, 0.12);
+  --ok-border: rgba(133, 153, 0, 0.3);
+  --warn: #b58900; /* vàng */
+  --warn-text: #8a6900; /* 4.7 */
+  --warn-soft: rgba(181, 137, 0, 0.13);
+  --warn-border: rgba(181, 137, 0, 0.32);
+  --info: #268bd2; /* lam */
+  --info-text: #1b6f9e; /* 4.6 */
+  --info-soft: rgba(38, 139, 210, 0.1);
+  --info-border: rgba(38, 139, 210, 0.3);
+  --danger-soft: rgba(220, 50, 47, 0.1);
+  --danger-border: rgba(220, 50, 47, 0.3);
+
+  --link: #1b6f9e; /* link trong nội dung đề · 4.6 */
+  --blank-bg: rgba(88, 110, 117, 0.08); /* nền ô điền chỗ trống */
+  --footer-bg: #002b36; /* footer tối kết trang (design lightc-general) */
+  --footer-fg: #93a1a1;
+  --footer-heading: #eee8d5;
+  --footer-border: transparent;
+  --select-caret: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='none' stroke='%236b7280' stroke-width='1.6'%3E%3Cpath d='M6 8l4 4 4-4'/%3E%3C/svg%3E");
+}
+
+/* Tông giấy kem ấm với điểm nhấn hồng magenta, viền mảnh bán trong suốt.
+   Copy từ lightc-general; **không đổi giá trị** ở đây. */
+:root[data-theme='solarized-light'] {
   --bg: #fdf6e3; /* base3 - nền trang */
   --sidebar: #eee8d5; /* base2 - nền sidebar & ô input */
   --card: #fffdf5; /* panel sáng hơn nền một chút */
@@ -22,6 +86,93 @@
   --hover: rgba(88, 110, 117, 0.07);
   --scroll-thumb: rgba(88, 110, 117, 0.24);
   --scroll-thumb-hover: rgba(88, 110, 117, 0.42);
+
+  --bg-blur: rgba(253, 246, 227, 0.92);
+  --overlay: rgba(0, 43, 54, 0.3);
+  --shadow-1: rgba(0, 43, 54, 0.08);
+  --shadow-2: rgba(0, 43, 54, 0.14);
+  --shadow-3: rgba(0, 43, 54, 0.28);
+  --accent-shadow: rgba(211, 54, 130, 0.28);
+
+  --ok: #859900;
+  --ok-text: #5f6d00;
+  --ok-soft: rgba(133, 153, 0, 0.13);
+  --ok-border: rgba(133, 153, 0, 0.32);
+  --warn: #b58900;
+  --warn-text: #8a6900;
+  --warn-soft: rgba(181, 137, 0, 0.15);
+  --warn-border: rgba(181, 137, 0, 0.35);
+  --info: #268bd2;
+  --info-text: #268bd2;
+  --info-soft: rgba(38, 139, 210, 0.12);
+  --info-border: rgba(38, 139, 210, 0.3);
+  --danger-soft: rgba(220, 50, 47, 0.1);
+  --danger-border: rgba(220, 50, 47, 0.3);
+
+  --link: #268bd2;
+  --blank-bg: rgba(15, 23, 42, 0.07);
+  --footer-bg: #002b36;
+  --footer-fg: #93a1a1;
+  --footer-heading: #eee8d5;
+  --footer-border: transparent;
+  --select-caret: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='none' stroke='%236b7280' stroke-width='1.6'%3E%3Cpath d='M6 8l4 4 4-4'/%3E%3C/svg%3E");
+}
+
+/* Solarized Dark. Chữ mờ phải sáng hơn base01 (#586e75 chỉ 3.4 trên nền này);
+   bóng đổ dùng đen đậm vì bóng xanh mờ không nhìn ra trên nền tối. */
+:root[data-theme='dark'] {
+  --bg: #002b36; /* base03 - nền trang */
+  --sidebar: #05323d; /* nền sidebar & ô input, nhấc nhẹ khỏi nền */
+  --card: #073642; /* base02 - panel nhấc rõ khỏi nền */
+  --border: rgba(147, 161, 161, 0.18);
+  --border-strong: rgba(147, 161, 161, 0.3);
+  --fg: #a5b2b2; /* chữ chính · 6.7 */
+  --heading: #eee8d5; /* base2 - tiêu đề · 12.3 */
+  --body: #93a1a1; /* base1 - chữ phụ · 5.6 */
+  --muted: #82969a; /* chữ mờ · 4.9 */
+  --muted-2: #82969a;
+  --accent: #ea5c9e; /* magenta sáng hơn · 4.7 (base #d33682 chỉ 3.3) */
+  --accent-soft: rgba(234, 92, 158, 0.18);
+  --danger: #e9635f; /* 4.6 */
+  --hover: rgba(147, 161, 161, 0.1);
+  --scroll-thumb: rgba(147, 161, 161, 0.28);
+  --scroll-thumb-hover: rgba(147, 161, 161, 0.45);
+
+  --bg-blur: rgba(0, 43, 54, 0.9);
+  --overlay: rgba(0, 0, 0, 0.6);
+  --shadow-1: rgba(0, 0, 0, 0.35);
+  --shadow-2: rgba(0, 0, 0, 0.5);
+  --shadow-3: rgba(0, 0, 0, 0.65);
+  --accent-shadow: rgba(234, 92, 158, 0.3);
+
+  --ok: #9fb300; /* lục sáng · 6.4 */
+  --ok-text: #9fb300;
+  --ok-soft: rgba(159, 179, 0, 0.16);
+  --ok-border: rgba(159, 179, 0, 0.35);
+  --warn: #cfa000; /* vàng sáng · 6.2 */
+  --warn-text: #cfa000;
+  --warn-soft: rgba(207, 160, 0, 0.16);
+  --warn-border: rgba(207, 160, 0, 0.35);
+  --info: #4aa3dd; /* lam sáng · 5.4 */
+  --info-text: #4aa3dd;
+  --info-soft: rgba(74, 163, 221, 0.16);
+  --info-border: rgba(74, 163, 221, 0.35);
+  --danger-soft: rgba(233, 99, 95, 0.16);
+  --danger-border: rgba(233, 99, 95, 0.35);
+
+  --link: #4aa3dd;
+  --blank-bg: rgba(147, 161, 161, 0.14);
+  --footer-bg: #00212b; /* tối hơn nền trang một bậc để vẫn ra "kết trang" */
+  --footer-fg: #93a1a1;
+  --footer-heading: #eee8d5;
+  --footer-border: rgba(147, 161, 161, 0.14);
+  --select-caret: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='none' stroke='%2393a1a1' stroke-width='1.6'%3E%3Cpath d='M6 8l4 4 4-4'/%3E%3C/svg%3E");
+}
+
+/* Đổi theme không chạy transition màu trên toàn trang: vài nghìn phần tử cùng
+   transition một lúc làm giật, và các panel có transition riêng sẽ lệch pha. */
+:root[data-theme-switching] * {
+  transition: none !important;
 }
 
 /* --- Thanh cuộn -----------------------------------------------------------
@@ -149,12 +300,13 @@ body {
 }
 
 /* Native <select>: thay caret mặc định bằng caret riêng cách mép phải một
-   khoảng, áp dụng đồng nhất cho mọi dropdown. */
+   khoảng, áp dụng đồng nhất cho mọi dropdown. Data-URI không nhận được biến
+   màu nên mỗi theme khai báo `--select-caret` riêng. */
 select {
   -webkit-appearance: none;
   -moz-appearance: none;
   appearance: none;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='none' stroke='%236b7280' stroke-width='1.6'%3E%3Cpath d='M6 8l4 4 4-4'/%3E%3C/svg%3E");
+  background-image: var(--select-caret);
   background-repeat: no-repeat;
   background-position: right 0.7rem center;
   background-size: 1rem 1rem;

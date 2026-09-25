@@ -18,6 +18,7 @@ import {
   manualPageHref,
   searchManual,
 } from '@/lib/user-manual';
+import { ThemeToggle } from '@/theme';
 import { manualRoleLabel } from './ManualBlocks';
 
 interface UserManualContextValue {
@@ -150,9 +151,12 @@ function ManualLayout({
             <span className="truncate text-[15px] font-semibold text-[var(--heading)]">
               {vi.userManual.title}
             </span>
+            <div className="ml-auto shrink-0">
+              <ThemeToggle />
+            </div>
             <Link
               href="/admin"
-              className="ml-auto flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-lg px-3 py-2 text-[14px] font-medium text-[var(--body)] transition hover:bg-[var(--hover)]"
+              className="flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-lg px-3 py-2 text-[14px] font-medium text-[var(--body)] transition hover:bg-[var(--hover)]"
             >
               <ArrowLeft size={16} />
               <span className="hidden sm:inline">

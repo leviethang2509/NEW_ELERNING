@@ -16,6 +16,7 @@ import {
   secondaryButtonClass,
 } from '@/components/ui';
 import { vi } from '@/i18n/vi';
+import { ThemeToggle } from '@/theme';
 import { ApiError } from '@/lib/api';
 import { errorMessage } from '@/lib/error-message';
 import { finishAttempt, startAttemptSection } from '@/lib/learner-api';
@@ -104,6 +105,13 @@ export function SectionIntroScreen({
             <p className="mt-1 text-[14px] text-[var(--muted)]">
               {text.sectionInfo(section.durationMinutes, section.questionCount)}
             </p>
+
+            {/* Đổi giao diện chỉ có ở đây: bấm "Bắt đầu" là đồng hồ chạy, lúc
+                đó màn hình thi không có nút nào ngoài việc làm bài (req-4 C2). */}
+            <div className="mt-3 flex items-center gap-2 text-[13px] text-[var(--muted)]">
+              <ThemeToggle />
+              <span>{vi.theme.label}</span>
+            </div>
 
             <div className="mt-5 border-t border-[var(--border)] pt-4">
               {hasIntro ? (

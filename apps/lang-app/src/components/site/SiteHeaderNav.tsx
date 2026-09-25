@@ -6,6 +6,7 @@ import { useAuth } from '@/components/auth/AuthProvider';
 import { NotificationBell } from '@/components/notifications/NotificationBell';
 import { vi } from '@/i18n/vi';
 import { initials } from '@/lib/initials';
+import { ThemeToggle } from '@/theme';
 
 const ghostLinkClass =
   'whitespace-nowrap rounded-lg px-3 py-2 text-[14px] font-medium text-[var(--body)] transition hover:bg-[var(--hover)] sm:px-4';
@@ -14,8 +15,14 @@ const ghostLinkClass =
 export function SiteHeaderNav() {
   const { status, user, logout } = useAuth();
 
+  // Chưa biết có đăng nhập hay không: vẫn cho đổi giao diện (khách cũng đổi
+  // được), chỗ còn lại để trống cho khỏi nhảy layout khi biết trạng thái.
   if (status === 'loading') {
-    return <div className="ml-auto h-9" aria-hidden />;
+    return (
+      <nav className="ml-auto flex h-9 items-center">
+        <ThemeToggle />
+      </nav>
+    );
   }
 
   if (user) {
@@ -24,6 +31,7 @@ export function SiteHeaderNav() {
         <Link href="/me" className={ghostLinkClass}>
           {vi.site.myWorkspace}
         </Link>
+        <ThemeToggle />
         <NotificationBell />
         <Link
           href="/me/account"
@@ -52,6 +60,7 @@ export function SiteHeaderNav() {
 
   return (
     <nav className="ml-auto flex items-center gap-2">
+      <ThemeToggle />
       <Link href="/login" className={ghostLinkClass}>
         {vi.auth.login}
       </Link>

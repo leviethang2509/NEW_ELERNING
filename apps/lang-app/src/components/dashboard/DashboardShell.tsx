@@ -6,6 +6,7 @@ import { usePathname } from 'next/navigation';
 import { LogOut, Menu } from 'lucide-react';
 import { Brand } from '@/components/Brand';
 import { NotificationBell } from '@/components/notifications/NotificationBell';
+import { ThemeToggle } from '@/theme';
 import {
   findActiveItem,
   navigationFor,
@@ -161,7 +162,8 @@ export function DashboardShell({
             {activeItem?.label ?? vi.nav.overview}
           </div>
 
-          <div className="ml-auto">
+          <div className="ml-auto flex items-center gap-1">
+            <ThemeToggle />
             <NotificationBell />
           </div>
 

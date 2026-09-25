@@ -6,6 +6,13 @@ import './globals.css';
 import { AuthProvider } from '@/components/auth/AuthProvider';
 import { GlobalLoadingBar } from '@/components/GlobalLoadingBar';
 import { vi } from '@/i18n/vi';
+import {
+  parseThemePref,
+  ThemeProvider,
+  ThemePref,
+  themeScript,
+  THEME_COOKIE,
+} from '@/theme';
 
 // Roboto: font UI chính (Latin + Vietnamese) theo bộ design.
 const roboto = Roboto({
@@ -50,18 +57,32 @@ export default function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
+  const store = cookies();
+  // Theme đọc từ cookie ngay ở server: HTML đầu tiên đã đúng màu nên không
+  // nháy sáng→tối. `system` chưa biết được ở đây (server không thấy cài đặt
+  // của máy) nên tạm render `light`, `themeScript` sửa trước khi trang được vẽ.
+  const themePref = parseThemePref(store.get(THEME_COOKIE)?.value);
+  const initialTheme =
+    themePref === ThemePref.SYSTEM ? ThemePref.LIGHT : themePref;
+
   return (
     <html
       lang="vi"
+      data-theme={initialTheme}
+      // `themeScript` có thể đổi `data-theme` trước khi React hydrate.
+      suppressHydrationWarning
       className={`${roboto.variable} ${robotoMono.variable} ${notoSans.variable} ${notoSansJp.variable}`}
     >
       <body className="min-h-screen bg-[var(--bg)] text-[var(--fg)] antialiased">
+        <script dangerouslySetInnerHTML={{ __html: themeScript }} />
         <GlobalLoadingBar />
-        {/* Chỉ báo có cookie refresh (httpOnly, JS không đọc được) để client
-            biết có nên gọi /auth/refresh khi tải trang. */}
-        <AuthProvider hasSession={cookies().has(REFRESH_TOKEN_COOKIE)}>
-          {children}
-        </AuthProvider>
+        <ThemeProvider initialPref={themePref}>
+          {/* Chỉ báo có cookie refresh (httpOnly, JS không đọc được) để client
+              biết có nên gọi /auth/refresh khi tải trang. */}
+          <AuthProvider hasSession={store.has(REFRESH_TOKEN_COOKIE)}>
+            {children}
+          </AuthProvider>
+        </ThemeProvider>
       </body>
     </html>
   );

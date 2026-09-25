@@ -2369,6 +2369,22 @@ export const vi = {
     sectionExam: 'Đề thi & Bài học',
     sectionTraining: 'Đào tạo',
   },
+  theme: {
+    label: 'Giao diện',
+    current: (name: string) => `Giao diện: ${name}`,
+    names: {
+      light: 'Sáng',
+      'solarized-light': 'Giấy',
+      dark: 'Tối',
+      system: 'Theo hệ thống',
+    },
+    hints: {
+      light: 'Nền trắng',
+      'solarized-light': 'Nền giấy kem',
+      dark: 'Nền tối Solarized',
+      system: 'Theo cài đặt của máy',
+    },
+  },
   shell: {
     toggleMenu: 'Mở/đóng menu',
     systemWorkspace: 'Quản trị hệ thống',
