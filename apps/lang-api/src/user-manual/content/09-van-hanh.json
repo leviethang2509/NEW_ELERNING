@@ -131,8 +131,16 @@
             [
               "Push `main` hoặc chạy tay workflow",
               "Build + push image lên GHCR → copy `docker-compose.yml` lên VPS → pull → `docker compose up -d --wait`"
+            ],
+            [
+              "Chạy tay workflow **Deploy Staging**",
+              "Deploy lên VPS staging (database riêng); không bao giờ tự chạy. Để trống `image_tag` = build nhánh đã chọn, nhập `sha-<commit>` = deploy lại image có sẵn (rollback)"
             ]
           ]
+        },
+        {
+          "type": "paragraph",
+          "text": "Staging dùng Postgres riêng trong cùng docker compose và phải seed System Owner riêng. Hướng dẫn: `docs/setup/deploy-staging.md`."
         },
         {
           "type": "steps",
