@@ -6,6 +6,7 @@ import {
   slotOccurrences,
   trainingDateOf,
   trainingDateTimeToIso,
+  trainingMonthStartOf,
   trainingTimeOf,
   validateScheduleSlots,
   weekdayOf,
@@ -94,6 +95,16 @@ describe('ngày giờ theo +07:00', () => {
     expect(trainingTimeOf('2026-01-04T17:30:00Z')).toBe('00:30');
     expect(trainingDateTimeToIso('2026-01-05', '18:00')).toBe(
       '2026-01-05T11:00:00.000Z',
+    );
+  });
+
+  it('đầu tháng theo giờ Việt Nam', () => {
+    expect(trainingMonthStartOf('2026-10-15T08:00:00Z')).toBe(
+      '2026-09-30T17:00:00.000Z',
+    );
+    // 31/10 18:00 UTC đã là 01/11 theo giờ Việt Nam.
+    expect(trainingMonthStartOf('2026-10-31T18:00:00Z')).toBe(
+      '2026-10-31T17:00:00.000Z',
     );
   });
 

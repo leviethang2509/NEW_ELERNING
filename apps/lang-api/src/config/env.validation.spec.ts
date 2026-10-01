@@ -75,6 +75,30 @@ describe('validateEnv', () => {
     expect(env.R2_PUBLIC_BASE_URL).toBeUndefined();
   });
 
+  it('Gemini không bắt buộc: để trống dùng mặc định, sai backend thì dừng', () => {
+    const env = validateEnv({
+      ...base,
+      GEMINI_BACKEND: '',
+      GEMINI_MODEL: '',
+      GEMINI_MAX_OUTPUT_TOKENS: '',
+      GCP_PROJECT_ID: ' ',
+      GOOGLE_APPLICATION_CREDENTIALS: '',
+    });
+    expect(env.GEMINI_BACKEND).toBeUndefined();
+    expect(env.GEMINI_MODEL).toBe('gemini-3.6-flash');
+    expect(env.GEMINI_MAX_OUTPUT_TOKENS).toBe(16384);
+    expect(env.GEMINI_VERTEX_LOCATION).toBe('global');
+    expect(env.GCP_PROJECT_ID).toBeUndefined();
+
+    expect(
+      validateEnv({ ...base, GEMINI_MAX_OUTPUT_TOKENS: '8192' })
+        .GEMINI_MAX_OUTPUT_TOKENS,
+    ).toBe(8192);
+    expect(() => validateEnv({ ...base, GEMINI_BACKEND: 'openai' })).toThrow(
+      /GEMINI_BACKEND/,
+    );
+  });
+
   it('R2 điền đủ thì giữ nguyên, URL sai định dạng thì dừng', () => {
     const env = validateEnv({
       ...base,

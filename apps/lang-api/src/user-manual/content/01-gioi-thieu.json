@@ -536,6 +536,7 @@
               "✔",
               "✘"
             ],
+            ["Bật Trợ lý AI và đặt hạn mức AI cho trung tâm", "✔", "✔", "✘"],
             ["Quản lý gói dịch vụ", "✔", "✔", "✘"],
             ["Quản lý danh mục, loại đề & mẫu bài học hệ thống", "✔", "✔", "✘"],
             ["Đọc tài liệu nội bộ `/user-manual`", "✔", "✔", "✘"],
@@ -598,6 +599,14 @@
             ["Xem mọi đề trong dashboard", "✔", "✔", "✔", "✘", "✘"],
             [
               "Sửa nội dung, hiển thị, publish, lưu trữ, xoá, khôi phục version",
+              "mọi đề",
+              "mọi đề",
+              "đề mình tạo",
+              "✘",
+              "✘"
+            ],
+            [
+              "Định dạng bằng AI trong trình soạn đề (trung tâm đã bật Trợ lý AI)",
               "mọi đề",
               "mọi đề",
               "đề mình tạo",

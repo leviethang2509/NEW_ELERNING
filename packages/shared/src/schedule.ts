@@ -60,6 +60,14 @@ export function trainingTimeOf(value: string | Date): string {
   return new Date(ms).toISOString().slice(11, 16);
 }
 
+/** Thời điểm 00:00 ngày 1 của tháng (giờ Việt Nam) chứa `value`, dạng ISO (UTC). */
+export function trainingMonthStartOf(value: string | Date): string {
+  return trainingDateTimeToIso(
+    `${trainingDateOf(value).slice(0, 8)}01`,
+    '00:00',
+  );
+}
+
 /** Ngày + giờ theo giờ Việt Nam → ISO 8601 (UTC). */
 export function trainingDateTimeToIso(date: string, time: string): string {
   return new Date(`${date}T${time}:00${TRAINING_UTC_OFFSET}`).toISOString();

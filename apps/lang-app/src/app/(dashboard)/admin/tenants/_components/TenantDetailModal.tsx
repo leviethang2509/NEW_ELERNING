@@ -1,7 +1,12 @@
 'use client';
 
 import { Fragment, useEffect, useState } from 'react';
-import { TenantStatus, type AdminTenant } from '@lang/shared';
+import {
+  TenantStatus,
+  type AdminTenant,
+  type AdminTenantDetail,
+  type TenantAiSettings,
+} from '@lang/shared';
 import {
   Badge,
   ConfirmDialog,
@@ -17,6 +22,7 @@ import { api } from '@/lib/api';
 import { errorMessage } from '@/lib/error-message';
 import { formatDateTime, formatNumber } from '@/lib/format';
 import { ChangePlanModal } from './ChangePlanModal';
+import { TenantAiSection } from './TenantAiSection';
 import { TENANT_STATUS_TONE } from '@/components/tenant/tenant-status';
 
 type ConfirmAction = 'approve' | 'unsuspend';
@@ -40,9 +46,28 @@ export function TenantDetailModal({
   const [changingPlan, setChangingPlan] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [ai, setAi] = useState<TenantAiSettings | null>(null);
   const tenantId = tenant?.id;
 
   useEffect(() => setError(null), [tenantId]);
+
+  // Danh sách không có phần AI (phải đếm lượt) → tải chi tiết khi mở.
+  useEffect(() => {
+    setAi(null);
+    if (!tenantId) return;
+    let cancelled = false;
+    api.get<AdminTenantDetail>(`/admin/tenants/${tenantId}`).then(
+      (detail) => {
+        if (!cancelled) setAi(detail.ai);
+      },
+      (err: unknown) => {
+        if (!cancelled) setError(errorMessage(err, vi.admin.loadFailed));
+      },
+    );
+    return () => {
+      cancelled = true;
+    };
+  }, [tenantId]);
 
   if (!tenant) return null;
   const text = vi.admin.tenants;
@@ -182,6 +207,14 @@ export function TenantDetailModal({
             </Fragment>
           ))}
         </dl>
+        <TenantAiSection
+          tenantId={tenant.id}
+          ai={ai}
+          onSaved={(detail) => {
+            setAi(detail.ai);
+            onChanged(detail);
+          }}
+        />
         {error && (
           <div className="mt-4">
             <FormAlert tone="error">{error}</FormAlert>

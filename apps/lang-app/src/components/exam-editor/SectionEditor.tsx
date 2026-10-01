@@ -18,7 +18,12 @@ import {
   type TIndicatorElement,
   type ValidateSectionOptions,
 } from '@lang/exam-core';
-import type { MediaKind } from '@lang/shared';
+import {
+  AiFormatRunStatus,
+  type AiFormatJob,
+  type MediaKind,
+} from '@lang/shared';
+import { X } from 'lucide-react';
 import { NodeApi, RangeApi, type Value } from 'platejs';
 import {
   Plate,
@@ -45,6 +50,7 @@ import { toEditorValue } from '@/components/plate/value';
 import { FormAlert } from '@/components/ui';
 import { vi } from '@/i18n/vi';
 import { downloadJson, pickTextFile } from '@/lib/json-file';
+import { AiFormatDialog } from './AiFormatDialog';
 import { ExamToolbar } from './ExamToolbar';
 import { ExplanationDialog } from './ExplanationDialog';
 import { IndicatorDialog } from './IndicatorDialog';
@@ -68,6 +74,20 @@ interface SlashState {
   left: number;
 }
 
+/** Định dạng bằng AI (req-5): chỉ trình soạn đề thi truyền, tenant đã bật AI. */
+export interface SectionAiFormat {
+  examId: string;
+  sectionName: string;
+  moduleId: string | null;
+  /** Server có cấu hình Gemini (thiếu thì nút disable). */
+  configured: boolean;
+}
+
+interface AiNotice {
+  tone: 'success' | 'warning' | 'error' | 'info';
+  message: string;
+}
+
 interface SectionEditorProps {
   /** Khoá tab, gắn vào DOM để cuộn tới indicator đúng section. */
   sectionKey: string;
@@ -80,6 +100,8 @@ interface SectionEditorProps {
   exportName: string;
   /** Bài học: không cảnh báo section không có câu hỏi. */
   validateOptions?: ValidateSectionOptions;
+  /** Không truyền = không có nút "Định dạng bằng AI" (trình soạn bài học). */
+  aiFormat?: SectionAiFormat;
   onChange: (value: Value) => void;
   onEditor: (editor: PlateEditor | null) => void;
 }
@@ -93,6 +115,7 @@ export function SectionEditor({
   active,
   exportName,
   validateOptions,
+  aiFormat,
   onChange,
   onEditor,
 }: SectionEditorProps) {
@@ -102,6 +125,10 @@ export function SectionEditor({
   const [indicatorDialog, setIndicatorDialog] =
     useState<IndicatorDialogState | null>(null);
   const [importError, setImportError] = useState<string | null>(null);
+  const [aiOpen, setAiOpen] = useState(false);
+  const [aiNotice, setAiNotice] = useState<AiNotice | null>(null);
+  /** Kết quả AI còn lỗi: làm nổi bảng kiểm tra (plan 1.11). */
+  const [highlightIssues, setHighlightIssues] = useState(false);
   /** Số câu Explanation sẽ gắn (tính lúc mở hộp hướng dẫn); `null` = đóng. */
   const [explanationTarget, setExplanationTarget] = useState<number[] | null>(
     null,
@@ -374,6 +401,42 @@ export function SectionEditor({
     editor.tf.setValue(next);
   }
 
+  /** Job AI dừng: áp kết quả thành một bước hoàn tác, không tự Save (plan 1.9). */
+  function finishAiFormat(job: AiFormatJob) {
+    setAiOpen(false);
+    setHighlightIssues(false);
+    const result = job.result;
+    if (job.status === AiFormatRunStatus.CANCELLED || !result) {
+      setAiNotice({ tone: 'info', message: vi.aiFormat.cancelled });
+      return;
+    }
+    if (!result.changed) {
+      setAiNotice(
+        job.status === AiFormatRunStatus.SUCCEEDED
+          ? { tone: 'info', message: vi.aiFormat.alreadyFormatted }
+          : { tone: 'warning', message: vi.aiFormat.unchanged },
+      );
+      return;
+    }
+    const next = toEditorValue(result.value);
+    if (!next) {
+      setAiNotice({ tone: 'error', message: vi.aiFormat.invalidResult });
+      return;
+    }
+    // `setValue` = xoá + chèn node (có ghi lịch sử); batch riêng để một lần
+    // Ctrl+Z quay về đúng bản trước khi định dạng.
+    editor.tf.withNewBatch(() => editor.tf.setValue(next));
+    if (job.status === AiFormatRunStatus.PARTIAL) {
+      const errors = result.issues.filter(
+        (issue) => issue.severity === 'error' && issue.category === 'structure',
+      ).length;
+      setAiNotice({ tone: 'warning', message: vi.aiFormat.partial(errors) });
+      setHighlightIssues(true);
+    } else {
+      setAiNotice({ tone: 'success', message: vi.aiFormat.succeeded });
+    }
+  }
+
   const stats = useMemo(() => {
     const plain = value.map((node) => NodeApi.string(node)).join(' ');
     const words = plain.trim() ? plain.trim().split(/\s+/).length : 0;
@@ -423,11 +486,38 @@ export function SectionEditor({
               onInsertIndicator={insertIndicatorOrAsk}
               onExport={() => downloadJson(exportName, editor.children)}
               onImport={() => void importJson()}
+              aiFormat={
+                aiFormat && {
+                  configured: aiFormat.configured,
+                  onOpen: () => setAiOpen(true),
+                }
+              }
             />
           )}
           {importError && (
             <div className="border-b border-[var(--border)] p-2">
               <FormAlert tone="error">{importError}</FormAlert>
+            </div>
+          )}
+          {aiNotice && (
+            <div className="border-b border-[var(--border)] p-2">
+              <FormAlert tone={aiNotice.tone}>
+                <div className="flex items-start gap-2">
+                  <p className="flex-1">{aiNotice.message}</p>
+                  <button
+                    type="button"
+                    title={vi.aiFormat.dismiss}
+                    aria-label={vi.aiFormat.dismiss}
+                    onClick={() => {
+                      setAiNotice(null);
+                      setHighlightIssues(false);
+                    }}
+                    className="shrink-0 rounded p-0.5 opacity-70 transition hover:opacity-100"
+                  >
+                    <X size={14} />
+                  </button>
+                </div>
+              </FormAlert>
             </div>
           )}
           <div
@@ -450,12 +540,15 @@ export function SectionEditor({
         </Plate>
       </div>
 
-      <div className="hidden w-[248px] shrink-0 flex-col gap-3 lg:flex">
+      <div
+        className={`${highlightIssues ? 'flex' : 'hidden'} w-[248px] shrink-0 flex-col gap-3 lg:flex`}
+      >
         <Minimap items={outline} scrollerRef={scrollerRef} active={active} />
         <IssuePanel
           issues={issues}
           outline={outline}
           scrollerRef={scrollerRef}
+          highlight={highlightIssues}
         />
       </div>
 
@@ -490,6 +583,18 @@ export function SectionEditor({
             setExplanationTarget(null);
             insertIndicator(editor, 'explanation');
           }}
+        />
+      )}
+
+      {aiOpen && aiFormat && (
+        <AiFormatDialog
+          slug={slug}
+          examId={aiFormat.examId}
+          sectionName={aiFormat.sectionName}
+          moduleId={aiFormat.moduleId}
+          getValue={() => editor.children}
+          onClose={() => setAiOpen(false)}
+          onDone={finishAiFormat}
         />
       )}
 

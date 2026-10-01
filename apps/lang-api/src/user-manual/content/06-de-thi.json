@@ -174,7 +174,7 @@
     {
       "id": "trinh-soan-de",
       "title": "Trình soạn đề",
-      "summary": "Tab section, thanh công cụ, indicator, giải thích, khối trình bày, lưu, bản nháp trình duyệt, kiểm tra lỗi.",
+      "summary": "Tab section, thanh công cụ, indicator, giải thích, khối trình bày, định dạng bằng AI, lưu, bản nháp trình duyệt, kiểm tra lỗi.",
       "roles": ["TENANT_OWNER", "TENANT_ADMIN", "TEACHER"],
       "blocks": [
         {
@@ -303,6 +303,82 @@
           "type": "callout",
           "tone": "info",
           "text": "**Màu chữ** và **màu nền** chọn ở đây được làm sáng lên khi người xem đang dùng giao diện **Tối**, nên màu hiện ra sẽ nhạt hơn mã màu đã chọn (nội dung lưu không đổi). Xem [Giao diện](page:giao-dien)."
+        },
+        { "type": "heading", "level": 2, "text": "Định dạng bằng AI" },
+        {
+          "type": "paragraph",
+          "text": "Nút **Định dạng bằng AI** ở cuối thanh công cụ dựng sẵn Part, Subpart, câu hỏi và đáp án cho **section đang mở** từ đề dán vào dạng chữ thường (vd. copy từ Word/PDF). Chỉ có trong trình soạn **đề thi** (không có ở bài học), chỉ hiện khi trung tâm đã được bật **Trợ lý AI** ([Quản lý trung tâm](page:admin-trung-tam#tro-ly-ai)), và dùng được trên đề bạn sửa được."
+        },
+        {
+          "type": "steps",
+          "items": [
+            {
+              "title": "Dán đề vào section",
+              "text": "Mỗi section một phần của đề (vd. Reading, Listening, Writing). Chia nhỏ section nếu đề quá dài."
+            },
+            {
+              "title": "Bấm Định dạng bằng AI",
+              "text": "Hộp thoại hiện số lượt trung tâm đã dùng trong tháng. Ô **Ghi chú cho AI** (không bắt buộc) dùng để nhắc AI điều đặc biệt, vd. \"đáp án nằm ở bảng cuối đề\", \"câu 1–5 là True/False/Not Given\"."
+            },
+            {
+              "title": "Bấm Định dạng",
+              "text": "Hộp thoại hiện **Lần thử n/3…**; thường mất 5–20 giây. Bấm **Hủy** (hoặc đóng hộp thoại) để dừng, nội dung không đổi."
+            },
+            {
+              "title": "Kiểm tra kết quả rồi Lưu",
+              "text": "Nội dung section được thay bằng kết quả nhưng **chưa lưu**. Đọc lại, sửa đáp án/tham số trên badge nếu cần rồi bấm **Lưu**. **Ctrl+Z** một lần quay về đúng bản trước khi định dạng."
+            }
+          ]
+        },
+        {
+          "type": "table",
+          "columns": ["Thông báo sau khi chạy", "Ý nghĩa"],
+          "rows": [
+            [
+              "Đã định dạng bằng AI…",
+              "Không còn lỗi cấu trúc. Lỗi kiểu “Chưa tick đáp án nào”, “n cặp chưa có đáp án” chỉ vì đề không có đáp án – điền tay"
+            ],
+            [
+              "AI đã định dạng nhưng còn n lỗi cấu trúc…",
+              "Sau 3 lần thử vẫn còn lỗi: AI đưa vào bản ít lỗi nhất, bảng **Kiểm tra** được làm nổi – sửa tay theo bảng rồi mới Lưu"
+            ],
+            [
+              "AI không định dạng được section này…",
+              "Nội dung giữ nguyên. Thử thêm ghi chú cho AI hoặc chia nhỏ section"
+            ],
+            [
+              "Section đã được định dạng, AI không thay đổi gì…",
+              "Section đã có câu hỏi đầy đủ, AI không cần sửa"
+            ],
+            [
+              "Phiên định dạng đã bị gián đoạn…",
+              "Máy chủ khởi động lại khi đang chạy – bấm lại (lần đó không tính lượt)"
+            ]
+          ]
+        },
+        {
+          "type": "list",
+          "items": [
+            "AI **không viết lại chữ** của đề: chỉ chèn indicator, tách dòng bị dính (thường gặp khi copy từ PDF, vd. “A … B …” trên một dòng), đổi dòng thành lựa chọn/cặp ghép/dòng đánh số, biến chỗ chấm/gạch dưới (“…….”, “____”) thành ô trống, xoá đáp án in sẵn sau khi đã dùng và phiếu trả lời trống/ô dành cho giám khảo.",
+            "Đáp án chỉ được điền khi **đề có sẵn** (answer key cuối đề, “Answer: B”…). AI **không tự giải đề**: đề không có đáp án thì để trống cho giáo viên điền.",
+            "Ảnh, audio, video giữ nguyên vị trí, AI không đọc được. Câu hỏi chỉ có ô trống trong hình (vd. “Label the diagram”) bị bỏ qua – tự thêm sau khi chèn ảnh.",
+            "Writing/Speaking không ghi rõ giới hạn thì AI đặt sẵn: Writing Task 1 1500 ký tự, Task 2 2500 ký tự; Speaking Part 1/3 60 giây, Part 2 120 giây – đổi trên badge nếu cần.",
+            "Bấm lại trên section đã định dạng không làm mất đáp án đã điền; AI chỉ thêm phần còn thiếu."
+          ]
+        },
+        {
+          "type": "list",
+          "items": [
+            "Mỗi lần bấm **Định dạng** tính **1 lượt** vào hạn mức tháng của trung tâm (theo giờ Việt Nam), kể cả khi kết quả còn lỗi; mỗi lượt AI được thử tối đa 3 lần. Huỷ trước khi AI trả lời lần đầu hoặc lỗi máy chủ thì không tính.",
+            "Hết lượt: nút vẫn bấm được nhưng hộp thoại báo “Trung tâm đã dùng hết … lượt AI của tháng này”. Liên hệ quản trị hệ thống để nâng hạn mức.",
+            "Section tối đa 2.000 dòng / 150.000 ký tự; một lần gọi AI tối đa 2 phút, cả lượt tối đa 6 phút.",
+            "Nút bị mờ với chú thích “Chưa cấu hình AI”: máy chủ chưa được cấu hình kết nối AI – báo quản trị hệ thống."
+          ]
+        },
+        {
+          "type": "callout",
+          "tone": "warning",
+          "text": "Nội dung section được gửi tới dịch vụ AI của Google (Gemini trên Vertex AI) để xử lý. Không dán thông tin cá nhân của học viên vào section trước khi bấm."
         },
         {
           "type": "heading",

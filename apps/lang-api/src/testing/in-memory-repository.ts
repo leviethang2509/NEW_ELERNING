@@ -163,8 +163,12 @@ export class InMemoryRepository<T extends object> {
     return this.rows.some((item) => matches(item, where));
   }
 
-  async countBy(where: Where<T>): Promise<number> {
-    return this.rows.filter((item) => matches(item, where)).length;
+  /** Mảng điều kiện = OR như TypeORM. */
+  async countBy(where: Where<T> | Where<T>[]): Promise<number> {
+    const wheres = Array.isArray(where) ? where : [where];
+    return this.rows.filter((item) =>
+      wheres.some((condition) => matches(item, condition)),
+    ).length;
   }
 
   /** Bỏ qua `withDeleted` vì không tự loại bản ghi đã xoá mềm. */

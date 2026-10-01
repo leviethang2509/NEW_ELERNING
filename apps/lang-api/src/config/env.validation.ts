@@ -17,6 +17,9 @@ import {
 } from 'class-validator';
 import { DURATION_PATTERN } from '../common/duration';
 
+export const GEMINI_BACKENDS = ['vertex', 'aistudio'] as const;
+export type GeminiBackend = (typeof GEMINI_BACKENDS)[number];
+
 export const NODE_ENVS = ['development', 'production', 'test'] as const;
 export type NodeEnv = (typeof NODE_ENVS)[number];
 
@@ -122,6 +125,55 @@ export class EnvironmentVariables {
   @Transform(blankToUndefined)
   @IsString()
   R2_PRIVATE_BUCKET?: string;
+
+  // --- Gemini (định dạng đề bằng AI, req-5 plan 4.3) ---
+  // Không bắt buộc: thiếu cấu hình thì route AI trả 501 (xem `GeminiService`).
+  // `vertex` dùng service account GCP, `aistudio` dùng API key; bỏ trống thì
+  // tự chọn (có credentials GCP → vertex, chỉ có API key → aistudio).
+
+  @IsOptional()
+  @Transform(blankToUndefined)
+  @IsIn(GEMINI_BACKENDS)
+  GEMINI_BACKEND?: GeminiBackend;
+
+  @IsOptional()
+  @Transform(blankToUndefined)
+  @IsString()
+  GEMINI_API_KEY?: string;
+
+  @Transform(({ value }) => blankToUndefined({ value }) ?? 'gemini-3.6-flash')
+  @IsString()
+  GEMINI_MODEL = 'gemini-3.6-flash';
+
+  /** AI trả danh sách thao tác (không viết lại đề) nên 16384 là đủ (plan 1.2). */
+  @Transform(({ value }) => {
+    const set = blankToUndefined({ value });
+    return set === undefined ? 16384 : Number(set);
+  })
+  @IsInt()
+  @Min(1024)
+  GEMINI_MAX_OUTPUT_TOKENS = 16384;
+
+  @Transform(({ value }) => blankToUndefined({ value }) ?? 'global')
+  @IsString()
+  GEMINI_VERTEX_LOCATION = 'global';
+
+  @IsOptional()
+  @Transform(blankToUndefined)
+  @IsString()
+  GCP_PROJECT_ID?: string;
+
+  /** JSON service account mã hoá base64 (dùng trên VPS, không cần file). */
+  @IsOptional()
+  @Transform(blankToUndefined)
+  @IsString()
+  GCP_SERVICE_ACCOUNT_JSON_BASE64?: string;
+
+  /** Đường dẫn file JSON service account (máy dev: `secrets/…`, đã gitignore). */
+  @IsOptional()
+  @Transform(blankToUndefined)
+  @IsString()
+  GOOGLE_APPLICATION_CREDENTIALS?: string;
 }
 
 export function validateEnv(

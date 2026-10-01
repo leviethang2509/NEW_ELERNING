@@ -10,6 +10,8 @@ Một image `ghcr.io/vunguyenquangit/lang-simulator` chứa cả lang-api và la
 
 Container nối Postgres qua Docker network của container Postgres, database `lang-simulator`, schema `public`. **Máy dev dùng chung database này** (chưa có production).
 
+Staging (VPS 2, chỉ deploy khi bấm nút): xem [deploy-staging.md](deploy-staging.md).
+
 Khi container khởi động ([docker/entrypoint.sh](../../docker/entrypoint.sh)): chạy migration → lỗi thì dừng → chạy lang-api và lang-app. Healthcheck gọi `http://127.0.0.1:3000/api/health` (Next → rewrite → api → database).
 
 ## 1. Chuẩn bị (một lần)
@@ -58,6 +60,7 @@ ssh <user>@<ip-vps> chmod 600 /opt/lang-simulator/.env
 - `JWT_SECRET`: khác giá trị ở máy dev (`openssl rand -base64 48`).
 - `JWT_ACCESS_EXPIRES_IN`, `REFRESH_EXPIRES_IN`, `COOKIE_SECURE` (từ Step 5): không bắt buộc, mặc định `15m`, `30d`, `false`. Chỉ đặt `COOKIE_SECURE=true` khi truy cập qua HTTPS, nếu không trình duyệt sẽ không gửi cookie đăng nhập.
 - `R2_*` (từ Step 10): 6 biến `R2_ACCOUNT_ID`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`, `R2_PUBLIC_BUCKET`, `R2_PUBLIC_BASE_URL`, `R2_PRIVATE_BUCKET` – copy y nguyên từ `apps/lang-api/.env` trên máy dev (container dùng chung 2 bucket với dev). Thiếu biến thì API vẫn khởi động được nhưng upload media và ghi âm Speaking trả 501.
+- Gemini / GCP (req-5, "Định dạng bằng AI"): `GEMINI_BACKEND=vertex`, `GEMINI_MODEL`, `GEMINI_MAX_OUTPUT_TOKENS`, `GEMINI_VERTEX_LOCATION`, `GCP_PROJECT_ID`, `GCP_SERVICE_ACCOUNT_JSON_BASE64` (VPS **không** mount file JSON – mã hoá file service account trên máy dev: `base64 -i apps/lang-api/secrets/gcp-service-account.json | tr -d '\n'`). Service account cần role **Vertex AI User**, project bật API `aiplatform.googleapis.com`. `GEMINI_API_KEY` chỉ dùng khi `GEMINI_BACKEND=aistudio`. Không bắt buộc: thiếu thì API vẫn chạy, nút AI trong trình soạn đề bị disable ("Chưa cấu hình AI") và route AI trả 501. Có cấu hình rồi vẫn phải **bật Trợ lý AI cho từng trung tâm** ở `/admin/tenants` → **Chi tiết**.
 - **Không** đặt `SEED_OWNER_*` trên VPS: System Owner được seed một lần từ máy dev (database dùng chung).
 
 Mở cổng 3001 trên firewall nếu có (vd. `ufw allow 3001/tcp`).
@@ -99,7 +102,8 @@ Trình duyệt chỉ cho dùng micro trên HTTPS hoặc localhost, nên ở `htt
 3. Tài khoản thử đăng ký trung tâm → System Admin duyệt → vào `/t/{slug}/dashboard`.
 4. `/t/{slug}/dashboard/media`: không có cảnh báo "Chưa cấu hình Cloudflare R2", upload thử một ảnh (kiểm `R2_*` và `sharp` trong image).
 5. Soạn + publish một đề có Reading, Writing, Speaking → tài khoản học viên làm bài (ghi âm cần flag Chrome ở trên) → giáo viên chấm → học viên thấy điểm.
-6. Xoá dữ liệu thử (database dùng chung với máy dev).
+6. Trợ lý AI (nếu đã điền biến Gemini/GCP): `/admin/tenants` → **Chi tiết** trung tâm thử → bật **Trợ lý AI** → trình soạn đề có nút **Định dạng bằng AI** (không bị disable), dán một đoạn đề ngắn → bấm → nội dung được định dạng. Xong thì tắt lại nếu trung tâm thử không cần.
+7. Xoá dữ liệu thử (database dùng chung với máy dev).
 
 ## 4. Rollback
 
@@ -126,3 +130,5 @@ Rollback image **không hoàn tác migration**. Vì database dùng chung với m
 | `/api/health` 503 | lang-api không kết nối được database |
 | Upload media / ghi âm báo 501 | Thiếu biến `R2_*` trong `.env` (đổi xong phải `--force-recreate`) |
 | Ô ghi âm báo trình duyệt không hỗ trợ | Đang truy cập qua HTTP, xem mục "Ghi âm Speaking trên HTTP" |
+| Nút **Định dạng bằng AI** bị disable, tooltip "Chưa cấu hình AI" | Thiếu/sai biến Gemini/GCP; log API lúc khởi động có dòng `Gemini chưa dùng được – …` |
+| Định dạng bằng AI báo "Dịch vụ AI chưa được bật…" / "Tài khoản AI thiếu quyền…" / "Thông tin xác thực AI không hợp lệ…" | Project GCP chưa bật `aiplatform.googleapis.com` / service account thiếu role Vertex AI User / JSON base64 sai. Chi tiết lỗi của Google nằm trong log API (`Gemini lỗi …`) |

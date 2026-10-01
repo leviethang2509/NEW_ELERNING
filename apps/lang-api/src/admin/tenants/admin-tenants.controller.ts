@@ -9,7 +9,11 @@ import {
   Post,
   Query,
 } from '@nestjs/common';
-import { SYSTEM_MANAGER_ROLES, type AdminTenant } from '@lang/shared';
+import {
+  SYSTEM_MANAGER_ROLES,
+  type AdminTenant,
+  type AdminTenantDetail,
+} from '@lang/shared';
 import { SystemRoles } from '../../auth/decorators';
 import {
   CurrentUser,
@@ -22,6 +26,7 @@ import {
   ChangeTenantPlanDto,
   ListAdminTenantsQueryDto,
   TenantReasonDto,
+  UpdateTenantAiDto,
 } from './dto/admin-tenant.dto';
 
 /** Các thao tác đổi trạng thái trả về tenant sau khi đổi. */
@@ -38,7 +43,7 @@ export class AdminTenantsController {
   }
 
   @Get(':id')
-  get(@Param('id', ParseIdPipe()) id: string): Promise<AdminTenant> {
+  get(@Param('id', ParseIdPipe()) id: string): Promise<AdminTenantDetail> {
     return this.tenants.get(id);
   }
 
@@ -47,7 +52,7 @@ export class AdminTenantsController {
   async approve(
     @CurrentUser() actor: RequestUser,
     @Param('id', ParseIdPipe()) id: string,
-  ): Promise<AdminTenant> {
+  ): Promise<AdminTenantDetail> {
     await this.tenants.approve(actor, id);
     return this.tenants.get(id);
   }
@@ -58,7 +63,7 @@ export class AdminTenantsController {
     @CurrentUser() actor: RequestUser,
     @Param('id', ParseIdPipe()) id: string,
     @Body() dto: TenantReasonDto,
-  ): Promise<AdminTenant> {
+  ): Promise<AdminTenantDetail> {
     await this.tenants.reject(actor, id, dto.reason);
     return this.tenants.get(id);
   }
@@ -69,7 +74,7 @@ export class AdminTenantsController {
     @CurrentUser() actor: RequestUser,
     @Param('id', ParseIdPipe()) id: string,
     @Body() dto: TenantReasonDto,
-  ): Promise<AdminTenant> {
+  ): Promise<AdminTenantDetail> {
     await this.tenants.suspend(actor, id, dto.reason);
     return this.tenants.get(id);
   }
@@ -79,7 +84,7 @@ export class AdminTenantsController {
   async unsuspend(
     @CurrentUser() actor: RequestUser,
     @Param('id', ParseIdPipe()) id: string,
-  ): Promise<AdminTenant> {
+  ): Promise<AdminTenantDetail> {
     await this.tenants.unsuspend(actor, id);
     return this.tenants.get(id);
   }
@@ -88,8 +93,17 @@ export class AdminTenantsController {
   async changePlan(
     @Param('id', ParseIdPipe()) id: string,
     @Body() dto: ChangeTenantPlanDto,
-  ): Promise<AdminTenant> {
+  ): Promise<AdminTenantDetail> {
     await this.tenants.changePlan(id, dto.planId);
+    return this.tenants.get(id);
+  }
+
+  @Patch(':id/ai')
+  async updateAi(
+    @Param('id', ParseIdPipe()) id: string,
+    @Body() dto: UpdateTenantAiDto,
+  ): Promise<AdminTenantDetail> {
+    await this.tenants.updateAi(id, dto.enabled, dto.monthlyQuota);
     return this.tenants.get(id);
   }
 }

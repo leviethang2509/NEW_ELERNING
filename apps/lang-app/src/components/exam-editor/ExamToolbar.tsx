@@ -27,6 +27,7 @@ import {
   Music,
   Outdent,
   Redo2,
+  Sparkles,
   Square,
   Strikethrough,
   Subscript as SubscriptIcon,
@@ -357,11 +358,40 @@ function RubyButton() {
   );
 }
 
+/** Nút "Định dạng bằng AI" (req-5 plan 1.17): không truyền = không có nút. */
+export interface ToolbarAiFormat {
+  /** Server thiếu cấu hình Gemini: nút disable kèm tooltip. */
+  configured: boolean;
+  onOpen: () => void;
+}
+
+function AiFormatButton({ configured, onOpen }: ToolbarAiFormat) {
+  const label = vi.aiFormat.button;
+  return (
+    // Tooltip đặt ở khung ngoài: nút disable không nhận sự kiện chuột.
+    <span title={configured ? label : vi.aiFormat.notConfigured}>
+      <button
+        type="button"
+        disabled={!configured}
+        aria-label={label}
+        onMouseDown={(event) => event.preventDefault()}
+        onClick={onOpen}
+        className="flex h-8 items-center gap-1.5 rounded-md px-2 text-[13px] font-semibold text-[var(--accent)] transition hover:bg-[var(--accent-soft)] disabled:cursor-not-allowed disabled:text-[var(--muted)] disabled:opacity-60 disabled:hover:bg-transparent"
+      >
+        <Sparkles size={15} />
+        <span className="hidden sm:inline">{label}</span>
+      </button>
+    </span>
+  );
+}
+
 interface ExamToolbarProps {
   onOpenMedia: (kind: MediaKind) => void;
   onInsertIndicator: (kind: IndicatorKind) => void;
   onExport: () => void;
   onImport: () => void;
+  /** Chỉ trình soạn đề thi truyền (plan 1.19). */
+  aiFormat?: ToolbarAiFormat;
 }
 
 export function ExamToolbar({
@@ -369,6 +399,7 @@ export function ExamToolbar({
   onInsertIndicator,
   onExport,
   onImport,
+  aiFormat,
 }: ExamToolbarProps) {
   const editor = useEditorRef();
   const run = (action: () => void) => () => {
@@ -614,6 +645,12 @@ export function ExamToolbar({
       <ToolbarBtn title={text.importJson} onClick={onImport}>
         <Upload size={15} />
       </ToolbarBtn>
+      {aiFormat && (
+        <>
+          <ToolbarSep />
+          <AiFormatButton {...aiFormat} />
+        </>
+      )}
     </div>
   );
 }

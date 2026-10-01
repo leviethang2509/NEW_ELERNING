@@ -19,6 +19,7 @@ import {
 } from '@lang/exam-core';
 import {
   ExamStatus,
+  type AiStatus,
   type ExamBlueprintItem,
   type ExamContentIssue,
   type ExamDetail,
@@ -38,6 +39,7 @@ import {
   secondaryButtonClass,
 } from '@/components/ui';
 import { vi } from '@/i18n/vi';
+import { getAiStatus } from '@/lib/ai-format-api';
 import { uploadDataUrls } from '@/lib/embedded-media';
 import { errorMessage } from '@/lib/error-message';
 import {
@@ -118,6 +120,20 @@ export function ExamEditor({
   const [previewOpen, setPreviewOpen] = useState(false);
 
   const readOnly = !exam.canEdit;
+  /** Trạng thái AI của tenant: chưa bật / lỗi tải thì không có nút (plan 1.17). */
+  const [aiStatus, setAiStatus] = useState<AiStatus | null>(null);
+  useEffect(() => {
+    if (readOnly) return;
+    let active = true;
+    getAiStatus(slug)
+      .then((status) => {
+        if (active) setAiStatus(status);
+      })
+      .catch(() => undefined);
+    return () => {
+      active = false;
+    };
+  }, [slug, readOnly]);
   const editors = useRef(new Map<string, PlateEditor>());
   const sectionsRef = useRef(sections);
   sectionsRef.current = sections;
@@ -497,6 +513,16 @@ export function ExamEditor({
           readOnly={readOnly}
           active={section.key === activeKey}
           exportName={`${exam.title} - ${section.name}`}
+          aiFormat={
+            aiStatus?.enabled
+              ? {
+                  examId: exam.id,
+                  sectionName: section.name,
+                  moduleId: section.moduleId,
+                  configured: aiStatus.configured,
+                }
+              : undefined
+          }
           onChange={(value) => updateSection(section.key, { value })}
           onEditor={(editor) => {
             if (editor) editors.current.set(section.key, editor);

@@ -193,6 +193,19 @@ export const vi = {
       currentPlan: '(hiện tại)',
       planOption: (name: string, max: number) =>
         `${name} – tối đa ${max.toLocaleString('vi-VN')} thành viên`,
+      ai: {
+        title: 'Trợ lý AI',
+        hint: 'Cho phép người soạn đề của trung tâm dùng nút "Định dạng bằng AI" trong trình soạn đề. Mỗi lần bấm tính 1 lượt.',
+        toggle: 'Bật trợ lý AI',
+        quota: 'Hạn mức mỗi tháng',
+        quotaOption: (quota: number) =>
+          `${quota.toLocaleString('vi-VN')} lượt / tháng`,
+        unlimited: 'Không giới hạn',
+        used: (used: number, quota: number | null) =>
+          quota === null
+            ? `Đã dùng ${used.toLocaleString('vi-VN')} lượt tháng này`
+            : `Đã dùng ${used.toLocaleString('vi-VN')} / ${quota.toLocaleString('vi-VN')} lượt tháng này`,
+      },
     },
     plans: {
       subtitle:
@@ -1704,6 +1717,44 @@ export const vi = {
       aside:
         'Đáp án soạn trong editor được ẩn · câu trả lời ở đây không được lưu',
     },
+  },
+  // Nút "Định dạng bằng AI" trong trình soạn đề (req-5 Step 4).
+  aiFormat: {
+    button: 'Định dạng bằng AI',
+    notConfigured: 'Chưa cấu hình AI',
+    title: 'Định dạng bằng AI',
+    sectionLabel: (name: string) => `Section: ${name}`,
+    replaceWarning:
+      'AI sẽ dựng Part, Subpart, câu hỏi và đáp án cho section đang mở. Nội dung section sẽ được thay bằng kết quả (chưa lưu – bấm Ctrl+Z để quay lại bản trước).',
+    note: 'Ghi chú cho AI',
+    notePlaceholder:
+      'Ví dụ: đáp án nằm ở bảng cuối đề; câu 1–5 là True/False/Not Given…',
+    used: (used: number, limit: number | null) =>
+      limit === null
+        ? `Đã dùng ${used.toLocaleString('vi-VN')} lượt tháng này`
+        : `Đã dùng ${used.toLocaleString('vi-VN')}/${limit.toLocaleString('vi-VN')} lượt tháng này`,
+    quotaHint:
+      'Mỗi lần bấm "Định dạng" tính 1 lượt vào hạn mức của trung tâm, kể cả khi kết quả còn lỗi.',
+    start: 'Định dạng',
+    running: (attempt: number, max: number) => `Lần thử ${attempt}/${max}…`,
+    runningHint:
+      'AI đang đọc nội dung và dựng câu hỏi. Có thể mất tới vài phút với section dài.',
+    cancelling: 'Đang huỷ…',
+    statusFailed: 'Không tải được trạng thái AI',
+    startFailed: 'Không bắt đầu được định dạng bằng AI',
+    interrupted: 'Phiên định dạng đã bị gián đoạn, vui lòng thử lại',
+    failed: 'Định dạng bằng AI thất bại, vui lòng thử lại',
+    invalidResult: 'Kết quả AI trả về không hợp lệ, nội dung được giữ nguyên',
+    succeeded:
+      'Đã định dạng bằng AI. Kiểm tra lại rồi bấm Lưu (Ctrl+Z để quay lại bản trước).',
+    partial: (errors: number) =>
+      `AI đã định dạng nhưng còn ${errors} lỗi cấu trúc sau các lần thử – nên chỉnh tay theo bảng kiểm tra rồi mới Lưu (Ctrl+Z để quay lại bản trước).`,
+    unchanged:
+      'AI không định dạng được section này, nội dung được giữ nguyên. Thử thêm ghi chú cho AI hoặc chia nhỏ section.',
+    alreadyFormatted:
+      'Section đã được định dạng, AI không thay đổi gì. Thêm ghi chú cho AI nếu muốn chỉnh phần cụ thể.',
+    cancelled: 'Đã huỷ định dạng bằng AI, nội dung không đổi.',
+    dismiss: 'Ẩn thông báo',
   },
   // Khu vực chính: đề đang mở, lịch sử lượt làm, kết quả (Step 13).
   classLearning: {

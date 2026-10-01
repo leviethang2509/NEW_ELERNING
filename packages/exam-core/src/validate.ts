@@ -21,12 +21,20 @@ import { questionScopes } from './scope';
 
 export type IssueSeverity = 'error' | 'warning';
 
+/**
+ * `answer`: chỉ thiếu đáp án (chưa tick, cặp chưa có đáp án, dòng chưa có số) –
+ * do dữ liệu nguồn chứ không do cấu trúc sai. `structure`: mọi lỗi còn lại.
+ * Định dạng bằng AI chỉ thử lại khi còn lỗi `structure` (req-5 plan 1.4).
+ */
+export type IssueCategory = 'structure' | 'answer';
+
 export interface Issue {
   key: string;
   /** `null` khi vấn đề thuộc cả section, không gắn với indicator nào. */
   indicatorId: string | null;
   message: string;
   severity: IssueSeverity;
+  category: IssueCategory;
 }
 
 const isEmptyText = (node: unknown) => plainText(node).trim() === '';
@@ -42,12 +50,13 @@ export function validateExam(value: readonly ExamElement[]): Issue[] {
   for (const scope of questionScopes(value)) {
     const { indicator } = scope;
     const id = indicator.id;
-    const add = (message: string) =>
+    const add = (message: string, category: IssueCategory = 'structure') =>
       issues.push({
         key: `${id}:${issues.length}`,
         indicatorId: id,
         message,
         severity: 'error',
+        category,
       });
 
     const meta = questionTypeMeta(indicator.qtype);
@@ -68,7 +77,7 @@ export function validateExam(value: readonly ExamElement[]): Issue[] {
         add('Chưa có danh sách lựa chọn (danh sách checkbox).');
       } else {
         const checked = items.filter((i) => i.checked).length;
-        if (!checked) add('Chưa tick đáp án nào.');
+        if (!checked) add('Chưa tick đáp án nào.', 'answer');
         else if (indicator.qtype === 'mc-single' && checked > 1) {
           add(`Dạng 1 đáp án nhưng đang tick ${checked} ô.`);
         }
@@ -108,7 +117,7 @@ export function validateExam(value: readonly ExamElement[]): Issue[] {
         const noPrompt = pairs.filter(isEmptyText).length;
         const noAnswer = pairs.filter((p) => !pairAnswer(p)).length;
         if (noPrompt) add(`${noPrompt} cặp chưa nhập phần hiển thị.`);
-        if (noAnswer) add(`${noAnswer} cặp chưa có đáp án.`);
+        if (noAnswer) add(`${noAnswer} cặp chưa có đáp án.`, 'answer');
       }
     }
 
@@ -125,7 +134,7 @@ export function validateExam(value: readonly ExamElement[]): Issue[] {
           .map((i) => i.num)
           .filter((n): n is number => Number.isFinite(n));
         const missing = items.length - nums.length;
-        if (missing) add(`${missing} dòng chưa nhập số.`);
+        if (missing) add(`${missing} dòng chưa nhập số.`, 'answer');
 
         if (indicator.qtype === 'ordering' && !missing) {
           const sorted = [...nums].sort((a, b) => a - b);
@@ -213,6 +222,7 @@ export function validateSection(
     indicatorId: null,
     message,
     severity: 'error',
+    category: 'structure',
   }));
   if (!isExamValue(value)) return issues;
 
@@ -225,6 +235,7 @@ export function validateSection(
       indicatorId: explanation.nodeId,
       message: 'Giải thích rỗng — chưa có nội dung nào.',
       severity: 'warning',
+      category: 'structure',
     });
   }
   if (
@@ -236,6 +247,7 @@ export function validateSection(
       indicatorId: null,
       message: 'Section chưa có câu hỏi nào.',
       severity: 'warning',
+      category: 'structure',
     });
   }
   return issues;
@@ -243,4 +255,11 @@ export function validateSection(
 
 export function hasErrors(issues: readonly Issue[]): boolean {
   return issues.some((issue) => issue.severity === 'error');
+}
+
+/** Lỗi cấu trúc (chặn publish, không phải chỉ thiếu đáp án). */
+export function structureErrors(issues: readonly Issue[]): Issue[] {
+  return issues.filter(
+    (issue) => issue.severity === 'error' && issue.category === 'structure',
+  );
 }

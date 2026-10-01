@@ -147,7 +147,7 @@
     {
       "id": "admin-trung-tam",
       "title": "Quản lý trung tâm",
-      "summary": "Duyệt, từ chối, tạm khoá, mở khoá trung tâm và đổi gói dịch vụ.",
+      "summary": "Duyệt, từ chối, tạm khoá, mở khoá trung tâm, đổi gói dịch vụ và bật Trợ lý AI.",
       "roles": ["SYSTEM_OWNER", "SYSTEM_ADMIN"],
       "blocks": [
         { "type": "roles", "roles": ["SYSTEM_OWNER", "SYSTEM_ADMIN"] },
@@ -208,6 +208,20 @@
           "items": [
             "Bấm **Đổi gói** trong chi tiết, chỉ chọn được gói **đang áp dụng**.",
             "Có hiệu lực ngay, kể cả khi hạ xuống gói nhỏ hơn số thành viên hiện có: không ai bị ngừng kích hoạt, nhưng trung tâm bị chặn thêm/kích hoạt lại thành viên và dashboard trung tâm hiện cảnh báo kèm gợi ý ngừng kích hoạt. Xem [Thành viên](page:thanh-vien#vuot-gioi-han-goi)."
+          ]
+        },
+        { "type": "heading", "level": 2, "text": "Trợ lý AI" },
+        {
+          "type": "paragraph",
+          "text": "Khối **Trợ lý AI** trong **Chi tiết** trung tâm quyết định trung tâm có dùng được nút **Định dạng bằng AI** trong trình soạn đề hay không ([Trình soạn đề](page:trinh-soan-de#dinh-dang-bang-ai)). Đổi là lưu ngay."
+        },
+        {
+          "type": "list",
+          "items": [
+            "Công tắc **Bật trợ lý AI**: mặc định tắt. Tắt thì người soạn đề của trung tâm không thấy nút.",
+            "**Hạn mức mỗi tháng**: 100 lượt / tháng, 1.000 lượt / tháng hoặc **Không giới hạn** (mặc định). Một lần bấm **Định dạng** = 1 lượt; lượt tính lại từ đầu mỗi tháng theo giờ Việt Nam.",
+            "Dòng **Đã dùng … lượt tháng này** đếm cả lượt đang chạy. Hạ hạn mức xuống thấp hơn số đã dùng thì trung tâm hết lượt ngay tới tháng sau.",
+            "Bật nhưng máy chủ chưa cấu hình kết nối AI thì nút trong trình soạn đề bị mờ (“Chưa cấu hình AI”) – xem [Deploy & môi trường](page:deploy-moi-truong#bien-moi-truong)."
           ]
         },
         {

@@ -4,6 +4,7 @@ import { APP_FILTER } from '@nestjs/core';
 import { ScheduleModule } from '@nestjs/schedule';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AdminModule } from './admin/admin.module';
+import { AiFormatModule } from './ai-format/ai-format.module';
 import { AttemptsModule } from './attempts/attempts.module';
 import { AuthModule } from './auth/auth.module';
 import { AllExceptionsFilter } from './common/filters/all-exceptions.filter';
@@ -62,6 +63,7 @@ import { UsersModule } from './users/users.module';
     StorageModule,
     CatalogModule,
     ExamsModule,
+    AiFormatModule,
     LessonsModule,
     LessonAttemptsModule,
     AttemptsModule,

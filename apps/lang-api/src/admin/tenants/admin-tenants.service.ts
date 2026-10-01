@@ -5,15 +5,23 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { MembershipStatus, TenantStatus, type AdminTenant } from '@lang/shared';
-import type { Repository } from 'typeorm';
+import {
+  MembershipStatus,
+  TenantStatus,
+  type AdminTenant,
+  type AdminTenantDetail,
+  type AiMonthlyQuota,
+} from '@lang/shared';
+import { IsNull, type Repository } from 'typeorm';
+import { AiFormatRun } from '../../ai-format/ai-format-run.entity';
+import { countAiUsage } from '../../ai-format/ai-usage';
 import type { RequestUser } from '../../common/decorators/current-user.decorator';
 import { toSkipTake, type Paginated } from '../../common/pagination';
 import { escapeLike } from '../../common/sql';
 import { Membership } from '../../memberships/membership.entity';
 import { ServicePlan } from '../../plans/service-plan.entity';
 import { Tenant } from '../../tenants/tenant.entity';
-import { toAdminTenant } from './admin-tenant.mapper';
+import { toAdminTenant, toAdminTenantDetail } from './admin-tenant.mapper';
 import type { ListAdminTenantsQueryDto } from './dto/admin-tenant.dto';
 
 const TENANT_NOT_FOUND = 'Không tìm thấy trung tâm';
@@ -31,7 +39,7 @@ type StatusChanges = Partial<
 
 /**
  * Tenant trong `/admin`: chỉ xem thông tin cơ bản, duyệt / từ chối / khoá /
- * mở khoá và đổi gói. Không vào nội dung tenant.
+ * mở khoá, đổi gói và bật AI. Không vào nội dung tenant.
  */
 @Injectable()
 export class AdminTenantsService {
@@ -41,6 +49,8 @@ export class AdminTenantsService {
     private readonly memberships: Repository<Membership>,
     @InjectRepository(ServicePlan)
     private readonly plans: Repository<ServicePlan>,
+    @InjectRepository(AiFormatRun)
+    private readonly aiRuns: Repository<AiFormatRun>,
   ) {}
 
   async list(query: ListAdminTenantsQueryDto): Promise<Paginated<AdminTenant>> {
@@ -69,13 +79,14 @@ export class AdminTenantsService {
     };
   }
 
-  async get(id: string): Promise<AdminTenant> {
+  async get(id: string): Promise<AdminTenantDetail> {
     const tenant = await this.withRelations()
       .andWhere('t.id = :id', { id })
       .getOne();
     if (!tenant) throw new NotFoundException(TENANT_NOT_FOUND);
     const counts = await this.activeMemberCounts([tenant.id]);
-    return toAdminTenant(tenant, counts.get(tenant.id) ?? 0);
+    const aiUsed = await countAiUsage(this.aiRuns, tenant.id);
+    return toAdminTenantDetail(tenant, counts.get(tenant.id) ?? 0, aiUsed);
   }
 
   approve(actor: RequestUser, id: string): Promise<void> {
@@ -146,6 +157,25 @@ export class AdminTenantsService {
     if (tenant.planId !== plan.id) {
       await this.tenants.update(id, { planId: plan.id });
     }
+  }
+
+  /**
+   * Bật/tắt AI và đặt hạn mức (req-5 plan 1.15). Tắt vẫn giữ hạn mức để bật
+   * lại không phải chọn lại; hạ hạn mức dưới số đã dùng chỉ chặn lượt mới.
+   */
+  async updateAi(
+    id: string,
+    enabled: boolean,
+    monthlyQuota: AiMonthlyQuota | null,
+  ): Promise<void> {
+    const { affected } = await this.tenants.update(
+      { id, deletedAt: IsNull() },
+      {
+        aiEnabled: enabled,
+        aiMonthlyQuota: monthlyQuota,
+      },
+    );
+    if (!affected) throw new NotFoundException(TENANT_NOT_FOUND);
   }
 
   private withRelations() {

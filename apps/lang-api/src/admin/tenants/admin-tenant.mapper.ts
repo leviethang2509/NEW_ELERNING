@@ -1,4 +1,8 @@
-import type { AdminTenant } from '@lang/shared';
+import type {
+  AdminTenant,
+  AdminTenantDetail,
+  TenantAiSettings,
+} from '@lang/shared';
 import { toPlanSummary } from '../../plans/plan.mapper';
 import type { ServicePlan } from '../../plans/service-plan.entity';
 import type { Tenant } from '../../tenants/tenant.entity';
@@ -33,5 +37,27 @@ export function toAdminTenant(
     createdAt: tenant.createdAt.toISOString(),
     reviewedAt: tenant.reviewedAt?.toISOString() ?? null,
     reviewer: tenant.reviewer ? toPerson(tenant.reviewer) : null,
+  };
+}
+
+export function toTenantAiSettings(
+  tenant: Tenant,
+  usedThisMonth: number,
+): TenantAiSettings {
+  return {
+    enabled: tenant.aiEnabled,
+    monthlyQuota: tenant.aiMonthlyQuota,
+    usedThisMonth,
+  };
+}
+
+export function toAdminTenantDetail(
+  tenant: Tenant,
+  activeMembers: number,
+  aiUsedThisMonth: number,
+): AdminTenantDetail {
+  return {
+    ...toAdminTenant(tenant, activeMembers),
+    ai: toTenantAiSettings(tenant, aiUsedThisMonth),
   };
 }

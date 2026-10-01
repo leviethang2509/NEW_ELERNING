@@ -184,6 +184,11 @@
               "Thiếu thì API vẫn chạy nhưng upload media/ghi âm trả 501"
             ],
             [
+              "AI (Gemini)",
+              "`GEMINI_BACKEND`, `GEMINI_MODEL`, `GEMINI_MAX_OUTPUT_TOKENS`, `GEMINI_VERTEX_LOCATION`, `GCP_PROJECT_ID`, `GCP_SERVICE_ACCOUNT_JSON_BASE64` (VPS) hoặc `GOOGLE_APPLICATION_CREDENTIALS` (máy dev, đường dẫn file), `GEMINI_API_KEY` (chỉ khi `GEMINI_BACKEND=aistudio`)",
+              "Không bắt buộc. Thiếu thì API vẫn chạy, nút **Định dạng bằng AI** bị mờ và route AI trả 501. Service account cần role Vertex AI User, project bật API Vertex AI"
+            ],
+            [
               "Image",
               "`IMAGE_TAG`",
               "Để trống = bản mới nhất; đặt `sha-<commit>` để rollback"
@@ -394,6 +399,10 @@
             [
               "Chuông: đếm lại",
               "60 giây và mỗi khi quay lại tab; hiện 10 thông báo mới nhất"
+            ],
+            [
+              "Định dạng bằng AI",
+              "1 section mỗi lần bấm, tối đa 2.000 dòng / 150.000 ký tự; tối đa 3 lần gọi AI (2 phút/lần, 6 phút/lượt); hạn mức trung tâm 100 / 1.000 / không giới hạn lượt mỗi tháng; ghi chú cho AI tối đa 2000 ký tự"
             ]
           ]
         }
@@ -593,6 +602,14 @@
             [
               "Upload media / ghi âm trả 501, trang media báo “Chưa cấu hình Cloudflare R2”",
               "Thiếu biến `R2_*` – thêm vào `.env` rồi `--force-recreate`"
+            ],
+            [
+              "Nút **Định dạng bằng AI** mờ, chú thích “Chưa cấu hình AI”",
+              "Thiếu/sai biến Gemini/GCP – log API lúc khởi động có dòng `Gemini chưa dùng được – …`; sửa `.env` rồi `--force-recreate`"
+            ],
+            [
+              "Định dạng bằng AI báo “Dịch vụ AI chưa được bật…” / “Tài khoản AI thiếu quyền…” / “Thông tin xác thực AI không hợp lệ…”",
+              "Project GCP chưa bật API Vertex AI / service account thiếu role / JSON base64 sai. Chi tiết lỗi của Google chỉ có trong log API (`Gemini lỗi …`)"
             ],
             [
               "Lỗi 500 “Đã có lỗi xảy ra”",

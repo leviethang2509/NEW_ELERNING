@@ -10,10 +10,10 @@ Quy ước chung cho **mọi** trợ lý AI (Claude, Gemini, Codex…) và ngư�
 
 ### Bắt đầu phiên
 
-1. Đọc `req-N-progress.md` của requirement **đang làm** để biết step hiện tại, việc dở dang và lưu ý. Mới nhất: [req-4-progress.md](../requirements/req-4-progress.md) (giao diện & theme, xong 2026-09-25); trước đó [req-3-progress.md](../requirements/req-3-progress.md).
-2. Đọc phần tương ứng trong `req-N-plan.md` (quyết định mục 1, giả định mục 2, thiết kế DB mục 4, phân quyền mục 5, route mục 6, step mục 7): [req-4-plan.md](../requirements/req-4-plan.md), [req-3-plan.md](../requirements/req-3-plan.md). Nền tảng req-1 (tài khoản, tenant, đề thi, thi & chấm) ở [req-1-plan.md](../requirements/req-1-plan.md).
+1. Đọc `req-N-progress.md` của requirement **đang làm** để biết step hiện tại, việc dở dang và lưu ý. Chưa có requirement đang làm; gần nhất: [req-5-progress.md](../requirements/req-5-progress.md) (định dạng đề bằng AI – Gemini, xong 2026-10-01), trước đó [req-4-progress.md](../requirements/req-4-progress.md) (giao diện & theme, xong 2026-09-25), [req-3-progress.md](../requirements/req-3-progress.md).
+2. Đọc phần tương ứng trong `req-N-plan.md` (quyết định mục 1, giả định mục 2, thiết kế DB mục 4, phân quyền mục 5, route mục 6, step mục 7): [req-5-plan.md](../requirements/req-5-plan.md), [req-4-plan.md](../requirements/req-4-plan.md), [req-3-plan.md](../requirements/req-3-plan.md). Nền tảng req-1 (tài khoản, tenant, đề thi, thi & chấm) ở [req-1-plan.md](../requirements/req-1-plan.md).
 3. Chỉ mở các file `req-N-question*.md` khi cần lý do của một quyết định.
-4. Nghiệm thu tổng theo từng vai trò (dùng lại sau mỗi lần deploy): [req-3-acceptance.md](../requirements/req-3-acceptance.md) cho chức năng, [req-4-acceptance.md](../requirements/req-4-acceptance.md) cho 3 theme.
+4. Nghiệm thu tổng theo từng vai trò (dùng lại sau mỗi lần deploy): [req-3-acceptance.md](../requirements/req-3-acceptance.md) cho chức năng, [req-4-acceptance.md](../requirements/req-4-acceptance.md) cho 3 theme, [req-5-acceptance.md](../requirements/req-5-acceptance.md) cho Định dạng bằng AI.
 
 Requirement mới đi theo chuỗi `req-N.md` → `req-N-question.md` (hỏi người dùng) → câu trả lời → `req-N-plan.md` → `req-N-progress.md`.
 

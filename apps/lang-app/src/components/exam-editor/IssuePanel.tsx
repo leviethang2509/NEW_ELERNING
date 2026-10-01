@@ -11,16 +11,29 @@ interface IssuePanelProps {
   issues: Issue[];
   outline: OutlineItem[];
   scrollerRef: React.RefObject<HTMLDivElement>;
+  /** Làm nổi bảng (kết quả định dạng AI còn lỗi). */
+  highlight?: boolean;
 }
 
-export function IssuePanel({ issues, outline, scrollerRef }: IssuePanelProps) {
+export function IssuePanel({
+  issues,
+  outline,
+  scrollerRef,
+  highlight = false,
+}: IssuePanelProps) {
   const text = vi.examEditor.issues;
   const errors = issues.filter((issue) => issue.severity === 'error');
   const labelOf = (id: string | null) =>
     (id && outline.find((item) => item.id === id)?.label) ?? text.section;
 
   return (
-    <div className="flex min-h-[128px] shrink-0 flex-col overflow-hidden rounded-xl border border-[var(--border-strong)] bg-[var(--sidebar)] lg:max-h-[45%]">
+    <div
+      className={`flex min-h-[128px] shrink-0 flex-col overflow-hidden rounded-xl border bg-[var(--sidebar)] lg:max-h-[45%] ${
+        highlight
+          ? 'border-[var(--warn-border)] ring-2 ring-[var(--warn-border)]'
+          : 'border-[var(--border-strong)]'
+      }`}
+    >
       <div className="flex items-center gap-1.5 border-b border-[var(--border)] px-3.5 py-2.5 text-[11.5px] font-semibold uppercase tracking-[0.09em] text-[var(--muted)]">
         {errors.length ? (
           <AlertTriangle size={13} className="text-[var(--danger)]" />

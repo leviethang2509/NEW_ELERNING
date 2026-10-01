@@ -4,11 +4,15 @@ packages:
 
 # pnpm 11 chặn build script mặc định; chỉ cho phép package cần thiết.
 allowBuilds:
+  # preinstall chỉ echo 'no-op'
+  '@google/genai': false
   # postinstall chỉ in banner opencollective
   '@nestjs/core': false
   # đã có binary dựng sẵn theo nền tảng, script chỉ để build từ source
   '@parcel/watcher': false
   esbuild: true
+  # postinstall chỉ in cảnh báo phiên bản cho package phụ thuộc
+  protobufjs: false
   # resolver của Jest: tải binary native nếu thiếu (vd. build Docker linux)
   unrs-resolver: true
 

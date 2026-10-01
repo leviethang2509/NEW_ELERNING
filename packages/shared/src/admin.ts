@@ -1,3 +1,4 @@
+import type { TenantAiSettings } from './ai-format';
 import { SystemRole } from './roles';
 import type { TenantStatus, UserStatus } from './status';
 import type { ServicePlanSummary } from './tenant';
@@ -72,6 +73,11 @@ export interface AdminTenant {
   /** Lần duyệt / từ chối / khoá / mở khoá gần nhất. */
   reviewedAt: string | null;
   reviewer: { id: string; email: string; fullName: string } | null;
+}
+
+/** `GET /admin/tenants/:id` và các thao tác trên một tenant. */
+export interface AdminTenantDetail extends AdminTenant {
+  ai: TenantAiSettings;
 }
 
 export interface AdminServicePlan extends ServicePlanSummary {

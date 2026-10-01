@@ -1,7 +1,9 @@
 import {
+  AI_MONTHLY_QUOTA_OPTIONS,
   DEFAULT_LATE_WEIGHT,
   DEFAULT_WARNING_THRESHOLD,
   TenantStatus,
+  type AiMonthlyQuota,
 } from '@lang/shared';
 import {
   Check,
@@ -31,6 +33,10 @@ import { User } from '../users/user.entity';
 @Check(
   'CHK_tenants_warning_threshold',
   '"warning_threshold" >= 0 AND "warning_threshold" <= 100',
+)
+@Check(
+  'CHK_tenants_ai_monthly_quota',
+  `"ai_monthly_quota" IN (${AI_MONTHLY_QUOTA_OPTIONS.join(', ')})`,
 )
 export class Tenant {
   @PrimaryGeneratedColumn('uuid', { primaryKeyConstraintName: 'PK_tenants' })
@@ -134,6 +140,14 @@ export class Tenant {
     default: DEFAULT_WARNING_THRESHOLD,
   })
   warningThreshold: number;
+
+  /** System Owner/Admin bật định dạng đề bằng AI (req-5 plan 1.15). */
+  @Column({ name: 'ai_enabled', type: 'boolean', default: false })
+  aiEnabled: boolean;
+
+  /** Lượt AI mỗi tháng; `null` = không giới hạn. */
+  @Column({ name: 'ai_monthly_quota', type: 'int', nullable: true })
+  aiMonthlyQuota: AiMonthlyQuota | null;
 
   @CreateDateColumn({ name: 'created_at', type: 'timestamptz' })
   createdAt: Date;

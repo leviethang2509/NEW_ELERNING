@@ -32,3 +32,6 @@ pnpm-debug.log*
 .idea/
 .vscode/*
 !.vscode/extensions.json
+
+# Đề mẫu req-5 (có thể có bản quyền) – không commit
+docs/requirements/req-5-samples/

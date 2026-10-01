@@ -25,6 +25,6 @@ const groups: unknown[] = [
 
 export const USER_MANUAL: UserManual = {
   title: 'Tài liệu nội bộ Lang Simulator',
-  updatedAt: '2026-09-27',
+  updatedAt: '2026-10-01',
   groups: groups as ManualGroup[],
 };
